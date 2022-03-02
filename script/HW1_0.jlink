@@ -1,0 +1,6 @@
+r
+loadfile HW1_0/LVRM.hex
+verifyfile HW1_0/LVRM.hex
+r
+g
+qc
