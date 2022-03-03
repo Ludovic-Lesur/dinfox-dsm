@@ -123,38 +123,6 @@ static void AT_ReplyError(AT_error_source_t error_source, unsigned int error_cod
 	AT_ResponseAddString(AT_RESPONSE_END);
 }
 
-/* PRINT ADC DATA ON AT INTERFACE.
- * @param:	None.
- * @return:	None.
- */
-static void AT_PrintAdcData(void) {
-	// Local variables.
-	unsigned int generic_int = 0;
-	signed char tmcu_degrees = 0;
-	// Vpv.
-	ADC1_get_data(ADC_DATA_IDX_VIN_MV, &generic_int);
-	AT_ResponseAddString("Vin=");
-	AT_ResponseAddValue(generic_int, STRING_FORMAT_DECIMAL, 0);
-	// Vout.
-	ADC1_get_data(ADC_DATA_IDX_VOUT_MV, &generic_int);
-	AT_ResponseAddString("mV Vout=");
-	AT_ResponseAddValue(generic_int, STRING_FORMAT_DECIMAL, 0);
-	// Iout.
-	ADC1_get_data(ADC_DATA_IDX_IOUT_UA, &generic_int);
-	AT_ResponseAddString("mV Iout=");
-	AT_ResponseAddValue(generic_int, STRING_FORMAT_DECIMAL, 0);
-	// Vmcu.
-	ADC1_get_data(ADC_DATA_IDX_VMCU_MV, &generic_int);
-	AT_ResponseAddString("uA Vmcu=");
-	AT_ResponseAddValue(generic_int, STRING_FORMAT_DECIMAL, 0);
-	// Tmcu.
-	ADC1_get_tmcu_comp2(&tmcu_degrees);
-	AT_ResponseAddString("mV Tmcu=");
-	AT_ResponseAddValue((signed int) tmcu_degrees, STRING_FORMAT_DECIMAL, 0);
-	AT_ResponseAddString("dC");
-	AT_ResponseAddString(AT_RESPONSE_END);
-}
-
 /* PARSE THE CURRENT AT COMMAND BUFFER.
  * @param:	None.
  * @return:	None.
@@ -181,8 +149,9 @@ static void AT_DecodeRxBuffer(void) {
 		// ADC command AT$ADC?<CR>.
 		else if (PARSER_compare_command(&at_ctx.at_parser, AT_COMMAND_ADC) == PARSER_SUCCESS) {
 			// Perform ADC measurements.
+			ADC1_init();
 			ADC1_perform_measurements();
-			AT_PrintAdcData();
+			ADC1_disable();
 		}
 		// Unknown command.
 		else {

@@ -37,7 +37,7 @@ typedef struct {
 
 /*** TIM local global variables ***/
 
-static unsigned char __attribute__((section(".data"))) TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
+static const unsigned char TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
 	211, 211, 211, 211, 211, 211, 211, 211, 210, 210,
 	210, 210, 210, 210, 210, 210, 210, 209, 209, 209,
 	209, 209, 209, 209, 208, 208, 208, 208, 207, 207,
@@ -101,14 +101,13 @@ void TIM2_init(void) {
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
 	// Configure peripheral.
 	TIM2 -> CR1 &= ~(0b1 << 0); // CEN='0'.
-	TIM2 -> CNT &= 0xFFFF0000;
 	// Set PWM frequency.
 	TIM2 -> PSC = 0; // Timer input clock is SYSCLK.
 	TIM2 -> ARR = TIM2_ARR_VALUE;
-	// Configure channels 2-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
-	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11);
+	// Configure channels 1-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
+	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
-	// Disable channels 2-4 by default (CCxE='0').
+	// Disable all channels by default (CCxE='0').
 	TIM2 -> CCER &= 0xFFFFEEEE;
 	TIM2 -> CCRx[TIM2_CHANNEL_LED_RED] = (TIM2_ARR_VALUE + 1);
 	TIM2 -> CCRx[TIM2_CHANNEL_LED_GREEN] = (TIM2_ARR_VALUE + 1);
@@ -153,7 +152,7 @@ void TIM2_start(void) {
 	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Enable counter.
-	TIM2 -> CNT &= 0xFFFF0000;
+	TIM2 -> CNT = 0;
 	TIM2 -> CR1 |= (0b1 << 0); // CEN='1'.
 }
 

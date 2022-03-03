@@ -12,11 +12,65 @@
 #include "led.h"
 #include "lptim.h"
 #include "lpuart.h"
+#include "mapping.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc.h"
+#include "relay.h"
 #include "rtc.h"
 #include "tim.h"
+
+/*** MAIN local macros ***/
+
+#define LVRM_NUMBER_OF_IOUT_THRESHOLD	6
+
+/*** MAIN structures ***/
+
+typedef struct {
+	TIM2_channel_mask_t led_color;
+	unsigned int iout_ua;
+} LVRM_context_t;
+
+/*** MAIN local global variables ***/
+
+static const unsigned int lvrm_iout_threshold_ua[LVRM_NUMBER_OF_IOUT_THRESHOLD] = {
+		50000,
+		500000,
+		1000000,
+		2000000,
+		3000000,
+		4000000
+};
+static const TIM2_channel_mask_t lvrm_iout_led_color[LVRM_NUMBER_OF_IOUT_THRESHOLD + 1] = {
+		TIM2_CHANNEL_MASK_GREEN,
+		TIM2_CHANNEL_MASK_YELLOW,
+		TIM2_CHANNEL_MASK_RED,
+		TIM2_CHANNEL_MASK_MAGENTA,
+		TIM2_CHANNEL_MASK_BLUE,
+		TIM2_CHANNEL_MASK_CYAN,
+		TIM2_CHANNEL_MASK_WHITE
+};
+static LVRM_context_t lvrm_ctx;
+
+/*** MAIN local functions ***/
+
+/* UPDATE LED COLOR ACCORDING TO OUTPUT CURRENT VALUE.
+ * @param:	None.
+ * @return:	None.
+ */
+static void LVRM_update_led_color(void) {
+	// Local variables.
+	unsigned char idx = 0;
+	// Default is maximum.
+	lvrm_ctx.led_color = lvrm_iout_led_color[LVRM_NUMBER_OF_IOUT_THRESHOLD];
+	// Check thresholds.
+	for (idx=0 ; idx<LVRM_NUMBER_OF_IOUT_THRESHOLD ; idx++) {
+		if (lvrm_ctx.iout_ua < lvrm_iout_threshold_ua[idx]) {
+			lvrm_ctx.led_color = lvrm_iout_led_color[idx];
+			break;
+		}
+	}
+}
 
 /*** MAIN function ***/
 
@@ -43,27 +97,36 @@ int main(void) {
 	RTC_init();
 	// Init peripherals.
 	LPTIM1_init();
-	ADC1_init();
 	LPUART1_init();
 	// Init components.
 	LED_init();
+	RELAY_init();
 	// Init AT interface.
 	AT_init();
 	// Start periodic wakeup timer.
 	RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	// Main loop.
 	while (1) {
+		IWDG_reload();
 		// Enter stop mode.
 		PWR_enter_stop_mode();
-		// Wake-up.
-		if (RTC_get_wakeup_timer_flag) {
-			// Blink LED and clear flag.
-			LED_SingleBlink(2000, TIM2_CHANNEL_MASK_GREEN);
+		// Check source.
+		if (RTC_get_wakeup_timer_flag() != 0) {
+			// Wake-up by RTC: clear flag and blink LED.
 			RTC_clear_wakeup_timer_flag();
+			// Perform analog measurements.
+			ADC1_init();
+			ADC1_perform_measurements();
+			ADC1_disable();
+			ADC1_get_data(ADC_DATA_IDX_IOUT_UA, &lvrm_ctx.iout_ua);
+			// Compute LED color according to output current.
+			LVRM_update_led_color();
+			// Blink LED.
+			LED_SingleBlink(2000, lvrm_ctx.led_color);
 		}
-		// Execute AT commands task.
-		AT_task();
-		// Clear watchdog.
-		IWDG_reload();
+		if (LPUART1_get_rx_flag() != 0) {
+			// Wake-up by LPUART: execute AT command.
+			AT_task();
+		}
 	}
 }

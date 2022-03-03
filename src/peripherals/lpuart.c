@@ -144,6 +144,15 @@ void LPUART1_disable_rx(void) {
 	NVIC_disable_interrupt(NVIC_IT_LPUART1);
 }
 
+/* GET LPUART RX EVENT FLAG.
+ * @param:	None.
+ * @return:	1 if any LPUART RX interrupt occured, 0 otherwise.
+ */
+unsigned char LPUART1_get_rx_flag(void) {
+	// Return flag.
+	return ((lpuart_irq_count > 0) ? 1 : 0);
+}
+
 /* SEND A BYTE ARRAY THROUGH LPUART1.
  * @param tx_string:	Byte array to send.
  * @return:				None.

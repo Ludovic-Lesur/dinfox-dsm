@@ -63,6 +63,8 @@ static void ADC1_single_conversion(unsigned char adc_channel, unsigned int* adc_
 	// Select input channel.
 	ADC1 -> CHSELR &= 0xFFF80000; // Reset all bits.
 	ADC1 -> CHSELR |= (0b1 << adc_channel);
+	// Clear all flags.
+	ADC1 -> ISR |= 0x0000089F;
 	// Read raw supply voltage.
 	ADC1 -> CR |= (0b1 << 2); // ADSTART='1'.
 	unsigned int loop_count = 0;
@@ -153,11 +155,6 @@ static void ADC1_compute_vmcu(void) {
  * @return:	None.
  */
 static void ADC1_compute_tmcu(void) {
-	// Set sampling time (see p.88 of STM32L031x4/6 datasheet).
-	ADC1 -> SMPR |= (0b111 << 0); // Sampling time for temperature sensor must be greater than 10us, 160.5*(1/ADCCLK) = 20us for ADCCLK = SYSCLK/2 = 8MHz;
-	// Wake-up VREFINT and temperature sensor.
-	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
-	LPTIM1_delay_milliseconds(10, 0); // Wait internal reference stabilization (max 3ms).
 	// Read raw temperature.
 	int raw_temp_sensor_12bits = 0;
 	ADC1_filtered_conversion(ADC_CHANNEL_TMCU, &raw_temp_sensor_12bits);
@@ -166,8 +163,6 @@ static void ADC1_compute_tmcu(void) {
 	int temp_calib_degrees = raw_temp_calib_mv * ((int) (TS_CAL2_TEMP-TS_CAL1_TEMP));
 	temp_calib_degrees = (temp_calib_degrees) / ((int) (TS_CAL2 - TS_CAL1));
 	adc_ctx.tmcu_degrees_comp2 = temp_calib_degrees + TS_CAL1_TEMP;
-	// Switch temperature sensor off.
-	ADC1 -> CCR &= ~(0b1 << 23); // TSEN='0'.
 	// Convert to 1-complement value.
 	adc_ctx.tmcu_degrees_comp1 = 0;
 	if (adc_ctx.tmcu_degrees_comp2 < 0) {
@@ -208,11 +203,8 @@ void ADC1_init(void) {
 	ADC1 -> CR |= (0b1 << 28);
 	LPTIM1_delay_milliseconds(5, 0);
 	// ADC configuration.
-	ADC1 -> CFGR2 &= ~(0b11 << 30); // Reset bits 30-31.
-	ADC1 -> CFGR2 |= (0b01 << 30); // Use (PCLK2/2) as ADCCLK = SYSCLK/2 (see RCC_init() function).
-	ADC1 -> CFGR1 &= (0b1 << 13); // Single conversion mode.
-	ADC1 -> CFGR1 &= ~(0b11 << 0); // Data resolution = 12 bits (RES='00').
-	ADC1 -> CCR &= 0xFC03FFFF; // No prescaler.
+	ADC1 -> CCR |= (0b1 << 25); // Enable low frequency clock (LFMEN='1').
+	ADC1 -> CFGR2 |= (0b11 << 30); // Use PCLK2 as ADCCLK (MSI).
 	ADC1 -> SMPR |= (0b111 << 0); // Maximum sampling time.
 	// ADC calibration.
 	ADC1 -> CR |= (0b1 << 31); // ADCAL='1'.
@@ -222,8 +214,6 @@ void ADC1_init(void) {
 		loop_count++;
 		if (loop_count > ADC_TIMEOUT_COUNT) break;
 	}
-	// Clear all flags.
-	ADC1 -> ISR |= 0x0000089F;
 }
 
 /* DISABLE INTERNAL ADC PERIPHERAL.
@@ -231,12 +221,6 @@ void ADC1_init(void) {
  * @return:	None.
  */
 void ADC1_disable(void) {
-	// Disable peripheral.
-	if (((ADC1 -> CR) & (0b1 << 0)) != 0) {
-		ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
-	}
-	// Clear all flags.
-	ADC1 -> ISR |= 0x0000089F;
 	// Disable peripheral clock.
 	RCC -> APB2ENR &= ~(0b1 << 9); // ADCEN='0'.
 }
@@ -254,6 +238,9 @@ void ADC1_perform_measurements(void) {
 		loop_count++;
 		if (loop_count > ADC_TIMEOUT_COUNT) return;
 	}
+	// Wake-up VREFINT and temperature sensor.
+	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
+	LPTIM1_delay_milliseconds(10, 0); // Wait internal reference stabilization (max 3ms).
 	// Perform measurements.
 	ADC1_filtered_conversion(ADC_CHANNEL_VREFINT, &adc_ctx.vrefint_12bits);
 	ADC1_ComputeVin();
@@ -261,8 +248,8 @@ void ADC1_perform_measurements(void) {
 	ADC1_compute_iout();
 	ADC1_compute_vmcu();
 	ADC1_compute_tmcu();
-	// Clear all flags.
-	ADC1 -> ISR |= 0x0000089F; // Clear all flags.
+	// Turn VREFINT and temperature sensor off.
+	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
 	// Disable ADC peripheral.
 	if (((ADC1 -> CR) & (0b1 << 0)) != 0) {
 		ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
