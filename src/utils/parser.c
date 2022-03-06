@@ -40,12 +40,13 @@ static PARSER_Status PARSER_search_separator(PARSER_Context* parser_ctx, char se
 
 /*** PARSER functions ***/
 
-/* CHECK EQUALITY BETWEEN A GIVEN COMMAND AND THE CURRENT AT COMMAND BUFFER.
+/* CHECK EQUALITY BETWEEN A GIVEN COMMAND OR HEADER AND THE CURRENT AT COMMAND BUFFER.
  * @param parser_ctx:   Parser structure.
- * @param command:      Reference command.
+ * @param mode:			Comparison mode.
+ * @param str:			Input string.
  * @return status:      Comparison result.
  */
-PARSER_Status PARSER_compare_command(PARSER_Context* parser_ctx, char* command) {
+PARSER_Status PARSER_compare(PARSER_Context* parser_ctx, PARSER_mode_t mode, char* command) {
 	// Local variables.
 	PARSER_Status status = PARSER_SUCCESS;
 	unsigned int idx = 0;
@@ -58,35 +59,24 @@ PARSER_Status PARSER_compare_command(PARSER_Context* parser_ctx, char* command) 
 		}
 		idx++;
 	}
-	// Check length equality.
-	if ((parser_ctx -> rx_buf_length) != idx) {
-		status = PARSER_ERROR_UNKNOWN_COMMAND;
-		goto errors;
-	}
-errors:
-	return status;
-}
-
-/* CHECK EQUALITY BETWEEN A GIVEN HEADER AND THE BEGINNING OF THE CURRENT AT COMMAND BUFFER.
- * @param parser_ctx:   Parser structure.
- * @param header:       Reference header.
- * @return status:      Comparison result.
- */
-PARSER_Status PARSER_compare_header(PARSER_Context* parser_ctx, char* header) {
-	// Local variables.
-	PARSER_Status status = PARSER_SUCCESS;
-	unsigned int idx = 0;
-	// Compare all characters.
-	while (header[idx] != STRING_CHAR_NULL) {
-		if ((parser_ctx -> rx_buf)[(parser_ctx -> start_idx) + idx] != header[idx]) {
-			// Difference found or end of command, exit loop.
+	switch (mode) {
+	case PARSER_MODE_COMMAND:
+		// Check length equality.
+		if ((parser_ctx -> rx_buf_length) != idx) {
 			status = PARSER_ERROR_UNKNOWN_COMMAND;
 			goto errors;
 		}
-		idx++;
+		break;
+	case PARSER_MODE_HEADER:
+		// Update start index.
+		(parser_ctx -> start_idx) = idx;
+		break;
+	default:
+		// Unknown mode.
+		status = PARSER_ERROR_MODE;
+		goto errors;
+		break;
 	}
-	// Update start index in case of success.
-	(parser_ctx -> start_idx) = idx;
 errors:
 	return status;
 }

@@ -7,6 +7,7 @@
 
 #include "adc.h"
 #include "at.h"
+#include "exti.h"
 #include "gpio.h"
 #include "iwdg.h"
 #include "led.h"
@@ -91,6 +92,7 @@ int main(void) {
 #endif
 	// Init GPIOs.
 	GPIO_init();
+	EXTI_init();
 	// Init RTC.
 	RTC_reset();
 	RCC_enable_lse();
@@ -122,11 +124,8 @@ int main(void) {
 			// Compute LED color according to output current.
 			LVRM_update_led_color();
 			// Blink LED.
-			LED_SingleBlink(2000, lvrm_ctx.led_color);
+			LED_single_blink(2000, lvrm_ctx.led_color);
 		}
-		if (LPUART1_get_rx_flag() != 0) {
-			// Wake-up by LPUART: execute AT command.
-			AT_task();
-		}
+		AT_task();
 	}
 }

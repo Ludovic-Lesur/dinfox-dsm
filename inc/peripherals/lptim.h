@@ -13,6 +13,6 @@
 void LPTIM1_init(void);
 void LPTIM1_enable(void);
 void LPTIM1_disable(void);
-void LPTIM1_delay_milliseconds(unsigned int delay_ms, unsigned char stop_mode);
+void LPTIM1_delay_milliseconds(unsigned int delay_ms);
 
 #endif /* LPTIM_H */

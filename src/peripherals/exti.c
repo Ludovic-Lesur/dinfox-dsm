@@ -18,6 +18,40 @@
 
 #define EXTI_RTSR_FTSR_MAX_INDEX	22
 
+/*** EXTI local functions ***/
+
+/* SET EXTI TRIGGER.
+ * @param bit_idx:	Interrupt index.
+ * @return status:	Function execution status.
+ */
+static void EXTI_set_trigger(EXTI_trigger_t trigger, unsigned char bit_idx) {
+	// Check index.
+	if (bit_idx > EXTI_RTSR_FTSR_MAX_INDEX) return;
+	// Select triggers.
+	switch (trigger) {
+	// Rising edge only.
+	case EXTI_TRIGGER_RISING_EDGE:
+		EXTI -> RTSR |= (0b1 << bit_idx); // Rising edge enabled.
+		EXTI -> FTSR &= ~(0b1 << bit_idx); // Falling edge disabled.
+		break;
+	// Falling edge only.
+	case EXTI_TRIGGER_FALLING_EDGE:
+		EXTI -> RTSR &= ~(0b1 << bit_idx); // Rising edge disabled.
+		EXTI -> FTSR |= (0b1 << bit_idx); // Falling edge enabled.
+		break;
+	// Both edges.
+	case EXTI_TRIGGER_ANY_EDGE:
+		EXTI -> RTSR |= (0b1 << bit_idx); // Rising edge enabled.
+		EXTI -> FTSR |= (0b1 << bit_idx); // Falling edge enabled.
+		break;
+	// Unknown configuration.
+	default:
+		break;
+	}
+	// Clear flag.
+	EXTI -> PR |= (0b1 << bit_idx);
+}
+
 /*** EXTI functions ***/
 
 /* INIT EXTI PERIPHERAL.
@@ -31,9 +65,6 @@ void EXTI_init(void) {
 	EXTI -> IMR = 0;
 	// Clear all flags.
 	EXTI -> PR |= 0x007BFFFF; // PIFx='1'.
-	// Set interrupts priority.
-	NVIC_set_priority(NVIC_IT_EXTI_0_1, 3);
-	NVIC_set_priority(NVIC_IT_EXTI_4_15, 0);
 }
 
 /* CONFIGURE A GPIO AS EXTERNAL INTERRUPT SOURCE.
@@ -41,39 +72,14 @@ void EXTI_init(void) {
  * @edge_trigger:	Interrupt edge trigger (see EXTI_trigger_t epin_indexeration in exti.h).
  * @return:			None.
  */
-void EXTI_configure_gpio(const GPIO* gpio, EXTI_trigger_t edge_trigger) {
+void EXTI_configure_gpio(const GPIO* gpio, EXTI_trigger_t trigger) {
 	// Select GPIO port.
 	SYSCFG -> EXTICR[((gpio -> pin_index) / 4)] &= ~(0b1111 << (4 * ((gpio -> pin_index) % 4)));
 	SYSCFG -> EXTICR[((gpio -> pin_index) / 4)] |= ((gpio -> port_index) << (4 * ((gpio -> pin_index) % 4)));
+	// Set mask and trigger.
+	EXTI -> IMR |= (0b1 << ((gpio -> pin_index))); // IMx='1'.
 	// Select triggers.
-	switch (edge_trigger) {
-	// Rising edge only.
-	case EXTI_TRIGGER_RISING_EDGE:
-		EXTI -> IMR |= (0b1 << ((gpio -> pin_index))); // IMx='1'.
-		EXTI -> RTSR |= (0b1 << ((gpio -> pin_index))); // Rising edge enabled.
-		EXTI -> FTSR &= ~(0b1 << ((gpio -> pin_index))); // Falling edge disabled.
-		break;
-	// Falling edge only.
-	case EXTI_TRIGGER_FALLING_EDGE:
-		EXTI -> IMR |= (0b1 << ((gpio -> pin_index))); // IMx='1'.
-		EXTI -> RTSR &= ~(0b1 << ((gpio -> pin_index))); // Rising edge disabled.
-		EXTI -> FTSR |= (0b1 << ((gpio -> pin_index))); // Falling edge enabled.
-		break;
-	// Both edges.
-	case EXTI_TRIGGER_ANY_EDGE:
-		EXTI -> IMR |= (0b1 << ((gpio -> pin_index))); // IMx='1'.
-		EXTI -> RTSR |= (0b1 << ((gpio -> pin_index))); // Rising edge enabled.
-		EXTI -> FTSR |= (0b1 << ((gpio -> pin_index))); // Falling edge enabled.
-		break;
-	// Unknown configuration.
-	default:
-		EXTI -> IMR &= ~(0b1 << ((gpio -> pin_index))); // IMx='0'.
-		EXTI -> RTSR &= ~(0b1 << ((gpio -> pin_index))); // Rising edge disabled.
-		EXTI -> FTSR &= ~(0b1 << ((gpio -> pin_index))); // Falling edge disabled.
-		break;
-	}
-	// Clear flag.
-	EXTI -> PR |= (0b1 << ((gpio -> pin_index)));
+	EXTI_set_trigger(trigger, (gpio -> pin_index));
 }
 
 /* CONFIGURE A LINE AS INTERNAL INTERRUPT SOURCE.
@@ -81,40 +87,14 @@ void EXTI_configure_gpio(const GPIO* gpio, EXTI_trigger_t edge_trigger) {
  * @edge_trigger:	Interrupt edge trigger (see EXTI_trigger_t enum).
  * @return:			None.
  */
-void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t edge_trigger) {
+void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t trigger) {
+	// Check line.
+	if (line >= EXTI_LINE_LAST) return;
+	// Set mask.
+	EXTI -> IMR |= (0b1 << line); // IMx='1'.
 	// Select triggers.
-	switch (edge_trigger) {
-	// Rising edge only.
-	case EXTI_TRIGGER_RISING_EDGE:
-		EXTI -> IMR |= (0b1 << line); // IMx='1'.
-		if (line <= EXTI_RTSR_FTSR_MAX_INDEX) {
-			EXTI -> RTSR |= (0b1 << line); // Rising edge enabled.
-			EXTI -> FTSR &= ~(0b1 << line); // Falling edge disabled.
-		}
-		break;
-	// Falling edge only.
-	case EXTI_TRIGGER_FALLING_EDGE:
-		EXTI -> IMR |= (0b1 << line); // IMx='1'.
-		if (line <= EXTI_RTSR_FTSR_MAX_INDEX) {
-			EXTI -> RTSR &= ~(0b1 << line); // Rising edge disabled.
-			EXTI -> FTSR |= (0b1 << line); // Falling edge enabled.
-		}
-		break;
-	// Both edges.
-	case EXTI_TRIGGER_ANY_EDGE:
-		EXTI -> IMR |= (0b1 << line); // IMx='1'.
-		if (line <= EXTI_RTSR_FTSR_MAX_INDEX) {
-			EXTI -> RTSR |= (0b1 << line); // Rising edge enabled.
-			EXTI -> FTSR |= (0b1 << line); // Falling edge enabled.
-		}
-		break;
-	// Unknown configuration.
-	default:
-		break;
-	}
-	// Clear flag.
 	if (line <= EXTI_RTSR_FTSR_MAX_INDEX) {
-		EXTI -> PR |= (0b1 << line);
+		EXTI_set_trigger(trigger, line);
 	}
 }
 

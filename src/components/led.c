@@ -17,7 +17,7 @@
  * @param:	None.
  * @return:	None.
  */
-static void LED_Off(void) {
+static void LED_off(void) {
 	// Configure pins as output high.
 	GPIO_configure(&GPIO_LED_RED, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -34,15 +34,15 @@ static void LED_Off(void) {
  * @return:	None.
  */
 void LED_init(void) {
-	LED_Off();
+	LED_off();
 }
 
-/* SET LED COLOR.
+/* PERFORM A SINGLE LED BLINK.
  * @param blink_period_ms:	Blink duration in ms.
  * @param led_color:		Color to set.
  * @return:					None.
  */
-void LED_SingleBlink(unsigned int blink_duration_ms, TIM2_channel_mask_t color) {
+void LED_single_blink(unsigned int blink_duration_ms, TIM2_channel_mask_t color) {
 	// Init required peripheral.
 	TIM2_init();
 	TIM21_init(blink_duration_ms);
@@ -60,6 +60,6 @@ void LED_SingleBlink(unsigned int blink_duration_ms, TIM2_channel_mask_t color) 
 	TIM2_disable();
 	TIM21_disable();
 	// Turn LED off.
-	LED_Off();
+	LED_off();
 }
 

@@ -9,13 +9,16 @@
 
 #include "adc.h"
 #include "flash_reg.h"
+#include "led.h"
 #include "lpuart.h"
 #include "lptim.h"
 #include "mapping.h"
 #include "math.h"
 #include "nvic.h"
 #include "parser.h"
+#include "relay.h"
 #include "string.h"
+#include "tim.h"
 #include "usart.h"
 
 /*** AT local macros ***/
@@ -28,14 +31,14 @@
 // Input commands without parameter.
 #define AT_COMMAND_TEST					"AT"
 #define AT_COMMAND_INFO					"ATI?"
-#define AT_COMMAND_ADC					"AT$ADC?"
 // Input commands with parameters (headers).
+#define AT_HEADER_ADC					"AT$ADC="
 #define AT_HEADER_OUT					"AT$OUT="
 // Parameters separator.
 #define AT_CHAR_SEPARATOR				','
 // Responses.
 #define AT_RESPONSE_OK					"OK"
-#define AT_RESPONSE_END					"\r\n"
+#define AT_RESPONSE_END					"\n"
 #define AT_RESPONSE_ERROR_PSR			"PSR_ERROR_"
 #define AT_RESPONSE_ERROR_APP			"APP_ERROR_"
 
@@ -66,7 +69,7 @@ static AT_context_t at_ctx;
  * @param tx_string:	String to add.
  * @return:				None.
  */
-static void AT_ResponseAddString(char* tx_string) {
+static void AT_response_add_string(char* tx_string) {
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {
 		at_ctx.at_response_buf[at_ctx.at_response_buf_idx++] = *(tx_string++);
@@ -83,7 +86,7 @@ static void AT_ResponseAddString(char* tx_string) {
  * @param print_prefix: Print base prefix is non zero.
  * @return:				None.
  */
-static void AT_ResponseAddValue(int tx_value, STRING_format_t format, unsigned char print_prefix) {
+static void AT_response_add_value(int tx_value, STRING_format_t format, unsigned char print_prefix) {
 	// Local variables.
 	char str_value[AT_STRING_VALUE_BUFFER_LENGTH];
 	unsigned char idx = 0;
@@ -92,71 +95,97 @@ static void AT_ResponseAddValue(int tx_value, STRING_format_t format, unsigned c
 	// Convert value to string.
 	STRING_convert_value(tx_value, format, print_prefix, str_value);
 	// Add string.
-	AT_ResponseAddString(str_value);
+	AT_response_add_string(str_value);
 }
 
 /* PRINT OK THROUGH AT INTERFACE.
  * @param:	None.
  * @return:	None.
  */
-static void AT_ReplyOk(void) {
-	AT_ResponseAddString(AT_RESPONSE_OK);
-	AT_ResponseAddString(AT_RESPONSE_END);
+static void AT_print_ok(void) {
+	AT_response_add_string(AT_RESPONSE_OK);
+	AT_response_add_string(AT_RESPONSE_END);
 }
 
 /* PRINT AN ERROR THROUGH AT INTERFACE.
  * @param error_code:	Error code to display.
  * @return:				None.
  */
-static void AT_ReplyError(AT_error_source_t error_source, unsigned int error_code) {
+static void AT_print_error(AT_error_source_t error_source, unsigned int error_code) {
 	switch (error_source) {
 	case AT_ERROR_SOURCE_PARSER:
-		AT_ResponseAddString(AT_RESPONSE_ERROR_PSR);
+		AT_response_add_string(AT_RESPONSE_ERROR_PSR);
 		break;
 	case AT_ERROR_SOURCE_PERIPHERAL:
-		AT_ResponseAddString(AT_RESPONSE_ERROR_APP);
+		AT_response_add_string(AT_RESPONSE_ERROR_APP);
 		break;
 	default:
 		break;
 	}
-	AT_ResponseAddValue(error_code, STRING_FORMAT_HEXADECIMAL, 1);
-	AT_ResponseAddString(AT_RESPONSE_END);
+	AT_response_add_value(error_code, STRING_FORMAT_HEXADECIMAL, 1);
+	AT_response_add_string(AT_RESPONSE_END);
 }
 
 /* PARSE THE CURRENT AT COMMAND BUFFER.
  * @param:	None.
  * @return:	None.
  */
-static void AT_DecodeRxBuffer(void) {
+static void AT_decode(void) {
 	// Local variables.
 	PARSER_Status parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	int generic_int_1 = 0;
 	int generic_int_2 = 0;
-	unsigned char generic_byte = 0;
-	unsigned char idx = 0;
+	int data_idx = 0;
+	int enable = 0;
+	unsigned int adc_data = 0;
 	unsigned char extracted_length = 0;
 	// Empty or too short command.
 	if (at_ctx.at_command_buf_idx < AT_COMMAND_LENGTH_MIN) {
-		AT_ReplyError(AT_ERROR_SOURCE_PARSER, PARSER_ERROR_UNKNOWN_COMMAND);
+		AT_print_error(AT_ERROR_SOURCE_PARSER, PARSER_ERROR_UNKNOWN_COMMAND);
 	}
 	else {
 		// Update parser length.
 		at_ctx.at_parser.rx_buf_length = (at_ctx.at_command_buf_idx - 1); // To ignore line end.
 		// Test command AT<CR>.
-		if (PARSER_compare_command(&at_ctx.at_parser, AT_COMMAND_TEST) == PARSER_SUCCESS) {
-			AT_ReplyOk();
+		if (PARSER_compare(&at_ctx.at_parser, PARSER_MODE_COMMAND, AT_COMMAND_TEST) == PARSER_SUCCESS) {
+			AT_print_ok();
 		}
 		// ADC command AT$ADC?<CR>.
-		else if (PARSER_compare_command(&at_ctx.at_parser, AT_COMMAND_ADC) == PARSER_SUCCESS) {
-			// Perform ADC measurements.
-			ADC1_init();
-			ADC1_perform_measurements();
-			ADC1_disable();
+		else if (PARSER_compare(&at_ctx.at_parser, PARSER_MODE_HEADER, AT_HEADER_ADC) == PARSER_SUCCESS) {
+			// Read index parameter.
+			parser_status = PARSER_get_parameter(&at_ctx.at_parser, PARSER_PARAMETER_TYPE_DECIMAL, AT_CHAR_SEPARATOR, 1, &data_idx);
+			if (parser_status == PARSER_SUCCESS) {
+				// Perform measurements.
+				ADC1_init();
+				ADC1_perform_measurements();
+				ADC1_disable();
+				// Get result.
+				ADC1_get_data(data_idx, &adc_data);
+				// Print response.
+				AT_response_add_value((int) adc_data, STRING_FORMAT_DECIMAL, 0);
+				AT_response_add_string(AT_RESPONSE_END);
+			}
+			else {
+				AT_print_error(AT_ERROR_SOURCE_PARSER, parser_status);
+			}
+		}
+		else if (PARSER_compare(&at_ctx.at_parser, PARSER_MODE_HEADER, AT_HEADER_OUT) == PARSER_SUCCESS) {
+			// Read index parameter.
+			parser_status = PARSER_get_parameter(&at_ctx.at_parser, PARSER_PARAMETER_TYPE_BOOLEAN, AT_CHAR_SEPARATOR, 1, &enable);
+			if (parser_status == PARSER_SUCCESS) {
+				// Set relay state.
+				RELAY_set_state(enable);
+				AT_print_ok();
+			}
+			else {
+				AT_print_error(AT_ERROR_SOURCE_PARSER, parser_status);
+			}
 		}
 		// Unknown command.
 		else {
-			AT_ReplyError(AT_ERROR_SOURCE_PARSER, PARSER_ERROR_UNKNOWN_COMMAND);
+			AT_print_error(AT_ERROR_SOURCE_PARSER, PARSER_ERROR_UNKNOWN_COMMAND);
 		}
+
 	}
 	// Send response.
 	LPUART1_send_string(at_ctx.at_response_buf);
@@ -193,9 +222,10 @@ void AT_init(void) {
  */
 void AT_task(void) {
 	// Trigger decoding function if line end found.
-	if (at_ctx.at_line_end_flag) {
+	if (at_ctx.at_line_end_flag != 0) {
 		LPUART1_disable_rx();
-		AT_DecodeRxBuffer();
+		LED_single_blink(100, TIM2_CHANNEL_MASK_BLUE);
+		AT_decode();
 		LPUART1_enable_rx();
 	}
 }
@@ -205,7 +235,7 @@ void AT_task(void) {
  * @return:			None.
  */
 void AT_fill_rx_buffer(unsigned char rx_byte) {
-	// Append byte if LF flag is not allready set.
+	// Append byte if line end flag is not allready set.
 	if (at_ctx.at_line_end_flag == 0) {
 		// Store new byte.
 		at_ctx.at_command_buf[at_ctx.at_command_buf_idx] = rx_byte;
@@ -215,8 +245,8 @@ void AT_fill_rx_buffer(unsigned char rx_byte) {
 			at_ctx.at_command_buf_idx = 0;
 		}
 	}
-	// Set LF flag to trigger decoding.
-	if ((rx_byte == STRING_CHAR_CR) || (rx_byte == STRING_CHAR_LF)) {
+	// Set line end flag to trigger decoding.
+	if (rx_byte == STRING_CHAR_LF) {
 		at_ctx.at_line_end_flag = 1;
 	}
 }

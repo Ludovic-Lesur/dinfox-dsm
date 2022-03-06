@@ -13,7 +13,6 @@
 void LPUART1_init(void);
 void LPUART1_enable_rx(void);
 void LPUART1_disable_rx(void);
-unsigned char LPUART1_get_rx_flag(void);
 void LPUART1_send_string(char* tx_string);
 
 #endif /* LPUART_H */

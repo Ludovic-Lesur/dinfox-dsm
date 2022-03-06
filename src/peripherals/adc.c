@@ -20,7 +20,6 @@
 #define ADC_CHANNEL_VOUT					4
 #define ADC_CHANNEL_IOUT					0
 #define ADC_CHANNEL_VREFINT					17
-#define ADC_CHANNEL_TMCU					18
 
 #define ADC_MEDIAN_FILTER_LENGTH			9
 #define ADC_CENTER_AVERAGE_LENGTH			3
@@ -44,8 +43,6 @@
 typedef struct {
 	unsigned int vrefint_12bits;
 	unsigned int data[ADC_DATA_IDX_MAX];
-	unsigned char tmcu_degrees_comp1;
-	signed char tmcu_degrees_comp2;
 } ADC_context_t;
 
 /*** ADC local global variables ***/
@@ -150,31 +147,6 @@ static void ADC1_compute_vmcu(void) {
 	adc_ctx.data[ADC_DATA_IDX_VMCU_MV] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
 }
 
-/* COMPUTE MCU TEMPERATURE THANKS TO INTERNAL VOLTAGE REFERENCE.
- * @param:	None.
- * @return:	None.
- */
-static void ADC1_compute_tmcu(void) {
-	// Read raw temperature.
-	int raw_temp_sensor_12bits = 0;
-	ADC1_filtered_conversion(ADC_CHANNEL_TMCU, &raw_temp_sensor_12bits);
-	// Compute temperature according to MCU factory calibration (see p.301 and p.847 of RM0377 datasheet).
-	int raw_temp_calib_mv = (raw_temp_sensor_12bits * adc_ctx.data[ADC_DATA_IDX_VMCU_MV]) / (TS_VCC_CALIB_MV) - TS_CAL1; // Equivalent raw measure for calibration power supply (VCC_CALIB).
-	int temp_calib_degrees = raw_temp_calib_mv * ((int) (TS_CAL2_TEMP-TS_CAL1_TEMP));
-	temp_calib_degrees = (temp_calib_degrees) / ((int) (TS_CAL2 - TS_CAL1));
-	adc_ctx.tmcu_degrees_comp2 = temp_calib_degrees + TS_CAL1_TEMP;
-	// Convert to 1-complement value.
-	adc_ctx.tmcu_degrees_comp1 = 0;
-	if (adc_ctx.tmcu_degrees_comp2 < 0) {
-		adc_ctx.tmcu_degrees_comp1 |= 0x80;
-		unsigned char temperature_abs = (-1) * (adc_ctx.tmcu_degrees_comp2);
-		adc_ctx.tmcu_degrees_comp1 |= (temperature_abs & 0x7F);
-	}
-	else {
-		adc_ctx.tmcu_degrees_comp1 = (adc_ctx.tmcu_degrees_comp2 & 0x7F);
-	}
-}
-
 /*** ADC functions ***/
 
 /* INIT ADC1 PERIPHERAL.
@@ -191,8 +163,6 @@ void ADC1_init(void) {
 	unsigned char data_idx = 0;
 	for (data_idx=0 ; data_idx<ADC_DATA_IDX_MAX ; data_idx++) adc_ctx.data[data_idx] = 0;
 	adc_ctx.data[ADC_DATA_IDX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
-	adc_ctx.tmcu_degrees_comp2 = 0;
-	adc_ctx.tmcu_degrees_comp1 = 0;
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 9); // ADCEN='1'.
 	// Ensure ADC is disabled.
@@ -201,7 +171,7 @@ void ADC1_init(void) {
 	}
 	// Enable ADC voltage regulator.
 	ADC1 -> CR |= (0b1 << 28);
-	LPTIM1_delay_milliseconds(5, 0);
+	LPTIM1_delay_milliseconds(5);
 	// ADC configuration.
 	ADC1 -> CCR |= (0b1 << 25); // Enable low frequency clock (LFMEN='1').
 	ADC1 -> CFGR2 |= (0b11 << 30); // Use PCLK2 as ADCCLK (MSI).
@@ -238,18 +208,17 @@ void ADC1_perform_measurements(void) {
 		loop_count++;
 		if (loop_count > ADC_TIMEOUT_COUNT) return;
 	}
-	// Wake-up VREFINT and temperature sensor.
-	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
-	LPTIM1_delay_milliseconds(10, 0); // Wait internal reference stabilization (max 3ms).
+	// Wake-up VREFINT.
+	ADC1 -> CCR |= (0b1 << 22); //  VREFEF='1'.
+	LPTIM1_delay_milliseconds(10); // Wait internal reference stabilization (max 3ms).
 	// Perform measurements.
 	ADC1_filtered_conversion(ADC_CHANNEL_VREFINT, &adc_ctx.vrefint_12bits);
 	ADC1_ComputeVin();
 	ADC1_compute_vout();
 	ADC1_compute_iout();
 	ADC1_compute_vmcu();
-	ADC1_compute_tmcu();
-	// Turn VREFINT and temperature sensor off.
-	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
+	// Turn VREFINT off.
+	ADC1 -> CCR &= ~(0b1 << 22); // VREFEF='0'.
 	// Disable ADC peripheral.
 	if (((ADC1 -> CR) & (0b1 << 0)) != 0) {
 		ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
@@ -263,20 +232,4 @@ void ADC1_perform_measurements(void) {
  */
 void ADC1_get_data(ADC_data_index_t data_idx, unsigned int* data) {
 	(*data) = adc_ctx.data[data_idx];
-}
-
-/* GET MCU TEMPERATURE.
- * @param tmcu_degrees:	Pointer to signed value that will contain MCU temperature in degrees (2-complement).
- * @return:				None.
- */
-void ADC1_get_tmcu_comp2(signed char* tmcu_degrees) {
-	(*tmcu_degrees) = adc_ctx.tmcu_degrees_comp2;
-}
-
-/* GET MCU TEMPERATURE.
- * @param tmcu_degrees:	Pointer to unsigned value that will contain MCU temperature in degrees (1-complement).
- * @return:				None.
- */
-void ADC1_get_tmcu_comp1(unsigned char* tmcu_degrees) {
-	(*tmcu_degrees) = adc_ctx.tmcu_degrees_comp1;
 }
