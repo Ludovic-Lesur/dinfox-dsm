@@ -156,7 +156,7 @@ static void AT_decode(void) {
 			parser_status = PARSER_get_parameter(&at_ctx.at_parser, PARSER_PARAMETER_TYPE_DECIMAL, AT_CHAR_SEPARATOR, 1, &data_idx);
 			if (parser_status == PARSER_SUCCESS) {
 				// Perform measurements.
-				ADC1_init();
+				ADC1_enable();
 				ADC1_perform_measurements();
 				ADC1_disable();
 				// Get result.

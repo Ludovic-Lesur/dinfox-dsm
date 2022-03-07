@@ -16,7 +16,7 @@
 
 /*** ADC local macros ***/
 
-#define ADC_CHANNEL_VIN						7
+#define ADC_CHANNEL_VIN						6
 #define ADC_CHANNEL_VOUT					4
 #define ADC_CHANNEL_IOUT					0
 #define ADC_CHANNEL_VREFINT					17
@@ -93,7 +93,7 @@ static void ADC1_filtered_conversion(unsigned char adc_channel, unsigned int* ad
  * @param:	None.
  * @return:	None.
  */
-static void ADC1_ComputeVin(void) {
+static void ADC1_compute_vin(void) {
 	// Get raw result.
 	unsigned int vin_12bits = 0;
 	ADC1_filtered_conversion(ADC_CHANNEL_VIN, &vin_12bits);
@@ -184,6 +184,17 @@ void ADC1_init(void) {
 		loop_count++;
 		if (loop_count > ADC_TIMEOUT_COUNT) break;
 	}
+	// Disable peripheral by default.
+	RCC -> APB2ENR &= ~(0b1 << 9); // ADCEN='0'.
+}
+
+/* ENABLE INTERNAL ADC PERIPHERAL.
+ * @param:	None.
+ * @return:	None.
+ */
+void ADC1_enable(void) {
+	// Enable peripheral clock.
+	RCC -> APB2ENR |= (0b1 << 9); // ADCEN='1'.
 }
 
 /* DISABLE INTERNAL ADC PERIPHERAL.
@@ -213,7 +224,7 @@ void ADC1_perform_measurements(void) {
 	LPTIM1_delay_milliseconds(10); // Wait internal reference stabilization (max 3ms).
 	// Perform measurements.
 	ADC1_filtered_conversion(ADC_CHANNEL_VREFINT, &adc_ctx.vrefint_12bits);
-	ADC1_ComputeVin();
+	ADC1_compute_vin();
 	ADC1_compute_vout();
 	ADC1_compute_iout();
 	ADC1_compute_vmcu();

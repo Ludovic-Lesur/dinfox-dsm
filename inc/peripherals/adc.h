@@ -21,6 +21,7 @@ typedef enum {
 /*** ADC functions ***/
 
 void ADC1_init(void);
+void ADC1_enable(void);
 void ADC1_disable(void);
 void ADC1_perform_measurements(void);
 void ADC1_get_data(ADC_data_index_t data_idx, unsigned int* data);

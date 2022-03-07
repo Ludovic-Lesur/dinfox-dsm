@@ -100,6 +100,7 @@ int main(void) {
 	// Init peripherals.
 	LPTIM1_init();
 	LPUART1_init();
+	ADC1_init();
 	// Init components.
 	LED_init();
 	RELAY_init();
@@ -117,7 +118,7 @@ int main(void) {
 			// Wake-up by RTC: clear flag and blink LED.
 			RTC_clear_wakeup_timer_flag();
 			// Perform analog measurements.
-			ADC1_init();
+			ADC1_enable();
 			ADC1_perform_measurements();
 			ADC1_disable();
 			ADC1_get_data(ADC_DATA_IDX_IOUT_UA, &lvrm_ctx.iout_ua);
