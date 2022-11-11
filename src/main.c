@@ -6,7 +6,6 @@
  */
 
 #include "adc.h"
-#include "at.h"
 #include "exti.h"
 #include "gpio.h"
 #include "iwdg.h"
@@ -18,6 +17,7 @@
 #include "rcc.h"
 #include "relay.h"
 #include "rtc.h"
+#include "rs485.h"
 #include "tim.h"
 
 /*** MAIN local macros ***/
@@ -54,6 +54,38 @@ static LVRM_context_t lvrm_ctx;
 
 /*** MAIN local functions ***/
 
+/* COMMON INIT FUNCTION FOR PERIPHERALS AND COMPONENTS.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _LVRM_init_hw(void) {
+	// Init memory.
+	NVIC_init();
+	// Init power and clock modules.
+	PWR_init();
+	RCC_init();
+	RCC_enable_lsi();
+	// Init watchdog.
+#ifndef DEBUG
+	IWDG_init();
+#endif
+	// Init GPIOs.
+	GPIO_init();
+	EXTI_init();
+	// Init RTC.
+	RTC_reset();
+	RCC_enable_lse();
+	RTC_init();
+	// Init peripherals.
+	LPUART1_init();
+	ADC1_init();
+	// Init components.
+	LED_init();
+	RELAY_init();
+	// Init AT interface.
+	RS485_init();
+}
+
 /* UPDATE LED COLOR ACCORDING TO OUTPUT CURRENT VALUE.
  * @param:	None.
  * @return:	None.
@@ -79,31 +111,8 @@ static void _LVRM_update_led_color(void) {
  * @return:	None.
  */
 int main(void) {
-	// Init memory.
-	NVIC_init();
-	// Init power and clock modules.
-	PWR_init();
-	RCC_init();
-	RCC_enable_lsi();
-	// Init watchdog.
-#ifndef DEBUG
-	IWDG_init();
-#endif
-	// Init GPIOs.
-	GPIO_init();
-	EXTI_init();
-	// Init RTC.
-	RTC_reset();
-	RCC_enable_lse();
-	RTC_init();
-	// Init peripherals.
-	LPUART1_init();
-	ADC1_init();
-	// Init components.
-	LED_init();
-	RELAY_init();
-	// Init AT interface.
-	AT_init();
+	// Init board.
+	_LVRM_init_hw();
 	// Start periodic wakeup timer.
 	RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	// Main loop.
@@ -123,6 +132,6 @@ int main(void) {
 			// Blink LED.
 			LED_single_blink(2000, lvrm_ctx.led_color);
 		}
-		AT_task();
+		RS485_task();
 	}
 }

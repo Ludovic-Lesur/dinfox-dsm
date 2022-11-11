@@ -37,7 +37,7 @@ typedef enum {
 
 #define ERROR_status_check_print(status, success, error_base) { \
 	if (status != success) { \
-		_AT_print_status(error_base + status); \
+		_RS485_print_status(error_base + status); \
 		goto errors; \
 	} \
 }

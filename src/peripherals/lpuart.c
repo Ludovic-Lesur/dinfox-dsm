@@ -7,7 +7,6 @@
 
 #include "lpuart.h"
 
-#include "at.h"
 #include "exti.h"
 #include "gpio.h"
 #include "lpuart_reg.h"
@@ -15,6 +14,7 @@
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
+#include "rs485.h"
 
 /*** LPUART local macros ***/
 
@@ -44,10 +44,10 @@ void LPUART1_IRQHandler(void) {
 		// Do not transmit address bytes to applicative layer.
 		if (lpuart_irq_count > LPUART_ADDR_LENGTH_BYTES) {
 			// Fill AT RX buffer with incoming byte.
-			AT_fill_rx_buffer(LPUART1 -> RDR);
+			RS485_fill_rx_buffer(LPUART1 -> RDR);
 		}
 #else
-		AT_fill_rx_buffer(LPUART1 -> RDR);
+		RS485_fill_rx_buffer(LPUART1 -> RDR);
 #endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
