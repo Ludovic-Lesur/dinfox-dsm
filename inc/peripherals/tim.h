@@ -5,8 +5,10 @@
  *      Author: Ludo
  */
 
-#ifndef TIM_H
-#define TIM_H
+#ifndef __TIM_H__
+#define __TIM_H__
+
+#include "types.h"
 
 /*** TIM structures ***/
 
@@ -30,10 +32,10 @@ void TIM2_set_color_mask(TIM2_channel_mask_t led_color);
 void TIM2_start(void);
 void TIM2_stop(void);
 
-void TIM21_init(unsigned int led_blink_period_ms);
+void TIM21_init(uint32_t led_blink_period_ms);
 void TIM21_disable(void);
-void TIM21_Start(void);
-void TIM21_Stop(void);
-unsigned char TIM21_IsSingleBlinkDone(void);
+void TIM21_start(void);
+void TIM21_stop(void);
+uint8_t TIM21_is_single_blink_done(void);
 
-#endif /* TIM_H */
+#endif /* __TIM_H__ */

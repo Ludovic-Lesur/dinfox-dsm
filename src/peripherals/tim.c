@@ -30,14 +30,14 @@ typedef enum {
 } TIM2_channel_t;
 
 typedef struct {
-	volatile unsigned int dimming_lut_idx;
-	volatile unsigned char dimming_lut_direction;
-	volatile unsigned char single_blink_done;
+	volatile uint32_t dimming_lut_idx;
+	volatile uint8_t dimming_lut_direction;
+	volatile uint8_t single_blink_done;
 } TIM21_context_t;
 
 /*** TIM local global variables ***/
 
-static const unsigned char TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
+static const uint8_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
 	211, 211, 211, 211, 211, 211, 211, 211, 210, 210,
 	210, 210, 210, 210, 210, 210, 210, 209, 209, 209,
 	209, 209, 209, 209, 208, 208, 208, 208, 207, 207,
@@ -61,9 +61,9 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 	// Check update flag.
 	if (((TIM21 -> SR) & (0b1 << 0)) != 0) {
 		// Update duty cycles.
-		TIM2 -> CCRx[TIM2_CHANNEL_LED_RED] = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
-		TIM2 -> CCRx[TIM2_CHANNEL_LED_GREEN] = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
-		TIM2 -> CCRx[TIM2_CHANNEL_LED_BLUE] = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
+		TIM2 -> CCR1 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
+		TIM2 -> CCR2 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
+		TIM2 -> CCR3 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
 		// Manage index and direction.
 		if (tim21_ctx.dimming_lut_direction == 0) {
 			// Increment index.
@@ -80,7 +80,7 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 			if (tim21_ctx.dimming_lut_idx == 0) {
 				// Single blink done.
 				TIM2_stop();
-				TIM21_Stop();
+				TIM21_stop();
 				tim21_ctx.dimming_lut_direction = 0;
 				tim21_ctx.single_blink_done = 1;
 			}
@@ -109,9 +109,9 @@ void TIM2_init(void) {
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	// Disable all channels by default (CCxE='0').
 	TIM2 -> CCER &= 0xFFFFEEEE;
-	TIM2 -> CCRx[TIM2_CHANNEL_LED_RED] = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCRx[TIM2_CHANNEL_LED_GREEN] = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCRx[TIM2_CHANNEL_LED_BLUE] = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CCR1 = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CCR2 = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CCR3 = (TIM2_ARR_VALUE + 1);
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
 }
@@ -134,7 +134,7 @@ void TIM2_set_color_mask(TIM2_channel_mask_t led_color) {
 	// Reset bits.
 	TIM2 -> CCER &= 0xFFFFEEEE;
 	// Enable channels according to color.
-	unsigned char idx = 0;
+	uint8_t idx = 0;
 	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) {
 		if ((led_color & (0b1 << idx)) != 0) {
 			TIM2 -> CCER |= (0b1 << (4 * idx));
@@ -171,7 +171,7 @@ void TIM2_stop(void) {
  * @param led_blink_period_ms:	LED blink period in ms.
  * @return:						None.
  */
-void TIM21_init(unsigned int led_blink_period_ms) {
+void TIM21_init(uint32_t led_blink_period_ms) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
 	// Reset timer before configuration.
@@ -190,7 +190,7 @@ void TIM21_init(unsigned int led_blink_period_ms) {
 	// Enable interrupt.
 	TIM21 -> DIER |= (0b1 << 0);
 	// Set interrupt priority.
-	NVIC_set_priority(NVIC_IT_TIM21, 1);
+	NVIC_set_priority(NVIC_INTERRUPT_TIM21, 1);
 }
 
 /* DISABLE TIM21 PERIPHERAL.
@@ -206,7 +206,7 @@ void TIM21_disable(void) {
  * @param:	None.
  * @return:	None.
  */
-void TIM21_Start(void) {
+void TIM21_start(void) {
 	// Set mode and reset LUT index.
 	tim21_ctx.single_blink_done = 0;
 	tim21_ctx.dimming_lut_idx = 0;
@@ -214,7 +214,7 @@ void TIM21_Start(void) {
 	// Clear flag and enable interrupt.
 	TIM21 -> CNT = 0;
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
-	NVIC_enable_interrupt(NVIC_IT_TIM21);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21);
 	// Enable TIM21 peripheral.
 	TIM21 -> CR1 |= (0b1 << 0); // Enable TIM21 (CEN='1').
 }
@@ -223,9 +223,9 @@ void TIM21_Start(void) {
  * @param:	None.
  * @return:	None.
  */
-void TIM21_Stop(void) {
+void TIM21_stop(void) {
 	// Disable interrupt.
-	NVIC_disable_interrupt(NVIC_IT_TIM21);
+	NVIC_disable_interrupt(NVIC_INTERRUPT_TIM21);
 	// Stop TIM21.
 	TIM21 -> CR1 &= ~(0b1 << 0); // CEN='0'.
 }
@@ -234,6 +234,6 @@ void TIM21_Stop(void) {
  * @param:							None.
  * @return single_blink_done: '1' if the single blink is finished, '0' otherwise.
  */
-unsigned char TIM21_IsSingleBlinkDone(void) {
+uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);
 }

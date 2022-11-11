@@ -8,9 +8,11 @@
 #ifndef RELAY_H
 #define RELAY_H
 
+#include "types.h"
+
 /**** RELAY functions ***/
 
 void RELAY_init(void);
-void RELAY_set_state(unsigned char enable);
+void RELAY_set_state(uint8_t enable);
 
 #endif /* RELAY_H */

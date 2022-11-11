@@ -39,12 +39,12 @@ void RCC_enable_lsi(void) {
 	// Enable LSI.
 	RCC -> CSR |= (0b1 << 0); // LSION='1'.
 	// Enable interrupt.
-	NVIC_enable_interrupt(NVIC_IT_RCC_CRS);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 	// Wait for LSI to be stable.
 	while (((RCC -> CSR) & (0b1 << 1)) == 0) {
 		PWR_enter_sleep_mode();
 	}
-	NVIC_disable_interrupt(NVIC_IT_RCC_CRS);
+	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 }
 
 /* ENABLE EXTERNAL LOW SPEED OSCILLATOR (32.768kHz QUARTZ).
@@ -55,10 +55,10 @@ void RCC_enable_lse(void) {
 	// Enable LSE (32.768kHz crystal).
 	RCC -> CSR |= (0b1 << 8); // LSEON='1'.
 	// Enable interrupt.
-	NVIC_enable_interrupt(NVIC_IT_RCC_CRS);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 	// Wait for LSE to be stable.
 	while (((RCC -> CSR) & (0b1 << 9)) == 0) {
 		PWR_enter_sleep_mode();
 	}
-	NVIC_disable_interrupt(NVIC_IT_RCC_CRS);
+	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 }

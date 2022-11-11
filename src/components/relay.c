@@ -9,6 +9,7 @@
 
 #include "gpio.h"
 #include "mapping.h"
+#include "types.h"
 
 /**** RELAY functions ***/
 
@@ -25,7 +26,7 @@ void RELAY_init(void) {
  * @param enable:	Enable or disable the relay.
  * @return:			None.
  */
-void RELAY_set_state(unsigned char enable) {
+void RELAY_set_state(uint8_t enable) {
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, enable);
 }

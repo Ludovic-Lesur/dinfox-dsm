@@ -5,16 +5,16 @@
  *      Author: Ludo
  */
 
-#ifndef MODE_H
-#define MODE_H
+#ifndef __MODE_H__
+#define __MODE_H__
 
-#define RSM		// RS485 mode with address check.
-//#define ATM	// AT command mode without address check.
+//#define RSM		// RS485 mode with address check.
+#define ATM	// AT command mode without address check.
 
 
 /*** Debug mode ***/
 
-//#define DEBUG		// Use programming pins for debug purpose if defined.
+#define DEBUG		// Use programming pins for debug purpose if defined.
 
 /*** Error management ***/
 
@@ -22,4 +22,4 @@
 #error "Only 1 mode must be selected."
 #endif
 
-#endif /* MODE_H */
+#endif /* __MODE_H__ */

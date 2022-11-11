@@ -1,7 +1,7 @@
 /*
  * lpuart.c
  *
- *  Created on: 9 juil. 2019
+ *  Created on: 9 jul. 2019
  *      Author: Ludo
  */
 
@@ -19,6 +19,7 @@
 /*** LPUART local macros ***/
 
 #define LPUART_BAUD_RATE 			9600
+#define LPUART_STRING_LENGTH_MAX	1000
 #define LPUART_TIMEOUT_COUNT		100000
 #ifdef RSM
 #define LPUART_ADDR_LENGTH_BYTES	1
@@ -29,7 +30,7 @@
 /*** LPUART local global variables ***/
 
 #ifdef RSM
-static volatile unsigned int lpuart_irq_count = 0;
+static volatile uint32_t lpuart_irq_count = 0;
 #endif
 
 /*** LPUART local functions ***/
@@ -50,7 +51,6 @@ void LPUART1_IRQHandler(void) {
 #endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
-
 	}
 	// Overrun error interrupt.
 	if (((LPUART1 -> ISR) & (0b1 << 3)) != 0) {
@@ -61,13 +61,14 @@ void LPUART1_IRQHandler(void) {
 
 /* FILL LPUART1 TX BUFFER WITH A NEW BYTE.
  * @param tx_byte:	Byte to append.
- * @return:			None.
+ * @return status:	Function execution status.
  */
-static void LPUART1_fill_tx_buffer(unsigned char tx_byte) {
+static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
+	// Local variables.
+	uint32_t loop_count = 0;
 	// Fill transmit register.
 	LPUART1 -> TDR = tx_byte;
 	// Wait for transmission to complete.
-	unsigned int loop_count = 0;
 	while (((LPUART1 -> ISR) & (0b1 << 7)) == 0) {
 		// Wait for TXE='1' or timeout.
 		loop_count++;
@@ -101,11 +102,11 @@ void LPUART1_init(void) {
 	LPUART1 -> CR3 |= 0x00B05000;
 #endif
 	// Baud rate.
-	unsigned int brr = (RCC_LSE_FREQUENCY_HZ * 256);
+	uint32_t brr = (RCC_LSE_FREQUENCY_HZ * 256);
 	brr /= LPUART_BAUD_RATE;
 	LPUART1 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate). See p.730 of RM0377 datasheet.
 	// Configure interrupt.
-	NVIC_set_priority(NVIC_IT_LPUART1, 0);
+	NVIC_set_priority(NVIC_INTERRUPT_LPUART1, 0);
 	EXTI_configure_line(EXTI_LINE_LPUART1, EXTI_TRIGGER_RISING_EDGE);
 	// Enable transmitter.
 	LPUART1 -> CR1 |= (0b1 << 3); // TE='1'.
@@ -124,7 +125,7 @@ void LPUART1_enable_rx(void) {
 #endif
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
-	NVIC_enable_interrupt(NVIC_IT_LPUART1);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);
 	// Enable receiver.
 	LPUART1 -> CR1 |= (0b1 << 2); // RE='1'.
 	// Enable RS485 receiver.
@@ -146,22 +147,38 @@ void LPUART1_disable_rx(void) {
 	// Disable receiver.
 	LPUART1 -> CR1 &= ~(0b1 << 2); // RE='0'.
 	// Disable interrupt.
-	NVIC_disable_interrupt(NVIC_IT_LPUART1);
+	NVIC_disable_interrupt(NVIC_INTERRUPT_LPUART1);
 }
 
 /* SEND A BYTE ARRAY THROUGH LPUART1.
  * @param tx_string:	Byte array to send.
  * @return:				None.
  */
-void LPUART1_send_string(char* tx_string) {
+void LPUART1_send_string(char_t* tx_string) {
+	// Local variables.
+	uint32_t loop_count = 0;
+	// Check parameter.
+	if (tx_string == NULL) {
+		goto errors;
+	}
 #ifdef RSM
 	// Send master address.
-	LPUART1_fill_tx_buffer(LPUART_ADDR_MASTER | 0x80);
+	_LPUART1_fill_tx_buffer(LPUART_ADDR_MASTER | 0x80);
 #endif
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {
-		LPUART1_fill_tx_buffer((unsigned char) *(tx_string++));
+		_LPUART1_fill_tx_buffer((uint8_t) *(tx_string++));
+		// Check character count.
+		loop_count++;
+		if (loop_count > LPUART_STRING_LENGTH_MAX) break;
 	}
 	// Wait for TC flag.
-	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0);
+	loop_count = 0;
+	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0) {
+		// Exit if timeout.
+		loop_count++;
+		if (loop_count > LPUART_TIMEOUT_COUNT) break;
+	}
+errors:
+	return;
 }

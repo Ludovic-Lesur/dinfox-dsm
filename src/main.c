@@ -11,7 +11,6 @@
 #include "gpio.h"
 #include "iwdg.h"
 #include "led.h"
-#include "lptim.h"
 #include "lpuart.h"
 #include "mapping.h"
 #include "nvic.h"
@@ -29,27 +28,27 @@
 
 typedef struct {
 	TIM2_channel_mask_t led_color;
-	unsigned int iout_ua;
+	uint32_t iout_ua;
 } LVRM_context_t;
 
 /*** MAIN local global variables ***/
 
-static const unsigned int lvrm_iout_threshold_ua[LVRM_NUMBER_OF_IOUT_THRESHOLD] = {
-		50000,
-		500000,
-		1000000,
-		2000000,
-		3000000,
-		4000000
+static const uint32_t lvrm_iout_threshold_ua[LVRM_NUMBER_OF_IOUT_THRESHOLD] = {
+	50000,
+	500000,
+	1000000,
+	2000000,
+	3000000,
+	4000000
 };
 static const TIM2_channel_mask_t lvrm_iout_led_color[LVRM_NUMBER_OF_IOUT_THRESHOLD + 1] = {
-		TIM2_CHANNEL_MASK_GREEN,
-		TIM2_CHANNEL_MASK_YELLOW,
-		TIM2_CHANNEL_MASK_RED,
-		TIM2_CHANNEL_MASK_MAGENTA,
-		TIM2_CHANNEL_MASK_BLUE,
-		TIM2_CHANNEL_MASK_CYAN,
-		TIM2_CHANNEL_MASK_WHITE
+	TIM2_CHANNEL_MASK_GREEN,
+	TIM2_CHANNEL_MASK_YELLOW,
+	TIM2_CHANNEL_MASK_RED,
+	TIM2_CHANNEL_MASK_MAGENTA,
+	TIM2_CHANNEL_MASK_BLUE,
+	TIM2_CHANNEL_MASK_CYAN,
+	TIM2_CHANNEL_MASK_WHITE
 };
 static LVRM_context_t lvrm_ctx;
 
@@ -59,9 +58,9 @@ static LVRM_context_t lvrm_ctx;
  * @param:	None.
  * @return:	None.
  */
-static void LVRM_update_led_color(void) {
+static void _LVRM_update_led_color(void) {
 	// Local variables.
-	unsigned char idx = 0;
+	uint8_t idx = 0;
 	// Default is maximum.
 	lvrm_ctx.led_color = lvrm_iout_led_color[LVRM_NUMBER_OF_IOUT_THRESHOLD];
 	// Check thresholds.
@@ -98,7 +97,6 @@ int main(void) {
 	RCC_enable_lse();
 	RTC_init();
 	// Init peripherals.
-	LPTIM1_init();
 	LPUART1_init();
 	ADC1_init();
 	// Init components.
@@ -118,12 +116,10 @@ int main(void) {
 			// Wake-up by RTC: clear flag and blink LED.
 			RTC_clear_wakeup_timer_flag();
 			// Perform analog measurements.
-			ADC1_enable();
 			ADC1_perform_measurements();
-			ADC1_disable();
-			ADC1_get_data(ADC_DATA_IDX_IOUT_UA, &lvrm_ctx.iout_ua);
+			ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &lvrm_ctx.iout_ua);
 			// Compute LED color according to output current.
-			LVRM_update_led_color();
+			_LVRM_update_led_color();
 			// Blink LED.
 			LED_single_blink(2000, lvrm_ctx.led_color);
 		}

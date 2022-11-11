@@ -5,8 +5,8 @@
  *      Author: Ludo
  */
 
-#ifndef EXTI_H
-#define EXTI_H
+#ifndef __EXTI_H__
+#define __EXTI_H__
 
 #include "gpio.h"
 
@@ -38,8 +38,8 @@ typedef enum {
 /*** EXTI functions ***/
 
 void EXTI_init(void);
-void EXTI_configure_gpio(const GPIO* gpio, EXTI_trigger_t edge_trigger);
-void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t edge_trigger);
+void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger);
+void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t trigger);
 void EXTI_clear_all_flags(void);
 
-#endif /* EXTI_H */
+#endif /* __EXTI_H__ */
