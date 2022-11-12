@@ -11,6 +11,7 @@
 #include "gpio.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
+#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
@@ -22,32 +23,60 @@
 #define LPUART_STRING_LENGTH_MAX	1000
 #define LPUART_TIMEOUT_COUNT		100000
 #ifdef RSM
-#define LPUART_ADDR_LENGTH_BYTES	1
-#define LPUART_ADDR_NODE			0x31
-#define LPUART_ADDR_MASTER			0x65
+#define LPUART_NODE_ADDRESS			0x31
+#endif
+
+/*** LPUART local structures ***/
+
+#ifdef RSM
+typedef enum {
+	LPUART_FIELD_INDEX_DESTINATION_ADDRESS = 0,
+	LPUART_FIELD_INDEX_SOURCE_ADDRESS,
+	LPUART_FIELD_INDEX_COMMAND,
+} LPUART_field_index_t;
+#endif
+
+#ifdef RSM
+typedef struct {
+	volatile uint32_t rx_byte_count;
+	volatile uint8_t source_address;
+} LPUART_context_t;
 #endif
 
 /*** LPUART local global variables ***/
 
 #ifdef RSM
-static volatile uint32_t lpuart_irq_count = 0;
+static LPUART_context_t lpuart_ctx;
 #endif
 
 /*** LPUART local functions ***/
 
 void LPUART1_IRQHandler(void) {
+	// Local variables.
+	uint8_t rx_byte = 0;
 	// RXNE interrupt.
 	if (((LPUART1 -> ISR) & (0b1 << 5)) != 0) {
+		// Read incoming byte.
+		rx_byte = (LPUART1 -> RDR);
 #ifdef RSM
-		// Increment IRQ count.
-		lpuart_irq_count++;
-		// Do not transmit address bytes to applicative layer.
-		if (lpuart_irq_count > LPUART_ADDR_LENGTH_BYTES) {
-			// Fill AT RX buffer with incoming byte.
-			RS485_fill_rx_buffer(LPUART1 -> RDR);
+		// Check field index.
+		switch (lpuart_ctx.rx_byte_count) {
+		case LPUART_FIELD_INDEX_DESTINATION_ADDRESS:
+			// Nothing to do.
+			break;
+		case LPUART_FIELD_INDEX_SOURCE_ADDRESS:
+			// Store source address for next response.
+			lpuart_ctx.source_address = (rx_byte & RS485_ADDRESS_MASK);
+			break;
+		default:
+			// Transmit command to applicative layer.
+			RS485_fill_rx_buffer(rx_byte);
+			break;
 		}
+		// Increment byte count.
+		lpuart_ctx.rx_byte_count++;
 #else
-		RS485_fill_rx_buffer(LPUART1 -> RDR);
+		RS485_fill_rx_buffer(rx_byte);
 #endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
@@ -83,6 +112,13 @@ static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
  * @return:	None.
  */
 void LPUART1_init(void) {
+	// Local variables.
+	uint32_t brr = 0;
+#ifdef RSM
+	// Init context.
+	lpuart_ctx.rx_byte_count = 0;
+	lpuart_ctx.source_address = 0x00;
+#endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
 	// Enable peripheral clock.
@@ -95,14 +131,14 @@ void LPUART1_init(void) {
 	// Configure peripheral.
 #ifdef RSM
 	LPUART1 -> CR1 |= 0x03FF2822;
-	LPUART1 -> CR2 |= ((LPUART_ADDR_NODE & 0x7F) << 24) | (0b1 << 4);
+	LPUART1 -> CR2 |= ((LPUART_NODE_ADDRESS & 0x7F) << 24) | (0b1 << 4);
 	LPUART1 -> CR3 |= 0x00805000;
 #else
 	LPUART1 -> CR1 |= 0x03FF0022;
 	LPUART1 -> CR3 |= 0x00B05000;
 #endif
 	// Baud rate.
-	uint32_t brr = (RCC_LSE_FREQUENCY_HZ * 256);
+	brr = (RCC_LSE_FREQUENCY_HZ * 256);
 	brr /= LPUART_BAUD_RATE;
 	LPUART1 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate). See p.730 of RM0377 datasheet.
 	// Configure interrupt.
@@ -139,7 +175,7 @@ void LPUART1_enable_rx(void) {
 void LPUART1_disable_rx(void) {
 #ifdef RSM
 	// Reset IRQ count for next command reception.
-	lpuart_irq_count = 0;
+	lpuart_ctx.rx_byte_count = 0;
 #endif
 	// Disable RS485 receiver.
 	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -162,8 +198,9 @@ void LPUART1_send_string(char_t* tx_string) {
 		goto errors;
 	}
 #ifdef RSM
-	// Send master address.
-	_LPUART1_fill_tx_buffer(LPUART_ADDR_MASTER | 0x80);
+	// Send destination and source addresses.
+	_LPUART1_fill_tx_buffer(lpuart_ctx.source_address | 0x80);
+	_LPUART1_fill_tx_buffer(LPUART_NODE_ADDRESS);
 #endif
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {

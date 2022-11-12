@@ -12,6 +12,7 @@
 #include "led.h"
 #include "lpuart.h"
 #include "mapping.h"
+#include "mode.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc.h"
@@ -26,13 +27,16 @@
 
 /*** MAIN structures ***/
 
+#ifdef RSM
 typedef struct {
 	TIM2_channel_mask_t led_color;
 	uint32_t iout_ua;
 } LVRM_context_t;
+#endif
 
 /*** MAIN local global variables ***/
 
+#ifdef RSM
 static const uint32_t lvrm_iout_threshold_ua[LVRM_NUMBER_OF_IOUT_THRESHOLD] = {
 	50000,
 	500000,
@@ -51,6 +55,7 @@ static const TIM2_channel_mask_t lvrm_iout_led_color[LVRM_NUMBER_OF_IOUT_THRESHO
 	TIM2_CHANNEL_MASK_WHITE
 };
 static LVRM_context_t lvrm_ctx;
+#endif
 
 /*** MAIN local functions ***/
 
@@ -86,6 +91,7 @@ static void _LVRM_init_hw(void) {
 	RS485_init();
 }
 
+#ifdef RSM
 /* UPDATE LED COLOR ACCORDING TO OUTPUT CURRENT VALUE.
  * @param:	None.
  * @return:	None.
@@ -103,6 +109,7 @@ static void _LVRM_update_led_color(void) {
 		}
 	}
 }
+#endif
 
 /*** MAIN function ***/
 
@@ -117,10 +124,16 @@ int main(void) {
 	RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	// Main loop.
 	while (1) {
-		IWDG_reload();
-		// Enter stop mode.
-		PWR_enter_stop_mode();
-		// Check source.
+#ifdef RSM
+		// Enter sleep or stop mode depending on LED state.
+		if (TIM21_is_single_blink_done() != 0) {
+			LED_stop_blink();
+			PWR_enter_stop_mode();
+		}
+		else {
+			PWR_enter_sleep_mode();
+		}
+		// Blink LED according to output current.
 		if (RTC_get_wakeup_timer_flag() != 0) {
 			// Wake-up by RTC: clear flag and blink LED.
 			RTC_clear_wakeup_timer_flag();
@@ -130,8 +143,16 @@ int main(void) {
 			// Compute LED color according to output current.
 			_LVRM_update_led_color();
 			// Blink LED.
-			LED_single_blink(2000, lvrm_ctx.led_color);
+			LED_start_blink(2000, lvrm_ctx.led_color);
 		}
+#endif
+#ifdef ATM
+		// Enter stop mode.
+		PWR_enter_stop_mode();
+#endif
+		// Perform command task.
 		RS485_task();
+		// Reload watchdog.
+		IWDG_reload();
 	}
 }

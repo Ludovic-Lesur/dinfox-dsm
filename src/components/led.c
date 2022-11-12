@@ -9,6 +9,7 @@
 
 #include "gpio.h"
 #include "mapping.h"
+#include "mode.h"
 #include "tim.h"
 #include "types.h"
 
@@ -28,12 +29,13 @@ void LED_init(void) {
 	GPIO_write(&GPIO_LED_BLUE, 1);
 }
 
-/* PERFORM A SINGLE LED BLINK.
+#ifdef RSM
+/* START A SINGLE LED BLINK.
  * @param blink_period_ms:	Blink duration in ms.
  * @param led_color:		Color to set.
  * @return:					None.
  */
-void LED_single_blink(uint32_t blink_duration_ms, TIM2_channel_mask_t color) {
+void LED_start_blink(uint32_t blink_duration_ms, TIM2_channel_mask_t color) {
 	// Init required peripheral.
 	TIM2_init();
 	TIM21_init(blink_duration_ms);
@@ -42,8 +44,13 @@ void LED_single_blink(uint32_t blink_duration_ms, TIM2_channel_mask_t color) {
 	// Start blink.
 	TIM2_start();
 	TIM21_start();
-	// Wait the end of blink.
-	while (TIM21_is_single_blink_done() == 0);
+}
+
+/* STOP LED BLINK.
+ * @param:	None.
+ * @return:	None.
+ */
+void LED_stop_blink(void) {
 	// Stop timers.
 	TIM2_stop();
 	TIM21_stop();
@@ -53,4 +60,6 @@ void LED_single_blink(uint32_t blink_duration_ms, TIM2_channel_mask_t color) {
 	// Turn LED off.
 	LED_init();
 }
+
+#endif /* RSM */
 

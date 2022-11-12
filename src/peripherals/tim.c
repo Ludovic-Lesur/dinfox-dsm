@@ -8,10 +8,13 @@
 #include "tim.h"
 
 #include "mapping.h"
+#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
 #include "tim_reg.h"
+
+#ifdef RSM
 
 /*** TIM local macros ***/
 
@@ -190,7 +193,7 @@ void TIM21_init(uint32_t led_blink_period_ms) {
 	// Enable interrupt.
 	TIM21 -> DIER |= (0b1 << 0);
 	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_TIM21, 1);
+	NVIC_set_priority(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_MIN);
 }
 
 /* DISABLE TIM21 PERIPHERAL.
@@ -237,3 +240,5 @@ void TIM21_stop(void) {
 uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);
 }
+
+#endif /* RSM */

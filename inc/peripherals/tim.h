@@ -8,7 +8,10 @@
 #ifndef __TIM_H__
 #define __TIM_H__
 
+#include "mode.h"
 #include "types.h"
+
+#ifdef RSM
 
 /*** TIM structures ***/
 
@@ -37,5 +40,7 @@ void TIM21_disable(void);
 void TIM21_start(void);
 void TIM21_stop(void);
 uint8_t TIM21_is_single_blink_done(void);
+
+#endif /* RSM */
 
 #endif /* __TIM_H__ */

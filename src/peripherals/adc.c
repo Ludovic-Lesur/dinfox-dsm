@@ -38,7 +38,7 @@
 typedef enum {
 	ADC_CHANNEL_IOUT = 0,
 	ADC_CHANNEL_VOUT = 4,
-	ADC_CHANNEL_VIN = 7,
+	ADC_CHANNEL_VCOM = 6,
 	ADC_CHANNEL_VREFINT = 17,
 	ADC_CHANNEL_TMCU = 18,
 	ADC_CHANNEL_LAST = 19
@@ -183,19 +183,19 @@ errors:
 	return status;
 }
 
-/* COMPUTE INPUT VOLTAGE.
+/* COMPUTE COMMON RELAY VOLTAGE.
  * @param:			None.
  * @return status:	Function execution status.
  */
-static ADC_status_t _ADC1_compute_vin(void) {
+static ADC_status_t _ADC1_compute_vcom(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
 	uint32_t vin_12bits = 0;
 	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VIN, &vin_12bits);
+	status = _ADC1_filtered_conversion(ADC_CHANNEL_VCOM, &vin_12bits);
 	if (status != ADC_SUCCESS) goto errors;
 	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VIN_MV] = (ADC_VREFINT_VOLTAGE_MV * vin_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VIN) / (adc_ctx.vrefint_12bits);
+	adc_ctx.data[ADC_DATA_INDEX_VCOM_MV] = (ADC_VREFINT_VOLTAGE_MV * vin_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VIN) / (adc_ctx.vrefint_12bits);
 errors:
 	return status;
 }
@@ -263,7 +263,7 @@ ADC_status_t ADC1_init(void) {
 	// Init GPIOs.
 	GPIO_configure(&GPIO_ADC1_IN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_ADC1_IN4, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	GPIO_configure(&GPIO_ADC1_IN7, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_ADC1_IN6, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Init context.
 	adc_ctx.vrefint_12bits = 0;
 	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) adc_ctx.data[idx] = 0;
@@ -320,14 +320,14 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Perform measurements.
 	status = _ADC1_compute_vrefint();
 	if (status != ADC_SUCCESS) goto errors;
-	status = _ADC1_compute_vin();
+	status = _ADC1_compute_vcom();
 	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_vout();
 	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_iout();
 	if (status != ADC_SUCCESS) goto errors;
 	_ADC1_compute_vmcu();
-	status = _ADC1_compute_tmcu();
+	//status = _ADC1_compute_tmcu();
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
