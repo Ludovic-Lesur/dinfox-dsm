@@ -19,22 +19,21 @@
 #include "nvm.h"
 #include "parser.h"
 #include "relay.h"
+#include "rs485_common.h"
 #include "string.h"
 #include "types.h"
 
 /*** RS485 local macros ***/
 
-// Common macros.
-#define RS485_COMMAND_LENGTH_MIN			2
-#define RS485_COMMAND_BUFFER_LENGTH			128
-#define RS485_RESPONSE_BUFFER_LENGTH		128
-#define RS485_STRING_VALUE_BUFFER_LENGTH	16
-#define RS485_ADDRESS_LAST					RS485_ADDRESS_MASK
+// Commands.
+#define RS485_COMMAND_BUFFER_SIZE		128
+#define RS485_COMMAND_SIZE_MIN			2
 // Parameters separator.
-#define RS485_CHAR_SEPARATOR				','
-// Responses.
-#define RS485_RESPONSE_END					"\r"
-#define RS485_RESPONSE_TAB					"     "
+#define RS485_CHAR_SEPARATOR			','
+// Replies.
+#define RS485_REPLY_BUFFER_SIZE			128
+#define RS485_REPLY_TAB					"     "
+#define RS485_STRING_VALUE_BUFFER_SIZE	16
 
 /*** RS485 callbacks declaration ***/
 
@@ -59,12 +58,12 @@ typedef struct {
 
 typedef struct {
 	// RS485 command buffer.
-	volatile char_t command_buf[RS485_COMMAND_BUFFER_LENGTH];
-	volatile uint32_t command_buf_idx;
+	volatile char_t command[RS485_COMMAND_BUFFER_SIZE];
+	volatile uint32_t command_size;
 	volatile uint8_t line_end_flag;
 	PARSER_context_t parser;
-	char_t response_buf[RS485_RESPONSE_BUFFER_LENGTH];
-	uint32_t response_buf_idx;
+	char_t reply[RS485_REPLY_BUFFER_SIZE];
+	uint32_t reply_size;
 } RS485_context_t;
 
 /*** RS485 local global variables ***/
@@ -96,10 +95,10 @@ static RS485_context_t at_ctx;
 static void _RS485_response_add_string(char_t* tx_string) {
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {
-		at_ctx.response_buf[at_ctx.response_buf_idx++] = *(tx_string++);
+		at_ctx.reply[at_ctx.reply_size++] = *(tx_string++);
 		// Manage rollover.
-		if (at_ctx.response_buf_idx >= RS485_RESPONSE_BUFFER_LENGTH) {
-			at_ctx.response_buf_idx = 0;
+		if (at_ctx.reply_size >= RS485_REPLY_BUFFER_SIZE) {
+			at_ctx.reply_size = 0;
 		}
 	}
 }
@@ -112,10 +111,10 @@ static void _RS485_response_add_string(char_t* tx_string) {
  */
 static void _RS485_response_add_value(int32_t tx_value, STRING_format_t format, uint8_t print_prefix) {
 	// Local variables.
-	char_t str_value[RS485_STRING_VALUE_BUFFER_LENGTH];
+	char_t str_value[RS485_STRING_VALUE_BUFFER_SIZE];
 	uint8_t idx = 0;
 	// Reset string.
-	for (idx=0 ; idx<RS485_STRING_VALUE_BUFFER_LENGTH ; idx++) str_value[idx] = STRING_CHAR_NULL;
+	for (idx=0 ; idx<RS485_STRING_VALUE_BUFFER_SIZE ; idx++) str_value[idx] = STRING_CHAR_NULL;
 	// Convert value to string.
 	STRING_value_to_string(tx_value, format, print_prefix, str_value);
 	// Add string.
@@ -129,11 +128,13 @@ static void _RS485_response_add_value(int32_t tx_value, STRING_format_t format, 
 static void _RS485_response_send(void) {
 	// Local variables.
 	uint32_t idx = 0;
+	// Add ending character.
+	at_ctx.reply[at_ctx.reply_size++] = RS485_FRAME_END;
 	// Send response over UART.
-	LPUART1_send_string(at_ctx.response_buf);
+	LPUART1_send_string(at_ctx.reply);
 	// Flush response buffer.
-	for (idx=0 ; idx<RS485_RESPONSE_BUFFER_LENGTH ; idx++) at_ctx.response_buf[idx] = STRING_CHAR_NULL;
-	at_ctx.response_buf_idx = 0;
+	for (idx=0 ; idx<RS485_REPLY_BUFFER_SIZE ; idx++) at_ctx.reply[idx] = STRING_CHAR_NULL;
+	at_ctx.reply_size = 0;
 }
 
 /* PRINT OK THROUGH RS485 INTERFACE.
@@ -142,7 +143,6 @@ static void _RS485_response_send(void) {
  */
 static void _RS485_print_ok(void) {
 	_RS485_response_add_string("OK");
-	_RS485_response_add_string(RS485_RESPONSE_END);
 	_RS485_response_send();
 }
 
@@ -153,13 +153,9 @@ static void _RS485_print_ok(void) {
 static void _RS485_print_status(ERROR_t status) {
 	_RS485_response_add_string("ERROR_");
 	if (status < 0x0100) {
-		_RS485_response_add_value(0, STRING_FORMAT_HEXADECIMAL, 1);
-		_RS485_response_add_value(status, STRING_FORMAT_HEXADECIMAL, 0);
+		_RS485_response_add_value(0, STRING_FORMAT_HEXADECIMAL, 0);
 	}
-	else {
-		_RS485_response_add_value(status, STRING_FORMAT_HEXADECIMAL, 1);
-	}
-	_RS485_response_add_string(RS485_RESPONSE_END);
+	_RS485_response_add_value(status, STRING_FORMAT_HEXADECIMAL, 0);
 	_RS485_response_send();
 }
 
@@ -177,11 +173,9 @@ static void _RS485_print_command_list(void) {
 		_RS485_response_add_string(RS485_COMMAND_LIST[idx].syntax);
 		// Print parameters.
 		_RS485_response_add_string(RS485_COMMAND_LIST[idx].parameters);
-		_RS485_response_add_string(RS485_RESPONSE_END);
 		// Print description.
-		_RS485_response_add_string(RS485_RESPONSE_TAB);
+		_RS485_response_add_string(RS485_REPLY_TAB);
 		_RS485_response_add_string(RS485_COMMAND_LIST[idx].description);
-		_RS485_response_add_string(RS485_RESPONSE_END);
 		_RS485_response_send();
 	}
 }
@@ -232,7 +226,6 @@ static void _RS485_read_callback(void) {
 		goto errors;
 	}
 	// Send response.
-	_RS485_response_add_string(RS485_RESPONSE_END);
 	_RS485_response_send();
 errors:
 	return;
@@ -295,9 +288,9 @@ errors:
  */
 static void RS485_reset_parser(void) {
 	// Reset parsing variables.
-	at_ctx.command_buf_idx = 0;
+	at_ctx.command_size = 0;
 	at_ctx.line_end_flag = 0;
-	at_ctx.parser.rx_buf = (char_t*) at_ctx.command_buf;
+	at_ctx.parser.rx_buf = (char_t*) at_ctx.command;
 	at_ctx.parser.rx_buf_length = 0;
 	at_ctx.parser.separator_idx = 0;
 	at_ctx.parser.start_idx = 0;
@@ -312,12 +305,12 @@ static void RS485_decode(void) {
 	uint32_t idx = 0;
 	uint8_t decode_success = 0;
 	// Empty or too short command.
-	if (at_ctx.command_buf_idx < RS485_COMMAND_LENGTH_MIN) {
+	if (at_ctx.command_size < RS485_COMMAND_SIZE_MIN) {
 		_RS485_print_status(ERROR_BASE_PARSER + PARSER_ERROR_UNKNOWN_COMMAND);
 		goto errors;
 	}
 	// Update parser length.
-	at_ctx.parser.rx_buf_length = at_ctx.command_buf_idx;
+	at_ctx.parser.rx_buf_length = at_ctx.command_size;
 	// Loop on available commands.
 	for (idx=0 ; idx<(sizeof(RS485_COMMAND_LIST) / sizeof(RS485_command_t)) ; idx++) {
 		// Check type.
@@ -346,9 +339,9 @@ errors:
 void RS485_init(void) {
 	// Init context.
 	uint32_t idx = 0;
-	for (idx=0 ; idx<RS485_COMMAND_BUFFER_LENGTH ; idx++) at_ctx.command_buf[idx] = '\0';
-	for (idx=0 ; idx<RS485_RESPONSE_BUFFER_LENGTH ; idx++) at_ctx.response_buf[idx] = '\0';
-	at_ctx.response_buf_idx = 0;
+	for (idx=0 ; idx<RS485_COMMAND_BUFFER_SIZE ; idx++) at_ctx.command[idx] = STRING_CHAR_NULL;
+	for (idx=0 ; idx<RS485_REPLY_BUFFER_SIZE ; idx++) at_ctx.reply[idx] = STRING_CHAR_NULL;
+	at_ctx.reply_size = 0;
 	// Reset parser.
 	RS485_reset_parser();
 	// Enable LPUART.
@@ -382,17 +375,17 @@ void RS485_fill_rx_buffer(uint8_t rx_byte) {
 	// Append byte if line end flag is not allready set.
 	if (at_ctx.line_end_flag == 0) {
 		// Check ending characters.
-		if ((rx_byte == STRING_CHAR_CR) || (rx_byte == STRING_CHAR_LF)) {
-			at_ctx.command_buf[at_ctx.command_buf_idx] = STRING_CHAR_NULL;
+		if (rx_byte == RS485_FRAME_END) {
+			at_ctx.command[at_ctx.command_size] = STRING_CHAR_NULL;
 			at_ctx.line_end_flag = 1;
 		}
 		else {
 			// Store new byte.
-			at_ctx.command_buf[at_ctx.command_buf_idx] = rx_byte;
+			at_ctx.command[at_ctx.command_size] = rx_byte;
 			// Manage index.
-			at_ctx.command_buf_idx++;
-			if (at_ctx.command_buf_idx >= RS485_COMMAND_BUFFER_LENGTH) {
-				at_ctx.command_buf_idx = 0;
+			at_ctx.command_size++;
+			if (at_ctx.command_size >= RS485_COMMAND_BUFFER_SIZE) {
+				at_ctx.command_size = 0;
 			}
 		}
 	}

@@ -16,6 +16,7 @@
 #include "rcc.h"
 #include "rcc_reg.h"
 #include "rs485.h"
+#include "rs485_common.h"
 
 /*** LPUART local macros ***/
 
@@ -27,14 +28,6 @@
 #endif
 
 /*** LPUART local structures ***/
-
-#ifdef RSM
-typedef enum {
-	LPUART_FIELD_INDEX_DESTINATION_ADDRESS = 0,
-	LPUART_FIELD_INDEX_SOURCE_ADDRESS,
-	LPUART_FIELD_INDEX_COMMAND,
-} LPUART_field_index_t;
-#endif
 
 #ifdef RSM
 typedef struct {
@@ -61,10 +54,10 @@ void LPUART1_IRQHandler(void) {
 #ifdef RSM
 		// Check field index.
 		switch (lpuart_ctx.rx_byte_count) {
-		case LPUART_FIELD_INDEX_DESTINATION_ADDRESS:
+		case RS485_FRAME_FIELD_INDEX_DESTINATION_ADDRESS:
 			// Nothing to do.
 			break;
-		case LPUART_FIELD_INDEX_SOURCE_ADDRESS:
+		case RS485_FRAME_FIELD_INDEX_SOURCE_ADDRESS:
 			// Store source address for next response.
 			lpuart_ctx.source_address = (rx_byte & RS485_ADDRESS_MASK);
 			break;
@@ -117,7 +110,7 @@ void LPUART1_init(void) {
 #ifdef RSM
 	// Init context.
 	lpuart_ctx.rx_byte_count = 0;
-	lpuart_ctx.source_address = 0x00;
+	lpuart_ctx.source_address = 0xFF;
 #endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.

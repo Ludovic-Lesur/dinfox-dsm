@@ -10,10 +10,6 @@
 
 #include "types.h"
 
-/*** RS485 macros ***/
-
-#define RS485_ADDRESS_MASK	0x7F
-
 /*** RS485 functions ***/
 
 void RS485_init(void);
