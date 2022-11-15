@@ -23,22 +23,20 @@
 #define LPUART_BAUD_RATE 			9600
 #define LPUART_STRING_LENGTH_MAX	1000
 #define LPUART_TIMEOUT_COUNT		100000
-#ifdef RSM
-#define LPUART_NODE_ADDRESS			0x31
-#endif
 
 /*** LPUART local structures ***/
 
-#ifdef RSM
+#ifdef AM
 typedef struct {
-	volatile uint32_t rx_byte_count;
-	volatile uint8_t source_address;
+	uint8_t node_address;
+	volatile uint8_t master_address;
+	volatile uint8_t rx_byte_count;
 } LPUART_context_t;
 #endif
 
 /*** LPUART local global variables ***/
 
-#ifdef RSM
+#ifdef AM
 static LPUART_context_t lpuart_ctx;
 #endif
 
@@ -51,7 +49,7 @@ void LPUART1_IRQHandler(void) {
 	if (((LPUART1 -> ISR) & (0b1 << 5)) != 0) {
 		// Read incoming byte.
 		rx_byte = (LPUART1 -> RDR);
-#ifdef RSM
+#ifdef AM
 		// Check field index.
 		switch (lpuart_ctx.rx_byte_count) {
 		case RS485_FRAME_FIELD_INDEX_DESTINATION_ADDRESS:
@@ -59,7 +57,7 @@ void LPUART1_IRQHandler(void) {
 			break;
 		case RS485_FRAME_FIELD_INDEX_SOURCE_ADDRESS:
 			// Store source address for next response.
-			lpuart_ctx.source_address = (rx_byte & RS485_ADDRESS_MASK);
+			lpuart_ctx.master_address = (rx_byte & RS485_ADDRESS_MASK);
 			break;
 		default:
 			// Transmit command to applicative layer.
@@ -100,17 +98,25 @@ static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
 
 /*** LPUART functions ***/
 
+#ifdef AM
+/* CONFIGURE LPUART1.
+ * @param node_address:	RS485 7-bits address
+ * @return:				None.
+ */
+void LPUART1_init(uint8_t node_address) {
+#else
 /* CONFIGURE LPUART1.
  * @param:	None.
  * @return:	None.
  */
 void LPUART1_init(void) {
+#endif
 	// Local variables.
 	uint32_t brr = 0;
-#ifdef RSM
+#ifdef AM
 	// Init context.
-	lpuart_ctx.rx_byte_count = 0;
-	lpuart_ctx.source_address = 0xFF;
+	lpuart_ctx.node_address = (node_address & RS485_ADDRESS_MASK);
+	lpuart_ctx.master_address = 0xFF;
 #endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
@@ -122,12 +128,12 @@ void LPUART1_init(void) {
 	GPIO_configure(&GPIO_LPUART1_DE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
 	LPUART1_disable_rx();
 	// Configure peripheral.
-#ifdef RSM
-	LPUART1 -> CR1 |= 0x03FF2822;
-	LPUART1 -> CR2 |= ((LPUART_NODE_ADDRESS & 0x7F) << 24) | (0b1 << 4);
+#ifdef AM
+	LPUART1 -> CR1 |= 0x00002822;
+	LPUART1 -> CR2 |= (lpuart_ctx.node_address << 24) | (0b1 << 4);
 	LPUART1 -> CR3 |= 0x00805000;
 #else
-	LPUART1 -> CR1 |= 0x03FF0022;
+	LPUART1 -> CR1 |= 0x00000022;
 	LPUART1 -> CR3 |= 0x00B05000;
 #endif
 	// Baud rate.
@@ -148,7 +154,7 @@ void LPUART1_init(void) {
  * @return:	None.
  */
 void LPUART1_enable_rx(void) {
-#ifdef RSM
+#ifdef AM
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
 #endif
@@ -166,7 +172,7 @@ void LPUART1_enable_rx(void) {
  * @return:	None.
  */
 void LPUART1_disable_rx(void) {
-#ifdef RSM
+#ifdef AM
 	// Reset IRQ count for next command reception.
 	lpuart_ctx.rx_byte_count = 0;
 #endif
@@ -190,10 +196,10 @@ void LPUART1_send_string(char_t* tx_string) {
 	if (tx_string == NULL) {
 		goto errors;
 	}
-#ifdef RSM
+#ifdef AM
 	// Send destination and source addresses.
-	_LPUART1_fill_tx_buffer(lpuart_ctx.source_address | 0x80);
-	_LPUART1_fill_tx_buffer(LPUART_NODE_ADDRESS);
+	_LPUART1_fill_tx_buffer(lpuart_ctx.master_address | 0x80);
+	_LPUART1_fill_tx_buffer(lpuart_ctx.node_address);
 #endif
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {

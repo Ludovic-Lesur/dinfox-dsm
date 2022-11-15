@@ -8,10 +8,7 @@
 #ifndef __TIM_H__
 #define __TIM_H__
 
-#include "mode.h"
 #include "types.h"
-
-#ifdef RSM
 
 /*** TIM structures ***/
 
@@ -30,17 +27,13 @@ typedef enum {
 /*** TIM functions ***/
 
 void TIM2_init(void);
-void TIM2_disable(void);
 void TIM2_set_color_mask(TIM2_channel_mask_t led_color);
 void TIM2_start(void);
 void TIM2_stop(void);
 
-void TIM21_init(uint32_t led_blink_period_ms);
-void TIM21_disable(void);
-void TIM21_start(void);
+void TIM21_init(void);
+void TIM21_start(uint32_t led_blink_period_ms);
 void TIM21_stop(void);
 uint8_t TIM21_is_single_blink_done(void);
-
-#endif /* RSM */
 
 #endif /* __TIM_H__ */

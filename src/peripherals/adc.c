@@ -47,7 +47,6 @@ typedef enum {
 typedef struct {
 	uint32_t vrefint_12bits;
 	uint32_t data[ADC_DATA_INDEX_LAST];
-	int8_t tmcu_degrees;
 } ADC_context_t;
 
 /*** ADC local global variables ***/
@@ -161,28 +160,6 @@ static void _ADC1_compute_vmcu(void) {
 	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
 }
 
-/* COMPUTE MCU TEMPERATURE THANKS TO INTERNAL VOLTAGE REFERENCE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_tmcu(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t raw_temp_sensor_12bits = 0;
-	int32_t raw_temp_calib_mv = 0;
-	int32_t temp_calib_degrees = 0;
-	// Read raw temperature.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_TMCU, &raw_temp_sensor_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Compute temperature according to MCU factory calibration (see p.301 and p.847 of RM0377 datasheet).
-	raw_temp_calib_mv = ((int32_t) raw_temp_sensor_12bits * adc_ctx.data[ADC_DATA_INDEX_VMCU_MV]) / (TS_VCC_CALIB_MV) - TS_CAL1; // Equivalent raw measure for calibration power supply (VCC_CALIB).
-	temp_calib_degrees = raw_temp_calib_mv * ((int32_t) (TS_CAL2_TEMP-TS_CAL1_TEMP));
-	temp_calib_degrees = (temp_calib_degrees) / ((int32_t) (TS_CAL2 - TS_CAL1));
-	adc_ctx.tmcu_degrees = temp_calib_degrees + TS_CAL1_TEMP;
-errors:
-	return status;
-}
-
 /* COMPUTE COMMON RELAY VOLTAGE.
  * @param:			None.
  * @return status:	Function execution status.
@@ -268,7 +245,6 @@ ADC_status_t ADC1_init(void) {
 	adc_ctx.vrefint_12bits = 0;
 	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) adc_ctx.data[idx] = 0;
 	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
-	adc_ctx.tmcu_degrees = 0;
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 9); // ADCEN='1'.
 	// Ensure ADC is disabled.
@@ -327,7 +303,6 @@ ADC_status_t ADC1_perform_measurements(void) {
 	status = _ADC1_compute_iout();
 	if (status != ADC_SUCCESS) goto errors;
 	_ADC1_compute_vmcu();
-	//status = _ADC1_compute_tmcu();
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
@@ -354,23 +329,6 @@ ADC_status_t ADC1_get_data(ADC_data_index_t data_idx, uint32_t* data) {
 		goto errors;
 	}
 	(*data) = adc_ctx.data[data_idx];
-errors:
-	return status;
-}
-
-/* GET MCU TEMPERATURE.
- * @param tmcu_degrees:	Pointer to 8-bits value that will contain MCU temperature in degrees (2-complement).
- * @return status:		Function execution status.
- */
-ADC_status_t ADC1_get_tmcu(int8_t* tmcu_degrees) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	// Check parameter.
-	if (tmcu_degrees == NULL) {
-		status = ADC_ERROR_NULL_PARAMETER;
-		goto errors;
-	}
-	(*tmcu_degrees) = adc_ctx.tmcu_degrees;
 errors:
 	return status;
 }

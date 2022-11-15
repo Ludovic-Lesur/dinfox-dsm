@@ -8,8 +8,8 @@
 #ifndef __MODE_H__
 #define __MODE_H__
 
-#define RSM		// RS485 mode with address check.
-//#define ATM	// AT command mode without address check.
+#define AM		// Addressed mode.
+//#define DM	// Direct mode.
 
 
 /*** Debug mode ***/
@@ -18,7 +18,7 @@
 
 /*** Error management ***/
 
-#if (defined RSM && defined ATM)
+#if (defined AM && defined DM)
 #error "Only 1 mode must be selected."
 #endif
 

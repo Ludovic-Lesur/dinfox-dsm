@@ -8,13 +8,10 @@
 #include "tim.h"
 
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
 #include "tim_reg.h"
-
-#ifdef RSM
 
 /*** TIM local macros ***/
 
@@ -102,31 +99,17 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 void TIM2_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
-	// Configure peripheral.
-	TIM2 -> CR1 &= ~(0b1 << 0); // CEN='0'.
 	// Set PWM frequency.
-	TIM2 -> PSC = 0; // Timer input clock is SYSCLK.
-	TIM2 -> ARR = TIM2_ARR_VALUE;
+	TIM2 -> ARR = TIM2_ARR_VALUE; // Timer input clock is SYSCLK (PSC=0 by default).
 	// Configure channels 1-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
 	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	// Disable all channels by default (CCxE='0').
-	TIM2 -> CCER &= 0xFFFFEEEE;
 	TIM2 -> CCR1 = (TIM2_ARR_VALUE + 1);
 	TIM2 -> CCR2 = (TIM2_ARR_VALUE + 1);
 	TIM2 -> CCR3 = (TIM2_ARR_VALUE + 1);
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
-}
-
-
-/* DISABLE TIM2 PERIPHERAL.
- * @param:	None.
- * @return:	None.
- */
-void TIM2_disable(void) {
-	// Disable peripheral clock.
-	RCC -> APB1ENR &= ~(0b1 << 0); // TIM2EN='0'.
 }
 
 /* SET CURRENT LED COLOR.
@@ -171,23 +154,14 @@ void TIM2_stop(void) {
 }
 
 /* INIT TIM21 FOR LED BLINKING OPERATION.
- * @param led_blink_period_ms:	LED blink period in ms.
- * @return:						None.
+ * @param:	None.
+ * @return:	None.
  */
-void TIM21_init(uint32_t led_blink_period_ms) {
+void TIM21_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
-	// Reset timer before configuration.
-	TIM21 -> CR1 &= ~(0b1 << 0); // Disable TIM21 (CEN='0').
-	TIM21 -> CNT = 0; // Reset counter.
-	TIM21 -> SR &= 0xFFFFF9B8; // Clear all flags.
-	// Reset index.
-	tim21_ctx.dimming_lut_idx = 0;
-	tim21_ctx.dimming_lut_direction = 0;
-	tim21_ctx.single_blink_done = 0;
 	// Configure period.
 	TIM21 -> PSC = 1; // Timer is clocked on (MSI / 2) .
-	TIM21 -> ARR = (led_blink_period_ms * RCC_MSI_FREQUENCY_KHZ) / (4 * TIM21_DIMMING_LUT_LENGTH);
 	// Generate event to update registers.
 	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.
@@ -196,26 +170,19 @@ void TIM21_init(uint32_t led_blink_period_ms) {
 	NVIC_set_priority(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_MIN);
 }
 
-/* DISABLE TIM21 PERIPHERAL.
- * @param:	None.
- * @return:	None.
+/* START TIM21 PERIPHERAL.
+ * @param led_blink_period_ms:	LED blink period in ms.
+ * @return:						None.
  */
-void TIM21_disable(void) {
-	// Disable peripheral clock.
-	RCC -> APB2ENR &= ~(0b1 << 2); // TIM21EN='0'.
-}
-
-/* ENABLE TIM21 PERIPHERAL.
- * @param:	None.
- * @return:	None.
- */
-void TIM21_start(void) {
-	// Set mode and reset LUT index.
-	tim21_ctx.single_blink_done = 0;
+void TIM21_start(uint32_t led_blink_period_ms) {
+	// Reset LUT index and flag.
 	tim21_ctx.dimming_lut_idx = 0;
 	tim21_ctx.dimming_lut_direction = 0;
-	// Clear flag and enable interrupt.
+	tim21_ctx.single_blink_done = 0;
+	// Set period.
 	TIM21 -> CNT = 0;
+	TIM21 -> ARR = (led_blink_period_ms * RCC_MSI_FREQUENCY_KHZ) / (4 * TIM21_DIMMING_LUT_LENGTH);
+	// Clear flag and enable interrupt.
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
 	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21);
 	// Enable TIM21 peripheral.
@@ -240,5 +207,3 @@ void TIM21_stop(void) {
 uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);
 }
-
-#endif /* RSM */
