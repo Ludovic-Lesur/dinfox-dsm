@@ -56,10 +56,10 @@ void ERROR_stack_add(ERROR_t code) {
  */
 ERROR_t ERROR_stack_read(void) {
 	// Read last error.
-	uint8_t last_error_idx = (error_ctx.stack_idx == 0) ? (ERROR_STACK_DEPTH - 1) : (error_ctx.stack_idx - 1);
-	ERROR_t last_error = error_ctx.stack[last_error_idx];
+	error_ctx.stack_idx = (error_ctx.stack_idx == 0) ? (ERROR_STACK_DEPTH - 1) : (error_ctx.stack_idx - 1);
+	ERROR_t last_error = error_ctx.stack[error_ctx.stack_idx];
 	// Remove error.
-	error_ctx.stack[last_error_idx] = SUCCESS;
+	error_ctx.stack[error_ctx.stack_idx] = SUCCESS;
 	// Return code.
 	return last_error;
 }
