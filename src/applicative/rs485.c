@@ -160,33 +160,33 @@ static void _RS485_read_callback(void) {
 	PARSER_error_check_print();
 	// Get data.
 	switch (register_address) {
-	case LVRM_REGISTER_RS485_ADDRESS:
+	case DINFOX_REGISTER_RS485_ADDRESS:
 		nvm_status = NVM_read_byte(NVM_ADDRESS_RS485_ADDRESS, &generic_u8);
 		NVM_error_check_print();
 		_RS485_response_add_value(generic_u8, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
-	case LVRM_REGISTER_BOARD_ID:
+	case DINFOX_REGISTER_BOARD_ID:
 		_RS485_response_add_value(DINFOX_BOARD_ID_LVRM, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
-	case LVRM_REGISTER_RESET:
+	case DINFOX_REGISTER_RESET:
 		_RS485_response_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
 		break;
-	case LVRM_REGISTER_SW_VERSION_MAJOR:
+	case DINFOX_REGISTER_SW_VERSION_MAJOR:
 		_RS485_response_add_value(GIT_MAJOR_VERSION, STRING_FORMAT_DECIMAL, 0);
 		break;
-	case LVRM_REGISTER_SW_VERSION_MINOR:
+	case DINFOX_REGISTER_SW_VERSION_MINOR:
 		_RS485_response_add_value(GIT_MINOR_VERSION, STRING_FORMAT_DECIMAL, 0);
 		break;
-	case LVRM_REGISTER_SW_VERSION_COMMIT_INDEX:
+	case DINFOX_REGISTER_SW_VERSION_COMMIT_INDEX:
 		_RS485_response_add_value(GIT_COMMIT_INDEX, STRING_FORMAT_DECIMAL, 0);
 		break;
-	case LVRM_REGISTER_SW_VERSION_COMMIT_ID:
+	case DINFOX_REGISTER_SW_VERSION_COMMIT_ID:
 		_RS485_response_add_value(GIT_COMMIT_ID, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
-	case LVRM_REGISTER_SW_VERSION_DIRTY_FLAG:
+	case DINFOX_REGISTER_SW_VERSION_DIRTY_FLAG:
 		_RS485_response_add_value(GIT_DIRTY_FLAG, STRING_FORMAT_BOOLEAN, 0);
 		break;
-	case LVRM_REGISTER_ERROR_STACK:
+	case DINFOX_REGISTER_ERROR_STACK:
 		_RS485_response_add_value(ERROR_stack_read(), STRING_FORMAT_HEXADECIMAL, 0);
 		break;
 	case LVRM_REGISTER_VCOM_MV:
@@ -237,7 +237,7 @@ static void _RS485_write_callback(void) {
 	// Get data.
 	switch (register_address) {
 #ifdef DM
-	case LVRM_REGISTER_RS485_ADDRESS:
+	case DINFOX_REGISTER_RS485_ADDRESS:
 		// Read new address.
 		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &register_value);
 		PARSER_error_check_print();
@@ -250,7 +250,7 @@ static void _RS485_write_callback(void) {
 		NVM_error_check_print();
 		break;
 #endif
-	case LVRM_REGISTER_RESET:
+	case DINFOX_REGISTER_RESET:
 		// Read parameter.
 		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
 		PARSER_error_check_print();
