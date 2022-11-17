@@ -19,6 +19,7 @@
 #include "nvic.h"
 #include "nvm.h"
 #include "parser.h"
+#include "pwr.h"
 #include "rcc_reg.h"
 #include "rs485_common.h"
 #include "string.h"
@@ -29,7 +30,6 @@
 
 // Commands.
 #define RS485_COMMAND_BUFFER_SIZE		128
-#define RS485_COMMAND_SIZE_MIN			2
 // Parameters separator.
 #define RS485_CHAR_SEPARATOR			','
 // Replies.
@@ -168,7 +168,7 @@ static void _RS485_read_callback(void) {
 	case LVRM_REGISTER_BOARD_ID:
 		_RS485_response_add_value(DINFOX_BOARD_ID_LVRM, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
-	case LVRM_REGISTER_RESET_FLAGS:
+	case LVRM_REGISTER_RESET:
 		_RS485_response_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
 		break;
 	case LVRM_REGISTER_SW_VERSION_MAJOR:
@@ -250,6 +250,15 @@ static void _RS485_write_callback(void) {
 		NVM_error_check_print();
 		break;
 #endif
+	case LVRM_REGISTER_RESET:
+		// Read parameter.
+		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
+		PARSER_error_check_print();
+		// Reset if required.
+		if (register_value != 0) {
+			PWR_software_reset();
+		}
+		break;
 	case LVRM_REGISTER_OUT_EN:
 		// Read new output state.
 		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
@@ -283,8 +292,8 @@ static void _RS485_reset_parser(void) {
 	// Reset flag.
 	at_ctx.line_end_flag = 0;
 	// Reset parser.
-	at_ctx.parser.rx_buf = (char_t*) at_ctx.command;
-	at_ctx.parser.rx_buf_length = 0;
+	at_ctx.parser.buffer = (char_t*) at_ctx.command;
+	at_ctx.parser.buffer_size = 0;
 	at_ctx.parser.separator_idx = 0;
 	at_ctx.parser.start_idx = 0;
 }
@@ -297,13 +306,8 @@ static void _RS485_decode(void) {
 	// Local variables.
 	uint32_t idx = 0;
 	uint8_t decode_success = 0;
-	// Empty or too short command.
-	if (at_ctx.command_size < RS485_COMMAND_SIZE_MIN) {
-		_RS485_print_error(ERROR_BASE_PARSER + PARSER_ERROR_UNKNOWN_COMMAND);
-		goto errors;
-	}
 	// Update parser length.
-	at_ctx.parser.rx_buf_length = at_ctx.command_size;
+	at_ctx.parser.buffer_size = at_ctx.command_size;
 	// Loop on available commands.
 	for (idx=0 ; idx<(sizeof(RS485_COMMAND_LIST) / sizeof(RS485_command_t)) ; idx++) {
 		// Check type.

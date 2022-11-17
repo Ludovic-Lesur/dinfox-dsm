@@ -11,7 +11,7 @@
 
 /*** ERROR local macros ***/
 
-#define ERROR_STACK_DEPTH	32
+#define ERROR_STACK_DEPTH	8
 
 /*** ERROR local structures ***/
 
