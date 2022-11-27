@@ -9,8 +9,11 @@
 
 #include "gpio.h"
 #include "mapping.h"
+#include "mode.h"
 #include "tim.h"
 #include "types.h"
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 
 /*** LED functions ***/
 
@@ -52,3 +55,5 @@ void LED_stop_blink(void) {
 	// Turn LED off.
 	LED_init();
 }
+
+#endif /* LVRM or DDRM or RRM */

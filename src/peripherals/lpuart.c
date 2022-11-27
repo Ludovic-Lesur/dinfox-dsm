@@ -20,9 +20,9 @@
 
 /*** LPUART local macros ***/
 
-#define LPUART_BAUD_RATE 			9600
-#define LPUART_STRING_LENGTH_MAX	1000
-#define LPUART_TIMEOUT_COUNT		100000
+#define LPUART_BAUD_RATE 		9600
+#define LPUART_STRING_SIZE_MAX	1000
+#define LPUART_TIMEOUT_COUNT	100000
 
 /*** LPUART local structures ***/
 
@@ -83,8 +83,9 @@ void LPUART1_IRQHandler(void) {
  * @param tx_byte:	Byte to append.
  * @return status:	Function execution status.
  */
-static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
+static LPUART_status_t _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
 	// Local variables.
+	LPUART_status_t status = LPUART_SUCCESS;
 	uint32_t loop_count = 0;
 	// Fill transmit register.
 	LPUART1 -> TDR = tx_byte;
@@ -92,8 +93,13 @@ static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
 	while (((LPUART1 -> ISR) & (0b1 << 7)) == 0) {
 		// Wait for TXE='1' or timeout.
 		loop_count++;
-		if (loop_count > LPUART_TIMEOUT_COUNT) break;
+		if (loop_count > LPUART_TIMEOUT_COUNT) {
+			status = LPUART_ERROR_TX_TIMEOUT;
+			goto errors;
+		}
 	}
+errors:
+	return status;
 }
 
 /*** LPUART functions ***/
@@ -103,7 +109,7 @@ static void _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
  * @param node_address:	RS485 7-bits address
  * @return:				None.
  */
-void LPUART1_init(uint8_t node_address) {
+LPUART_status_t LPUART1_init(uint8_t node_address) {
 #else
 /* CONFIGURE LPUART1.
  * @param:	None.
@@ -114,6 +120,14 @@ void LPUART1_init(void) {
 	// Local variables.
 	uint32_t brr = 0;
 #ifdef AM
+	LPUART_status_t status = LPUART_SUCCESS;
+#endif
+#ifdef AM
+	// Check parameter.
+	if (node_address > RS485_ADDRESS_LAST) {
+		// Do not exit, just store error and apply mask.
+		status = LPUART_ERROR_NODE_ADDRESS;
+	}
 	// Init context.
 	lpuart_ctx.node_address = (node_address & RS485_ADDRESS_MASK);
 	lpuart_ctx.master_address = 0xFF;
@@ -147,6 +161,9 @@ void LPUART1_init(void) {
 	LPUART1 -> CR1 |= (0b1 << 3); // TE='1'.
 	// Enable peripheral.
 	LPUART1 -> CR1 |= (0b1 << 0); // UE='1'.
+#ifdef AM
+	return status;
+#endif
 }
 
 /* EANABLE LPUART RX OPERATION.
@@ -187,34 +204,45 @@ void LPUART1_disable_rx(void) {
 
 /* SEND A BYTE ARRAY THROUGH LPUART1.
  * @param tx_string:	Byte array to send.
- * @return:				None.
+ * @return status:		Function execution status.
  */
-void LPUART1_send_string(char_t* tx_string) {
+LPUART_status_t LPUART1_send_string(char_t* tx_string) {
 	// Local variables.
+	LPUART_status_t status = LPUART_SUCCESS;
 	uint32_t loop_count = 0;
 	// Check parameter.
 	if (tx_string == NULL) {
+		status = LPUART_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
 #ifdef AM
 	// Send destination and source addresses.
-	_LPUART1_fill_tx_buffer(lpuart_ctx.master_address | 0x80);
-	_LPUART1_fill_tx_buffer(lpuart_ctx.node_address);
+	status = _LPUART1_fill_tx_buffer(lpuart_ctx.master_address | 0x80);
+	if (status != LPUART_SUCCESS) goto errors;
+	status = _LPUART1_fill_tx_buffer(lpuart_ctx.node_address);
+	if (status != LPUART_SUCCESS) goto errors;
 #endif
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {
 		_LPUART1_fill_tx_buffer((uint8_t) *(tx_string++));
+		if (status != LPUART_SUCCESS) goto errors;
 		// Check character count.
 		loop_count++;
-		if (loop_count > LPUART_STRING_LENGTH_MAX) break;
+		if (loop_count > LPUART_STRING_SIZE_MAX) {
+			status = LPUART_ERROR_STRING_SIZE;
+			goto errors;
+		}
 	}
 	// Wait for TC flag.
 	loop_count = 0;
 	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0) {
 		// Exit if timeout.
 		loop_count++;
-		if (loop_count > LPUART_TIMEOUT_COUNT) break;
+		if (loop_count > LPUART_TIMEOUT_COUNT) {
+			status = LPUART_ERROR_TC_TIMEOUT;
+			goto errors;
+		}
 	}
 errors:
-	return;
+	return status;
 }

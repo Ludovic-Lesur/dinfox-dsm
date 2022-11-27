@@ -8,10 +8,13 @@
 #include "tim.h"
 
 #include "mapping.h"
+#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
 #include "tim_reg.h"
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 
 /*** TIM local macros ***/
 
@@ -207,3 +210,5 @@ void TIM21_stop(void) {
 uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);
 }
+
+#endif /* LVRM or DDRM or RRM */

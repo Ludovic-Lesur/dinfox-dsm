@@ -9,16 +9,20 @@
 #define LVRM_H
 
 #include "dinfox.h"
+#include "mode.h"
 
 /*** LVRM registers mapping ***/
 
+#ifdef LVRM
 typedef enum {
 	LVRM_REGISTER_VCOM_MV = DINFOX_REGISTER_LAST,
 	LVRM_REGISTER_VOUT_MV,
 	LVRM_REGISTER_IOUT_UA,
 	LVRM_REGISTER_VMCU_MV,
+	LVRM_REGISTER_TMCU_DEGREES,
 	LVRM_REGISTER_OUT_EN,
 	LVRM_REGISTER_LAST,
 } LVRM_register_address_t;
+#endif
 
 #endif /* LVRM_H */

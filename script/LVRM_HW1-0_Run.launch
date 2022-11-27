@@ -20,11 +20,11 @@
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="-speed 4000&#10;-device STM32L011F3&#10;-If SWD&#10;script/HW1_0.jlink"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${eclipse_home}opt/Jlink/JLinkExe"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="LVRM"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="XM"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/LVRM"/>
+        <listEntry value="/XM"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>

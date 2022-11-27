@@ -12,6 +12,7 @@
 #include "iwdg.h"
 #include "led.h"
 #include "lpuart.h"
+#include "lptim.h"
 #include "mapping.h"
 #include "mode.h"
 #include "nvic.h"
@@ -24,23 +25,30 @@
 
 /*** MAIN local macros ***/
 
-#define LVRM_IOUT_INDICATOR_RANGE	7
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+#define XM_IOUT_INDICATOR_RANGE	7
+#endif
 
 /*** MAIN structures ***/
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 typedef struct {
 	uint32_t threshold_ua;
 	TIM2_channel_mask_t led_color;
-} LVRM_iout_indicator_t;
+} XM_iout_indicator_t;
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 typedef struct {
 	TIM2_channel_mask_t led_color;
 	uint32_t iout_ua;
-} LVRM_context_t;
+} XM_context_t;
+#endif
 
 /*** MAIN local global variables ***/
 
-static const LVRM_iout_indicator_t LVRM_IOUT_INDICATOR[LVRM_IOUT_INDICATOR_RANGE] = {
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+static const XM_iout_indicator_t LVRM_IOUT_INDICATOR[XM_IOUT_INDICATOR_RANGE] = {
 	{0, TIM2_CHANNEL_MASK_GREEN},
 	{50000, TIM2_CHANNEL_MASK_YELLOW},
 	{500000, TIM2_CHANNEL_MASK_RED},
@@ -49,8 +57,8 @@ static const LVRM_iout_indicator_t LVRM_IOUT_INDICATOR[LVRM_IOUT_INDICATOR_RANGE
 	{3000000, TIM2_CHANNEL_MASK_CYAN},
 	{4000000, TIM2_CHANNEL_MASK_WHITE}
 };
-
-static LVRM_context_t lvrm_ctx;
+static XM_context_t xm_ctx;
+#endif
 
 /*** MAIN local functions ***/
 
@@ -58,11 +66,12 @@ static LVRM_context_t lvrm_ctx;
  * @param:	None.
  * @return:	None.
  */
-static void _LVRM_init_hw(void) {
+static void _XM_init_hw(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
 #ifdef AM
+	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	uint8_t node_address;
 #endif
@@ -93,36 +102,44 @@ static void _LVRM_init_hw(void) {
 	NVM_error_check();
 #endif
 	// Init peripherals.
+	LPTIM1_init();
 	adc1_status = ADC1_init();
 	ADC1_error_check();
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	TIM2_init();
 	TIM21_init();
+#endif
 #ifdef AM
-	LPUART1_init(node_address);
+	lpuart1_status = LPUART1_init(node_address);
+	LPUART1_error_check();
 #else
 	LPUART1_init();
 #endif
 	// Init components.
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_init();
+#endif
 	// Init AT interface.
 	RS485_init();
 }
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* UPDATE LED COLOR ACCORDING TO OUTPUT CURRENT VALUE.
  * @param:	None.
  * @return:	None.
  */
-static void _LVRM_update_led_color(void) {
+static void _XM_update_led_color(void) {
 	// Local variables.
-	uint8_t idx = LVRM_IOUT_INDICATOR_RANGE;
+	uint8_t idx = XM_IOUT_INDICATOR_RANGE;
 	// Get range and corresponding color.
 	do {
 		idx--;
-		lvrm_ctx.led_color = LVRM_IOUT_INDICATOR[idx].led_color;
-		if (lvrm_ctx.iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
+		xm_ctx.led_color = LVRM_IOUT_INDICATOR[idx].led_color;
+		if (xm_ctx.iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
 	}
 	while (idx > 0);
 }
+#endif
 
 /*** MAIN function ***/
 
@@ -132,15 +149,18 @@ static void _LVRM_update_led_color(void) {
  */
 int main(void) {
 	// Init board.
-	_LVRM_init_hw();
+	_XM_init_hw();
 	// Local variables.
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	ADC_status_t adc1_status = ADC_SUCCESS;
+#endif
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	// Start periodic wakeup timer.
 	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	RTC_error_check();
 	// Main loop.
 	while (1) {
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 		// Enter sleep or stop mode depending on LED state.
 		if (TIM21_is_single_blink_done() != 0) {
 			LED_stop_blink();
@@ -149,19 +169,25 @@ int main(void) {
 		else {
 			PWR_enter_sleep_mode();
 		}
-		// Blink LED according to output current.
+#else
+		// Enter stop mode.
+		PWR_enter_stop_mode();
+#endif
+		// Check RTC flag.
 		if (RTC_get_wakeup_timer_flag() != 0) {
-			// Wake-up by RTC: clear flag and blink LED.
+			// Clear flag.
 			RTC_clear_wakeup_timer_flag();
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 			// Perform analog measurements.
 			adc1_status = ADC1_perform_measurements();
 			ADC1_error_check();
-			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &lvrm_ctx.iout_ua);
+			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &xm_ctx.iout_ua);
 			ADC1_error_check();
 			// Compute LED color according to output current.
-			_LVRM_update_led_color();
+			_XM_update_led_color();
 			// Blink LED.
-			LED_start_blink(2000, lvrm_ctx.led_color);
+			LED_start_blink(2000, xm_ctx.led_color);
+#endif
 		}
 		// Perform command task.
 		RS485_task();

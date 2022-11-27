@@ -20,7 +20,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1942054350" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting.236567436" name="Create extended listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting" useByScannerDiscovery="false"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.531430264" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.381231452" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.size" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.381231452" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.optimize" valueType="enumerated"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.336763780" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength" useByScannerDiscovery="true" value="true" valueType="boolean"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.1517275271" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar" useByScannerDiscovery="true" value="true" valueType="boolean"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.440349259" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections" useByScannerDiscovery="true" value="true" valueType="boolean"/>
@@ -54,12 +54,12 @@
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1013112900" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.98292267" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -72,12 +72,12 @@
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.272692611" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/LVRM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.918790426" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -117,7 +117,7 @@
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs">
-				<option id="cmsis.device.name" value="STM32L011F3"/>
+				<option id="cmsis.device.name" value="STM32L011F4"/>
 				<option id="cmsis.subfamily.name" value="STM32L011"/>
 				<option id="cmsis.family.name" value="STM32L0 Series"/>
 				<option id="cmsis.device.vendor.name" value="STMicroelectronics"/>
@@ -128,7 +128,7 @@
 				<option id="cmsis.core.name" value="Cortex-M0+"/>
 				<option id="cmsis.compiler.define" value="STM32L011xx"/>
 				<memory section="IRAM1" size="0x00000800" start="0x20000000" startup="0"/>
-				<memory section="IROM1" size="0x00002000" start="0x08000000" startup="1"/>
+				<memory section="IROM1" size="0x00004000" start="0x08000000" startup="1"/>
 			</storageModule>
 		</cconfiguration>
 	</storageModule>
