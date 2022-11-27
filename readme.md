@@ -1,18 +1,18 @@
 # Summary
 The LVRM, BPSM, DDRM and RRM boards are DIN rail modules of the DINFox project. They embed the following features:
-* LVRM: **Relay** with configurable coil voltage and controlled by the MCU.
-* BPSM: **Backup power supply**
-* DDRM: **DC-DC converter** with confogurable output voltage and controlled by the MCU.
-* RRM: **Rectifier and Regulator** with configurable output voltage and controlled by the MCU.
+* LVRM: **relay** with configurable coil voltage and controlled by the MCU.
+* BPSM: **backup power supply** for the DINFox system.
+* DDRM: **DC-DC converter** with configurable output voltage and controlled by the MCU.
+* RRM: **rectifier and regulator** with configurable output voltage and controlled by the MCU.
 * Input voltage, output voltage and output current **measurements**.
 * **RS485** commmunication.
 
 # Hardware
 The boards were designed on **Circuit Maker V2.0**. Hardware documentation and design files are available @
-https://circuitmaker.com/Projects/Details/Ludovic-Lesur/LVRMHW1-0
-https://circuitmaker.com/Projects/Details/Ludovic-Lesur/BPSMHW1-0
-https://circuitmaker.com/Projects/Details/Ludovic-Lesur/DDRMHW1-0
-https://circuitmaker.com/Projects/Details/Ludovic-Lesur/RRMHW1-0
+* https://circuitmaker.com/Projects/Details/Ludovic-Lesur/LVRMHW1-0
+* https://circuitmaker.com/Projects/Details/Ludovic-Lesur/BPSMHW1-0
+* https://circuitmaker.com/Projects/Details/Ludovic-Lesur/DDRMHW1-0
+* https://circuitmaker.com/Projects/Details/Ludovic-Lesur/RRMHW1-0
 
 # Embedded software
 
