@@ -73,7 +73,7 @@ typedef struct {
 /*** RS485 local global variables ***/
 
 static const RS485_command_t RS485_COMMAND_LIST[] = {
-	{PARSER_MODE_COMMAND, "RS", STRING_CHAR_NULL, "Ping command", _RS485_print_ok},
+	{PARSER_MODE_COMMAND, "RS", STRING_NULL, "Ping command", _RS485_print_ok},
 	{PARSER_MODE_COMMAND, "RS?", STRING_NULL, "List all available commands", _RS485_print_command_list},
 	{PARSER_MODE_COMMAND, "RS$V?", STRING_NULL, "Get SW version", _RS485_print_sw_version},
 	{PARSER_MODE_COMMAND, "RS$ERROR?", STRING_NULL, "Read error stack", _RS485_print_error_stack},
