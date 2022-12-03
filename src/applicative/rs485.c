@@ -281,29 +281,26 @@ static void _RS485_read_callback(void) {
 	case DINFOX_REGISTER_ERROR_STACK:
 		_RS485_reply_add_value(ERROR_stack_read(), STRING_FORMAT_HEXADECIMAL, 0);
 		break;
+	case DINFOX_REGISTER_VMCU_MV:
 #ifdef LVRM
 	case LVRM_REGISTER_VCOM_MV:
 	case LVRM_REGISTER_VOUT_MV:
 	case LVRM_REGISTER_IOUT_UA:
-	case LVRM_REGISTER_VMCU_MV:
 #endif
 #ifdef BPSM
 	case BPSM_REGISTER_VSRC_MV:
 	case BPSM_REGISTER_VSTR_MV:
 	case BPSM_REGISTER_VBKP_MV:
-	case BPSM_REGISTER_VMCU_MV:
 #endif
 #ifdef DDRM
 	case DDRM_REGISTER_VIN_MV:
 	case DDRM_REGISTER_VOUT_MV:
 	case DDRM_REGISTER_IOUT_UA:
-	case DDRM_REGISTER_VMCU_MV:
 #endif
 #ifdef RRM
 	case RRM_REGISTER_VIN_MV:
 	case RRM_REGISTER_VOUT_MV:
 	case RRM_REGISTER_IOUT_UA:
-	case RRM_REGISTER_VMCU_MV:
 #endif
 		// Perform analog measurements.
 		adc1_status = ADC1_perform_measurements();
@@ -324,18 +321,7 @@ static void _RS485_read_callback(void) {
 		ADC1_error_check_print();
 		_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		break;
-#ifdef LVRM
-	case LVRM_REGISTER_TMCU_DEGREES:
-#endif
-#ifdef BPSM
-	case BPSM_REGISTER_TMCU_DEGREES:
-#endif
-#ifdef DDRM
-	case DDRM_REGISTER_TMCU_DEGREES:
-#endif
-#ifdef RRM
-	case RRM_REGISTER_TMCU_DEGREES:
-#endif
+	case DINFOX_REGISTER_TMCU_DEGREES:
 		// Perform analog measurements.
 		adc1_status = ADC1_perform_measurements();
 		ADC1_error_check_print();

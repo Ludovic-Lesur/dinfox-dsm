@@ -114,6 +114,8 @@ RTC_status_t __attribute__((optimize("-O0"))) RTC_init(void) {
 	RTC -> PRER = (127 << 16) | (255 << 0);
 	// Force registers reset.
 	RTC -> CR = 0;
+	RTC -> ALRMAR = 0;
+	RTC -> ALRMBR = 0;
 	// Bypass shadow registers.
 	RTC -> CR |= (0b1 << 5); // BYPSHAD='1'.
 	// Configure wake-up timer.

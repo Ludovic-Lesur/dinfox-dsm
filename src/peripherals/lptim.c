@@ -10,7 +10,6 @@
 #include "exti.h"
 #include "iwdg.h"
 #include "lptim_reg.h"
-#include "mode.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc.h"

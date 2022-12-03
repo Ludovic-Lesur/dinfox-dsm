@@ -18,19 +18,12 @@
 
 /*** TIM local macros ***/
 
-#define TIM2_PWM_FREQUENCY_HZ			10000
-#define TIM2_ARR_VALUE					((RCC_MSI_FREQUENCY_KHZ * 1000) / TIM2_PWM_FREQUENCY_HZ)
-#define TIM2_NUMBER_OF_CHANNELS			4
-#define TIM21_DIMMING_LUT_LENGTH		100
+#define TIM2_PWM_FREQUENCY_HZ		10000
+#define TIM2_ARR_VALUE				((RCC_MSI_FREQUENCY_KHZ * 1000) / TIM2_PWM_FREQUENCY_HZ)
+#define TIM2_NUMBER_OF_CHANNELS		4
+#define TIM21_DIMMING_LUT_LENGTH	100
 
 /*** TIM local structures ***/
-
-// Warning: this enum gives the channel index starting from 0.
-typedef enum {
-	TIM2_CHANNEL_LED_RED = 2, // TIM2_CH3.
-	TIM2_CHANNEL_LED_GREEN = 1, // TIM2_CH2.
-	TIM2_CHANNEL_LED_BLUE = 0 // TIM2_CH1.
-} TIM2_channel_t;
 
 typedef struct {
 	volatile uint32_t dimming_lut_idx;

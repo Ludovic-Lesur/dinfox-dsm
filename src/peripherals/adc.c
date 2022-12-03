@@ -18,26 +18,26 @@
 
 /*** ADC local macros ***/
 
-#define ADC_MEDIAN_FILTER_LENGTH			9
-#define ADC_CENTER_AVERAGE_LENGTH			3
+#define ADC_MEDIAN_FILTER_LENGTH		9
+#define ADC_CENTER_AVERAGE_LENGTH		3
 
-#define ADC_FULL_SCALE_12BITS				4095
+#define ADC_FULL_SCALE_12BITS			4095
 
-#define ADC_VREFINT_VOLTAGE_MV				((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_FULL_SCALE_12BITS))
-#define ADC_VMCU_DEFAULT_MV					3000
+#define ADC_VREFINT_VOLTAGE_MV			((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_FULL_SCALE_12BITS))
+#define ADC_VMCU_DEFAULT_MV				3000
 
-#define ADC_VOLTAGE_DIVIDER_RATIO_VIN		10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VSRC		10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VSTR		10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VCOM		10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VOUT		10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VBKP		10
+#define ADC_VOLTAGE_DIVIDER_RATIO_VIN	10
+#define ADC_VOLTAGE_DIVIDER_RATIO_VSRC	10
+#define ADC_VOLTAGE_DIVIDER_RATIO_VSTR	2
+#define ADC_VOLTAGE_DIVIDER_RATIO_VCOM	10
+#define ADC_VOLTAGE_DIVIDER_RATIO_VOUT	10
+#define ADC_VOLTAGE_DIVIDER_RATIO_VBKP	2
 
-#define ADC_LT6106_VOLTAGE_GAIN				59
-#define ADC_LT6106_SHUNT_RESISTOR_MOHMS		10
-#define ADC_LT6106_OFFSET_CURRENT_UA		25000 // 250µV MAXIMUM / 10mR = 25mA.
+#define ADC_LT6106_VOLTAGE_GAIN			59
+#define ADC_LT6106_SHUNT_RESISTOR_MOHMS	10
+#define ADC_LT6106_OFFSET_CURRENT_UA	25000 // 250µV MAXIMUM / 10mR = 25mA.
 
-#define ADC_TIMEOUT_COUNT					1000000
+#define ADC_TIMEOUT_COUNT				1000000
 
 /*** ADC local structures ***/
 
@@ -219,12 +219,12 @@ errors:
 static ADC_status_t _ADC1_compute_vsrc(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vin_12bits = 0;
+	uint32_t vsrc_12bits = 0;
 	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSRC, &vin_12bits);
+	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSRC, &vsrc_12bits);
 	if (status != ADC_SUCCESS) goto errors;
 	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VSRC_MV] = (ADC_VREFINT_VOLTAGE_MV * vin_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSRC) / (adc_ctx.vrefint_12bits);
+	adc_ctx.data[ADC_DATA_INDEX_VSRC_MV] = (ADC_VREFINT_VOLTAGE_MV * vsrc_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSRC) / (adc_ctx.vrefint_12bits);
 errors:
 	return status;
 }
@@ -352,6 +352,11 @@ ADC_status_t ADC1_init(void) {
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint8_t idx = 0;
 	uint32_t loop_count = 0;
+	// Init context.
+	adc_ctx.vrefint_12bits = 0;
+	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) adc_ctx.data[idx] = 0;
+	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
+	adc_ctx.tmcu_degrees = 0;
 	// Init GPIOs.
 #ifdef BPSM
 	GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -378,7 +383,7 @@ ADC_status_t ADC1_init(void) {
 	}
 	// Enable ADC voltage regulator.
 	ADC1 -> CR |= (0b1 << 28);
-	lptim1_status = LPTIM1_delay_milliseconds(10, 0);
+	lptim1_status = LPTIM1_delay_milliseconds(5, 0);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 	// ADC configuration.
 	ADC1 -> CCR |= (0b1 << 25); // Enable low frequency clock (LFMEN='1').
@@ -391,7 +396,7 @@ ADC_status_t ADC1_init(void) {
 		loop_count++;
 		if (loop_count > ADC_TIMEOUT_COUNT) {
 			status = ADC_ERROR_CALIBRATION;
-			goto errors;
+			break;
 		}
 	}
 errors:
@@ -423,6 +428,7 @@ ADC_status_t ADC1_perform_measurements(void) {
 #endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
+	// Wait internal reference stabilization (max 3ms).
 	lptim1_status = LPTIM1_delay_milliseconds(10, 0);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 	// Perform measurements.
@@ -457,9 +463,8 @@ ADC_status_t ADC1_perform_measurements(void) {
 	status = _ADC1_compute_vbkp();
 	if (status != ADC_SUCCESS) goto errors;
 #endif
-	status = _ADC1_compute_tmcu();
-	if (status != ADC_SUCCESS) goto errors;
 	_ADC1_compute_vmcu();
+	status = _ADC1_compute_tmcu();
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.

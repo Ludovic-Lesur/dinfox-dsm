@@ -8,7 +8,6 @@
 #ifndef __LPTIM_H__
 #define __LPTIM_H__
 
-#include "mode.h"
 #include "types.h"
 
 /*** LPTIM structures ***/

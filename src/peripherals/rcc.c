@@ -11,7 +11,7 @@
 #include "pwr.h"
 #include "rcc_reg.h"
 
-/*** RCC functions ***/
+/*** RCC local functions ***/
 
 /* RCC INTERRUPT HANDLER.
  * @param:	None.
@@ -21,6 +21,8 @@ void RCC_IRQHandler(void) {
 	// Clear all flags.
 	RCC -> CICR |= (0b11 << 0);
 }
+
+/*** RCC functions ***/
 
 /* INIT RCC MODULE.
  * @param:	None.
