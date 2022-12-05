@@ -13,7 +13,7 @@
 
 /*** PARSER local functions ***/
 
-/* GENERIC MACRO TO CHECK RESULT INPUT POINTER.
+/* GENERIC MACRO TO CHECK INPUT POINTER.
  * @param ptr:	Pointer to check.
  * @return:		None.
  */
@@ -154,7 +154,7 @@ errors:
 /* RETRIEVE A HEXADECIMAL BYTE ARRAY IN THE CURRENT AT BUFFER.
  * @param parser_ctx:       Parser structure.
  * @param separator:        Parameter separator character.
- * @param max_length:       Maximum length of the byte array.
+ * @param maximum_length:	Maximum length of the byte array.
  * @param param:            Pointer to the extracted byte array.
  * @param extracted_length:	Length of the extracted buffer.
  * @return status:          Searching result.
@@ -197,7 +197,7 @@ PARSER_status_t PARSER_get_byte_array(PARSER_context_t* parser_ctx, char_t separ
 	}
 	// Check length if required.
 	if (((exact_length != 0) && ((*extracted_length) != maximum_length)) || ((*extracted_length) > maximum_length)) {
-		status = PARSER_ERROR_BYTE_ARRAY_LENGTH;
+		status = PARSER_ERROR_BYTE_ARRAY_SIZE;
 		goto errors;
 	}
 errors:

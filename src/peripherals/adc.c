@@ -276,12 +276,12 @@ errors:
 static ADC_status_t _ADC1_compute_vstr(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vout_12bits = 0;
+	uint32_t vstr_12bits = 0;
 	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSTR, &vout_12bits);
+	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSTR, &vstr_12bits);
 	if (status != ADC_SUCCESS) goto errors;
 	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VSTR_MV] = (ADC_VREFINT_VOLTAGE_MV * vout_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSTR) / (adc_ctx.vrefint_12bits);
+	adc_ctx.data[ADC_DATA_INDEX_VSTR_MV] = (ADC_VREFINT_VOLTAGE_MV * vstr_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSTR) / (adc_ctx.vrefint_12bits);
 errors:
 	return status;
 }
@@ -295,12 +295,12 @@ errors:
 static ADC_status_t _ADC1_compute_vbkp(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vout_12bits = 0;
+	uint32_t vbkp_12bits = 0;
 	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VBKP, &vout_12bits);
+	status = _ADC1_filtered_conversion(ADC_CHANNEL_VBKP, &vbkp_12bits);
 	if (status != ADC_SUCCESS) goto errors;
 	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VBKP_MV] = (ADC_VREFINT_VOLTAGE_MV * vout_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VBKP) / (adc_ctx.vrefint_12bits);
+	adc_ctx.data[ADC_DATA_INDEX_VBKP_MV] = (ADC_VREFINT_VOLTAGE_MV * vbkp_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VBKP) / (adc_ctx.vrefint_12bits);
 errors:
 	return status;
 }

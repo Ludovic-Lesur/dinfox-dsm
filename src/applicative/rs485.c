@@ -32,11 +32,11 @@
 /*** RS485 local macros ***/
 
 // Commands.
-#define RS485_COMMAND_BUFFER_SIZE		32
+#define RS485_COMMAND_BUFFER_SIZE		128
 // Parameters separator.
 #define RS485_CHAR_SEPARATOR			','
 // Replies.
-#define RS485_REPLY_BUFFER_SIZE			32
+#define RS485_REPLY_BUFFER_SIZE			128
 #define RS485_STRING_VALUE_BUFFER_SIZE	16
 #define RS485_REPLY_TAB					"     "
 
@@ -60,7 +60,7 @@ typedef struct {
 } RS485_command_t;
 
 typedef struct {
-	// Commands.
+	// Command.
 	volatile char_t command[RS485_COMMAND_BUFFER_SIZE];
 	volatile uint32_t command_size;
 	volatile uint8_t line_end_flag;
@@ -77,6 +77,7 @@ static const RS485_command_t RS485_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "RS?", STRING_NULL, "List all available commands", _RS485_print_command_list},
 	{PARSER_MODE_COMMAND, "RS$V?", STRING_NULL, "Get SW version", _RS485_print_sw_version},
 	{PARSER_MODE_COMMAND, "RS$ERROR?", STRING_NULL, "Read error stack", _RS485_print_error_stack},
+	{PARSER_MODE_COMMAND, "RS$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
 	{PARSER_MODE_HEADER, "RS$R=", "address[hex]", "Read register", _RS485_read_callback},
 	{PARSER_MODE_HEADER, "RS$W=", "address[hex],value[hex]", "Write register",_RS485_write_callback}
 };
@@ -151,6 +152,25 @@ static void _RS485_print_ok(void) {
 	_RS485_reply_send();
 }
 
+/* PRINT ERROR THROUGH RS485 INTERFACE.
+ * @param error:	Error to print.
+ * @return:			None.
+ */
+static void _RS485_print_error(ERROR_t error) {
+	// Add error to stack.
+	ERROR_stack_add(error);
+	// Print error.
+	_RS485_reply_add_string("ERROR_");
+	if (error < 0x0100) {
+		_RS485_reply_add_value(0, STRING_FORMAT_HEXADECIMAL, 1);
+		_RS485_reply_add_value((int32_t) error, STRING_FORMAT_HEXADECIMAL, 0);
+	}
+	else {
+		_RS485_reply_add_value((int32_t) error, STRING_FORMAT_HEXADECIMAL, 1);
+	}
+	_RS485_reply_send();
+}
+
 /* PRINT ALL SUPPORTED AT COMMANDS.
  * @param:	None.
  * @return:	None.
@@ -222,18 +242,6 @@ static void _RS485_print_error_stack(void) {
 	_RS485_print_ok();
 }
 
-/* PRINT ERROR THROUGH RS485 INTERFACE.
- * @param error:	Error to print.
- * @return:			None.
- */
-static void _RS485_print_error(ERROR_t error) {
-	// Add error to stack.
-	ERROR_stack_add(error);
-	// Print error.
-	_RS485_reply_add_string("ERROR");
-	_RS485_reply_send();
-}
-
 /* RS$R EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -258,7 +266,18 @@ static void _RS485_read_callback(void) {
 		_RS485_reply_add_value(generic_u8, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
 	case DINFOX_REGISTER_BOARD_ID:
+#ifdef LVRM
 		_RS485_reply_add_value(DINFOX_BOARD_ID_LVRM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
+#ifdef BPSM
+		_RS485_reply_add_value(DINFOX_BOARD_ID_BPSM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
+#ifdef DDRM
+		_RS485_reply_add_value(DINFOX_BOARD_ID_DDRM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
+#ifdef RRM
+		_RS485_reply_add_value(DINFOX_BOARD_ID_RRM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
 		break;
 	case DINFOX_REGISTER_RESET:
 		_RS485_reply_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
@@ -306,18 +325,7 @@ static void _RS485_read_callback(void) {
 		adc1_status = ADC1_perform_measurements();
 		ADC1_error_check_print();
 		// Note: indexing only works if registers addresses are ordered in the same way as ADC data indexes.
-#ifdef LVRM
-		adc1_status = ADC1_get_data((register_address - LVRM_REGISTER_VCOM_MV), &generic_u32);
-#endif
-#ifdef BPSM
-		adc1_status = ADC1_get_data((register_address - BPSM_REGISTER_VSRC_MV), &generic_u32);
-#endif
-#ifdef DDRM
-		adc1_status = ADC1_get_data((register_address - DDRM_REGISTER_VIN_MV), &generic_u32);
-#endif
-#ifdef RRM
-		adc1_status = ADC1_get_data((register_address - RRM_REGISTER_VIN_MV), &generic_u32);
-#endif
+		adc1_status = ADC1_get_data((register_address - DINFOX_REGISTER_VMCU_MV), &generic_u32);
 		ADC1_error_check_print();
 		_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		break;
@@ -406,15 +414,6 @@ static void _RS485_write_callback(void) {
 		NVM_error_check_print();
 		break;
 #endif
-	case DINFOX_REGISTER_RESET:
-		// Read parameter.
-		parser_status = PARSER_get_parameter(&rs485_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
-		PARSER_error_check_print();
-		// Reset if required.
-		if (register_value != 0) {
-			PWR_software_reset();
-		}
-		break;
 #ifdef LVRM
 	case LVRM_REGISTER_OUT_EN:
 #endif
@@ -475,7 +474,7 @@ static void _RS485_reset_parser(void) {
  */
 static void _RS485_decode(void) {
 	// Local variables.
-	uint32_t idx = 0;
+	uint8_t idx = 0;
 	uint8_t decode_success = 0;
 	// Update parser length.
 	rs485_ctx.parser.buffer_size = rs485_ctx.command_size;
@@ -518,6 +517,7 @@ void RS485_init(void) {
 void RS485_task(void) {
 	// Trigger decoding function if line end found.
 	if (rs485_ctx.line_end_flag != 0) {
+		// Decode and execute command.
 		LPUART1_disable_rx();
 		_RS485_decode();
 		LPUART1_enable_rx();
