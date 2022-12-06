@@ -46,6 +46,7 @@ static void _RS485_print_ok(void);
 static void _RS485_print_command_list(void);
 static void _RS485_print_sw_version(void);
 static void _RS485_print_error_stack(void);
+static void _RS485_adc_callback(void);
 static void _RS485_read_callback(void);
 static void _RS485_write_callback(void);
 
@@ -78,6 +79,7 @@ static const RS485_command_t RS485_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "RS$V?", STRING_NULL, "Get SW version", _RS485_print_sw_version},
 	{PARSER_MODE_COMMAND, "RS$ERROR?", STRING_NULL, "Read error stack", _RS485_print_error_stack},
 	{PARSER_MODE_COMMAND, "RS$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
+	{PARSER_MODE_COMMAND, "RS$ADC?", STRING_NULL, "Get ADC measurements", _RS485_adc_callback},
 	{PARSER_MODE_HEADER, "RS$R=", "address[hex]", "Read register", _RS485_read_callback},
 	{PARSER_MODE_HEADER, "RS$W=", "address[hex],value[hex]", "Write register",_RS485_write_callback}
 };
@@ -240,6 +242,88 @@ static void _RS485_print_error_stack(void) {
 	}
 	_RS485_reply_send();
 	_RS485_print_ok();
+}
+
+/* RS$ADC? EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _RS485_adc_callback(void) {
+	// Local variables.
+	ADC_status_t adc1_status = ADC_SUCCESS;
+	uint32_t generic_u32 = 0;
+	int8_t tmcu_degrees = 0;
+	// Trigger internal ADC conversions.
+	_RS485_reply_add_string("ADC running...");
+	_RS485_reply_send();
+	adc1_status = ADC1_perform_measurements();
+	ADC1_error_check_print();
+	// Read and print data.
+	// Input voltage.
+#ifdef LVRM
+	_RS485_reply_add_string("Vcom=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &generic_u32);
+#endif
+#ifdef BPSM
+	_RS485_reply_add_string("Vsrc=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &generic_u32);
+#endif
+#if (defined DDRM) || (defined RRM)
+	_RS485_reply_add_string("Vin=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &generic_u32);
+#endif
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("mV");
+	_RS485_reply_send();
+#ifdef BPSM
+	// Storage element voltage.
+	_RS485_reply_add_string("Vstr=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSTR_MV, &generic_u32);
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("mV");
+	_RS485_reply_send();
+#endif
+	// Output voltage.
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	_RS485_reply_add_string("Vout=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &generic_u32);
+#endif
+#ifdef BPSM
+	_RS485_reply_add_string("Vbkp=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VBKP_MV, &generic_u32);
+#endif
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("mV");
+	_RS485_reply_send();
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	// Output current.
+	_RS485_reply_add_string("Iout=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &generic_u32);
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("uA");
+	_RS485_reply_send();
+#endif
+	// MCU voltage.
+	_RS485_reply_add_string("Vmcu=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &generic_u32);
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("mV");
+	_RS485_reply_send();
+	// MCU temperature.
+	_RS485_reply_add_string("Tmcu=");
+	adc1_status = ADC1_get_tmcu(&tmcu_degrees);
+	ADC1_error_check_print();
+	_RS485_reply_add_value((int32_t) tmcu_degrees, STRING_FORMAT_DECIMAL, 0);
+	_RS485_reply_add_string("dC");
+	_RS485_reply_send();
+	_RS485_print_ok();
+errors:
+	return;
 }
 
 /* RS$R EXECUTION CALLBACK.
