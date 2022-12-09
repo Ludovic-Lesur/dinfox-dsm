@@ -90,6 +90,9 @@ static void _XM_init_hw(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
+#ifndef DEBUG
+	IWDG_status_t iwdg_status = IWDG_SUCCESS;
+#endif
 #ifdef AM
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
@@ -100,17 +103,18 @@ static void _XM_init_hw(void) {
 	// Init memory.
 	NVIC_init();
 	NVM_init();
+	// Init GPIOs.
+	GPIO_init();
+	EXTI_init();
 	// Init power and clock modules.
 	PWR_init();
 	RCC_init();
 	RCC_enable_lsi();
 	// Init watchdog.
 #ifndef DEBUG
-	IWDG_init();
+	iwdg_status = IWDG_init();
+	IWDG_error_check();
 #endif
-	// Init GPIOs.
-	GPIO_init();
-	EXTI_init();
 	// Init RTC.
 	RTC_reset();
 	RCC_enable_lse();

@@ -5,8 +5,8 @@
  *      Author: Ludo
  */
 
-#ifndef LVRM_H
-#define LVRM_H
+#ifndef __LVRM_H__
+#define __LVRM_H__
 
 #include "dinfox.h"
 #include "mode.h"
@@ -23,4 +23,4 @@ typedef enum {
 } LVRM_register_address_t;
 #endif
 
-#endif /* LVRM_H */
+#endif /* __LVRM_H__ */

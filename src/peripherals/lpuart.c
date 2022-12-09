@@ -42,6 +42,10 @@ static LPUART_context_t lpuart_ctx;
 
 /*** LPUART local functions ***/
 
+/* LPUART1 INTERRUPT HANDLER.
+ * @param:	None.
+ * @return:	None.
+ */
 void LPUART1_IRQHandler(void) {
 	// Local variables.
 	uint8_t rx_byte = 0;
@@ -107,7 +111,7 @@ errors:
 #ifdef AM
 /* CONFIGURE LPUART1.
  * @param node_address:	RS485 7-bits address
- * @return:				None.
+ * @return status:		Function execution status.
  */
 LPUART_status_t LPUART1_init(uint8_t node_address) {
 #else
@@ -118,10 +122,10 @@ LPUART_status_t LPUART1_init(uint8_t node_address) {
 void LPUART1_init(void) {
 #endif
 	// Local variables.
-	uint32_t brr = 0;
 #ifdef AM
 	LPUART_status_t status = LPUART_SUCCESS;
 #endif
+	uint32_t brr = 0;
 #ifdef AM
 	// Check parameter.
 	if (node_address > RS485_ADDRESS_LAST) {
@@ -131,6 +135,7 @@ void LPUART1_init(void) {
 	// Init context.
 	lpuart_ctx.node_address = (node_address & RS485_ADDRESS_MASK);
 	lpuart_ctx.master_address = 0xFF;
+	lpuart_ctx.rx_byte_count = 0;
 #endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
@@ -175,6 +180,8 @@ void LPUART1_enable_rx(void) {
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
 #endif
+	// Reset IRQ count.
+	lpuart_ctx.rx_byte_count = 0;
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);
@@ -189,10 +196,6 @@ void LPUART1_enable_rx(void) {
  * @return:	None.
  */
 void LPUART1_disable_rx(void) {
-#ifdef AM
-	// Reset IRQ count for next command reception.
-	lpuart_ctx.rx_byte_count = 0;
-#endif
 	// Disable RS485 receiver.
 	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_write(&GPIO_LPUART1_NRE, 1);
@@ -230,16 +233,6 @@ LPUART_status_t LPUART1_send_string(char_t* tx_string) {
 		loop_count++;
 		if (loop_count > LPUART_STRING_SIZE_MAX) {
 			status = LPUART_ERROR_STRING_SIZE;
-			goto errors;
-		}
-	}
-	// Wait for TC flag.
-	loop_count = 0;
-	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0) {
-		// Exit if timeout.
-		loop_count++;
-		if (loop_count > LPUART_TIMEOUT_COUNT) {
-			status = LPUART_ERROR_TC_TIMEOUT;
 			goto errors;
 		}
 	}

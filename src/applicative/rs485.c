@@ -13,7 +13,6 @@
 #include "dinfox.h"
 #include "error.h"
 #include "flash_reg.h"
-#include "led.h"
 #include "lpuart.h"
 #include "lvrm.h"
 #include "mapping.h"
@@ -482,7 +481,7 @@ static void _RS485_write_callback(void) {
 		_RS485_print_error(ERROR_REGISTER_ADDRESS);
 		goto errors;
 	}
-	// Get data.
+	// Write data.
 	switch (register_address) {
 #ifdef DM
 	case DINFOX_REGISTER_RS485_ADDRESS:
