@@ -23,6 +23,7 @@
 #define LPUART_BAUD_RATE 		9600
 #define LPUART_STRING_SIZE_MAX	1000
 #define LPUART_TIMEOUT_COUNT	100000
+//#define LPUART_USE_NRE
 
 /*** LPUART local structures ***/
 
@@ -145,7 +146,14 @@ void LPUART1_init(void) {
 	GPIO_configure(&GPIO_LPUART1_TX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LPUART1_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LPUART1_DE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
-	LPUART1_disable_rx();
+#ifdef LPUART_USE_NRE
+	// Disable receiver by default.
+	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
+	GPIO_write(&GPIO_LPUART1_NRE, 1);
+#else
+	// Put NRE pin in high impedance since it is directly connected to the DE pin.
+	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 	// Configure peripheral.
 #ifdef AM
 	LPUART1 -> CR1 |= 0x00002822;
@@ -187,8 +195,10 @@ void LPUART1_enable_rx(void) {
 	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);
 	// Enable receiver.
 	LPUART1 -> CR1 |= (0b1 << 2); // RE='1'.
+#ifdef LPUART_USE_NRE
 	// Enable RS485 receiver.
-	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
+	GPIO_write(&GPIO_LPUART1_NRE, 0);
+#endif
 }
 
 /* DISABLE LPUART RX OPERATION.
@@ -196,9 +206,10 @@ void LPUART1_enable_rx(void) {
  * @return:	None.
  */
 void LPUART1_disable_rx(void) {
+#ifdef LPUART_USE_NRE
 	// Disable RS485 receiver.
-	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_write(&GPIO_LPUART1_NRE, 1);
+#endif
 	// Disable receiver.
 	LPUART1 -> CR1 &= ~(0b1 << 2); // RE='0'.
 	// Disable interrupt.
@@ -227,7 +238,7 @@ LPUART_status_t LPUART1_send_string(char_t* tx_string) {
 #endif
 	// Fill TX buffer with new bytes.
 	while (*tx_string) {
-		_LPUART1_fill_tx_buffer((uint8_t) *(tx_string++));
+		status = _LPUART1_fill_tx_buffer((uint8_t) *(tx_string++));
 		if (status != LPUART_SUCCESS) goto errors;
 		// Check character count.
 		loop_count++;
@@ -236,6 +247,18 @@ LPUART_status_t LPUART1_send_string(char_t* tx_string) {
 			goto errors;
 		}
 	}
+#ifdef LPUART_USE_NRE
+	// Wait for TC flag (to avoid echo when enabling RX again).
+	loop_count = 0;
+	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0) {
+		// Exit if timeout.
+		loop_count++;
+		if (loop_count > LPUART_TIMEOUT_COUNT) {
+			status = LPUART_ERROR_TC_TIMEOUT;
+			goto errors;
+		}
+	}
+#endif
 errors:
 	return status;
 }
