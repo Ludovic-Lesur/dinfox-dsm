@@ -135,7 +135,7 @@ void LPUART1_init(void) {
 	}
 	// Init context.
 	lpuart_ctx.node_address = (node_address & RS485_ADDRESS_MASK);
-	lpuart_ctx.master_address = 0xFF;
+	lpuart_ctx.master_address = RS485_ADDRESS_LAST;
 	lpuart_ctx.rx_byte_count = 0;
 #endif
 	// Select LSE as clock source.

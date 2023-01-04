@@ -8,15 +8,8 @@
 #ifndef __MODE_H__
 #define __MODE_H__
 
-// Board selection.
-#define LVRM
-//#define BPSM
-//#define DDRM
-//#define RRM
-
 #define AM		// Addressed mode.
 //#define DM	// Direct mode.
-
 
 /*** Debug mode ***/
 

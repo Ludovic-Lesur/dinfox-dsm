@@ -1,0 +1,6 @@
+r
+loadfile DDRM_HW1_0/XM.hex
+verifyfile DDRM_HW1_0/XM.hex
+r
+g
+qc
