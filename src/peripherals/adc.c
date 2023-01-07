@@ -428,8 +428,8 @@ ADC_status_t ADC1_perform_measurements(void) {
 #endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
-	// Wait internal reference stabilization (max 3ms).
-	lptim1_status = LPTIM1_delay_milliseconds(10, 0);
+	// Wait internal reference and voltage dividers stabilization.
+	lptim1_status = LPTIM1_delay_milliseconds(100, 0);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 	// Perform measurements.
 	status = _ADC1_compute_vrefint();
