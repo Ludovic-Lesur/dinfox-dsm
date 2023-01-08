@@ -5,12 +5,12 @@
  *      Author: Ludo
  */
 
+// Peripherals.
 #include "adc.h"
 #include "exti.h"
-#include "error.h"
+
 #include "gpio.h"
 #include "iwdg.h"
-#include "led.h"
 #include "lpuart.h"
 #include "lptim.h"
 #include "mapping.h"
@@ -20,8 +20,13 @@
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
-#include "rs485.h"
 #include "tim.h"
+// Components.
+#include "led.h"
+// Applicative.
+#include "error.h"
+#include "rs485.h"
+#include "rs485_common.h"
 
 /*** MAIN local macros ***/
 
@@ -96,7 +101,7 @@ static void _XM_init_hw(void) {
 #ifdef AM
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	uint8_t node_address;
+	RS485_address_t node_address;
 #endif
 	// Init error stack
 	ERROR_stack_init();

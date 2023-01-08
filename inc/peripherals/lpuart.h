@@ -10,6 +10,7 @@
 
 #include "mode.h"
 #include "types.h"
+#include "rs485_common.h"
 
 /*** LPUART structures ***/
 
@@ -27,7 +28,7 @@ typedef enum {
 /*** LPUART functions ***/
 
 #ifdef AM
-LPUART_status_t LPUART1_init(uint8_t node_address);
+LPUART_status_t LPUART1_init(RS485_address_t node_address);
 #else
 void LPUART1_init(void);
 #endif

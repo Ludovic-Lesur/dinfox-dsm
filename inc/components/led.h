@@ -8,7 +8,6 @@
 #ifndef LED_H
 #define LED_H
 
-#include "mode.h"
 #include "tim.h"
 #include "types.h"
 

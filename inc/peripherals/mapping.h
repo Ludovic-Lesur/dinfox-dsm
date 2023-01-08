@@ -10,7 +10,6 @@
 
 #include "gpio.h"
 #include "gpio_reg.h"
-#include "mode.h"
 
 // ADC inputs.
 #if (defined LVRM) || (defined BPSM) || (defined DDRM)

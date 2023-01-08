@@ -29,8 +29,8 @@
 
 #ifdef AM
 typedef struct {
-	uint8_t node_address;
-	volatile uint8_t master_address;
+	RS485_address_t node_address;
+	volatile RS485_address_t master_address;
 	volatile uint8_t rx_byte_count;
 } LPUART_context_t;
 #endif
@@ -114,7 +114,7 @@ errors:
  * @param node_address:	RS485 7-bits address
  * @return status:		Function execution status.
  */
-LPUART_status_t LPUART1_init(uint8_t node_address) {
+LPUART_status_t LPUART1_init(RS485_address_t node_address) {
 #else
 /* CONFIGURE LPUART1.
  * @param:	None.
@@ -187,9 +187,9 @@ void LPUART1_enable_rx(void) {
 #ifdef AM
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
-#endif
 	// Reset IRQ count.
 	lpuart_ctx.rx_byte_count = 0;
+#endif
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);

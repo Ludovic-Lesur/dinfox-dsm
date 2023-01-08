@@ -9,7 +9,6 @@
 #define __LVRM_H__
 
 #include "dinfox.h"
-#include "mode.h"
 
 /*** LVRM registers mapping ***/
 

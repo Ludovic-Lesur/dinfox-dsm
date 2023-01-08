@@ -12,7 +12,6 @@
 #include "lptim.h"
 #include "mapping.h"
 #include "math.h"
-#include "mode.h"
 #include "rcc_reg.h"
 #include "types.h"
 

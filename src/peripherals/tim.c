@@ -8,7 +8,6 @@
 #include "tim.h"
 
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"

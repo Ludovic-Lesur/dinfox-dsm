@@ -9,7 +9,6 @@
 #define __DDRM_H__
 
 #include "dinfox.h"
-#include "mode.h"
 
 /*** DDRM registers mapping ***/
 

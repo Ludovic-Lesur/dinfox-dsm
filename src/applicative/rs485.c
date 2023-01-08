@@ -362,8 +362,15 @@ static void _RS485_read_callback(void) {
 		_RS485_reply_add_value(DINFOX_BOARD_ID_RRM, STRING_FORMAT_HEXADECIMAL, 0);
 #endif
 		break;
-	case DINFOX_REGISTER_RESET:
-		_RS485_reply_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
+	case DINFOX_REGISTER_HW_VERSION_MAJOR:
+#ifdef HW1_0
+		_RS485_reply_add_value(1, STRING_FORMAT_DECIMAL, 0);
+#endif
+		break;
+	case DINFOX_REGISTER_HW_VERSION_MINOR:
+#ifdef HW1_0
+		_RS485_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+#endif
 		break;
 	case DINFOX_REGISTER_SW_VERSION_MAJOR:
 		_RS485_reply_add_value(GIT_MAJOR_VERSION, STRING_FORMAT_DECIMAL, 0);
@@ -382,6 +389,9 @@ static void _RS485_read_callback(void) {
 		break;
 	case DINFOX_REGISTER_ERROR_STACK:
 		_RS485_reply_add_value(ERROR_stack_read(), STRING_FORMAT_HEXADECIMAL, 0);
+		break;
+	case DINFOX_REGISTER_RESET:
+		_RS485_reply_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
 		break;
 	case DINFOX_REGISTER_VMCU_MV:
 #ifdef LVRM

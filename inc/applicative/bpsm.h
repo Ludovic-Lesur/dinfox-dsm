@@ -9,7 +9,6 @@
 #define __BPSM_H__
 
 #include "dinfox.h"
-#include "mode.h"
 
 /*** BPSM registers mapping ***/
 

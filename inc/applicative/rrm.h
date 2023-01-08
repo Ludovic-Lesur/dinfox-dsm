@@ -9,7 +9,6 @@
 #define __RRM_H__
 
 #include "dinfox.h"
-#include "mode.h"
 
 #ifdef RRM
 typedef enum {

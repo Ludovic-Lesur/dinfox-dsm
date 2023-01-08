@@ -8,7 +8,6 @@
 #ifndef __TIM_H__
 #define __TIM_H__
 
-#include "mode.h"
 #include "types.h"
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

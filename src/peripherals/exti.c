@@ -10,7 +10,6 @@
 #include "exti_reg.h"
 #include "gpio.h"
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "rcc_reg.h"
 #include "syscfg_reg.h"
