@@ -14,6 +14,8 @@
 #include "lpuart.h"
 #include "nvm.h"
 #include "rtc.h"
+// Components.
+#include "led.h"
 // Utils.
 #include "math.h"
 #include "parser.h"
@@ -30,8 +32,10 @@ typedef enum {
 	ERROR_BASE_LPUART1 = (ERROR_BASE_IWDG + IWDG_ERROR_BASE_LAST),
 	ERROR_BASE_NVM = (ERROR_BASE_LPUART1 + LPUART_ERROR_BASE_LAST),
 	ERROR_BASE_RTC = (ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
+	// Components.
+	ERROR_BASE_LED = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
 	// Utils.
-	ERROR_BASE_MATH = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
+	ERROR_BASE_MATH = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
 	ERROR_BASE_PARSER = (ERROR_BASE_MATH + MATH_ERROR_BASE_LAST),
 	ERROR_BASE_STRING = (ERROR_BASE_PARSER + PARSER_ERROR_BASE_LAST),
 	// Last index.

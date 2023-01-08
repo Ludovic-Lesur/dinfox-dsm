@@ -196,8 +196,8 @@ void TIM21_stop(void) {
 }
 
 /* GET SINGLE BLINK STATUS.
- * @param:							None.
- * @return single_blink_done: '1' if the single blink is finished, '0' otherwise.
+ * @param:						None.
+ * @return single_blink_done:	'1' if the single blink is finished, '0' otherwise.
  */
 uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);

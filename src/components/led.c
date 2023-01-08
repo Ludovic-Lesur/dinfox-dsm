@@ -33,14 +33,31 @@ void LED_init(void) {
 /* START A SINGLE LED BLINK.
  * @param blink_period_ms:	Blink duration in ms.
  * @param led_color:		Color to set.
- * @return:					None.
+ * @return status:			Function execution status.
  */
-void LED_start_blink(uint32_t blink_duration_ms, TIM2_channel_mask_t color) {
+LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
+	// Local variables.
+	LED_status_t status = LED_SUCCESS;
+	// Check parameters.
+	if (blink_duration_ms == 0) {
+		status = LED_ERROR_NULL_DURATION;
+		goto errors;
+	}
+	if (color >= LED_COLOR_LAST) {
+		status = LED_ERROR_COLOR;
+		goto errors;
+	}
 	// Set color according to thresholds.
 	TIM2_set_color_mask(color);
 	// Start blink.
 	TIM2_start();
 	TIM21_start(blink_duration_ms);
+errors:
+	return status;
+}
+
+uint8_t LED_is_single_blink_done(void) {
+	return TIM21_is_single_blink_done();
 }
 
 /* STOP LED BLINK.

@@ -37,18 +37,18 @@
 #define XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS	60
 #endif
 
-/*** MAIN structures ***/
+/*** MAIN local structures ***/
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 typedef struct {
 	uint32_t threshold_ua;
-	TIM2_channel_mask_t led_color;
+	LED_color_t led_color;
 } XM_iout_indicator_t;
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 typedef struct {
-	TIM2_channel_mask_t led_color;
+	LED_color_t led_color;
 	uint32_t input_voltage_mv;
 	uint32_t iout_ua;
 	uint32_t iout_indicator_seconds_count;
@@ -60,13 +60,13 @@ typedef struct {
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 static const XM_iout_indicator_t LVRM_IOUT_INDICATOR[XM_IOUT_INDICATOR_RANGE] = {
-	{0, TIM2_CHANNEL_MASK_GREEN},
-	{50000, TIM2_CHANNEL_MASK_YELLOW},
-	{500000, TIM2_CHANNEL_MASK_RED},
-	{1000000, TIM2_CHANNEL_MASK_MAGENTA},
-	{2000000, TIM2_CHANNEL_MASK_BLUE},
-	{3000000, TIM2_CHANNEL_MASK_CYAN},
-	{4000000, TIM2_CHANNEL_MASK_WHITE}
+	{0, LED_COLOR_GREEN},
+	{50000, LED_COLOR_YELLOW},
+	{500000, LED_COLOR_RED},
+	{1000000, LED_COLOR_MAGENTA},
+	{2000000, LED_COLOR_BLUE},
+	{3000000, LED_COLOR_CYAN},
+	{4000000, LED_COLOR_WHITE}
 };
 static XM_context_t xm_ctx;
 #endif
@@ -79,7 +79,7 @@ static XM_context_t xm_ctx;
  * @return:	None.
  */
 static void _XM_init_context(void) {
-	xm_ctx.led_color = TIM2_CHANNEL_MASK_OFF;
+	xm_ctx.led_color = LED_COLOR_OFF;
 	xm_ctx.input_voltage_mv = 0;
 	xm_ctx.iout_ua = 0;
 	xm_ctx.iout_indicator_seconds_count = 0;
@@ -185,6 +185,7 @@ int main(void) {
 	// Local variables.
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	ADC_status_t adc1_status = ADC_SUCCESS;
+	LED_status_t led_status = LED_SUCCESS;
 #endif
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	// Start periodic wakeup timer.
@@ -234,7 +235,8 @@ int main(void) {
 				// Update period according to input voltage.
 				xm_ctx.iout_indicator_period_seconds = (xm_ctx.input_voltage_mv > XM_IOUT_INDICATOR_PERIOD_THRESHOLD_MV) ? XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS : XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
 				// Blink LED.
-				LED_start_blink(2000, xm_ctx.led_color);
+				led_status = LED_start_single_blink(2000, xm_ctx.led_color);
+				LED_error_check();
 			}
 #endif
 		}
