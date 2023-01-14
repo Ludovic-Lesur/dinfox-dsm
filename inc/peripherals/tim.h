@@ -55,8 +55,7 @@ typedef enum {
 /*** TIM functions ***/
 
 void TIM2_init(void);
-void TIM2_set_color_mask(TIM2_channel_mask_t led_color);
-void TIM2_start(void);
+void TIM2_start(TIM2_channel_mask_t led_color);
 void TIM2_stop(void);
 
 void TIM21_init(void);

@@ -17,9 +17,14 @@
 
 /*** TIM local macros ***/
 
-#define TIM2_PWM_FREQUENCY_HZ		10000
-#define TIM2_ARR_VALUE				((RCC_MSI_FREQUENCY_KHZ * 1000) / TIM2_PWM_FREQUENCY_HZ)
+#define TIM_TIMEOUT_COUNT			1000000
+
 #define TIM2_NUMBER_OF_CHANNELS		4
+#define TIM2_CCRX_MASK_OFF			0xFFFF
+#define TIM2_PWM_FREQUENCY_HZ		10000
+#define TIM2_ARR_VALUE				((RCC_MSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
+
+#define TIM21_PRESCALER				2
 #define TIM21_DIMMING_LUT_LENGTH	100
 
 /*** TIM local structures ***/
@@ -44,6 +49,7 @@ static const uint8_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
 	136, 132, 127, 123, 118, 113, 107, 101, 95, 89,
 	82, 74, 67, 59, 50, 41, 32, 22, 11, 0
 };
+static uint16_t tim2_ccrx_mask[TIM2_NUMBER_OF_CHANNELS];
 static TIM21_context_t tim21_ctx;
 
 /*** TIM local functions ***/
@@ -56,9 +62,9 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 	// Check update flag.
 	if (((TIM21 -> SR) & (0b1 << 0)) != 0) {
 		// Update duty cycles.
-		TIM2 -> CCR1 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
-		TIM2 -> CCR2 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
-		TIM2 -> CCR3 = TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx];
+		TIM2 -> CCR1 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[0]);
+		TIM2 -> CCR2 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[1]);
+		TIM2 -> CCR3 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[2]);
 		// Manage index and direction.
 		if (tim21_ctx.dimming_lut_direction == 0) {
 			// Increment index.
@@ -85,6 +91,23 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 	}
 }
 
+/* RESET ALL TIMER CHANNELS.
+ * @param:	None.
+ * @return:	None.
+ */
+void _TIM2_reset_channels(void) {
+	// Local variables.
+	uint8_t idx = 0;
+	// Reset masks.
+	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) tim2_ccrx_mask[idx] = TIM2_CCRX_MASK_OFF;
+	// Disable all channels.
+	TIM2 -> CCR1 = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CCR2 = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CCR3 = (TIM2_ARR_VALUE + 1);
+	// Reset counter.
+	TIM2 -> CNT = 0;
+}
+
 /*** TIM functions ***/
 
 /* INIT TIM2 FOR PWM OPERATION.
@@ -99,41 +122,34 @@ void TIM2_init(void) {
 	// Configure channels 1-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
 	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
-	// Disable all channels by default (CCxE='0').
-	TIM2 -> CCR1 = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCR2 = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCR3 = (TIM2_ARR_VALUE + 1);
+	TIM2 -> CR1 |= (0b1 << 7);
+	TIM2 -> CCER |= 0x00000111;
+	// Disable all channels by default.
+	_TIM2_reset_channels();
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
 }
 
-/* SET CURRENT LED COLOR.
- * @param led_color:	New LED color.
+/* START PWM GENERATION.
+ * @param led_color:	Channel mask.
  * @return:				None.
  */
-void TIM2_set_color_mask(TIM2_channel_mask_t led_color) {
-	// Reset bits.
-	TIM2 -> CCER &= 0xFFFFEEEE;
-	// Enable channels according to color.
+void TIM2_start(TIM2_channel_mask_t led_color) {
+	// Local variables.
 	uint8_t idx = 0;
-	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) {
-		if ((led_color & (0b1 << idx)) != 0) {
-			TIM2 -> CCER |= (0b1 << (4 * idx));
-		}
-	}
-}
-
-/* START PWM GENERATION.
- * @param:	None.
- * @return:	None.
- */
-void TIM2_start(void) {
+	// Disable all channels.
+	_TIM2_reset_channels();
 	// Link GPIOs to timer.
 	GPIO_configure(&GPIO_LED_RED, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	// Enable required channels.
+	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) {
+		if ((led_color & (0b1 << idx)) != 0) {
+			tim2_ccrx_mask[idx] = 0;
+		}
+	}
 	// Enable counter.
-	TIM2 -> CNT = 0;
 	TIM2 -> CR1 |= (0b1 << 0); // CEN='1'.
 }
 
@@ -143,7 +159,7 @@ void TIM2_start(void) {
  */
 void TIM2_stop(void) {
 	// Disable all channels.
-	TIM2 -> CCER &= 0xFFFFEEEE;
+	_TIM2_reset_channels();
 	// Disable and reset counter.
 	TIM2 -> CR1 &= ~(0b1 << 0); // CEN='0'.
 }
@@ -156,7 +172,7 @@ void TIM21_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
 	// Configure period.
-	TIM21 -> PSC = 1; // Timer is clocked on (MSI / 2) .
+	TIM21 -> PSC = (TIM21_PRESCALER - 1); // Timer is clocked on (MSI / 2) .
 	// Generate event to update registers.
 	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.
@@ -176,7 +192,7 @@ void TIM21_start(uint32_t led_blink_period_ms) {
 	tim21_ctx.single_blink_done = 0;
 	// Set period.
 	TIM21 -> CNT = 0;
-	TIM21 -> ARR = (led_blink_period_ms * RCC_MSI_FREQUENCY_KHZ) / (4 * TIM21_DIMMING_LUT_LENGTH);
+	TIM21 -> ARR = (led_blink_period_ms * RCC_MSI_FREQUENCY_KHZ) / (TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
 	// Clear flag and enable interrupt.
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
 	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21);

@@ -47,15 +47,17 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
 		status = LED_ERROR_COLOR;
 		goto errors;
 	}
-	// Set color according to thresholds.
-	TIM2_set_color_mask(color);
 	// Start blink.
-	TIM2_start();
+	TIM2_start(color);
 	TIM21_start(blink_duration_ms);
 errors:
 	return status;
 }
 
+/* CHECK LED BLINK STATUS.
+ * @param:	None.
+ * @return:	'1' if the blink is done, '0' otherwise.
+ */
 uint8_t LED_is_single_blink_done(void) {
 	return TIM21_is_single_blink_done();
 }
