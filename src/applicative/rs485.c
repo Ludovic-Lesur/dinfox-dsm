@@ -24,6 +24,7 @@
 #include "rcc_reg.h"
 #include "rrm.h"
 #include "rs485_common.h"
+#include "sm.h"
 #include "string.h"
 #include "types.h"
 #include "version.h"
@@ -361,6 +362,9 @@ static void _RS485_read_callback(void) {
 #ifdef RRM
 		_RS485_reply_add_value(DINFOX_BOARD_ID_RRM, STRING_FORMAT_HEXADECIMAL, 0);
 #endif
+#ifdef SM
+		_RS485_reply_add_value(DINFOX_BOARD_ID_SM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
 		break;
 	case DINFOX_REGISTER_HW_VERSION_MAJOR:
 #ifdef HW1_0
@@ -431,6 +435,7 @@ static void _RS485_read_callback(void) {
 		ADC1_error_check_print();
 		_RS485_reply_add_value((int32_t) generic_s8, STRING_FORMAT_DECIMAL, 0);
 		break;
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
 	case LVRM_REGISTER_OUT_EN:
 #endif
@@ -445,6 +450,7 @@ static void _RS485_read_callback(void) {
 #endif
 		_RS485_reply_add_value(GPIO_read(&GPIO_OUT_EN), STRING_FORMAT_BOOLEAN, 0);
 		break;
+#endif
 #ifdef BPSM
 	case BPSM_REGISTER_CHRG_EN:
 		_RS485_reply_add_value(GPIO_read(&GPIO_CHRG_EN), STRING_FORMAT_BOOLEAN, 0);
@@ -488,6 +494,9 @@ static void _RS485_write_callback(void) {
 #ifdef RRM
 	if (register_address >= RRM_REGISTER_LAST) {
 #endif
+#ifdef SM
+	if (register_address >= SM_REGISTER_LAST) {
+#endif
 		_RS485_print_error(ERROR_REGISTER_ADDRESS);
 		goto errors;
 	}
@@ -507,6 +516,7 @@ static void _RS485_write_callback(void) {
 		NVM_error_check_print();
 		break;
 #endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
 	case LVRM_REGISTER_OUT_EN:
 #endif
@@ -525,6 +535,7 @@ static void _RS485_write_callback(void) {
 		// Set relay state.
 		GPIO_write(&GPIO_OUT_EN, register_value);
 		break;
+#endif
 #ifdef BPSM
 	case BPSM_REGISTER_CHRG_EN:
 		// Read new output state.

@@ -43,14 +43,24 @@ static const GPIO_pin_t GPIO_OUT_EN =		(GPIO_pin_t) {GPIOA, 0, 6, 0};
 static const GPIO_pin_t GPIO_OUT_EN =		(GPIO_pin_t) {GPIOA, 0, 0, 0};
 #endif
 // LPUART1 (RS485).
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 static const GPIO_pin_t GPIO_LPUART1_TX =	(GPIO_pin_t) {GPIOB, 1, 6, 6}; // AF6 = LPUART1_TX.
 static const GPIO_pin_t GPIO_LPUART1_RX =	(GPIO_pin_t) {GPIOB, 1, 7, 6}; // AF6 = LPUART1_RX.
+
+#endif
+#ifdef SM
+static const GPIO_pin_t GPIO_LPUART1_TX =	(GPIO_pin_t) {GPIOA, 0, 2, 6}; // AF6 = LPUART1_TX.
+static const GPIO_pin_t GPIO_LPUART1_RX =	(GPIO_pin_t) {GPIOA, 0, 3, 6}; // AF6 = LPUART1_RX.
+#endif
 static const GPIO_pin_t GPIO_LPUART1_DE =	(GPIO_pin_t) {GPIOB, 1, 1, 4}; // AF4 = LPUART1_DE.
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 static const GPIO_pin_t GPIO_LPUART1_NRE =	(GPIO_pin_t) {GPIOA, 0, 9, 0};
 #endif
 #ifdef BPSM
 static const GPIO_pin_t GPIO_LPUART1_NRE =	(GPIO_pin_t) {GPIOA, 0, 10, 0};
+#endif
+#ifdef SM
+static const GPIO_pin_t GPIO_LPUART1_NRE =	(GPIO_pin_t) {GPIOA, 0, 4, 0};
 #endif
 // RGB LED.
 #ifdef LVRM
