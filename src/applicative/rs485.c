@@ -418,18 +418,12 @@ static void _RS485_read_callback(void) {
 	case RRM_REGISTER_VOUT_MV:
 	case RRM_REGISTER_IOUT_UA:
 #endif
-		// Perform analog measurements.
-		adc1_status = ADC1_perform_measurements();
-		ADC1_error_check_print();
 		// Note: indexing only works if registers addresses are ordered in the same way as ADC data indexes.
 		adc1_status = ADC1_get_data((register_address - DINFOX_REGISTER_VMCU_MV), &generic_u32);
 		ADC1_error_check_print();
 		_RS485_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		break;
 	case DINFOX_REGISTER_TMCU_DEGREES:
-		// Perform analog measurements.
-		adc1_status = ADC1_perform_measurements();
-		ADC1_error_check_print();
 		// Read temperature.
 		adc1_status = ADC1_get_tmcu(&generic_s8);
 		ADC1_error_check_print();
