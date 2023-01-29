@@ -169,6 +169,10 @@ void TIM2_stop(void) {
  * @return:	None.
  */
 void TIM21_init(void) {
+	// Init context.
+	tim21_ctx.dimming_lut_idx = 0;
+	tim21_ctx.dimming_lut_direction = 0;
+	tim21_ctx.single_blink_done = 1;
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
 	// Configure period.
