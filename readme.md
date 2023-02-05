@@ -7,7 +7,7 @@ The LVRM, BPSM, DDRM, RRM, SM and GPSM boards are DIN rail modules of the DINFox
 * SM: **sensors module** with embedded temperature/humidity sensor, 4 analog inputs, 4 digital I/Os and external shield support (with I2C and I/Os).
 * GPSM: **GPS module** with active antenna support.
 * Analog **measurements** such as input voltage, output voltage and output current.
-* **RS485** commmunication.
+* **RS485** communication.
 
 # Hardware
 The boards were designed on **Circuit Maker V2.0**. Hardware documentation and design files are available @
@@ -28,9 +28,10 @@ The boards are based on the **STM32L011F4U6** and **STM32L031G6U6** of the STMic
 
 ## Structure
 The project is organized as follow:
-* `inc` and `src`: **source code** split in 4 layers:
+* `inc` and `src`: **source code** split in 5 layers:
     * `registers`: MCU **registers** adress definition.
     * `peripherals`: internal MCU **peripherals** drivers.
+    * `utils`: **utility** functions.
     * `components`: external **components** drivers.
     * `applicative`: high-level **application** layers.
 * `startup`: MCU **startup** code (from ARM).
