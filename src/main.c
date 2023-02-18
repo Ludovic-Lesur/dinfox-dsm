@@ -26,7 +26,7 @@
 #include "load.h"
 // Nodes.
 #include "lbus.h"
-#include "lbus_common.h"
+#include "node.h"
 // Applicative.
 #include "at.h"
 #include "error.h"
@@ -113,7 +113,7 @@ static void _XM_init_hw(void) {
 #ifdef AM
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	LBUS_address_t self_address;
+	NODE_address_t self_address;
 #endif
 	// Init error stack
 	ERROR_stack_init();

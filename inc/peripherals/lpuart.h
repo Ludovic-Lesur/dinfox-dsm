@@ -8,8 +8,8 @@
 #ifndef __LPUART_H__
 #define __LPUART_H__
 
-#include "lbus_common.h"
 #include "mode.h"
+#include "node.h"
 #include "types.h"
 
 /*** LPUART structures ***/
@@ -28,7 +28,7 @@ typedef enum {
 /*** LPUART functions ***/
 
 #ifdef AM
-LPUART_status_t LPUART1_init(LBUS_address_t self_address);
+LPUART_status_t LPUART1_init(NODE_address_t self_address);
 #else
 void LPUART1_init(void);
 #endif

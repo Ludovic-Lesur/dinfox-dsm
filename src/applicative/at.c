@@ -638,6 +638,7 @@ static void _AT_decode(void) {
 		goto errors;
 	}
 errors:
+	_AT_reset_parser();
 	return;
 }
 
@@ -666,7 +667,6 @@ void AT_task(void) {
 		_AT_decode();
 		LPUART1_enable_rx();
 	}
-	_AT_reset_parser();
 }
 
 /* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).

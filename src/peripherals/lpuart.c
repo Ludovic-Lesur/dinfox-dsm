@@ -5,13 +5,12 @@
  *      Author: Ludo
  */
 
-#include <at.h>
 #include "lpuart.h"
 
+#include "at.h"
 #include "exti.h"
 #include "gpio.h"
 #include "lbus.h"
-#include "lbus_common.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
 #include "mode.h"
@@ -83,7 +82,7 @@ errors:
  * @param self_address:	Self bus address.
  * @return status:		Function execution status.
  */
-LPUART_status_t LPUART1_init(LBUS_address_t self_address) {
+LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 #else
 /* CONFIGURE LPUART1.
  * @param:	None.
@@ -188,6 +187,7 @@ LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;
 	uint32_t idx = 0;
+	uint32_t loop_count = 0;
 	// Check parameter.
 	if (data == NULL) {
 		status = LPUART_ERROR_NULL_PARAMETER;
@@ -198,9 +198,7 @@ LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
 		status = _LPUART1_fill_tx_buffer(data[idx]);
 		if (status != LPUART_SUCCESS) goto errors;
 	}
-#ifdef LPUART_USE_NRE
-	// Wait for TC flag (to avoid echo when enabling RX again).
-	loop_count = 0;
+	// Wait for TC flag.
 	while (((LPUART1 -> ISR) & (0b1 << 6)) == 0) {
 		// Exit if timeout.
 		loop_count++;
@@ -209,7 +207,6 @@ LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
 			goto errors;
 		}
 	}
-#endif
 errors:
 	return status;
 }

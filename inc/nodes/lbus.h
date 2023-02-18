@@ -9,10 +9,16 @@
 #define __LBUS_H__
 
 #include "mode.h"
+#include "node.h"
 #include "lpuart.h"
 #include "types.h"
 
 #ifdef AM
+
+/*** LBUS macros ***/
+
+#define LBUS_ADDRESS_MASK	0x7F
+#define LBUS_ADDRESS_LAST	LBUS_ADDRESS_MASK
 
 /*** LBUS structures ***/
 
@@ -25,7 +31,7 @@ typedef enum {
 
 /*** LBUS functions ***/
 
-LBUS_status_t LBUS_init(LBUS_address_t self_address);
+LBUS_status_t LBUS_init(NODE_address_t self_address);
 LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes);
 void LBUS_fill_rx_buffer(uint8_t rx_byte);
 

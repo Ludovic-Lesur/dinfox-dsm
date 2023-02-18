@@ -8,8 +8,8 @@
 #include "lbus.h"
 
 #include "at.h"
-#include "lbus_common.h"
 #include "lpuart.h"
+#include "node.h"
 #include "types.h"
 
 #ifdef AM
@@ -30,8 +30,8 @@ typedef enum {
 } LBUS_frame_field_index_t;
 
 typedef struct {
-	LBUS_address_t self_address;
-	LBUS_address_t master_address;
+	NODE_address_t self_address;
+	NODE_address_t master_address;
 	uint8_t rx_byte_count;
 } LBUS_context_t;
 
@@ -45,7 +45,7 @@ static LBUS_context_t lbus_ctx;
  * @param self_address:	Self bus address.
  * @return status:		Function execution status.
  */
-LBUS_status_t LBUS_init(LBUS_address_t self_address) {
+LBUS_status_t LBUS_init(NODE_address_t self_address) {
 	// Local variables.
 	LBUS_status_t status = LBUS_SUCCESS;
 	// Check address.
