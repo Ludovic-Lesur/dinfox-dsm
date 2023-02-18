@@ -11,8 +11,6 @@
 #include "lptim.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** DIGITAL structures ***/
 
 typedef enum {
@@ -21,6 +19,8 @@ typedef enum {
 	DIGITAL_ERROR_BASE_LPTIM = 0x100,
 	DIGITAL_ERROR_BASE_LAST = (DIGITAL_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } DIGITAL_status_t;
+
+#ifdef SM
 
 typedef enum {
 	DIGITAL_DATA_INDEX_DIO0 = 0,

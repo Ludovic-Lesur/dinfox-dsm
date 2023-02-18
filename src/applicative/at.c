@@ -144,7 +144,6 @@ static void _AT_reply_send(void) {
 #endif
 	// Add ending character.
 	_AT_reply_add_char(AT_FRAME_END);
-	_AT_reply_add_char(STRING_CHAR_NULL);
 	// Send reply.
 #ifdef AM
 	lbus_status = LBUS_send((uint8_t*) at_ctx.reply, at_ctx.reply_size);
@@ -639,7 +638,6 @@ static void _AT_decode(void) {
 		goto errors;
 	}
 errors:
-	_AT_reset_parser();
 	return;
 }
 
@@ -668,6 +666,7 @@ void AT_task(void) {
 		_AT_decode();
 		LPUART1_enable_rx();
 	}
+	_AT_reset_parser();
 }
 
 /* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).

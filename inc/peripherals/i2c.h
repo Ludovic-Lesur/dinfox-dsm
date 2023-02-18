@@ -11,8 +11,6 @@
 #include "lptim.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** I2C structures ***/
 
 typedef enum {
@@ -29,6 +27,8 @@ typedef enum {
 	I2C_ERROR_BASE_LPTIM = 0x0100,
 	I2C_ERROR_BASE_LAST = (I2C_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } I2C_status_t;
+
+#ifdef SM
 
 /*** I2C functions ***/
 

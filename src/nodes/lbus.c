@@ -17,8 +17,9 @@
 /*** LBUS local macros ***/
 
 // Addressing.
-#define LBUS_ADDRESS_MASK			0x7F
-#define LBUS_ADDRESS_SIZE_BYTES		1
+#define LBUS_ADDRESS_MASK					0x7F
+#define LBUS_DESTINATION_ADDRESS_MARKER		0x80
+#define LBUS_ADDRESS_SIZE_BYTES				1
 
 /*** LBUS local structures ***/
 
@@ -55,7 +56,7 @@ LBUS_status_t LBUS_init(LBUS_address_t self_address) {
 	}
 	// Init context.
 	lbus_ctx.self_address = self_address;
-	lbus_ctx.master_address = 0x00;
+	lbus_ctx.master_address = (0x00 | LBUS_DESTINATION_ADDRESS_MARKER);
 	lbus_ctx.rx_byte_count = 0;
 errors:
 	return status;
@@ -71,7 +72,7 @@ LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes) {
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	uint8_t lbus_header[LBUS_FRAME_FIELD_INDEX_DATA];
 	// Build address header.
-	lbus_header[LBUS_FRAME_FIELD_INDEX_DESTINATION_ADDRESS] = (lbus_ctx.master_address | 0x80);
+	lbus_header[LBUS_FRAME_FIELD_INDEX_DESTINATION_ADDRESS] = (lbus_ctx.master_address | LBUS_DESTINATION_ADDRESS_MARKER);
 	lbus_header[LBUS_FRAME_FIELD_INDEX_SOURCE_ADDRESS] = lbus_ctx.self_address;
 	// Send header.
 	lpuart1_status = LPUART1_send(lbus_header, LBUS_FRAME_FIELD_INDEX_DATA);

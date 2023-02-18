@@ -21,7 +21,7 @@
 
 /*** LPUART local macros ***/
 
-#define LPUART_BAUD_RATE 		9600
+#define LPUART_BAUD_RATE 		1200
 #define LPUART_TIMEOUT_COUNT	100000
 //#define LPUART_USE_NRE
 

@@ -12,8 +12,6 @@
 #include "lptim.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** SHT3x macros ***/
 
 #define SHT3X_I2C_ADDRESS	0x44
@@ -27,6 +25,8 @@ typedef enum {
 	SHT3X_ERROR_BASE_LPTIM = (SHT3X_ERROR_BASE_I2C + I2C_ERROR_BASE_LAST),
 	SHT3X_ERROR_BASE_LAST = (SHT3X_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } SHT3X_status_t;
+
+#ifdef SM
 
 /*** SHT3x functions ***/
 
