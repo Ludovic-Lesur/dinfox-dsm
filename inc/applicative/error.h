@@ -10,16 +10,21 @@
 
 // Peripherals.
 #include "adc.h"
+#include "i2c.h"
 #include "iwdg.h"
 #include "lpuart.h"
 #include "nvm.h"
 #include "rtc.h"
 // Components.
+#include "digital.h"
 #include "led.h"
+#include "sht3x.h"
 // Utils.
 #include "math.h"
 #include "parser.h"
 #include "string.h"
+// Nodes.
+#include "lbus.h"
 
 typedef enum {
 	SUCCESS = 0,
@@ -28,24 +33,23 @@ typedef enum {
 	ERROR_RS485_ADDRESS,
 	// Peripherals.
 	ERROR_BASE_ADC1 = 0x0100,
-	ERROR_BASE_IWDG = (ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
+	ERROR_BASE_I2C1 = (ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
+	ERROR_BASE_IWDG = (ERROR_BASE_I2C1 + I2C_ERROR_BASE_LAST),
 	ERROR_BASE_LPUART1 = (ERROR_BASE_IWDG + IWDG_ERROR_BASE_LAST),
 	ERROR_BASE_NVM = (ERROR_BASE_LPUART1 + LPUART_ERROR_BASE_LAST),
 	ERROR_BASE_RTC = (ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
 	// Components.
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	ERROR_BASE_LED = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
-#endif
+	ERROR_BASE_DIGITAL = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
+	ERROR_BASE_LED = (ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
+	ERROR_BASE_SHT3X = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
 	// Utils.
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	ERROR_BASE_MATH = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
-#else
-	ERROR_BASE_MATH = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
-#endif
+	ERROR_BASE_MATH = (ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
 	ERROR_BASE_PARSER = (ERROR_BASE_MATH + MATH_ERROR_BASE_LAST),
 	ERROR_BASE_STRING = (ERROR_BASE_PARSER + PARSER_ERROR_BASE_LAST),
+	// Nodes.
+	ERROR_BASE_LBUS = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
 	// Last index.
-	ERROR_BASE_LAST = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
+	ERROR_BASE_LAST = (ERROR_BASE_LBUS + LBUS_ERROR_BASE_LAST),
 } ERROR_t;
 
 /*** ERROR functions ***/
@@ -63,7 +67,7 @@ uint8_t ERROR_stack_is_empty(void);
 
 #define ERROR_status_check_print(status, success, error_base) { \
 	if (status != success) { \
-		_RS485_print_error(error_base + status); \
+		_AT_print_error(error_base + status); \
 		goto errors; \
 	} \
 }

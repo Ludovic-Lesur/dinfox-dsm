@@ -5,41 +5,25 @@
  *      Author: Ludo
  */
 
+#include <at.h>
 #include "lpuart.h"
 
 #include "exti.h"
 #include "gpio.h"
+#include "lbus.h"
+#include "lbus_common.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
 #include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
-#include "rs485.h"
-#include "rs485_common.h"
 
 /*** LPUART local macros ***/
 
 #define LPUART_BAUD_RATE 		9600
-#define LPUART_STRING_SIZE_MAX	1000
 #define LPUART_TIMEOUT_COUNT	100000
 //#define LPUART_USE_NRE
-
-/*** LPUART local structures ***/
-
-#ifdef AM
-typedef struct {
-	RS485_address_t node_address;
-	volatile RS485_address_t master_address;
-	volatile uint8_t rx_byte_count;
-} LPUART_context_t;
-#endif
-
-/*** LPUART local global variables ***/
-
-#ifdef AM
-static LPUART_context_t lpuart_ctx;
-#endif
 
 /*** LPUART local functions ***/
 
@@ -55,24 +39,9 @@ void LPUART1_IRQHandler(void) {
 		// Read incoming byte.
 		rx_byte = (LPUART1 -> RDR);
 #ifdef AM
-		// Check field index.
-		switch (lpuart_ctx.rx_byte_count) {
-		case RS485_FRAME_FIELD_INDEX_DESTINATION_ADDRESS:
-			// Nothing to do.
-			break;
-		case RS485_FRAME_FIELD_INDEX_SOURCE_ADDRESS:
-			// Store source address for next response.
-			lpuart_ctx.master_address = (rx_byte & RS485_ADDRESS_MASK);
-			break;
-		default:
-			// Transmit command to applicative layer.
-			RS485_fill_rx_buffer(rx_byte);
-			break;
-		}
-		// Increment byte count.
-		lpuart_ctx.rx_byte_count++;
+		LBUS_fill_rx_buffer(rx_byte);
 #else
-		RS485_fill_rx_buffer(rx_byte);
+		AT_fill_rx_buffer(rx_byte);
 #endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
@@ -111,10 +80,10 @@ errors:
 
 #ifdef AM
 /* CONFIGURE LPUART1.
- * @param node_address:	RS485 7-bits address
+ * @param self_address:	Self bus address.
  * @return status:		Function execution status.
  */
-LPUART_status_t LPUART1_init(RS485_address_t node_address) {
+LPUART_status_t LPUART1_init(LBUS_address_t self_address) {
 #else
 /* CONFIGURE LPUART1.
  * @param:	None.
@@ -128,15 +97,11 @@ void LPUART1_init(void) {
 #endif
 	uint32_t brr = 0;
 #ifdef AM
-	// Check parameter.
-	if (node_address > RS485_ADDRESS_LAST) {
+	// Check address.
+	if (self_address > LBUS_ADDRESS_LAST) {
 		// Do not exit, just store error and apply mask.
-		status = LPUART_ERROR_NODE_ADDRESS;
+		status = LPUART_ERROR_LBUS_ADDRESS;
 	}
-	// Init context.
-	lpuart_ctx.node_address = (node_address & RS485_ADDRESS_MASK);
-	lpuart_ctx.master_address = RS485_ADDRESS_LAST;
-	lpuart_ctx.rx_byte_count = 0;
 #endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
@@ -157,7 +122,7 @@ void LPUART1_init(void) {
 	// Configure peripheral.
 #ifdef AM
 	LPUART1 -> CR1 |= 0x00002822;
-	LPUART1 -> CR2 |= (lpuart_ctx.node_address << 24) | (0b1 << 4);
+	LPUART1 -> CR2 |= (self_address << 24) | (0b1 << 4);
 	LPUART1 -> CR3 |= 0x00805000;
 #else
 	LPUART1 -> CR1 |= 0x00000022;
@@ -187,8 +152,6 @@ void LPUART1_enable_rx(void) {
 #ifdef AM
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
-	// Reset IRQ count.
-	lpuart_ctx.rx_byte_count = 0;
 #endif
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
@@ -217,35 +180,23 @@ void LPUART1_disable_rx(void) {
 }
 
 /* SEND A BYTE ARRAY THROUGH LPUART1.
- * @param tx_string:	Byte array to send.
- * @return status:		Function execution status.
+ * @param data:				Byte array to send.
+ * @param data_size_bytes:	Number of bytes to send.
+ * @return status:			Function execution status.
  */
-LPUART_status_t LPUART1_send_string(char_t* tx_string) {
+LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;
-	uint32_t loop_count = 0;
+	uint32_t idx = 0;
 	// Check parameter.
-	if (tx_string == NULL) {
+	if (data == NULL) {
 		status = LPUART_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
-#ifdef AM
-	// Send destination and source addresses.
-	status = _LPUART1_fill_tx_buffer(lpuart_ctx.master_address | 0x80);
-	if (status != LPUART_SUCCESS) goto errors;
-	status = _LPUART1_fill_tx_buffer(lpuart_ctx.node_address);
-	if (status != LPUART_SUCCESS) goto errors;
-#endif
 	// Fill TX buffer with new bytes.
-	while (*tx_string) {
-		status = _LPUART1_fill_tx_buffer((uint8_t) *(tx_string++));
+	for (idx=0 ; idx<data_size_bytes ; idx++) {
+		status = _LPUART1_fill_tx_buffer(data[idx]);
 		if (status != LPUART_SUCCESS) goto errors;
-		// Check character count.
-		loop_count++;
-		if (loop_count > LPUART_STRING_SIZE_MAX) {
-			status = LPUART_ERROR_STRING_SIZE;
-			goto errors;
-		}
 	}
 #ifdef LPUART_USE_NRE
 	// Wait for TC flag (to avoid echo when enabling RX again).

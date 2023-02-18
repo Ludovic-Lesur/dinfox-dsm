@@ -182,7 +182,7 @@ void TIM21_init(void) {
 	// Enable interrupt.
 	TIM21 -> DIER |= (0b1 << 0);
 	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_MIN);
+	NVIC_set_priority(NVIC_INTERRUPT_TIM21, 3);
 }
 
 /* START TIM21 PERIPHERAL.

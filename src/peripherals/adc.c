@@ -12,6 +12,7 @@
 #include "lptim.h"
 #include "mapping.h"
 #include "math.h"
+#include "mode.h"
 #include "rcc_reg.h"
 #include "types.h"
 
@@ -34,7 +35,7 @@
 
 #define ADC_LT6106_VOLTAGE_GAIN			59
 #define ADC_LT6106_SHUNT_RESISTOR_MOHMS	10
-#define ADC_LT6106_OFFSET_CURRENT_UA	25000 // 250µV MAXIMUM / 10mR = 25mA.
+#define ADC_LT6106_OFFSET_CURRENT_UA	25000 // (250µV maximum) / (10mR) = 25mA.
 
 #define ADC_TIMEOUT_COUNT				1000000
 
@@ -61,10 +62,29 @@ typedef enum {
 	ADC_CHANNEL_VOUT = 6,
 	ADC_CHANNEL_VIN = 7,
 #endif
+#ifdef SM
+	ADC_CHANNEL_AIN0 = 5,
+	ADC_CHANNEL_AIN1 = 6,
+	ADC_CHANNEL_AIN2 = 7,
+	ADC_CHANNEL_AIN3 = 8,
+#endif
 	ADC_CHANNEL_VREFINT = 17,
 	ADC_CHANNEL_TMCU = 18,
 	ADC_CHANNEL_LAST = 19
 } ADC_channel_t;
+
+typedef enum {
+	ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION = 0,
+	ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION,
+	ADC_CONVERSION_TYPE_LT6106,
+	ADC_CONVERSION_TYPE_LAST
+} ADC_conversion_t;
+
+typedef struct {
+	ADC_channel_t channel;
+	ADC_conversion_t gain_type;
+	uint32_t gain;
+} ADC_input_t;
 
 typedef struct {
 	uint32_t vrefint_12bits;
@@ -74,6 +94,30 @@ typedef struct {
 
 /*** ADC local global variables ***/
 
+static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
+#ifdef LVRM
+	{ADC_CHANNEL_VCOM, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+#endif
+#if (defined DDRM) || (defined RRM)
+	{ADC_CHANNEL_VIN, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+#endif
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	{ADC_CHANNEL_VOUT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_IOUT, ADC_CONVERSION_TYPE_LT6106, 1}
+#endif
+
+#ifdef BPSM
+	{ADC_CHANNEL_VSRC, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_VSTR, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO},
+	{ADC_CHANNEL_VBKP, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10}
+#endif
+#ifdef SM
+	{ADC_CHANNEL_AIN0, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN1, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN2, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN3, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1}
+#endif
+};
 static ADC_context_t adc_ctx;
 
 /*** ADC local functions ***/
@@ -191,153 +235,55 @@ errors:
 	return status;
 }
 
-#ifdef LVRM
-/* COMPUTE COMMON RELAY VOLTAGE.
+/* COMPUTE ALL ADC CHANNELS.
  * @param:			None.
  * @return status:	Function execution status.
  */
-static ADC_status_t _ADC1_compute_vcom(void) {
+static ADC_status_t _ADC1_compute_all_channels(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vin_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VCOM, &vin_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VCOM_MV] = (ADC_VREFINT_VOLTAGE_MV * vin_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VCOM) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#ifdef BPSM
-/* COMPUTE SOURCE VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vsrc(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vsrc_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSRC, &vsrc_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VSRC_MV] = (ADC_VREFINT_VOLTAGE_MV * vsrc_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSRC) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#if (defined DDRM) || (defined RRM)
-/* COMPUTE INPUT VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vin(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vin_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VIN, &vin_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VIN_MV] = (ADC_VREFINT_VOLTAGE_MV * vin_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VIN) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* COMPUTE OUTPUT VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vout(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vout_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VOUT, &vout_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VOUT_MV] = (ADC_VREFINT_VOLTAGE_MV * vout_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VOUT) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#ifdef BPSM
-/* COMPUTE STORAGE ELEMENT VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vstr(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vstr_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VSTR, &vstr_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VSTR_MV] = (ADC_VREFINT_VOLTAGE_MV * vstr_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VSTR) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#ifdef BPSM
-/* COMPUTE STORAGE ELEMENT VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vbkp(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t vbkp_12bits = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VBKP, &vbkp_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to mV using VREFINT.
-	adc_ctx.data[ADC_DATA_INDEX_VBKP_MV] = (ADC_VREFINT_VOLTAGE_MV * vbkp_12bits * ADC_VOLTAGE_DIVIDER_RATIO_VBKP) / (adc_ctx.vrefint_12bits);
-errors:
-	return status;
-}
-#endif
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* COMPUTE OUTPUT CURRENT.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_iout(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	uint32_t iout_12bits = 0;
+	uint8_t idx = 0;
+	uint32_t voltage_12bits = 0;
 	uint64_t num = 0;
 	uint64_t den = 0;
-	// Get raw result.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_IOUT, &iout_12bits);
-	if (status != ADC_SUCCESS) goto errors;
-	// Convert to uA using VREFINT.
-	num = iout_12bits;
-	num *= ADC_VREFINT_VOLTAGE_MV;
-	num *= 1000000;
-	den = adc_ctx.vrefint_12bits;
-	den *= ADC_LT6106_VOLTAGE_GAIN;
-	den *= ADC_LT6106_SHUNT_RESISTOR_MOHMS;
-	adc_ctx.data[ADC_DATA_INDEX_IOUT_UA] = (num) / (den);
-	// Remove offset current.
-	if (adc_ctx.data[ADC_DATA_INDEX_IOUT_UA] < ADC_LT6106_OFFSET_CURRENT_UA) {
-		adc_ctx.data[ADC_DATA_INDEX_IOUT_UA] = 0;
-	}
-	else {
-		adc_ctx.data[ADC_DATA_INDEX_IOUT_UA] -= ADC_LT6106_OFFSET_CURRENT_UA;
+	// Channels loop.
+	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) {
+		// Get raw result.
+		status = _ADC1_filtered_conversion(ADC_INPUTS[idx].channel, &voltage_12bits);
+		if (status != ADC_SUCCESS) goto errors;
+		// Convert to mV using VREFINT.
+		switch (ADC_INPUTS[idx].gain_type) {
+		case ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION:
+			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits * ADC_INPUTS[idx].gain) / (adc_ctx.vrefint_12bits);
+			break;
+		case ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION:
+			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits) / (adc_ctx.vrefint_12bits * ADC_INPUTS[idx].gain);
+			break;
+		case ADC_CONVERSION_TYPE_LT6106:
+			// Current conversion.
+			num = voltage_12bits;
+			num *= ADC_VREFINT_VOLTAGE_MV;
+			num *= 1000000;
+			den = adc_ctx.vrefint_12bits;
+			den *= ADC_LT6106_VOLTAGE_GAIN;
+			den *= ADC_LT6106_SHUNT_RESISTOR_MOHMS;
+			adc_ctx.data[idx] = (num) / (den);
+			// Remove offset current.
+			if (adc_ctx.data[idx] < ADC_LT6106_OFFSET_CURRENT_UA) {
+				adc_ctx.data[idx] = 0;
+			}
+			else {
+				adc_ctx.data[idx] -= ADC_LT6106_OFFSET_CURRENT_UA;
+			}
+			break;
+		default:
+			status = ADC_ERROR_CONVERSION_TYPE;
+			goto errors;
+		}
 	}
 errors:
 	return status;
 }
-#endif
 
 /*** ADC functions ***/
 
@@ -363,12 +309,21 @@ ADC_status_t ADC1_init(void) {
 #if (defined LVRM) || (defined BPSM) || (defined DDRM)
 	GPIO_configure(&GPIO_ADC1_IN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	GPIO_configure(&GPIO_ADC1_IN4, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 #if (defined LVRM) || (defined BPSM)
 	GPIO_configure(&GPIO_ADC1_IN6, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #if (defined DDRM) || (defined RRM)
 	GPIO_configure(&GPIO_ADC1_IN7, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
+#ifdef SM
+	GPIO_configure(&GPIO_ANA_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_AIN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_AIN1, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_AIN2, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_AIN3, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 	// Init context.
 	adc_ctx.vrefint_12bits = 0;
@@ -425,6 +380,10 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Enable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 1);
 #endif
+#ifdef SM
+	// Turn analog front-end on.
+	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
+#endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
 	// Wait internal reference and voltage dividers stabilization.
@@ -433,43 +392,21 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Perform measurements.
 	status = _ADC1_compute_vrefint();
 	if (status != ADC_SUCCESS) goto errors;
-	// Input voltage.
-#ifdef LVRM
-	status = _ADC1_compute_vcom();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
-#if (defined DDRM) || (defined RRM)
-	status = _ADC1_compute_vin();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
-#ifdef BPSM
-	status = _ADC1_compute_vsrc();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
-	// Storage element voltage.
-#ifdef BPSM
-	status = _ADC1_compute_vstr();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
-	// Output voltage
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	status = _ADC1_compute_vout();
-	if (status != ADC_SUCCESS) goto errors;
-	status = _ADC1_compute_iout();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
-#ifdef BPSM
-	status = _ADC1_compute_vbkp();
-	if (status != ADC_SUCCESS) goto errors;
-#endif
 	_ADC1_compute_vmcu();
 	status = _ADC1_compute_tmcu();
+	if (status != ADC_SUCCESS) goto errors;
+	status = _ADC1_compute_all_channels();
+	if (status != ADC_SUCCESS) goto errors;
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
 #ifdef BPSM
 	// Disable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 0);
+#endif
+#ifdef SM
+	// Turn analog front-end off.
+	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
 	// Disable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.

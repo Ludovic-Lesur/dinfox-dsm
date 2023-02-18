@@ -8,8 +8,8 @@
 // Peripherals.
 #include "adc.h"
 #include "exti.h"
-
 #include "gpio.h"
+#include "i2c.h"
 #include "iwdg.h"
 #include "lpuart.h"
 #include "lptim.h"
@@ -23,10 +23,13 @@
 #include "tim.h"
 // Components.
 #include "led.h"
+#include "load.h"
+// Nodes.
+#include "lbus.h"
+#include "lbus_common.h"
 // Applicative.
+#include "at.h"
 #include "error.h"
-#include "rs485.h"
-#include "rs485_common.h"
 
 /*** MAIN local macros ***/
 
@@ -85,7 +88,7 @@ static XM_context_t xm_ctx;
  */
 static void _XM_init_context(void) {
 	// Init context.
-	xm_ctx.adc_seconds_count = 0;
+	xm_ctx.adc_seconds_count = XM_ADC_PERIOD_LOW_SECONDS;
 	xm_ctx.adc_period_seconds = XM_ADC_PERIOD_LOW_SECONDS;
 	xm_ctx.input_voltage_mv = 0;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
@@ -110,7 +113,7 @@ static void _XM_init_hw(void) {
 #ifdef AM
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	RS485_address_t node_address;
+	LBUS_address_t self_address;
 #endif
 	// Init error stack
 	ERROR_stack_init();
@@ -136,7 +139,7 @@ static void _XM_init_hw(void) {
 	RTC_error_check();
 #ifdef AM
 	// Read RS485 address in NVM.
-	nvm_status = NVM_read_byte(NVM_ADDRESS_RS485_ADDRESS, &node_address);
+	nvm_status = NVM_read_byte(NVM_ADDRESS_LBUS_ADDRESS, &self_address);
 	NVM_error_check();
 #endif
 	// Init peripherals.
@@ -148,17 +151,29 @@ static void _XM_init_hw(void) {
 	TIM21_init();
 #endif
 #ifdef AM
-	lpuart1_status = LPUART1_init(node_address);
+	lpuart1_status = LPUART1_init(self_address);
 	LPUART1_error_check();
 #else
 	LPUART1_init();
 #endif
+#ifdef SM
+	I2C1_init();
+#endif
 	// Init components.
+#ifdef SM
+	DIGITAL_init();
+#endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+	LOAD_init();
+#endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_init();
 #endif
 	// Init AT interface.
-	RS485_init();
+#ifdef AM
+	LBUS_init(self_address);
+#endif
+	AT_init();
 }
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
@@ -193,6 +208,11 @@ int main(void) {
 	ADC_status_t adc1_status = ADC_SUCCESS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_status_t led_status = LED_SUCCESS;
+#endif
+#ifdef SM
+	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
+	I2C_status_t i2c1_status = I2C_SUCCESS;
+	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 #endif
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	// Perform first analog measurement.
@@ -229,7 +249,19 @@ int main(void) {
 				// Perform analog measurements.
 				adc1_status = ADC1_perform_measurements();
 				ADC1_error_check();
-				// Read data.
+#ifdef SM
+				// Perform digital measurements.
+				digital_status = DIGITAL_perform_measurements();
+				DIGITAL_error_check();
+				// Perform temperature / humidity measurements.
+				i2c1_status = I2C1_power_on();
+				I2C1_error_check();
+				sht3x_status = SHT3X_perform_measurements(SHT3X_I2C_ADDRESS);
+				SHT3X_error_check();
+				I2C1_power_off();
+#endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+				// Check input voltage.
 #ifdef LVRM
 				adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &xm_ctx.input_voltage_mv);
 #endif
@@ -242,6 +274,7 @@ int main(void) {
 				ADC1_error_check();
 				// Update period according to input voltage.
 				xm_ctx.adc_period_seconds = (xm_ctx.input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_ADC_PERIOD_HIGH_SECONDS : XM_ADC_PERIOD_LOW_SECONDS;
+#endif
 			}
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 			// Increment seconds count.
@@ -264,7 +297,7 @@ int main(void) {
 #endif
 		}
 		// Perform command task.
-		RS485_task();
+		AT_task();
 		// Reload watchdog.
 		IWDG_reload();
 	}

@@ -98,7 +98,7 @@ void LPTIM1_init(void) {
 	LPTIM1 -> IER |= (0b1 << 1); // ARRMIE='1'.
 	EXTI_configure_line(EXTI_LINE_LPTIM1, EXTI_TRIGGER_RISING_EDGE);
 	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_LPTIM1, 2);
+	NVIC_set_priority(NVIC_INTERRUPT_LPTIM1, 1);
 }
 
 /* DELAY FUNCTION.

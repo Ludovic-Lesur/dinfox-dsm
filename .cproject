@@ -63,6 +63,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.98292267" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -82,6 +83,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.918790426" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -197,6 +199,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1583136490" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -216,6 +219,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1180765651" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -331,6 +335,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.579051629" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -350,6 +355,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1359557131" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -465,6 +471,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.78727710" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -484,6 +491,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2009446075" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -599,6 +607,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1058743935" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -618,6 +627,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1318930829" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>

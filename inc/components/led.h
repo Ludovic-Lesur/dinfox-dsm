@@ -11,8 +11,6 @@
 #include "tim.h"
 #include "types.h"
 
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-
 /*** LED structures ***/
 
 typedef enum {
@@ -21,6 +19,8 @@ typedef enum {
 	LED_ERROR_COLOR,
 	LED_ERROR_BASE_LAST = 0x0100
 } LED_status_t;
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 
 typedef enum {
 	LED_COLOR_OFF = TIM2_CHANNEL_MASK_OFF,
