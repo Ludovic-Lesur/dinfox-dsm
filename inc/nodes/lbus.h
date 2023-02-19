@@ -13,8 +13,6 @@
 #include "lpuart.h"
 #include "types.h"
 
-#ifdef AM
-
 /*** LBUS macros ***/
 
 #define LBUS_ADDRESS_MASK	0x7F
@@ -28,6 +26,8 @@ typedef enum {
 	LBUS_ERROR_BASE_LPUART = 0x0100,
 	LBUS_ERROR_BASE_LAST = (LBUS_ERROR_BASE_LPUART + LPUART_ERROR_BASE_LAST),
 } LBUS_status_t;
+
+#ifdef AM
 
 /*** LBUS functions ***/
 

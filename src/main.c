@@ -138,8 +138,8 @@ static void _XM_init_hw(void) {
 	rtc_status = RTC_init();
 	RTC_error_check();
 #ifdef AM
-	// Read RS485 address in NVM.
-	nvm_status = NVM_read_byte(NVM_ADDRESS_LBUS_ADDRESS, &self_address);
+	// Read self address in NVM.
+	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
 	NVM_error_check();
 #endif
 	// Init peripherals.

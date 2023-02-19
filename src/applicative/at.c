@@ -360,7 +360,7 @@ static void _AT_read_callback(void) {
 	// Get data.
 	switch (register_address) {
 	case DINFOX_REGISTER_LBUS_ADDRESS:
-		nvm_status = NVM_read_byte(NVM_ADDRESS_LBUS_ADDRESS, &generic_u8);
+		nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &generic_u8);
 		NVM_error_check_print();
 		_AT_reply_add_value(generic_u8, STRING_FORMAT_HEXADECIMAL, 0);
 		break;
@@ -544,16 +544,16 @@ static void _AT_write_callback(void) {
 	// Write data.
 	switch (register_address) {
 #ifdef DM
-	case DINFOX_REGISTER_AT_ADDRESS:
+	case DINFOX_REGISTER_LBUS_ADDRESS:
 		// Read new address.
 		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &register_value);
 		PARSER_error_check_print();
 		// Check value.
-		if (register_value > AT_ADDRESS_LAST) {
-			_AT_print_error(ERROR_AT_ADDRESS);
+		if (register_value > LBUS_ADDRESS_LAST) {
+			_AT_print_error(ERROR_NODE_ADDRESS);
 			goto errors;
 		}
-		nvm_status = NVM_write_byte(NVM_ADDRESS_AT_ADDRESS, (uint8_t) register_value);
+		nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, (uint8_t) register_value);
 		NVM_error_check_print();
 		break;
 #endif

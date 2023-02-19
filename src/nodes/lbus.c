@@ -50,7 +50,6 @@ LBUS_status_t LBUS_init(NODE_address_t self_address) {
 	LBUS_status_t status = LBUS_SUCCESS;
 	// Check address.
 	if (self_address > LBUS_ADDRESS_LAST) {
-		// Do not exit, just store error and apply mask.
 		status = LBUS_ERROR_ADDRESS;
 		goto errors;
 	}
@@ -63,8 +62,9 @@ errors:
 }
 
 /* SEND REPLY OVER LBUS.
- * @param reply:	NULL terminated reply string.
- * @return status:	Function execution status.
+ * @param data:				Byte array to send.
+ * @param data_size_bytes:	Number of bytes to send.
+ * @return status:			Function execution status.
  */
 LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes) {
 	// Local variables.

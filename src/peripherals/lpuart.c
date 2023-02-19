@@ -158,7 +158,6 @@ void LPUART1_enable_rx(void) {
 	// Enable receiver.
 	LPUART1 -> CR1 |= (0b1 << 2); // RE='1'.
 #ifdef LPUART_USE_NRE
-	// Enable RS485 receiver.
 	GPIO_write(&GPIO_LPUART1_NRE, 0);
 #endif
 }
@@ -168,11 +167,11 @@ void LPUART1_enable_rx(void) {
  * @return:	None.
  */
 void LPUART1_disable_rx(void) {
+	// Disable receiver.
 #ifdef LPUART_USE_NRE
-	// Disable RS485 receiver.
 	GPIO_write(&GPIO_LPUART1_NRE, 1);
 #endif
-	// Disable receiver.
+
 	LPUART1 -> CR1 &= ~(0b1 << 2); // RE='0'.
 	// Disable interrupt.
 	NVIC_disable_interrupt(NVIC_INTERRUPT_LPUART1);
