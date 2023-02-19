@@ -36,10 +36,10 @@
 
 /*** MAIN local macros ***/
 
-#define XM_ADC_PERIOD_HIGH_SECONDS				5
-#define XM_ADC_PERIOD_LOW_SECONDS				60
+#define XM_MEASUREMENTS_PERIOD_HIGH_SECONDS		10
+#define XM_MEASUREMENTS_PERIOD_LOW_SECONDS		60
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-#define XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS	5
+#define XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS	10
 #define XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS	60
 #define XM_IOUT_INDICATOR_RANGE					7
 #endif
@@ -58,15 +58,11 @@ typedef struct {
 typedef struct {
 	uint32_t measurements_seconds_count;
 	uint32_t measurements_period_seconds;
-	uint32_t input_voltage_mv;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	LED_color_t led_color;
-	uint32_t iout_ua;
 	uint32_t iout_indicator_seconds_count;
 	uint32_t iout_indicator_period_seconds;
 #endif
 } XM_context_t;
-
 
 /*** MAIN local global variables ***/
 
@@ -91,12 +87,9 @@ static XM_context_t xm_ctx;
  */
 static void _XM_init_context(void) {
 	// Init context.
-	xm_ctx.measurements_seconds_count = XM_ADC_PERIOD_LOW_SECONDS;
-	xm_ctx.measurements_period_seconds = XM_ADC_PERIOD_LOW_SECONDS;
-	xm_ctx.input_voltage_mv = 0;
+	xm_ctx.measurements_seconds_count = 0;
+	xm_ctx.measurements_period_seconds = XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	xm_ctx.led_color = LED_COLOR_OFF;
-	xm_ctx.iout_ua = 0;
 	xm_ctx.iout_indicator_seconds_count = 0;
 	xm_ctx.iout_indicator_period_seconds = XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
 #endif
@@ -192,24 +185,6 @@ static void _XM_init_hw(void) {
 	AT_init();
 }
 
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* UPDATE LED COLOR ACCORDING TO OUTPUT CURRENT VALUE.
- * @param:	None.
- * @return:	None.
- */
-static void _XM_update_led_color(void) {
-	// Local variables.
-	uint8_t idx = XM_IOUT_INDICATOR_RANGE;
-	// Get range and corresponding color.
-	do {
-		idx--;
-		xm_ctx.led_color = LVRM_IOUT_INDICATOR[idx].led_color;
-		if (xm_ctx.iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
-	}
-	while (idx > 0);
-}
-#endif
-
 /* PERFORM EXTERNAL MEASUREMENTS.
  * @param:	None.
  * @return:	None.
@@ -238,6 +213,63 @@ static void _XM_perform_measurements(void) {
 #endif
 }
 
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+/* UPDATE MEASUREMENTS PERIOD ACCORDING TO INPUT VOLTAGE.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _XM_update_measurements_period(void) {
+	// Local variables.
+	ADC_status_t adc1_status = ADC_SUCCESS;
+	uint32_t input_voltage_mv = 0;
+	// Check input voltage.
+#ifdef LVRM
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &input_voltage_mv);
+#endif
+#ifdef BPSM
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &input_voltage_mv);
+#endif
+#if (defined DDRM) || (defined RRM)
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &input_voltage_mv);
+#endif
+	ADC1_error_check();
+	// Update periods according to input voltage.
+	xm_ctx.measurements_period_seconds = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_MEASUREMENTS_PERIOD_HIGH_SECONDS : XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	xm_ctx.iout_indicator_period_seconds = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS : XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
+#endif
+}
+#endif
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+/* MAKE IOUT INDICATOR BLINK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _XM_iout_indicator(void) {
+	// Local variables.
+	ADC_status_t adc1_status = ADC_SUCCESS;
+	LED_status_t led_status = LED_SUCCESS;
+	LED_color_t led_color;
+	uint32_t iout_ua;
+	uint8_t idx = XM_IOUT_INDICATOR_RANGE;
+	// Read data.
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &iout_ua);
+	ADC1_error_check();
+	// Compute LED color according to output current..
+	do {
+		idx--;
+		// Get range and corresponding color.
+		led_color = LVRM_IOUT_INDICATOR[idx].led_color;
+		if (iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
+	}
+	while (idx > 0);
+	// Blink LED.
+	led_status = LED_start_single_blink(2000, led_color);
+	LED_error_check();
+}
+#endif
+
 /*** MAIN function ***/
 
 /* MAIN FUNCTION.
@@ -249,15 +281,12 @@ int main(void) {
 	_XM_init_context();
 	_XM_init_hw();
 	// Local variables.
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-	ADC_status_t adc1_status = ADC_SUCCESS;
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	LED_status_t led_status = LED_SUCCESS;
-#endif
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	// Perform first measurements.
 	_XM_perform_measurements();
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+	_XM_update_measurements_period();
+#endif
 	// Start periodic wakeup timer.
 	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	RTC_error_check();
@@ -288,19 +317,7 @@ int main(void) {
 				xm_ctx.measurements_seconds_count = 0;
 				_XM_perform_measurements();
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-				// Check input voltage.
-#ifdef LVRM
-				adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &xm_ctx.input_voltage_mv);
-#endif
-#ifdef BPSM
-				adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &xm_ctx.input_voltage_mv);
-#endif
-#if (defined DDRM) || (defined RRM)
-				adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &xm_ctx.input_voltage_mv);
-#endif
-				ADC1_error_check();
-				// Update period according to input voltage.
-				xm_ctx.measurements_period_seconds = (xm_ctx.input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_ADC_PERIOD_HIGH_SECONDS : XM_ADC_PERIOD_LOW_SECONDS;
+				_XM_update_measurements_period();
 #endif
 			}
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
@@ -310,16 +327,7 @@ int main(void) {
 			if (xm_ctx.iout_indicator_seconds_count >= xm_ctx.iout_indicator_period_seconds) {
 				// Reset count.
 				xm_ctx.iout_indicator_seconds_count = 0;
-				// Read data.
-				adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &xm_ctx.iout_ua);
-				ADC1_error_check();
-				// Compute LED color according to output current.
-				_XM_update_led_color();
-				// Update period according to input voltage.
-				xm_ctx.iout_indicator_period_seconds = (xm_ctx.input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS : XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
-				// Blink LED.
-				led_status = LED_start_single_blink(2000, xm_ctx.led_color);
-				LED_error_check();
+				_XM_iout_indicator();
 			}
 #endif
 		}

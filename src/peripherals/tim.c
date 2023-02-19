@@ -22,9 +22,9 @@
 #define TIM2_NUMBER_OF_CHANNELS		4
 #define TIM2_CCRX_MASK_OFF			0xFFFF
 #define TIM2_PWM_FREQUENCY_HZ		10000
-#define TIM2_ARR_VALUE				((RCC_MSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
+#define TIM2_ARR_VALUE				((RCC_HSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
 
-#define TIM21_PRESCALER				2
+#define TIM21_PRESCALER				8
 #define TIM21_DIMMING_LUT_LENGTH	100
 
 /*** TIM local structures ***/
@@ -37,17 +37,17 @@ typedef struct {
 
 /*** TIM local global variables ***/
 
-static const uint8_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
-	211, 211, 211, 211, 211, 211, 211, 211, 210, 210,
-	210, 210, 210, 210, 210, 210, 210, 209, 209, 209,
-	209, 209, 209, 209, 208, 208, 208, 208, 207, 207,
-	207, 207, 206, 206, 206, 205, 205, 205, 204, 204,
-	203, 203, 202, 202, 201, 201, 200, 199, 199, 198,
-	197, 196, 195, 194, 193, 192, 191, 190, 189, 188,
-	186, 185, 183, 182, 180, 178, 176, 174, 172, 170,
-	168, 165, 163, 160, 157, 154, 151, 148, 144, 140,
-	136, 132, 127, 123, 118, 113, 107, 101, 95, 89,
-	82, 74, 67, 59, 50, 41, 32, 22, 11, 0
+static const uint16_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
+	1601, 1601, 1601, 1601, 1601, 1601, 1600, 1600, 1600, 1600,
+	1600, 1600, 1600, 1599, 1599, 1599, 1599, 1598, 1598, 1598,
+	1598, 1597, 1597, 1596, 1596, 1596, 1595, 1595, 1594, 1593,
+	1593, 1592, 1591, 1590, 1589, 1588, 1587, 1586, 1585, 1584,
+	1582, 1581, 1579, 1577, 1575, 1573, 1571, 1569, 1566, 1563,
+	1560, 1557, 1554, 1550, 1546, 1542, 1537, 1532, 1527, 1521,
+	1514, 1508, 1500, 1493, 1484, 1475, 1465, 1454, 1443, 1431,
+	1418, 1403, 1388, 1371, 1353, 1334, 1314, 1291, 1267, 1241,
+	1213, 1183, 1151, 1116, 1078, 1038, 994, 947, 896, 842,
+	783, 720, 651, 578, 498, 413, 321, 222, 115, 0,
 };
 static uint16_t tim2_ccrx_mask[TIM2_NUMBER_OF_CHANNELS];
 static TIM21_context_t tim21_ctx;
@@ -118,7 +118,7 @@ void TIM2_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
 	// Set PWM frequency.
-	TIM2 -> ARR = TIM2_ARR_VALUE; // Timer input clock is SYSCLK (PSC=0 by default).
+	TIM2 -> ARR = TIM2_ARR_VALUE;
 	// Configure channels 1-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
 	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
@@ -176,7 +176,7 @@ void TIM21_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
 	// Configure period.
-	TIM21 -> PSC = (TIM21_PRESCALER - 1); // Timer is clocked on (MSI / 2) .
+	TIM21 -> PSC = (TIM21_PRESCALER - 1); // Timer is clocked on (SYSCLK / 2) .
 	// Generate event to update registers.
 	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.
@@ -196,7 +196,7 @@ void TIM21_start(uint32_t led_blink_period_ms) {
 	tim21_ctx.single_blink_done = 0;
 	// Set period.
 	TIM21 -> CNT = 0;
-	TIM21 -> ARR = (led_blink_period_ms * RCC_MSI_FREQUENCY_KHZ) / (TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
+	TIM21 -> ARR = (led_blink_period_ms * RCC_HSI_FREQUENCY_KHZ) / (TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
 	// Clear flag and enable interrupt.
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
 	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21);
