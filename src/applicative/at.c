@@ -72,6 +72,7 @@ static void _AT_set_key_callback(void);
 static void _AT_so_callback(void);
 static void _AT_sb_callback(void);
 static void _AT_sf_callback(void);
+static void _AT_print_dl_payload(void);
 static void _AT_tm_callback(void);
 static void _AT_cw_callback(void);
 static void _AT_dl_callback(void);
@@ -102,6 +103,8 @@ typedef struct {
 	sfx_rc_t sigfox_rc;
 	sfx_u32 sigfox_rc_std_config[SIGFOX_RC_STD_CONFIG_SIZE];
 	uint8_t sigfox_rc_idx;
+	uint8_t sigfox_dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
+	uint8_t sigfox_dl_payload_available;
 #endif
 } AT_context_t;
 
@@ -126,6 +129,7 @@ static const AT_command_t AT_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "AT$SO", STRING_NULL, "Sigfox send control message", _AT_so_callback},
 	{PARSER_MODE_HEADER,  "AT$SB=", "data[bit],(bidir_flag[bit])", "Sigfox send bit", _AT_sb_callback},
 	{PARSER_MODE_HEADER,  "AT$SF=", "data[hex],(bidir_flag[bit])", "Sigfox send frame", _AT_sf_callback},
+	{PARSER_MODE_COMMAND,  "AT$DL?", STRING_NULL, "Read last DL payload", _AT_print_dl_payload},
 	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Execute Sigfox test mode", _AT_tm_callback},
 	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Start or stop continuous radio transmission", _AT_cw_callback},
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_dl_callback},
@@ -818,21 +822,6 @@ errors:
 #endif
 
 #ifdef UHFM
-/* PRINT SIGFOX DOWNLINK DATA ON AT INTERFACE.
- * @param dl_payload:	Downlink data to print.
- * @return:				None.
- */
-static void _AT_print_dl_payload(sfx_u8* dl_payload) {
-	_AT_reply_add_string("+RX=");
-	uint8_t idx = 0;
-	for (idx=0 ; idx<SIGFOX_DOWNLINK_DATA_SIZE_BYTES ; idx++) {
-		_AT_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
-	}
-	_AT_reply_send();
-}
-#endif
-
-#ifdef UHFM
 /* AT$SO EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -864,7 +853,6 @@ static void _AT_sb_callback(void) {
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	int32_t data = 0;
 	int32_t bidir_flag = 0;
-	sfx_u8 dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
 	// First try with 2 parameters.
 	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, AT_CHAR_SEPARATOR, &data);
 	if (parser_status == PARSER_SUCCESS) {
@@ -874,11 +862,10 @@ static void _AT_sb_callback(void) {
 		// Send Sigfox bit with specified downlink request.
 		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
-		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, dl_payload, 2, (sfx_bool) bidir_flag);
+		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, at_ctx.sigfox_dl_payload, 2, (sfx_bool) bidir_flag);
 		SIGFOX_API_error_check_print();
-		if (bidir_flag != SFX_FALSE) {
-			_AT_print_dl_payload(dl_payload);
-		}
+		// Update flag.
+		at_ctx.sigfox_dl_payload_available = 1;
 	}
 	else {
 		// Try with 1 parameter.
@@ -887,7 +874,7 @@ static void _AT_sb_callback(void) {
 		// Send Sigfox bit with no downlink request (by default).
 		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
-		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, dl_payload, 2, 0);
+		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, at_ctx.sigfox_dl_payload, 2, 0);
 		SIGFOX_API_error_check_print();
 	}
 	_AT_print_ok();
@@ -910,7 +897,6 @@ static void _AT_sf_callback(void) {
 	sfx_u8 data[SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES];
 	uint8_t extracted_length = 0;
 	int32_t bidir_flag = 0;
-	sfx_u8 dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
 	// First try with 2 parameters.
 	parser_status = PARSER_get_byte_array(&at_ctx.parser, AT_CHAR_SEPARATOR, 12, 0, data, &extracted_length);
 	if (parser_status == PARSER_SUCCESS) {
@@ -920,11 +906,10 @@ static void _AT_sf_callback(void) {
 		// Send Sigfox frame with specified downlink request.
 		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
-		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, dl_payload, 2, bidir_flag);
+		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, at_ctx.sigfox_dl_payload, 2, bidir_flag);
 		SIGFOX_API_error_check_print();
-		if (bidir_flag != 0) {
-			_AT_print_dl_payload(dl_payload);
-		}
+		// Update flag.
+		at_ctx.sigfox_dl_payload_available = 1;
 	}
 	else {
 		// Try with 1 parameter.
@@ -933,7 +918,7 @@ static void _AT_sf_callback(void) {
 		// Send Sigfox frame with no downlink request (by default).
 		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
-		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, dl_payload, 2, 0);
+		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, at_ctx.sigfox_dl_payload, 2, 0);
 		SIGFOX_API_error_check_print();
 	}
 	_AT_print_ok();
@@ -945,13 +930,40 @@ errors:
 #endif
 
 #ifdef UHFM
+/* AT$DL? EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_print_dl_payload(void) {
+	// Local variables.
+	uint8_t idx = 0;
+	// Check flag.
+	if (at_ctx.sigfox_dl_payload_available != 0) {
+		// Print last DL payload.
+		for (idx=0 ; idx<SIGFOX_DOWNLINK_DATA_SIZE_BYTES ; idx++) {
+			_AT_reply_add_value(at_ctx.sigfox_dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
+		}
+	}
+	else {
+		_AT_print_error(ERROR_DL_PAYLOAD_UNAVAILABLE);
+		goto errors;
+	}
+	_AT_reply_send();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
 /* PRINT SIGFOX DOWNLINK FRAME ON AT INTERFACE.
  * @param dl_payload:	Downlink data to print.
  * @return:				None.
  */
 static void _AT_print_dl_phy_content(sfx_u8* dl_phy_content, int32_t rssi_dbm) {
-	_AT_reply_add_string("+DL_PHY=");
+	// Local variables.
 	uint8_t idx = 0;
+	// Print DL-PHY content.
+	_AT_reply_add_string("+DL_PHY=");
 	for (idx=0 ; idx<SIGFOX_DOWNLINK_PHY_SIZE_BYTES ; idx++) {
 		_AT_reply_add_value(dl_phy_content[idx], STRING_FORMAT_HEXADECIMAL, 0);
 	}
@@ -1195,6 +1207,7 @@ void AT_init(void) {
 #ifdef UHFM
 	at_ctx.sigfox_rc = (sfx_rc_t) RC1;
 	at_ctx.sigfox_rc_idx = SFX_RC1;
+	at_ctx.sigfox_dl_payload_available = 0;
 #endif
 	// Enable LPUART.
 	LPUART1_enable_rx();
