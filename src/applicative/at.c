@@ -5,8 +5,11 @@
  *      Author: Ludo
  */
 
-#include <at.h>
+#include "at.h"
+
 #include "adc.h"
+#include "aes.h"
+#include "addon_sigfox_rf_protocol_api.h"
 #include "bpsm.h"
 #include "ddrm.h"
 #include "digital.h"
@@ -24,11 +27,14 @@
 #include "parser.h"
 #include "pwr.h"
 #include "rcc_reg.h"
+#include "rf_api.h"
 #include "rrm.h"
 #include "sht3x.h"
+#include "sigfox_api.h"
 #include "sm.h"
 #include "string.h"
 #include "types.h"
+#include "uhfm.h"
 #include "version.h"
 
 /*** AT local macros ***/
@@ -42,6 +48,10 @@
 #define AT_STRING_VALUE_BUFFER_SIZE		16
 #define AT_FRAME_END					STRING_CHAR_CR
 #define AT_REPLY_TAB					"     "
+#ifdef UHFM
+// Duration of RSSI command.
+#define AT_RSSI_REPORT_PERIOD_MS		500
+#endif
 
 /*** AT callbacks declaration ***/
 
@@ -52,6 +62,21 @@ static void _AT_print_error_stack(void);
 static void _AT_adc_callback(void);
 static void _AT_read_callback(void);
 static void _AT_write_callback(void);
+#ifdef UHFM
+static void _AT_nvmr_callback(void);
+static void _AT_nvm_callback(void);
+static void _AT_get_id_callback(void);
+static void _AT_set_id_callback(void);
+static void _AT_get_key_callback(void);
+static void _AT_set_key_callback(void);
+static void _AT_so_callback(void);
+static void _AT_sb_callback(void);
+static void _AT_sf_callback(void);
+static void _AT_tm_callback(void);
+static void _AT_cw_callback(void);
+static void _AT_dl_callback(void);
+static void _AT_rssi_callback(void);
+#endif /* UHFM */
 
 /*** AT local structures ***/
 
@@ -72,6 +97,12 @@ typedef struct {
 	// Replies.
 	char_t reply[AT_REPLY_BUFFER_SIZE];
 	uint32_t reply_size;
+#ifdef UHFM
+	// Sigfox RC.
+	sfx_rc_t sigfox_rc;
+	sfx_u32 sigfox_rc_std_config[SIGFOX_RC_STD_CONFIG_SIZE];
+	uint8_t sigfox_rc_idx;
+#endif
 } AT_context_t;
 
 /*** AT local global variables ***/
@@ -84,7 +115,22 @@ static const AT_command_t AT_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "AT$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
 	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC measurements", _AT_adc_callback},
 	{PARSER_MODE_HEADER, "AT$R=", "address[hex]", "Read register", _AT_read_callback},
-	{PARSER_MODE_HEADER, "AT$W=", "address[hex],value[hex]", "Write register",_AT_write_callback}
+	{PARSER_MODE_HEADER, "AT$W=", "address[hex],value[hex]", "Write register",_AT_write_callback},
+#ifdef UHFM
+	{PARSER_MODE_COMMAND, "AT$NVMR", STRING_NULL, "Reset NVM data", _AT_nvmr_callback},
+	{PARSER_MODE_HEADER,  "AT$NVM=", "address[dec]", "Get NVM data", _AT_nvm_callback},
+	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox device ID", _AT_get_id_callback},
+	{PARSER_MODE_HEADER,  "AT$ID=", "id[hex]", "Set Sigfox device ID", _AT_set_id_callback},
+	{PARSER_MODE_COMMAND, "AT$KEY?", STRING_NULL, "Get Sigfox device key", _AT_get_key_callback},
+	{PARSER_MODE_HEADER,  "AT$KEY=", "key[hex]", "Set Sigfox device key", _AT_set_key_callback},
+	{PARSER_MODE_COMMAND, "AT$SO", STRING_NULL, "Sigfox send control message", _AT_so_callback},
+	{PARSER_MODE_HEADER,  "AT$SB=", "data[bit],(bidir_flag[bit])", "Sigfox send bit", _AT_sb_callback},
+	{PARSER_MODE_HEADER,  "AT$SF=", "data[hex],(bidir_flag[bit])", "Sigfox send frame", _AT_sf_callback},
+	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Execute Sigfox test mode", _AT_tm_callback},
+	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Start or stop continuous radio transmission", _AT_cw_callback},
+	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_dl_callback},
+	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_rssi_callback},
+#endif /* UHFM */
 };
 
 static AT_context_t at_ctx;
@@ -255,7 +301,7 @@ static void _AT_print_error_stack(void) {
 	_AT_print_ok();
 }
 
-/* RS$ADC? EXECUTION CALLBACK.
+/* AT$ADC? EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
  */
@@ -264,12 +310,27 @@ static void _AT_adc_callback(void) {
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t generic_u32 = 0;
 	int8_t tmcu_degrees = 0;
+#ifdef SM
+	uint8_t idx = 0;
+#endif
 	// Trigger internal ADC conversions.
-	_AT_reply_add_string("ADC running...");
-	_AT_reply_send();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_error_check_print();
 	// Read and print data.
+	// MCU voltage.
+	_AT_reply_add_string("Vmcu=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &generic_u32);
+	ADC1_error_check_print();
+	_AT_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_AT_reply_add_string("mV");
+	_AT_reply_send();
+	// MCU temperature.
+	_AT_reply_add_string("Tmcu=");
+	adc1_status = ADC1_get_tmcu(&tmcu_degrees);
+	ADC1_error_check_print();
+	_AT_reply_add_value((int32_t) tmcu_degrees, STRING_FORMAT_DECIMAL, 0);
+	_AT_reply_add_string("dC");
+	_AT_reply_send();
 	// Input voltage.
 #ifdef LVRM
 	_AT_reply_add_string("Vcom=");
@@ -283,12 +344,14 @@ static void _AT_adc_callback(void) {
 	_AT_reply_add_string("Vin=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &generic_u32);
 #endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	ADC1_error_check_print();
 	_AT_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	_AT_reply_add_string("mV");
 	_AT_reply_send();
-#ifdef BPSM
+#endif
 	// Storage element voltage.
+#ifdef BPSM
 	_AT_reply_add_string("Vstr=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSTR_MV, &generic_u32);
 	ADC1_error_check_print();
@@ -305,12 +368,14 @@ static void _AT_adc_callback(void) {
 	_AT_reply_add_string("Vbkp=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VBKP_MV, &generic_u32);
 #endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	ADC1_error_check_print();
 	_AT_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	_AT_reply_add_string("mV");
 	_AT_reply_send();
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+#endif
 	// Output current.
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	_AT_reply_add_string("Iout=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &generic_u32);
 	ADC1_error_check_print();
@@ -318,26 +383,32 @@ static void _AT_adc_callback(void) {
 	_AT_reply_add_string("uA");
 	_AT_reply_send();
 #endif
-	// MCU voltage.
-	_AT_reply_add_string("Vmcu=");
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &generic_u32);
+#ifdef SM
+	for (idx=ADC_DATA_INDEX_AIN0_MV ; idx<=ADC_DATA_INDEX_AIN3_MV ; idx++) {
+		_AT_reply_add_string("AIN");
+		_AT_reply_add_value((int32_t) (idx - ADC_DATA_INDEX_AIN0_MV), STRING_FORMAT_DECIMAL, 0);
+		_AT_reply_add_string("=");
+		adc1_status = ADC1_get_data(idx, &generic_u32);
+		ADC1_error_check_print();
+		_AT_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+		_AT_reply_add_string("mV");
+		_AT_reply_send();
+	}
+#endif
+#ifdef UHFM
+	_AT_reply_add_string("Vrf=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &generic_u32);
 	ADC1_error_check_print();
 	_AT_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	_AT_reply_add_string("mV");
 	_AT_reply_send();
-	// MCU temperature.
-	_AT_reply_add_string("Tmcu=");
-	adc1_status = ADC1_get_tmcu(&tmcu_degrees);
-	ADC1_error_check_print();
-	_AT_reply_add_value((int32_t) tmcu_degrees, STRING_FORMAT_DECIMAL, 0);
-	_AT_reply_add_string("dC");
-	_AT_reply_send();
+#endif
 	_AT_print_ok();
 errors:
 	return;
 }
 
-/* RS$R EXECUTION CALLBACK.
+/* AT$R EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
  */
@@ -379,6 +450,9 @@ static void _AT_read_callback(void) {
 #endif
 #ifdef SM
 		_AT_reply_add_value(DINFOX_BOARD_ID_SM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
+#ifdef UHFM
+		_AT_reply_add_value(DINFOX_BOARD_ID_UHFM, STRING_FORMAT_HEXADECIMAL, 0);
 #endif
 		break;
 	case DINFOX_REGISTER_HW_VERSION_MAJOR:
@@ -438,6 +512,9 @@ static void _AT_read_callback(void) {
 	case SM_REGISTER_AIN1:
 	case SM_REGISTER_AIN2:
 	case SM_REGISTER_AIN3:
+#endif
+#ifdef UHFM
+	case UHFM_REGISTER_VRF_MV:
 #endif
 		// Note: indexing only works if registers addresses are ordered in the same way as ADC data indexes.
 		adc1_status = ADC1_get_data((register_address - DINFOX_REGISTER_VMCU_MV), &generic_u32);
@@ -505,7 +582,7 @@ errors:
 	return;
 }
 
-/* RS$W EXECUTION CALLBACK.
+/* AT$W EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
  */
@@ -538,6 +615,9 @@ static void _AT_write_callback(void) {
 #ifdef SM
 	if (register_address >= SM_REGISTER_LAST) {
 #endif
+#ifdef UHFM
+	if (register_address >= UHFM_REGISTER_LAST) {
+#endif
 		_AT_print_error(ERROR_REGISTER_ADDRESS);
 		goto errors;
 	}
@@ -556,7 +636,7 @@ static void _AT_write_callback(void) {
 		nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, (uint8_t) register_value);
 		NVM_error_check_print();
 		break;
-#endif
+#endif /* DM */
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
 	case LVRM_REGISTER_RELAY_ENABLE:
@@ -576,7 +656,7 @@ static void _AT_write_callback(void) {
 		// Set output state.
 		LOAD_set_output_state(register_value);
 		break;
-#endif
+#endif /* LVRM or BPSM or DDRM or RRM */
 #ifdef BPSM
 	case BPSM_REGISTER_CHARGE_ENABLE:
 		// Read new output state.
@@ -595,6 +675,467 @@ static void _AT_write_callback(void) {
 errors:
 	return;
 }
+
+#ifdef UHFM
+/* AT$NVMR EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_nvmr_callback(void) {
+	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	// Reset all NVM field to default value.
+	nvm_status = NVM_reset_default();
+	NVM_error_check_print();
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$NVM EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_nvm_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	int32_t address = 0;
+	uint8_t nvm_data = 0;
+	// Read address parameters.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &address);
+	PARSER_error_check_print();
+	// Read byte at requested address.
+	nvm_status = NVM_read_byte((uint16_t) address, &nvm_data);
+	NVM_error_check_print();
+	// Print data.
+	_AT_reply_add_value(nvm_data, STRING_FORMAT_HEXADECIMAL, 1);
+	_AT_reply_send();
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$ID? EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_get_id_callback(void) {
+	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t idx = 0;
+	uint8_t id_byte = 0;
+	// Retrieve device ID in NVM.
+	for (idx=0 ; idx<ID_LENGTH ; idx++) {
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + ID_LENGTH - idx - 1), &id_byte);
+		NVM_error_check_print();
+		_AT_reply_add_value(id_byte, STRING_FORMAT_HEXADECIMAL, (idx==0 ? 1 : 0));
+	}
+	_AT_reply_send();
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$ID EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_set_id_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t device_id[ID_LENGTH];
+	uint8_t extracted_length = 0;
+	uint8_t idx = 0;
+	// Read ID parameter.
+	parser_status = PARSER_get_byte_array(&at_ctx.parser, STRING_CHAR_NULL, ID_LENGTH, 1, device_id, &extracted_length);
+	PARSER_error_check_print();
+	// Write device ID in NVM.
+	for (idx=0 ; idx<ID_LENGTH ; idx++) {
+		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + ID_LENGTH - idx - 1), device_id[idx]);
+		NVM_error_check_print();
+	}
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$KEY? EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_get_key_callback(void) {
+	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t idx = 0;
+	uint8_t key_byte = 0;
+	// Retrieve device key in NVM.
+	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), &key_byte);
+		NVM_error_check_print();
+		_AT_reply_add_value(key_byte, STRING_FORMAT_HEXADECIMAL, (idx==0 ? 1 : 0));
+	}
+	_AT_reply_send();
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$KEY EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_set_key_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t device_key[AES_BLOCK_SIZE];
+	uint8_t extracted_length = 0;
+	uint8_t idx = 0;
+	// Read key parameter.
+	parser_status = PARSER_get_byte_array(&at_ctx.parser, STRING_CHAR_NULL, AES_BLOCK_SIZE, 1, device_key, &extracted_length);
+	PARSER_error_check_print();
+	// Write device ID in NVM.
+	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
+		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), device_key[idx]);
+		NVM_error_check_print();
+	}
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* PRINT SIGFOX DOWNLINK DATA ON AT INTERFACE.
+ * @param dl_payload:	Downlink data to print.
+ * @return:				None.
+ */
+static void _AT_print_dl_payload(sfx_u8* dl_payload) {
+	_AT_reply_add_string("+RX=");
+	uint8_t idx = 0;
+	for (idx=0 ; idx<SIGFOX_DOWNLINK_DATA_SIZE_BYTES ; idx++) {
+		_AT_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
+	}
+	_AT_reply_send();
+}
+#endif
+
+#ifdef UHFM
+/* AT$SO EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_so_callback(void) {
+	// Local variables.
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	// Send Sigfox OOB frame.
+	sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
+	SIGFOX_API_error_check_print();
+	sigfox_api_status = SIGFOX_API_send_outofband(SFX_OOB_SERVICE);
+	SIGFOX_API_error_check_print();
+	_AT_print_ok();
+errors:
+	sigfox_api_status = SIGFOX_API_close();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$SB EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_sb_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	int32_t data = 0;
+	int32_t bidir_flag = 0;
+	sfx_u8 dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
+	// First try with 2 parameters.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, AT_CHAR_SEPARATOR, &data);
+	if (parser_status == PARSER_SUCCESS) {
+		// Try parsing downlink request parameter.
+		parser_status =  PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &bidir_flag);
+		PARSER_error_check_print();
+		// Send Sigfox bit with specified downlink request.
+		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
+		SIGFOX_API_error_check_print();
+		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, dl_payload, 2, (sfx_bool) bidir_flag);
+		SIGFOX_API_error_check_print();
+		if (bidir_flag != SFX_FALSE) {
+			_AT_print_dl_payload(dl_payload);
+		}
+	}
+	else {
+		// Try with 1 parameter.
+		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &data);
+		PARSER_error_check_print();
+		// Send Sigfox bit with no downlink request (by default).
+		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
+		SIGFOX_API_error_check_print();
+		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, dl_payload, 2, 0);
+		SIGFOX_API_error_check_print();
+	}
+	_AT_print_ok();
+errors:
+	sigfox_api_status = SIGFOX_API_close();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$SF EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_sf_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	sfx_u8 data[SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES];
+	uint8_t extracted_length = 0;
+	int32_t bidir_flag = 0;
+	sfx_u8 dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
+	// First try with 2 parameters.
+	parser_status = PARSER_get_byte_array(&at_ctx.parser, AT_CHAR_SEPARATOR, 12, 0, data, &extracted_length);
+	if (parser_status == PARSER_SUCCESS) {
+		// Try parsing downlink request parameter.
+		parser_status =  PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &bidir_flag);
+		PARSER_error_check_print();
+		// Send Sigfox frame with specified downlink request.
+		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
+		SIGFOX_API_error_check_print();
+		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, dl_payload, 2, bidir_flag);
+		SIGFOX_API_error_check_print();
+		if (bidir_flag != 0) {
+			_AT_print_dl_payload(dl_payload);
+		}
+	}
+	else {
+		// Try with 1 parameter.
+		parser_status = PARSER_get_byte_array(&at_ctx.parser, STRING_CHAR_NULL, 12, 0, data, &extracted_length);
+		PARSER_error_check_print();
+		// Send Sigfox frame with no downlink request (by default).
+		sigfox_api_status = SIGFOX_API_open(&at_ctx.sigfox_rc);
+		SIGFOX_API_error_check_print();
+		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, dl_payload, 2, 0);
+		SIGFOX_API_error_check_print();
+	}
+	_AT_print_ok();
+errors:
+	sigfox_api_status = SIGFOX_API_close();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* PRINT SIGFOX DOWNLINK FRAME ON AT INTERFACE.
+ * @param dl_payload:	Downlink data to print.
+ * @return:				None.
+ */
+static void _AT_print_dl_phy_content(sfx_u8* dl_phy_content, int32_t rssi_dbm) {
+	_AT_reply_add_string("+DL_PHY=");
+	uint8_t idx = 0;
+	for (idx=0 ; idx<SIGFOX_DOWNLINK_PHY_SIZE_BYTES ; idx++) {
+		_AT_reply_add_value(dl_phy_content[idx], STRING_FORMAT_HEXADECIMAL, 0);
+	}
+	_AT_reply_add_string(" RSSI=");
+	_AT_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+	_AT_reply_add_string("dBm");
+	_AT_reply_send();
+}
+#endif
+
+#ifdef UHFM
+/* AT$TM EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_tm_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	int32_t rc_index = 0;
+	int32_t test_mode = 0;
+	// Read RC parameter.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, AT_CHAR_SEPARATOR, &rc_index);
+	PARSER_error_check_print();
+	// Read test mode parameter.
+	parser_status =  PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &test_mode);
+	PARSER_error_check_print();
+	// Call test mode function wth public key.
+	sigfox_api_status = ADDON_SIGFOX_RF_PROTOCOL_API_test_mode((sfx_rc_enum_t) rc_index, (sfx_test_mode_t) test_mode);
+	SIGFOX_API_error_check_print();
+	_AT_print_ok();
+errors:
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$CW EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_cw_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	S2LP_status_t s2lp_status = S2LP_SUCCESS;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	int32_t enable = 0;
+	int32_t frequency_hz = 0;
+	int32_t power_dbm = 0;
+	// Read frequency parameter.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, AT_CHAR_SEPARATOR, &frequency_hz);
+	PARSER_error_check_print();
+	// First try with 3 parameters.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, AT_CHAR_SEPARATOR, &enable);
+	if (parser_status == PARSER_SUCCESS) {
+		// There is a third parameter, try to parse power.
+		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &power_dbm);
+		PARSER_error_check_print();
+		// CW with given output power.
+		SIGFOX_API_stop_continuous_transmission();
+		if (enable != 0) {
+			sigfox_api_status = SIGFOX_API_start_continuous_transmission((sfx_u32) frequency_hz, SFX_NO_MODULATION);
+			SIGFOX_API_error_check_print();
+			s2lp_status = S2LP_set_rf_output_power((int8_t) power_dbm);
+			S2LP_error_check_print();
+		}
+	}
+	else {
+		// Power is not given, try to parse enable as last parameter.
+		parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &enable);
+		PARSER_error_check_print();
+		// CW with last output power.
+		SIGFOX_API_stop_continuous_transmission();
+		if (enable != 0) {
+			sigfox_api_status = SIGFOX_API_start_continuous_transmission((sfx_u32) frequency_hz, SFX_NO_MODULATION);
+			SIGFOX_API_error_check_print();
+		}
+	}
+	_AT_print_ok();
+	return;
+errors:
+	sigfox_api_status = SIGFOX_API_stop_continuous_transmission();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$DL EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_dl_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	sfx_u8 dl_phy_content[SIGFOX_DOWNLINK_PHY_SIZE_BYTES];
+	sfx_s16 rssi_dbm = 0;
+	sfx_rx_state_enum_t dl_status = DL_PASSED;
+	int32_t frequency_hz = 0;
+	// Read frequency parameter.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &frequency_hz);
+	PARSER_error_check_print();
+	// Start radio.
+	sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
+	SIGFOX_API_error_check_print();
+	sigfox_api_status = RF_API_change_frequency(frequency_hz);
+	SIGFOX_API_error_check_print();
+	while (dl_status == DL_PASSED) {
+		sigfox_api_status = RF_API_wait_frame(dl_phy_content, &rssi_dbm, &dl_status);
+		SIGFOX_API_error_check_print();
+		// Check result.
+		if (dl_status == DL_PASSED) {
+			_AT_print_dl_phy_content(dl_phy_content, rssi_dbm);
+		}
+		else {
+			_AT_reply_add_string("RX timeout");
+			_AT_reply_send();
+		}
+	}
+	_AT_print_ok();
+errors:
+	sigfox_api_status = RF_API_stop();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef UHFM
+/* AT$RSSI EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_rssi_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	S2LP_status_t s2lp_status = S2LP_SUCCESS;
+	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
+	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	int32_t frequency_hz = 0;
+	int32_t duration_s = 0;
+	int16_t rssi_dbm = 0;
+	uint32_t report_loop = 0;
+	// Read frequency parameter.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, AT_CHAR_SEPARATOR, &frequency_hz);
+	PARSER_error_check_print();
+	// Read duration parameters.
+	parser_status = PARSER_get_parameter(&at_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &duration_s);
+	PARSER_error_check_print();
+	// Init radio.
+	sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
+	SIGFOX_API_error_check_print();
+	sigfox_api_status = RF_API_change_frequency((sfx_u32) frequency_hz);
+	SIGFOX_API_error_check_print();
+	// Start continuous listening.
+	s2lp_status = S2LP_send_command(S2LP_COMMAND_READY);
+	S2LP_error_check_print();
+	s2lp_status = S2LP_wait_for_state(S2LP_STATE_READY);
+	S2LP_error_check_print();
+	// Start radio.
+	s2lp_status = S2LP_send_command(S2LP_COMMAND_RX);
+	S2LP_error_check_print();
+	// Measurement loop.
+	while (report_loop < ((duration_s * 1000) / AT_RSSI_REPORT_PERIOD_MS)) {
+		// Read RSSI.
+		s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_RUN, &rssi_dbm);
+		S2LP_error_check_print();
+		// Print RSSI.
+		_AT_reply_add_string("RSSI=");
+		_AT_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+		_AT_reply_add_string("dBm");
+		_AT_reply_send();
+		// Report delay.
+		lptim1_status = LPTIM1_delay_milliseconds(AT_RSSI_REPORT_PERIOD_MS, 0);
+		LPTIM1_error_check_print();
+		report_loop++;
+	}
+	_AT_print_ok();
+errors:
+	sigfox_api_status = RF_API_stop();
+	SIGFOX_API_error_check();
+	return;
+}
+#endif
 
 /* RESET AT PARSER.
  * @param:	None.
@@ -651,6 +1192,10 @@ errors:
 void AT_init(void) {
 	// Init context.
 	_AT_reset_parser();
+#ifdef UHFM
+	at_ctx.sigfox_rc = (sfx_rc_t) RC1;
+	at_ctx.sigfox_rc_idx = SFX_RC1;
+#endif
 	// Enable LPUART.
 	LPUART1_enable_rx();
 }
@@ -688,4 +1233,21 @@ void AT_fill_rx_buffer(uint8_t rx_byte) {
 			at_ctx.command_size = (at_ctx.command_size + 1) % AT_COMMAND_BUFFER_SIZE;
 		}
 	}
+}
+
+/* PRINT SIGFOX LIBRARY RESULT.
+ * @param test_result:	Test result.
+ * @param rssi:			Downlink signal rssi in dBm.
+ */
+void AT_print_test_result(uint8_t test_result, int16_t rssi_dbm) {
+	// Check result.
+	if (test_result == 0) {
+		_AT_reply_add_string("Test failed.");
+	}
+	else {
+		_AT_reply_add_string("Test passed. RSSI=");
+		_AT_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+		_AT_reply_add_string("dBm");
+	}
+	_AT_reply_send();
 }

@@ -24,6 +24,12 @@ typedef enum {
 
 typedef enum {
 	NVM_ADDRESS_SELF_ADDRESS = 0,
+	NVM_ADDRESS_SIGFOX_DEVICE_ID = 1,
+	NVM_ADDRESS_SIGFOX_DEVICE_KEY = 5,
+	NVM_ADDRESS_SIGFOX_PN = 21,
+	NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER = 23,
+	NVM_ADDRESS_SIGFOX_FH = 25,
+	NVM_ADDRESS_SIGFOX_RL = 27,
 	NVM_ADDRESS_LAST
 } NVM_address_t;
 
@@ -32,6 +38,7 @@ typedef enum {
 void NVM_init(void);
 NVM_status_t NVM_read_byte(NVM_address_t address_offset, uint8_t* data);
 NVM_status_t NVM_write_byte(NVM_address_t address_offset, uint8_t data);
+NVM_status_t NVM_reset_default(void);
 
 #define NVM_status_check(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; }}
 #define NVM_error_check() { ERROR_status_check(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }

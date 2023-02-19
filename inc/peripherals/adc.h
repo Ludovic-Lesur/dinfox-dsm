@@ -50,6 +50,9 @@ typedef enum {
 	ADC_DATA_INDEX_AIN2_MV,
 	ADC_DATA_INDEX_AIN3_MV,
 #endif
+#ifdef UHFM
+	ADC_DATA_INDEX_VRF_MV,
+#endif
 	ADC_DATA_INDEX_LAST
 } ADC_data_index_t;
 

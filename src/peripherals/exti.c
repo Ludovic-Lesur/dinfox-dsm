@@ -12,6 +12,7 @@
 #include "mapping.h"
 #include "nvic.h"
 #include "rcc_reg.h"
+#include "rf_api.h"
 #include "syscfg_reg.h"
 #include "types.h"
 
@@ -21,6 +22,24 @@
 #define EXTI_RTSR_FTSR_MAX_INDEX		22
 
 /*** EXTI local functions ***/
+
+#ifdef UHFM
+/* EXTI LINES 4-15 INTERRUPT HANDLER.
+ * @param:	None.
+ * @return:	None.
+ */
+void __attribute__((optimize("-O0"))) EXTI4_15_IRQHandler(void) {
+	// S2LP GPIO0 (PA11).
+	if (((EXTI -> PR) & (0b1 << (GPIO_S2LP_GPIO0.pin_index))) != 0) {
+		// Set applicative flag.
+		if (((EXTI -> IMR) & (0b1 << (GPIO_S2LP_GPIO0.pin_index))) != 0) {
+			RF_API_set_irq_flag();
+		}
+		// Clear flag.
+		EXTI -> PR |= (0b1 << (GPIO_S2LP_GPIO0.pin_index)); // PIFx='1' (writing '1' clears the bit).
+	}
+}
+#endif
 
 /* SET EXTI TRIGGER.
  * @param trigger:	Interrupt edge trigger (see EXTI_trigger_t enum).

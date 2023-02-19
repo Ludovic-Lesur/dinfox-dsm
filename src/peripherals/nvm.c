@@ -139,3 +139,29 @@ NVM_status_t NVM_write_byte(NVM_address_t address_offset, uint8_t data) {
 errors:
 	return status;
 }
+
+/* RESET ALL NVM FIELDS TO DEFAULT VALUE.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+NVM_status_t NVM_reset_default(void) {
+	// Local variables.
+	NVM_status_t status = NVM_SUCCESS;
+	// Sigfox parameters.
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_PN + 0), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_PN + 1), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER + 0), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER + 1), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_FH + 0), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_FH + 1), 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+	status = NVM_write_byte(NVM_ADDRESS_SIGFOX_RL, 0x00);
+	if (status != NVM_SUCCESS) goto errors;
+errors:
+	return status;
+}

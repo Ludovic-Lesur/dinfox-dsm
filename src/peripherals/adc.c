@@ -68,13 +68,17 @@ typedef enum {
 	ADC_CHANNEL_AIN2 = 7,
 	ADC_CHANNEL_AIN3 = 8,
 #endif
+#ifdef UHFM
+	ADC_CHANNEL_VRF = 7,
+#endif
 	ADC_CHANNEL_VREFINT = 17,
 	ADC_CHANNEL_TMCU = 18,
 	ADC_CHANNEL_LAST = 19
 } ADC_channel_t;
 
 typedef enum {
-	ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION = 0,
+	ADC_CONVERSION_TYPE_VMCU = 0,
+	ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION,
 	ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION,
 	ADC_CONVERSION_TYPE_LT6106,
 	ADC_CONVERSION_TYPE_LAST
@@ -95,6 +99,7 @@ typedef struct {
 /*** ADC local global variables ***/
 
 static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
+	{ADC_CHANNEL_VREFINT, ADC_CONVERSION_TYPE_VMCU, 0},
 #ifdef LVRM
 	{ADC_CHANNEL_VCOM, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
 #endif
@@ -105,7 +110,6 @@ static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
 	{ADC_CHANNEL_VOUT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
 	{ADC_CHANNEL_IOUT, ADC_CONVERSION_TYPE_LT6106, 1}
 #endif
-
 #ifdef BPSM
 	{ADC_CHANNEL_VSRC, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
 	{ADC_CHANNEL_VSTR, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO},
@@ -116,6 +120,9 @@ static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
 	{ADC_CHANNEL_AIN1, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
 	{ADC_CHANNEL_AIN2, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
 	{ADC_CHANNEL_AIN3, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1}
+#endif
+#ifdef UHFM
+	{ADC_CHANNEL_VRF, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
 #endif
 };
 static ADC_context_t adc_ctx;
@@ -192,27 +199,6 @@ errors:
 	return status;
 }
 
-/* PERFORM INTERNAL REFERENCE VOLTAGE CONVERSION.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static ADC_status_t _ADC1_compute_vrefint(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	// Read raw reference voltage.
-	status = _ADC1_filtered_conversion(ADC_CHANNEL_VREFINT, &adc_ctx.vrefint_12bits);
-	return status;
-}
-
-/* COMPUTE MCU SUPPLY VOLTAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
-static void _ADC1_compute_vmcu(void) {
-	// Retrieve supply voltage from bandgap result.
-	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
-}
-
 /* COMPUTE MCU TEMPERATURE THANKS TO INTERNAL VOLTAGE REFERENCE.
  * @param:			None.
  * @return status:	Function execution status.
@@ -251,8 +237,16 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 		// Get raw result.
 		status = _ADC1_filtered_conversion(ADC_INPUTS[idx].channel, &voltage_12bits);
 		if (status != ADC_SUCCESS) goto errors;
+		// Update VREFINT.
+		if (ADC_INPUTS[idx].channel == ADC_CHANNEL_VREFINT) {
+			adc_ctx.vrefint_12bits = voltage_12bits;
+		}
 		// Convert to mV using VREFINT.
 		switch (ADC_INPUTS[idx].gain_type) {
+		case ADC_CONVERSION_TYPE_VMCU:
+			// Retrieve supply voltage from bandgap result.
+			adc_ctx.data[idx] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
+			break;
 		case ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION:
 			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits * ADC_INPUTS[idx].gain) / (adc_ctx.vrefint_12bits);
 			break;
@@ -315,7 +309,7 @@ ADC_status_t ADC1_init(void) {
 #if (defined LVRM) || (defined BPSM)
 	GPIO_configure(&GPIO_ADC1_IN6, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
-#if (defined DDRM) || (defined RRM)
+#if (defined DDRM) || (defined RRM) || (defined UHFM)
 	GPIO_configure(&GPIO_ADC1_IN7, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef SM
@@ -384,18 +378,18 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Turn analog front-end on.
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
 #endif
+#ifdef UHFM
+	// Turn RF front-end on.
+	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
+#endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
 	// Wait internal reference and voltage dividers stabilization.
 	lptim1_status = LPTIM1_delay_milliseconds(100, 0);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
-	// Perform measurements.
-	status = _ADC1_compute_vrefint();
-	if (status != ADC_SUCCESS) goto errors;
-	_ADC1_compute_vmcu();
-	status = _ADC1_compute_tmcu();
-	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_all_channels();
+	if (status != ADC_SUCCESS) goto errors;
+	status = _ADC1_compute_tmcu();
 	if (status != ADC_SUCCESS) goto errors;
 errors:
 	// Switch internal voltage reference off.
@@ -407,6 +401,10 @@ errors:
 #ifdef SM
 	// Turn analog front-end off.
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
+#endif
+#ifdef UHFM
+	// Turn RF front-end off.
+	GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
 #endif
 	// Disable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.

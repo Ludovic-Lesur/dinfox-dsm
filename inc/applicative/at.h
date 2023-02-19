@@ -15,5 +15,6 @@
 void AT_init(void);
 void AT_task(void);
 void AT_fill_rx_buffer(uint8_t rx_byte);
+void AT_print_test_result(uint8_t status, int16_t rssi);
 
 #endif /* __AT_H__ */

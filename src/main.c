@@ -7,6 +7,8 @@
 
 // Peripherals.
 #include "adc.h"
+#include "aes.h"
+#include "dma.h"
 #include "exti.h"
 #include "gpio.h"
 #include "i2c.h"
@@ -20,6 +22,7 @@
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
+#include "spi.h"
 #include "tim.h"
 // Components.
 #include "led.h"
@@ -34,11 +37,11 @@
 /*** MAIN local macros ***/
 
 #define XM_ADC_PERIOD_HIGH_SECONDS				5
-#define XM_ADC_PERIOD_LOW_SECONDS				10
+#define XM_ADC_PERIOD_LOW_SECONDS				60
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-#define XM_IOUT_INDICATOR_RANGE					7
 #define XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS	5
 #define XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS	60
+#define XM_IOUT_INDICATOR_RANGE					7
 #endif
 #define XM_HIGH_PERIOD_THRESHOLD_MV				6000
 
@@ -53,8 +56,8 @@ typedef struct {
 
 
 typedef struct {
-	uint32_t adc_seconds_count;
-	uint32_t adc_period_seconds;
+	uint32_t measurements_seconds_count;
+	uint32_t measurements_period_seconds;
 	uint32_t input_voltage_mv;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_color_t led_color;
@@ -88,8 +91,8 @@ static XM_context_t xm_ctx;
  */
 static void _XM_init_context(void) {
 	// Init context.
-	xm_ctx.adc_seconds_count = XM_ADC_PERIOD_LOW_SECONDS;
-	xm_ctx.adc_period_seconds = XM_ADC_PERIOD_LOW_SECONDS;
+	xm_ctx.measurements_seconds_count = XM_ADC_PERIOD_LOW_SECONDS;
+	xm_ctx.measurements_period_seconds = XM_ADC_PERIOD_LOW_SECONDS;
 	xm_ctx.input_voltage_mv = 0;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	xm_ctx.led_color = LED_COLOR_OFF;
@@ -106,6 +109,7 @@ static void _XM_init_context(void) {
 static void _XM_init_hw(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
+	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
@@ -132,6 +136,10 @@ static void _XM_init_hw(void) {
 	iwdg_status = IWDG_init();
 	IWDG_error_check();
 #endif
+	// High speed oscillator.
+	IWDG_reload();
+	rcc_status = RCC_switch_to_hsi();
+	RCC_error_check();
 	// Init RTC.
 	RTC_reset();
 	RCC_enable_lse();
@@ -159,6 +167,11 @@ static void _XM_init_hw(void) {
 #ifdef SM
 	I2C1_init();
 #endif
+#ifdef UHFM
+	AES_init();
+	DMA1_init_channel3();
+	SPI1_init();
+#endif
 	// Init components.
 #ifdef SM
 	DIGITAL_init();
@@ -168,6 +181,9 @@ static void _XM_init_hw(void) {
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_init();
+#endif
+#ifdef UHFM
+	S2LP_init();
 #endif
 	// Init AT interface.
 #ifdef AM
@@ -194,6 +210,34 @@ static void _XM_update_led_color(void) {
 }
 #endif
 
+/* PERFORM EXTERNAL MEASUREMENTS.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _XM_perform_measurements(void) {
+	// Local variables.
+	ADC_status_t adc1_status = ADC_SUCCESS;
+#ifdef SM
+	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
+	I2C_status_t i2c1_status = I2C_SUCCESS;
+	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
+#endif
+	// Perform analog measurements.
+	adc1_status = ADC1_perform_measurements();
+	ADC1_error_check();
+#ifdef SM
+	// Perform digital measurements.
+	digital_status = DIGITAL_perform_measurements();
+	DIGITAL_error_check();
+	// Perform temperature / humidity measurements.
+	i2c1_status = I2C1_power_on();
+	I2C1_error_check();
+	sht3x_status = SHT3X_perform_measurements(SHT3X_I2C_ADDRESS);
+	SHT3X_error_check();
+	I2C1_power_off();
+#endif
+}
+
 /*** MAIN function ***/
 
 /* MAIN FUNCTION.
@@ -205,19 +249,15 @@ int main(void) {
 	_XM_init_context();
 	_XM_init_hw();
 	// Local variables.
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	ADC_status_t adc1_status = ADC_SUCCESS;
+#endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	LED_status_t led_status = LED_SUCCESS;
 #endif
-#ifdef SM
-	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
-	I2C_status_t i2c1_status = I2C_SUCCESS;
-	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
-#endif
 	RTC_status_t rtc_status = RTC_SUCCESS;
-	// Perform first analog measurement.
-	adc1_status = ADC1_perform_measurements();
-	ADC1_error_check();
+	// Perform first measurements.
+	_XM_perform_measurements();
 	// Start periodic wakeup timer.
 	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
 	RTC_error_check();
@@ -241,25 +281,12 @@ int main(void) {
 			// Clear flag.
 			RTC_clear_wakeup_timer_flag();
 			// Increment seconds count.
-			xm_ctx.adc_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
+			xm_ctx.measurements_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
 			// Check ADC period.
-			if (xm_ctx.adc_seconds_count >= xm_ctx.adc_period_seconds) {
+			if (xm_ctx.measurements_seconds_count >= xm_ctx.measurements_period_seconds) {
 				// Reset count.
-				xm_ctx.adc_seconds_count = 0;
-				// Perform analog measurements.
-				adc1_status = ADC1_perform_measurements();
-				ADC1_error_check();
-#ifdef SM
-				// Perform digital measurements.
-				digital_status = DIGITAL_perform_measurements();
-				DIGITAL_error_check();
-				// Perform temperature / humidity measurements.
-				i2c1_status = I2C1_power_on();
-				I2C1_error_check();
-				sht3x_status = SHT3X_perform_measurements(SHT3X_I2C_ADDRESS);
-				SHT3X_error_check();
-				I2C1_power_off();
-#endif
+				xm_ctx.measurements_seconds_count = 0;
+				_XM_perform_measurements();
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 				// Check input voltage.
 #ifdef LVRM
@@ -273,7 +300,7 @@ int main(void) {
 #endif
 				ADC1_error_check();
 				// Update period according to input voltage.
-				xm_ctx.adc_period_seconds = (xm_ctx.input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_ADC_PERIOD_HIGH_SECONDS : XM_ADC_PERIOD_LOW_SECONDS;
+				xm_ctx.measurements_period_seconds = (xm_ctx.input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_ADC_PERIOD_HIGH_SECONDS : XM_ADC_PERIOD_LOW_SECONDS;
 #endif
 			}
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
