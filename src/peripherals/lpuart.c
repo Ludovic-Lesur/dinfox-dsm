@@ -50,6 +50,7 @@ void LPUART1_IRQHandler(void) {
 		// Clear ORE flag.
 		LPUART1 -> ICR |= (0b1 << 3);
 	}
+	EXTI_clear_flag(EXTI_LINE_LPUART1);
 }
 
 /* FILL LPUART1 TX BUFFER WITH A NEW BYTE.

@@ -54,7 +54,7 @@ DIGITAL_status_t DIGITAL_perform_measurements(void) {
 	// Turn digital front-end on.
 	GPIO_write(&GPIO_DIG_POWER_ENABLE, 1);
 	// Wait for stabilization.
-	lptim1_status = LPTIM1_delay_milliseconds(100, 0);
+	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_status_check(DIGITAL_ERROR_BASE_LPTIM);
 	// Channels loop.
 	for (idx=0 ; idx<DIGITAL_DATA_INDEX_LAST ; idx++) {

@@ -331,11 +331,10 @@ ADC_status_t ADC1_init(void) {
 	}
 	// Enable ADC voltage regulator.
 	ADC1 -> CR |= (0b1 << 28);
-	lptim1_status = LPTIM1_delay_milliseconds(5, 0);
+	lptim1_status = LPTIM1_delay_milliseconds(5, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 	// ADC configuration.
-	ADC1 -> CCR |= (0b1 << 25); // Enable low frequency clock (LFMEN='1').
-	ADC1 -> CFGR2 |= (0b11 << 30); // Use PCLK2 as ADCCLK (MSI).
+	ADC1 -> CFGR2 |= (0b01 << 30); // Use (PCLK2/2) as ADCCLK = SYSCLK/2 (see RCC_init() function).
 	ADC1 -> SMPR |= (0b111 << 0); // Maximum sampling time.
 	// ADC calibration.
 	ADC1 -> CR |= (0b1 << 31); // ADCAL='1'.
@@ -374,7 +373,7 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Enable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 1);
 #endif
-#ifdef SM
+#if (defined SM) && (defined SM_AIN_ENABLE)
 	// Turn analog front-end on.
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
 #endif
@@ -382,11 +381,16 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Turn RF front-end on.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 #endif
-	// Wake-up VREFINT and temperature sensor.
-	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEF='1'.
-	// Wait internal reference and voltage dividers stabilization.
-	lptim1_status = LPTIM1_delay_milliseconds(100, 0);
+#if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM)
+	// Wait voltage dividers stabilization.
+	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
+#endif
+	// Wake-up VREFINT and temperature sensor.
+	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEN='1'.
+	lptim1_status = LPTIM1_delay_milliseconds(10, LPTIM_DELAY_MODE_ACTIVE);
+	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
+	// Perform conversions.
 	status = _ADC1_compute_all_channels();
 	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_tmcu();
@@ -398,7 +402,7 @@ errors:
 	// Disable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
-#ifdef SM
+#if (defined SM) && (defined SM_AIN_ENABLE)
 	// Turn analog front-end off.
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif

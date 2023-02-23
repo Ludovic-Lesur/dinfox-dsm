@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- *  Created on: Feb 05, 2022
+ *  Created on: 05 feb. 2022
  *      Author: Ludo
  */
 
@@ -39,8 +39,7 @@
 #define XM_MEASUREMENTS_PERIOD_HIGH_SECONDS		10
 #define XM_MEASUREMENTS_PERIOD_LOW_SECONDS		60
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-#define XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS	10
-#define XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS	60
+#define XM_IOUT_INDICATOR_PERIOD_SECONDS		60
 #define XM_IOUT_INDICATOR_RANGE					7
 #endif
 #define XM_HIGH_PERIOD_THRESHOLD_MV				6000
@@ -60,7 +59,7 @@ typedef struct {
 	uint32_t measurements_period_seconds;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	uint32_t iout_indicator_seconds_count;
-	uint32_t iout_indicator_period_seconds;
+	uint8_t iout_indicator_enable;
 #endif
 } XM_context_t;
 
@@ -90,8 +89,8 @@ static void _XM_init_context(void) {
 	xm_ctx.measurements_seconds_count = 0;
 	xm_ctx.measurements_period_seconds = XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	xm_ctx.iout_indicator_seconds_count = 0;
-	xm_ctx.iout_indicator_period_seconds = XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
+	xm_ctx.iout_indicator_seconds_count = XM_IOUT_INDICATOR_PERIOD_SECONDS;
+	xm_ctx.iout_indicator_enable = 0;
 #endif
 }
 
@@ -193,17 +192,24 @@ static void _XM_perform_measurements(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
 #ifdef SM
+#ifdef SM_DIO_ENABLE
 	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
+#endif
+#ifdef SM_DIGITAL_SENSORS_ENABLE
 	I2C_status_t i2c1_status = I2C_SUCCESS;
 	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 #endif
+#endif /* SM */
 	// Perform analog measurements.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_error_check();
 #ifdef SM
+#ifdef SM_DIO_ENABLE
 	// Perform digital measurements.
 	digital_status = DIGITAL_perform_measurements();
 	DIGITAL_error_check();
+#endif
+#ifdef SM_DIGITAL_SENSORS_ENABLE
 	// Perform temperature / humidity measurements.
 	i2c1_status = I2C1_power_on();
 	I2C1_error_check();
@@ -211,6 +217,7 @@ static void _XM_perform_measurements(void) {
 	SHT3X_error_check();
 	I2C1_power_off();
 #endif
+#endif /* SM */
 }
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
@@ -236,7 +243,7 @@ static void _XM_update_measurements_period(void) {
 	// Update periods according to input voltage.
 	xm_ctx.measurements_period_seconds = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_MEASUREMENTS_PERIOD_HIGH_SECONDS : XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	xm_ctx.iout_indicator_period_seconds = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_IOUT_INDICATOR_PERIOD_HIGH_SECONDS : XM_IOUT_INDICATOR_PERIOD_LOW_SECONDS;
+	xm_ctx.iout_indicator_enable = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? 1 : 0;
 #endif
 }
 #endif
@@ -287,11 +294,11 @@ int main(void) {
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	_XM_update_measurements_period();
 #endif
-	// Start periodic wakeup timer.
-	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
-	RTC_error_check();
 	// Main loop.
 	while (1) {
+		// Start periodic wakeup timer.
+		rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
+		RTC_error_check();
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 		// Enter sleep or stop mode depending on LED state.
 		if (TIM21_is_single_blink_done() != 0) {
@@ -305,6 +312,9 @@ int main(void) {
 		// Enter stop mode.
 		PWR_enter_stop_mode();
 #endif
+		// Wake-up: stop wakeup timer.
+		rtc_status = RTC_stop_wakeup_timer();
+		RTC_error_check();
 		// Check RTC flag.
 		if (RTC_get_wakeup_timer_flag() != 0) {
 			// Clear flag.
@@ -324,10 +334,13 @@ int main(void) {
 			// Increment seconds count.
 			xm_ctx.iout_indicator_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
 			// Check Iout indicator period.
-			if (xm_ctx.iout_indicator_seconds_count >= xm_ctx.iout_indicator_period_seconds) {
+			if (xm_ctx.iout_indicator_seconds_count >= XM_IOUT_INDICATOR_PERIOD_SECONDS) {
 				// Reset count.
 				xm_ctx.iout_indicator_seconds_count = 0;
-				_XM_iout_indicator();
+				// Check enable flag.
+				if (xm_ctx.iout_indicator_enable != 0) {
+					_XM_iout_indicator();
+				}
 			}
 #endif
 		}
