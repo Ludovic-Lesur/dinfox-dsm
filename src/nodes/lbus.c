@@ -7,7 +7,7 @@
 
 #include "lbus.h"
 
-#include "at.h"
+#include "at_bus.h"
 #include "lpuart.h"
 #include "node.h"
 #include "types.h"
@@ -102,7 +102,7 @@ void LBUS_fill_rx_buffer(uint8_t rx_byte) {
 		break;
 	default:
 		// Transmit command to applicative layer.
-		AT_fill_rx_buffer(rx_byte);
+		AT_BUS_fill_rx_buffer(rx_byte);
 		break;
 	}
 	// Increment byte count.

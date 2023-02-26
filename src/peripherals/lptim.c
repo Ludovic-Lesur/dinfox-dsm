@@ -104,7 +104,7 @@ void LPTIM1_init(void) {
 
 /* DELAY FUNCTION.
  * @param delay_ms:		Number of milliseconds to wait.
- * @param stop_mode:	Enter stop mode during delay if non zero, block without interrupt otherwise.
+ * @param delay_mode:	Delay waiting mode.
  * @return status:		Function execution status.
  */
 LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t delay_mode) {

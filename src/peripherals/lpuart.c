@@ -7,7 +7,7 @@
 
 #include "lpuart.h"
 
-#include "at.h"
+#include "at_bus.h"
 #include "exti.h"
 #include "gpio.h"
 #include "lbus.h"
@@ -40,7 +40,7 @@ void LPUART1_IRQHandler(void) {
 #ifdef AM
 		LBUS_fill_rx_buffer(rx_byte);
 #else
-		AT_fill_rx_buffer(rx_byte);
+		AT_BUS_fill_rx_buffer(rx_byte);
 #endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);

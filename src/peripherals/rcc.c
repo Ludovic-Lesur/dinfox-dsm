@@ -7,9 +7,11 @@
 
 #include "rcc.h"
 
+#include "flash.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc_reg.h"
+#include "types.h"
 
 /*** RCC local macros ***/
 

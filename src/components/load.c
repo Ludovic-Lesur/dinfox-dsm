@@ -54,7 +54,7 @@ uint8_t LOAD_get_output_state(void) {
  */
 void LOAD_set_charge_state(uint8_t state) {
 	// Set GPIO.
-	GPIO_write(&GPIO_CHRG_ST, state);
+	GPIO_write(&GPIO_CHRG_EN, state);
 }
 #endif
 

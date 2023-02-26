@@ -31,7 +31,7 @@
 #include "lbus.h"
 #include "node.h"
 // Applicative.
-#include "at.h"
+#include "at_bus.h"
 #include "error.h"
 
 /*** MAIN local macros ***/
@@ -181,7 +181,7 @@ static void _XM_init_hw(void) {
 #ifdef AM
 	LBUS_init(self_address);
 #endif
-	AT_init();
+	AT_BUS_init();
 }
 
 /* PERFORM EXTERNAL MEASUREMENTS.
@@ -345,7 +345,7 @@ int main(void) {
 #endif
 		}
 		// Perform command task.
-		AT_task();
+		AT_BUS_task();
 		// Reload watchdog.
 		IWDG_reload();
 	}

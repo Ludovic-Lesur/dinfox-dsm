@@ -9,7 +9,7 @@
 
 #include "adc.h"
 #include "aes.h"
-#include "at.h"
+#include "at_bus.h"
 #include "exti.h"
 #include "iwdg.h"
 #include "lptim.h"
@@ -450,7 +450,7 @@ errors:
  * \retval MCU_ERR_API_TEST_REPORT:              Report test result error
  *******************************************************************/
 sfx_u8 MCU_API_report_test_result(sfx_bool status, sfx_s16 rssi) {
-	AT_print_test_result(status, rssi);
+	AT_BUS_print_test_result(status, rssi);
 	return SFX_ERR_NONE;
 }
 
