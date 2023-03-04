@@ -11,7 +11,6 @@
 #include "exti.h"
 #include "iwdg.h"
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc.h"

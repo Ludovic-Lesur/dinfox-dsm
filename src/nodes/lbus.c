@@ -12,8 +12,6 @@
 #include "node.h"
 #include "types.h"
 
-#ifdef AM
-
 /*** LBUS local macros ***/
 
 // Addressing.
@@ -108,5 +106,3 @@ void LBUS_fill_rx_buffer(uint8_t rx_byte) {
 	// Increment byte count.
 	lbus_ctx.rx_byte_count++;
 }
-
-#endif /* AM */

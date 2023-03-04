@@ -21,7 +21,6 @@
 #include "lpuart.h"
 #include "lvrm.h"
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "nvm.h"
 #include "parser.h"
@@ -187,21 +186,12 @@ static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, ui
  */
 static void _AT_BUS_reply_send(void) {
 	// Local variables.
-#ifdef AM
 	LBUS_status_t lbus_status = LBUS_SUCCESS;
-#else
-	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
-#endif
 	// Add ending character.
 	_AT_BUS_reply_add_char(AT_BUS_FRAME_END);
 	// Send reply.
-#ifdef AM
 	lbus_status = LBUS_send((uint8_t*) at_bus_ctx.reply, at_bus_ctx.reply_size);
 	LBUS_error_check();
-#else
-	lpuart1_status = LPUART1_send((uint8_t*) at_bus_ctx.reply, at_bus_ctx.reply_size);
-	LPUART1_error_check();
-#endif
 	// Flush response buffer.
 	at_bus_ctx.reply_size = 0;
 }
@@ -434,7 +424,7 @@ static void _AT_BUS_read_callback(void) {
 	PARSER_error_check_print();
 	// Get data.
 	switch (register_address) {
-	case DINFOX_REGISTER_LBUS_ADDRESS:
+	case DINFOX_REGISTER_NODE_ADDRESS:
 		nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &generic_u8);
 		NVM_error_check_print();
 		_AT_BUS_reply_add_value(generic_u8, STRING_FORMAT_HEXADECIMAL, 0);
@@ -593,9 +583,6 @@ errors:
 static void _AT_BUS_write_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
-#ifdef DM
-	NVM_status_t nvm_status = NVM_SUCCESS;
-#endif
 	int32_t register_address = 0;
 #if (defined DM) || (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	int32_t register_value = 0;
@@ -627,20 +614,6 @@ static void _AT_BUS_write_callback(void) {
 	}
 	// Write data.
 	switch (register_address) {
-#ifdef DM
-	case DINFOX_REGISTER_LBUS_ADDRESS:
-		// Read new address.
-		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &register_value);
-		PARSER_error_check_print();
-		// Check value.
-		if (register_value > LBUS_ADDRESS_LAST) {
-			_AT_BUS_print_error(ERROR_NODE_ADDRESS);
-			goto errors;
-		}
-		nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, (uint8_t) register_value);
-		NVM_error_check_print();
-		break;
-#endif /* DM */
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
 	case LVRM_REGISTER_RELAY_ENABLE:
@@ -1198,10 +1171,12 @@ errors:
 /*** AT functions ***/
 
 /* INIT AT MANAGER.
- * @param:	None.
- * @return:	None.
+ * @param self_address:	Self bus address.
+ * @return:				None.
  */
-void AT_BUS_init(void) {
+void AT_BUS_init(NODE_address_t self_address) {
+	// Local variables.
+	LBUS_status_t lbus_status = LBUS_SUCCESS;
 	// Init context.
 	_AT_BUS_reset_parser();
 #ifdef UHFM
@@ -1209,6 +1184,9 @@ void AT_BUS_init(void) {
 	at_bus_ctx.sigfox_rc_idx = SFX_RC1;
 	at_bus_ctx.sigfox_dl_payload_available = 0;
 #endif
+	// Init LBUS layer.
+	lbus_status = LBUS_init(self_address);
+	LBUS_error_check();
 	// Enable LPUART.
 	LPUART1_enable_rx();
 }

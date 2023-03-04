@@ -13,7 +13,6 @@
 #include "lbus.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
@@ -37,11 +36,7 @@ void LPUART1_IRQHandler(void) {
 	if (((LPUART1 -> ISR) & (0b1 << 5)) != 0) {
 		// Read incoming byte.
 		rx_byte = (LPUART1 -> RDR);
-#ifdef AM
 		LBUS_fill_rx_buffer(rx_byte);
-#else
-		AT_BUS_fill_rx_buffer(rx_byte);
-#endif
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
 	}
@@ -78,31 +73,19 @@ errors:
 
 /*** LPUART functions ***/
 
-#ifdef AM
 /* CONFIGURE LPUART1.
  * @param self_address:	Self bus address.
  * @return status:		Function execution status.
  */
 LPUART_status_t LPUART1_init(NODE_address_t self_address) {
-#else
-/* CONFIGURE LPUART1.
- * @param:	None.
- * @return:	None.
- */
-void LPUART1_init(void) {
-#endif
 	// Local variables.
-#ifdef AM
 	LPUART_status_t status = LPUART_SUCCESS;
-#endif
 	uint32_t brr = 0;
-#ifdef AM
 	// Check address.
 	if (self_address > LBUS_ADDRESS_LAST) {
 		// Do not exit, just store error and apply mask.
 		status = LPUART_ERROR_LBUS_ADDRESS;
 	}
-#endif
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
 	// Enable peripheral clock.
@@ -120,14 +103,9 @@ void LPUART1_init(void) {
 	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 	// Configure peripheral.
-#ifdef AM
 	LPUART1 -> CR1 |= 0x00002822;
 	LPUART1 -> CR2 |= (self_address << 24) | (0b1 << 4);
 	LPUART1 -> CR3 |= 0x00805000;
-#else
-	LPUART1 -> CR1 |= 0x00000022;
-	LPUART1 -> CR3 |= 0x00B05000;
-#endif
 	// Baud rate.
 	brr = (RCC_LSE_FREQUENCY_HZ * 256);
 	brr /= LPUART_BAUD_RATE;
@@ -139,9 +117,7 @@ void LPUART1_init(void) {
 	LPUART1 -> CR1 |= (0b1 << 3); // TE='1'.
 	// Enable peripheral.
 	LPUART1 -> CR1 |= (0b1 << 0); // UE='1'.
-#ifdef AM
 	return status;
-#endif
 }
 
 /* EANABLE LPUART RX OPERATION.
@@ -149,10 +125,8 @@ void LPUART1_init(void) {
  * @return:	None.
  */
 void LPUART1_enable_rx(void) {
-#ifdef AM
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
-#endif
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);
@@ -172,7 +146,6 @@ void LPUART1_disable_rx(void) {
 #ifdef LPUART_USE_NRE
 	GPIO_write(&GPIO_LPUART1_NRE, 1);
 #endif
-
 	LPUART1 -> CR1 &= ~(0b1 << 2); // RE='0'.
 	// Disable interrupt.
 	NVIC_disable_interrupt(NVIC_INTERRUPT_LPUART1);

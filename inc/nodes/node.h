@@ -10,12 +10,8 @@
 
 #include "types.h"
 
-#ifdef AM
-
 /*** NODE structures ***/
 
 typedef uint8_t	NODE_address_t;
-
-#endif
 
 #endif /* __NODE_H__ */

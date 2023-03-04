@@ -8,7 +8,6 @@
 #ifndef __LPUART_H__
 #define __LPUART_H__
 
-#include "mode.h"
 #include "node.h"
 #include "types.h"
 
@@ -27,11 +26,7 @@ typedef enum {
 
 /*** LPUART functions ***/
 
-#ifdef AM
 LPUART_status_t LPUART1_init(NODE_address_t self_address);
-#else
-void LPUART1_init(void);
-#endif
 void LPUART1_enable_rx(void);
 void LPUART1_disable_rx(void);
 LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes);

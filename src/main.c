@@ -103,13 +103,11 @@ static void _XM_init_hw(void) {
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
-#ifndef DEBUG
-	IWDG_status_t iwdg_status = IWDG_SUCCESS;
-#endif
-#ifdef AM
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	NODE_address_t self_address;
+#ifndef DEBUG
+	IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
 	// Init error stack
 	ERROR_stack_init();
@@ -137,11 +135,9 @@ static void _XM_init_hw(void) {
 	RCC_enable_lse();
 	rtc_status = RTC_init();
 	RTC_error_check();
-#ifdef AM
 	// Read self address in NVM.
 	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
 	NVM_error_check();
-#endif
 	// Init peripherals.
 	LPTIM1_init();
 	adc1_status = ADC1_init();
@@ -150,12 +146,8 @@ static void _XM_init_hw(void) {
 	TIM2_init();
 	TIM21_init();
 #endif
-#ifdef AM
 	lpuart1_status = LPUART1_init(self_address);
 	LPUART1_error_check();
-#else
-	LPUART1_init();
-#endif
 #ifdef SM
 	I2C1_init();
 #endif
@@ -178,10 +170,7 @@ static void _XM_init_hw(void) {
 	S2LP_init();
 #endif
 	// Init AT interface.
-#ifdef AM
-	LBUS_init(self_address);
-#endif
-	AT_BUS_init();
+	AT_BUS_init(self_address);
 }
 
 /* PERFORM EXTERNAL MEASUREMENTS.
