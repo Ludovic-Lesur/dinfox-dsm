@@ -10,6 +10,7 @@
 
 #include "lptim.h"
 #include "math.h"
+#include "mode.h"
 #include "types.h"
 
 /*** ADC structures ***/
@@ -44,7 +45,7 @@ typedef enum {
 	ADC_DATA_INDEX_VOUT_MV,
 	ADC_DATA_INDEX_IOUT_UA,
 #endif
-#ifdef SM
+#if (defined SM) && (defined SM_AIN_ENABLE)
 	ADC_DATA_INDEX_AIN0_MV,
 	ADC_DATA_INDEX_AIN1_MV,
 	ADC_DATA_INDEX_AIN2_MV,

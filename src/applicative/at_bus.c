@@ -21,6 +21,8 @@
 #include "lpuart.h"
 #include "lvrm.h"
 #include "mapping.h"
+#include "math.h"
+#include "mode.h"
 #include "nvic.h"
 #include "nvm.h"
 #include "parser.h"
@@ -304,7 +306,7 @@ static void _AT_BUS_adc_callback(void) {
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t generic_u32 = 0;
 	int8_t tmcu_degrees = 0;
-#ifdef SM
+#if (defined SM) && (defined SM_AIN_ENABLE)
 	uint8_t idx = 0;
 #endif
 	// Trigger internal ADC conversions.
@@ -377,7 +379,8 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("uA");
 	_AT_BUS_reply_send();
 #endif
-#ifdef SM
+	// AINx.
+#if (defined SM) && (defined SM_AIN_ENABLE)
 	for (idx=ADC_DATA_INDEX_AIN0_MV ; idx<=ADC_DATA_INDEX_AIN3_MV ; idx++) {
 		_AT_BUS_reply_add_string("AIN");
 		_AT_BUS_reply_add_value((int32_t) (idx - ADC_DATA_INDEX_AIN0_MV), STRING_FORMAT_DECIMAL, 0);
@@ -389,6 +392,7 @@ static void _AT_BUS_adc_callback(void) {
 		_AT_BUS_reply_send();
 	}
 #endif
+	// VRF.
 #ifdef UHFM
 	_AT_BUS_reply_add_string("Vrf=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &generic_u32);
@@ -411,6 +415,7 @@ static void _AT_BUS_read_callback(void) {
 	PARSER_status_t parser_status = PARSER_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
+	MATH_status_t math_status = MATH_SUCCESS;
 #ifdef SM
 	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
 	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
@@ -502,13 +507,20 @@ static void _AT_BUS_read_callback(void) {
 	case RRM_REGISTER_IOUT_UA:
 #endif
 #ifdef SM
-	case SM_REGISTER_AIN0:
-	case SM_REGISTER_AIN1:
-	case SM_REGISTER_AIN2:
-	case SM_REGISTER_AIN3:
+	case SM_REGISTER_AIN0_MV:
+	case SM_REGISTER_AIN1_MV:
+	case SM_REGISTER_AIN2_MV:
+	case SM_REGISTER_AIN3_MV:
 #endif
 #ifdef UHFM
 	case UHFM_REGISTER_VRF_MV:
+#endif
+#if (defined SM) && !(defined SM_AIN_ENABLE)
+		// AINx are disabled.
+		if (register_address != DINFOX_REGISTER_VMCU_MV) {
+			_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
+			goto errors;
+		}
 #endif
 		// Note: indexing only works if registers addresses are ordered in the same way as ADC data indexes.
 		adc1_status = ADC1_get_data((register_address - DINFOX_REGISTER_VMCU_MV), &generic_u32);
@@ -519,29 +531,54 @@ static void _AT_BUS_read_callback(void) {
 		// Read temperature.
 		adc1_status = ADC1_get_tmcu(&generic_s8);
 		ADC1_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_s8, STRING_FORMAT_DECIMAL, 0);
+		// Convert to 1-complement.
+		math_status = MATH_one_complement(generic_s8, 7, &generic_u32);
+		MATH_error_check_print();
+		// Send result.
+		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		break;
 #ifdef SM
 	case SM_REGISTER_DIO0:
 	case SM_REGISTER_DIO1:
 	case SM_REGISTER_DIO2:
 	case SM_REGISTER_DIO3:
+#if !(defined SM_DIO_ENABLE)
+		// DIOx are disabled.
+		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
+		goto errors;
+#endif
 		// Note: indexing only works if registers addresses are ordered in the same way as digital data indexes.
 		digital_status = DIGITAL_read((register_address - SM_REGISTER_DIO0), &generic_u8);
 		DIGITAL_error_check_print();
 		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_BOOLEAN, 0);
 		break;
 	case SM_REGISTER_TAMB_DEGREES:
+#if !(defined SM_DIGITAL_SENSORS_ENABLE)
+		// Digital sensors are disabled.
+		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
+		goto errors;
+#endif
+		// Read temperature.
 		sht3x_status = SHT3X_get_temperature(&generic_s8);
 		SHT3X_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_s8, STRING_FORMAT_DECIMAL, 0);
+		// Convert to 1-complement.
+		math_status = MATH_one_complement(generic_s8, 7, &generic_u32);
+		MATH_error_check_print();
+		// Send result.
+		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		break;
 	case SM_REGISTER_HAMB_PERCENT:
+#if !(defined SM_DIGITAL_SENSORS_ENABLE)
+		// Digital sensors are disabled.
+		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
+		goto errors;
+#endif
+		// Read humidity.
 		sht3x_status = SHT3X_get_humidity(&generic_u8);
 		SHT3X_error_check_print();
 		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_DECIMAL, 0);
 		break;
-#endif
+#endif /* SM */
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
 	case LVRM_REGISTER_RELAY_ENABLE:
