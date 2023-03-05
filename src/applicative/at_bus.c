@@ -869,13 +869,26 @@ static void _AT_BUS_sb_callback(void) {
 		// Try parsing downlink request parameter.
 		parser_status =  PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &bidir_flag);
 		PARSER_error_check_print();
+		// Reset DL payload availability flag if downlink is asked.
+		if (bidir_flag != 0) {
+			at_bus_ctx.sigfox_dl_payload_available = 0;
+		}
 		// Send Sigfox bit with specified downlink request.
 		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, at_bus_ctx.sigfox_dl_payload, 2, (sfx_bool) bidir_flag);
-		SIGFOX_API_error_check_print();
-		// Update flag.
-		at_bus_ctx.sigfox_dl_payload_available = 1;
+		// Catch downlink timeout error.
+		if (((sfx_u8) (sigfox_api_status & 0x00FF)) == SFX_ERR_INT_GET_RECEIVED_FRAMES_TIMEOUT) {
+			// Reset flag.
+			at_bus_ctx.sigfox_dl_payload_available = 0;
+		}
+		else {
+			SIGFOX_API_error_check_print();
+			if (bidir_flag != 0) {
+				// Set flag.
+				at_bus_ctx.sigfox_dl_payload_available = 1;
+			}
+		}
 	}
 	else {
 		// Try with 1 parameter.
@@ -913,13 +926,26 @@ static void _AT_BUS_sf_callback(void) {
 		// Try parsing downlink request parameter.
 		parser_status =  PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &bidir_flag);
 		PARSER_error_check_print();
+		// Reset DL payload availability flag if downlink is asked.
+		if (bidir_flag != 0) {
+			at_bus_ctx.sigfox_dl_payload_available = 0;
+		}
 		// Send Sigfox frame with specified downlink request.
 		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, at_bus_ctx.sigfox_dl_payload, 2, bidir_flag);
-		SIGFOX_API_error_check_print();
-		// Update flag.
-		at_bus_ctx.sigfox_dl_payload_available = 1;
+		// Catch downlink timeout error.
+		if (((sfx_u8) (sigfox_api_status & 0x00FF)) == SFX_ERR_INT_GET_RECEIVED_FRAMES_TIMEOUT) {
+			// Reset flag.
+			at_bus_ctx.sigfox_dl_payload_available = 0;
+		}
+		else {
+			SIGFOX_API_error_check_print();
+			if (bidir_flag != 0) {
+				// Set flag.
+				at_bus_ctx.sigfox_dl_payload_available = 1;
+			}
+		}
 	}
 	else {
 		// Try with 1 parameter.
