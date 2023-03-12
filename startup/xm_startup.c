@@ -38,25 +38,25 @@ extern int  __START(void) __attribute__((noreturn));    /* main entry point */
 #endif
 
 #ifndef __NO_SYSTEM_INIT
-extern void SystemInit (void);            /* CMSIS System Initialization      */
+extern void SystemInit (void);							/* CMSIS System Initialization */
 #endif
 
 /*----------------------------------------------------------------------------
   Internal References
  *----------------------------------------------------------------------------*/
-void Default_Handler(void);                          /* Default empty handler */
-void Reset_Handler(void);                            /* Reset Handler */
+void Default_Handler(void);								/* Default empty handler */
+void Reset_Handler(void);								/* Reset Handler */
 
 /*----------------------------------------------------------------------------
   User Initial Stack & Heap
  *----------------------------------------------------------------------------*/
 #ifndef __STACK_SIZE
-#define	__STACK_SIZE  0x00000100
+#define	__STACK_SIZE	0x00000100
 #endif
 static uint8_t stack[__STACK_SIZE] __attribute__ ((aligned(8), used, section(".stack")));
 
 #ifndef __HEAP_SIZE
-#define	__HEAP_SIZE   0x00000300
+#define	__HEAP_SIZE		0x00000300
 #endif
 #if __HEAP_SIZE > 0
 static uint8_t heap[__HEAP_SIZE]   __attribute__ ((aligned(8), used, section(".heap")));
