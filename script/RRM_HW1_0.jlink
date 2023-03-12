@@ -1,6 +1,0 @@
-r
-loadfile RRM_HW1_0/XM.hex
-verifyfile RRM_HW1_0/XM.hex
-r
-g
-qc

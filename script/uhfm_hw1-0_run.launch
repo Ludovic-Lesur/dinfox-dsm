@@ -18,13 +18,13 @@
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_START_MODE" value="run"/>
     <booleanAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN" value="true"/>
     <stringAttribute key="org.eclipse.cdt.launch.DEBUGGER_STOP_AT_MAIN_SYMBOL" value="main"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="-speed 4000&#10;-device STM32L011F4&#10;-If SWD&#10;script/LVRM_HW1_0.jlink"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="-speed 4000&#10;-device STM32L041K6&#10;-If SWD&#10;script/uhfm_hw1-0.jlink"/>
     <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${eclipse_home}opt/Jlink/JLinkExe"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="XM"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="xm"/>
     <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="false"/>
-    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651"/>
+    <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/XM"/>
+        <listEntry value="/xm"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="4"/>
@@ -32,19 +32,5 @@
     <listAttribute key="org.eclipse.debug.ui.favoriteGroups">
         <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
     </listAttribute>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.DefaultEvent" value="true"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.HideUnresolvedSymbols" value="true"/>
-    <stringAttribute key="org.eclipse.linuxtools.internal.perf.attr.Kernel.Location" value=""/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Kernel.SourceLineNumbers" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ModuleSymbols" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.MultipleEvents" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Multiplex" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Record.Realtime" value="false"/>
-    <intAttribute key="org.eclipse.linuxtools.internal.perf.attr.Record.Realtime.Priority" value="1"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.Record.Verbose" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ShowSourceDisassembly" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.ShowStat" value="false"/>
-    <booleanAttribute key="org.eclipse.linuxtools.internal.perf.attr.SourceLineNumbers" value="true"/>
-    <intAttribute key="org.eclipse.linuxtools.internal.perf.attr.StatRunCount" value="1"/>
     <stringAttribute key="process_factory_id" value="org.eclipse.cdt.dsf.gdb.GdbProcessFactory"/>
 </launchConfiguration>

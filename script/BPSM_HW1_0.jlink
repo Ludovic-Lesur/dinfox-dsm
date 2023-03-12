@@ -1,6 +1,0 @@
-r
-loadfile BPSM_HW1_0/XM.hex
-verifyfile BPSM_HW1_0/XM.hex
-r
-g
-qc

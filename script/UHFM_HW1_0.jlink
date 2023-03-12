@@ -1,6 +1,0 @@
-r
-loadfile UHFM_HW1_0/XM.hex
-verifyfile UHFM_HW1_0/XM.hex
-r
-g
-qc

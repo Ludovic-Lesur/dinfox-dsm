@@ -1,0 +1,6 @@
+r
+loadfile uhfm_1-0/xm.hex
+verifyfile uhfm_1-0/xm.hex
+r
+g
+qc

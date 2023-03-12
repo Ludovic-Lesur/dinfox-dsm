@@ -1,0 +1,6 @@
+r
+loadfile rrm_hw1-0/xm.hex
+verifyfile rrm_hw1-0/xm.hex
+r
+g
+qc

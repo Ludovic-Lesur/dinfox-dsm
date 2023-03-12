@@ -2,7 +2,7 @@
 <?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651" moduleId="org.eclipse.cdt.core.settings" name="LVRM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651" moduleId="org.eclipse.cdt.core.settings" name="lvrm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -16,7 +16,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651" name="LVRM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651" name="lvrm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1183744973" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1942054350" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -57,14 +57,14 @@
 									<listOptionValue builtIn="false" value="LVRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1013112900" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.98292267" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -78,14 +78,14 @@
 									<listOptionValue builtIn="false" value="LVRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.272692611" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.918790426" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -93,7 +93,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.694943407" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.739390010" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1637191643" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/LVRM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="lvrm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1104573276" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -101,8 +101,9 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1345163505" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1345163505" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.745364080" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -145,7 +146,7 @@
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635" moduleId="org.eclipse.cdt.core.settings" name="BPSM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635" moduleId="org.eclipse.cdt.core.settings" name="bpsm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -159,7 +160,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635" name="BPSM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635" name="bpsm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1783642117" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.708953115" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -200,14 +201,14 @@
 									<listOptionValue builtIn="false" value="BPSM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.709510695" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1583136490" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -221,14 +222,14 @@
 									<listOptionValue builtIn="false" value="BPSM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1382692423" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1180765651" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -236,7 +237,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.144800525" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.426372235" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.2061111512" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/BPSM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="bpsm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1644426658" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -244,8 +245,9 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1015661034" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1015661034" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.663854791" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -288,7 +290,7 @@
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162" moduleId="org.eclipse.cdt.core.settings" name="DDRM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162" moduleId="org.eclipse.cdt.core.settings" name="ddrm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -302,7 +304,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162" name="DDRM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162" name="ddrm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.972423162." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.245001747" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1268539709" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -343,14 +345,14 @@
 									<listOptionValue builtIn="false" value="DDRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1869844246" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.579051629" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -364,14 +366,14 @@
 									<listOptionValue builtIn="false" value="DDRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.797544002" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1359557131" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -379,7 +381,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.2098964960" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1765690689" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1653481121" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/DDRM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="ddrm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.500548045" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -387,8 +389,9 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.506660683" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.506660683" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.2111639643" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -431,7 +434,7 @@
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759" moduleId="org.eclipse.cdt.core.settings" name="RRM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759" moduleId="org.eclipse.cdt.core.settings" name="rrm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -445,7 +448,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759" name="RRM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759" name="rrm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1089075134" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.239757422" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -486,14 +489,14 @@
 									<listOptionValue builtIn="false" value="RRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1733736819" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.78727710" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -507,14 +510,14 @@
 									<listOptionValue builtIn="false" value="RRM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.898599088" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2009446075" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -522,7 +525,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1643079054" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1531932242" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.482422289" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/RRM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="rrm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.2140521454" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -530,8 +533,9 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1230644112" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1230644112" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1359785949" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -574,7 +578,7 @@
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649" moduleId="org.eclipse.cdt.core.settings" name="SM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649" moduleId="org.eclipse.cdt.core.settings" name="sm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -588,7 +592,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649" name="SM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649" name="sm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1668366780" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.472889714" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -629,14 +633,14 @@
 									<listOptionValue builtIn="false" value="SM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1075889361" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1058743935" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -650,14 +654,14 @@
 									<listOptionValue builtIn="false" value="SM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2027627559" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1318930829" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -665,7 +669,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.870305136" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.289024594" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1132957988" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/UHFM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="sm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.203140265" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -673,8 +677,9 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499403968" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499403968" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.2051577763" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -717,7 +722,7 @@
 			</storageModule>
 		</cconfiguration>
 		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038" moduleId="org.eclipse.cdt.core.settings" name="UHFM_HW1_0">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038" moduleId="org.eclipse.cdt.core.settings" name="uhfm_hw1-0">
 				<externalSettings>
 					<externalSetting/>
 				</externalSettings>
@@ -731,7 +736,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038" name="UHFM_HW1_0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038" name="uhfm_hw1-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1819934619" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.213482142" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -772,14 +777,14 @@
 									<listOptionValue builtIn="false" value="UHFM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1396808884" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.650230120" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -793,14 +798,14 @@
 									<listOptionValue builtIn="false" value="UHFM"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.715225220" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/registers}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/peripherals}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/utils}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/components}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/applicative}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/nodes}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/inc/sigfox}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/registers&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1165254743" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -808,7 +813,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.80607255" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1438215858" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1103728612" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/linker/SM_HW1_0/gcc_arm.ld}&quot;"/>
+									<listOptionValue builtIn="false" value="uhfm_hw1-0.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.873768034" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
@@ -817,7 +822,8 @@
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.2134532020" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/XM/lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1670900566" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
