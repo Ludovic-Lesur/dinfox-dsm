@@ -420,6 +420,9 @@ static void _AT_BUS_read_callback(void) {
 	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
 	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 #endif
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+	LOAD_status_t load_status = LOAD_SUCCESS;
+#endif
 	int32_t register_address = 0;
 	uint8_t generic_u8 = 0;
 	int8_t generic_s8 = 0;
@@ -458,9 +461,12 @@ static void _AT_BUS_read_callback(void) {
 #ifdef HW1_0
 		_AT_BUS_reply_add_value(1, STRING_FORMAT_DECIMAL, 0);
 #endif
+#ifdef HW2_0
+		_AT_BUS_reply_add_value(2, STRING_FORMAT_DECIMAL, 0);
+#endif
 		break;
 	case DINFOX_REGISTER_HW_VERSION_MINOR:
-#ifdef HW1_0
+#if (defined HW1_0) || (defined HW2_0)
 		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
 #endif
 		break;
@@ -592,7 +598,9 @@ static void _AT_BUS_read_callback(void) {
 #ifdef RRM
 	case RRM_REGISTER_REGULATOR_ENABLE:
 #endif
-		_AT_BUS_reply_add_value(LOAD_get_output_state(), STRING_FORMAT_BOOLEAN, 0);
+		load_status = LOAD_get_output_state(&generic_u8);
+		LOAD_error_check_print();
+		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_BOOLEAN, 0);
 		break;
 #endif
 #ifdef BPSM
@@ -621,8 +629,9 @@ static void _AT_BUS_write_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
 	int32_t register_address = 0;
-#if (defined DM) || (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	int32_t register_value = 0;
+	LOAD_status_t load_status = LOAD_SUCCESS;
 #endif
 	// Read address parameter.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &register_address);
@@ -668,7 +677,8 @@ static void _AT_BUS_write_callback(void) {
 		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
 		PARSER_error_check_print();
 		// Set output state.
-		LOAD_set_output_state(register_value);
+		load_status = LOAD_set_output_state(register_value);
+		LOAD_error_check_print();
 		break;
 #endif /* LVRM or BPSM or DDRM or RRM */
 #ifdef BPSM

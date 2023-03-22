@@ -15,7 +15,7 @@
 /*** TIM structures ***/
 
 // Color bit masks defined as 0b<CH4><CH3><CH2><CH1>
-#ifdef LVRM
+#if ((defined LVRM) && (defined HW1_0))
 typedef enum {
 	TIM2_CHANNEL_MASK_OFF = 0b0000,
 	TIM2_CHANNEL_MASK_RED = 0b0100,
@@ -39,7 +39,7 @@ typedef enum {
 	TIM2_CHANNEL_MASK_WHITE	= 0b0111
 } TIM2_channel_mask_t;
 #endif
-#ifdef RRM
+#if ((defined LVRM) && (defined HW2_0)) || (defined RRM)
 typedef enum {
 	TIM2_CHANNEL_MASK_OFF = 0b0000,
 	TIM2_CHANNEL_MASK_RED = 0b010,

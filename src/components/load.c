@@ -8,10 +8,26 @@
 #include "load.h"
 
 #include "gpio.h"
+#include "lptim.h"
 #include "mapping.h"
 #include "types.h"
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+
+/*** LOAD local macros ***/
+
+#if (defined LVRM) && (defined HW2_0)
+#define LOAD_DC_DC_DELAY_MS				100
+#define LOAD_VCOIL_DELAY_MS				100
+#define LOAD_RELAY_CONTROL_DURATION_MS	1000
+#define LOAD_STATE_UNKNOWN_VALUE		0xFF
+#endif
+
+/*** LOAD local global variables ***/
+
+#if (defined LVRM) && (defined HW2_0)
+static uint8_t load_state = LOAD_STATE_UNKNOWN_VALUE;
+#endif
 
 /*** LOAD functions ***/
 
@@ -20,8 +36,15 @@
  * @return:	None.
  */
 void LOAD_init(void) {
-	// Output enable.
+	// Output control.
+#if (defined LVRM) && (defined HW2_0)
+	GPIO_configure(&GPIO_DC_DC_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_COIL_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_OUT_SELECT, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_OUT_CONTROL, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#else
 	GPIO_configure(&GPIO_OUT_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 #ifdef BPSM
 	// Charger interface.
 	GPIO_configure(&GPIO_CHRG_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -31,20 +54,65 @@ void LOAD_init(void) {
 
 /* ENABLE OR DISABLE LOAD POWER PATH.
  * @param state:	State to apply (0 to turn off, non-zero to turn on).
- * @return:			None.
+ * @return status:	Function executions status.
  */
-void LOAD_set_output_state(uint8_t state) {
+LOAD_status_t LOAD_set_output_state(uint8_t state) {
+	// Local variables.
+	LOAD_status_t status = LOAD_SUCCESS;
+#if (defined LVRM) && (defined HW2_0)
+	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
+	// Enable DC-DC.
+	GPIO_write(&GPIO_COIL_POWER_ENABLE, 1);
+	lptim1_status = LPTIM1_delay_milliseconds(LOAD_DC_DC_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM1_status_check(LOAD_ERROR_BASE_LPTIM);
+	// Enable COIL voltage.
+	GPIO_write(&GPIO_COIL_POWER_ENABLE, 1);
+	lptim1_status = LPTIM1_delay_milliseconds(LOAD_VCOIL_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM1_status_check(LOAD_ERROR_BASE_LPTIM);
+	// Select coil.
+	GPIO_write(&GPIO_OUT_SELECT, state);
+	// Set relay state.
+	GPIO_write(&GPIO_OUT_CONTROL, 1);
+	lptim1_status = LPTIM1_delay_milliseconds(LOAD_RELAY_CONTROL_DURATION_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM1_status_check(LOAD_ERROR_BASE_LPTIM);
+	// Turn all GPIOs off.
+	GPIO_write(&GPIO_OUT_CONTROL, 0);
+	GPIO_write(&GPIO_OUT_SELECT, 0);
+	GPIO_write(&GPIO_COIL_POWER_ENABLE, 0);
+	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 0);
+	// Update state.
+	load_state = state;
+#else
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, state);
+#endif
+#if (defined LVRM) && (defined HW2_0)
+errors:
+#endif
+	return status;
 }
 
 /* READ LOAD POWER PATH STATE.
- * @param:	None.
- * @return:	Load state.
+ * @param state:	Pointer that will contain the current load state;
+ * @return status:	Function executions status.
  */
-uint8_t LOAD_get_output_state(void) {
-	// Read GPIO.
-	return (GPIO_read(&GPIO_OUT_EN));
+LOAD_status_t LOAD_get_output_state(uint8_t* state) {
+	// Local variables.
+	LOAD_status_t status = LOAD_SUCCESS;
+#if (defined LVRM) && (defined HW2_0)
+	if (load_state == LOAD_STATE_UNKNOWN_VALUE) {
+		status = LOAD_ERROR_STATE_UNKNOWN;
+		goto errors;
+	}
+	(*state) = load_state;
+#else
+	// Directly read GPIO.
+	(*state) = (GPIO_read(&GPIO_OUT_EN));
+#endif
+#if (defined LVRM) && (defined HW2_0)
+errors:
+#endif
+	return status;
 }
 
 #ifdef BPSM

@@ -42,10 +42,15 @@
 /*** ADC local structures ***/
 
 typedef enum {
-#ifdef LVRM
+#if ((defined LVRM) && (defined HW1_0))
 	ADC_CHANNEL_IOUT = 0,
 	ADC_CHANNEL_VOUT = 4,
 	ADC_CHANNEL_VCOM = 6,
+#endif
+#if ((defined LVRM) && (defined HW2_0))
+	ADC_CHANNEL_VCOM = 0,
+	ADC_CHANNEL_IOUT = 1,
+	ADC_CHANNEL_VOUT = 6,
 #endif
 #ifdef BPSM
 	ADC_CHANNEL_VBKP = 0,
@@ -62,7 +67,7 @@ typedef enum {
 	ADC_CHANNEL_VOUT = 6,
 	ADC_CHANNEL_VIN = 7,
 #endif
-#if (defined SM) && (defined SM_AIN_ENABLE)
+#if ((defined SM) && (defined SM_AIN_ENABLE))
 	ADC_CHANNEL_AIN0 = 5,
 	ADC_CHANNEL_AIN1 = 6,
 	ADC_CHANNEL_AIN2 = 7,
@@ -297,13 +302,16 @@ ADC_status_t ADC1_init(void) {
 	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
 	adc_ctx.tmcu_degrees = 0;
 	// Init GPIOs.
-#ifdef BPSM
+#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 	GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #if (defined LVRM) || (defined BPSM) || (defined DDRM)
 	GPIO_configure(&GPIO_ADC1_IN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+#if (defined LVRM) && (defined HW2_0)
+	GPIO_configure(&GPIO_ADC1_IN1, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
+#if ((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	GPIO_configure(&GPIO_ADC1_IN4, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #if (defined LVRM) || (defined BPSM)
@@ -369,7 +377,7 @@ ADC_status_t ADC1_perform_measurements(void) {
 			goto errors;
 		}
 	}
-#ifdef BPSM
+#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 	// Enable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 1);
 #endif
@@ -381,7 +389,7 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Turn RF front-end on.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 #endif
-#if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM)
+#if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM) || ((defined LVRM) && (defined HW2_0))
 	// Wait voltage dividers stabilization.
 	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
@@ -398,7 +406,7 @@ ADC_status_t ADC1_perform_measurements(void) {
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
-#ifdef BPSM
+#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 	// Disable voltage dividers.
 	GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
