@@ -18,6 +18,10 @@
 #define SM_DIGITAL_SENSORS_ENABLE
 #endif
 
+#ifdef GPSM
+#define GPSM_ACTIVE_ANTENNA
+#endif
+
 /*** Debug mode ***/
 
 //#define DEBUG		// Use programming pins for debug purpose if defined.

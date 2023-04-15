@@ -54,6 +54,10 @@ typedef enum {
 #ifdef UHFM
 	ADC_DATA_INDEX_VRF_MV,
 #endif
+#ifdef GPSM
+	ADC_DATA_INDEX_VGPS_MV,
+	ADC_DATA_INDEX_VANT_MV,
+#endif
 	ADC_DATA_INDEX_LAST
 } ADC_data_index_t;
 

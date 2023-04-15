@@ -24,9 +24,11 @@
 #include "rtc.h"
 #include "spi.h"
 #include "tim.h"
+#include "usart.h"
 // Components.
 #include "led.h"
 #include "load.h"
+#include "neom8n.h"
 // Nodes.
 #include "lbus.h"
 #include "node.h"
@@ -156,6 +158,10 @@ static void _XM_init_hw(void) {
 	DMA1_init_channel3();
 	SPI1_init();
 #endif
+#ifdef GPSM
+	USART2_init();
+	DMA1_init_channel6();
+#endif
 	// Init components.
 #ifdef SM
 	DIGITAL_init();
@@ -163,11 +169,14 @@ static void _XM_init_hw(void) {
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	LOAD_init();
 #endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 	LED_init();
 #endif
 #ifdef UHFM
 	S2LP_init();
+#endif
+#ifdef GPSM
+	NEOM8N_init();
 #endif
 	// Init AT interface.
 	AT_BUS_init(self_address);

@@ -16,6 +16,7 @@
 #include "dinfox.h"
 #include "error.h"
 #include "flash_reg.h"
+#include "gpsm.h"
 #include "i2c.h"
 #include "load.h"
 #include "lpuart.h"
@@ -23,6 +24,7 @@
 #include "mapping.h"
 #include "math.h"
 #include "mode.h"
+#include "neom8n.h"
 #include "nvic.h"
 #include "nvm.h"
 #include "parser.h"
@@ -30,6 +32,7 @@
 #include "rcc_reg.h"
 #include "rf_api.h"
 #include "rrm.h"
+#include "rtc.h"
 #include "sht3x.h"
 #include "sigfox_api.h"
 #include "sm.h"
@@ -79,6 +82,10 @@ static void _AT_BUS_cw_callback(void);
 static void _AT_BUS_dl_callback(void);
 static void _AT_BUS_rssi_callback(void);
 #endif /* UHFM */
+#ifdef GPSM
+static void _AT_BUS_time_callback(void);
+static void _AT_BUS_gps_callback(void);
+#endif /* GPSM */
 
 /*** AT local structures ***/
 
@@ -136,6 +143,10 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_BUS_dl_callback},
 	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_BUS_rssi_callback},
 #endif /* UHFM */
+#ifdef GPSM
+	{PARSER_MODE_HEADER, "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
+	{PARSER_MODE_HEADER, "AT$GPS=", "timeout[s]", "Get GPS position", _AT_BUS_gps_callback},
+#endif
 };
 
 static AT_BUS_context_t at_bus_ctx;
@@ -392,10 +403,24 @@ static void _AT_BUS_adc_callback(void) {
 		_AT_BUS_reply_send();
 	}
 #endif
-	// VRF.
+	// Radio voltages.
 #ifdef UHFM
 	_AT_BUS_reply_add_string("Vrf=");
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &generic_u32);
+	ADC1_error_check_print();
+	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("mV");
+	_AT_BUS_reply_send();
+#endif
+#ifdef GPSM
+	_AT_BUS_reply_add_string("Vgps=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VGPS_MV, &generic_u32);
+	ADC1_error_check_print();
+	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("mV");
+	_AT_BUS_reply_send();
+	_AT_BUS_reply_add_string("Vant=");
+	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VANT_MV, &generic_u32);
 	ADC1_error_check_print();
 	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
@@ -455,6 +480,9 @@ static void _AT_BUS_read_callback(void) {
 #endif
 #ifdef UHFM
 		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_UHFM, STRING_FORMAT_HEXADECIMAL, 0);
+#endif
+#ifdef GPSM
+		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_GPSM, STRING_FORMAT_HEXADECIMAL, 0);
 #endif
 		break;
 	case DINFOX_REGISTER_HW_VERSION_MAJOR:
@@ -520,6 +548,10 @@ static void _AT_BUS_read_callback(void) {
 #endif
 #ifdef UHFM
 	case UHFM_REGISTER_VRF_MV:
+#endif
+#ifdef GPSM
+	case GPSM_REGISTER_VGPS_MV:
+	case GPSM_REGISTER_VANT_MV:
 #endif
 #if (defined SM) && !(defined SM_AIN_ENABLE)
 		// AINx are disabled.
@@ -654,6 +686,9 @@ static void _AT_BUS_write_callback(void) {
 #endif
 #ifdef UHFM
 	if (register_address >= UHFM_REGISTER_LAST) {
+#endif
+#ifdef GPSM
+	if (register_address >= GPSM_REGISTER_LAST) {
 #endif
 		_AT_BUS_print_error(ERROR_REGISTER_ADDRESS);
 		goto errors;
@@ -1191,6 +1226,128 @@ static void _AT_BUS_rssi_callback(void) {
 errors:
 	sigfox_api_status = RF_API_stop();
 	SIGFOX_API_error_check();
+	return;
+}
+#endif
+
+#ifdef GPSM
+/* AT$TIME EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_BUS_time_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
+	USART_status_t usart2_status = LPUART_SUCCESS;
+	int32_t timeout_seconds = 0;
+	RTC_time_t gps_time;
+	// Read timeout parameter.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &timeout_seconds);
+	PARSER_error_check_print();
+	// Power on GPS.
+	usart2_status = USART2_power_on();
+	USART2_error_check_print();
+	NEOM8N_set_backup(1);
+	// Start time aquisition.
+	_AT_BUS_reply_add_string("GPS running...");
+	_AT_BUS_reply_send();
+	neom8n_status = NEOM8N_get_time(&gps_time, (uint32_t) timeout_seconds);
+	NEOM8N_error_check_print();
+	// Year.
+	_AT_BUS_reply_add_value((gps_time.year), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("-");
+	// Month.
+	if ((gps_time.month) < 10) {
+		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+	}
+	_AT_BUS_reply_add_value((gps_time.month), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("-");
+	// Day.
+	if ((gps_time.date) < 10) {
+		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+	}
+	_AT_BUS_reply_add_value((gps_time.date), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string(" ");
+	// Hours.
+	if ((gps_time.hours) < 10) {
+		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+	}
+	_AT_BUS_reply_add_value((gps_time.hours), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string(":");
+	// Minutes.
+	if ((gps_time.minutes) < 10) {
+		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+	}
+	_AT_BUS_reply_add_value((gps_time.minutes), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string(":");
+	// Seconds.
+	if ((gps_time.seconds) < 10) {
+		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
+	}
+	_AT_BUS_reply_add_value((gps_time.seconds), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_send();
+	_AT_BUS_print_ok();
+errors:
+	USART2_power_off();
+	return;
+}
+#endif
+
+#ifdef GPSM
+/* AT$GPS EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_BUS_gps_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
+	USART_status_t usart2_status = LPUART_SUCCESS;
+	int32_t timeout_seconds = 0;
+	uint32_t fix_duration_seconds = 0;
+	NEOM8N_position_t gps_position;
+	// Read timeout parameter.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &timeout_seconds);
+	PARSER_error_check_print();
+	// Power on GPS.
+	usart2_status = USART2_power_on();
+	USART2_error_check_print();
+	NEOM8N_set_backup(1);
+	// Start GPS fix.
+	_AT_BUS_reply_add_string("GPS running...");
+	_AT_BUS_reply_send();
+	neom8n_status = NEOM8N_get_position(&gps_position, (uint32_t) timeout_seconds, &fix_duration_seconds);
+	NEOM8N_error_check_print();
+	// Latitude.
+	_AT_BUS_reply_add_string("Lat=");
+	_AT_BUS_reply_add_value((gps_position.lat_degrees), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("d");
+	_AT_BUS_reply_add_value((gps_position.lat_minutes), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("'");
+	_AT_BUS_reply_add_value((gps_position.lat_seconds), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("''");
+	_AT_BUS_reply_add_string(((gps_position.lat_north_flag) == 0) ? "S" : "N");
+	// Longitude.
+	_AT_BUS_reply_add_string(" Long=");
+	_AT_BUS_reply_add_value((gps_position.long_degrees), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("d");
+	_AT_BUS_reply_add_value((gps_position.long_minutes), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("'");
+	_AT_BUS_reply_add_value((gps_position.long_seconds), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("''");
+	_AT_BUS_reply_add_string(((gps_position.long_east_flag) == 0) ? "W" : "E");
+	// Altitude.
+	_AT_BUS_reply_add_string(" Alt=");
+	_AT_BUS_reply_add_value((gps_position.altitude), STRING_FORMAT_DECIMAL, 0);
+	// Fix duration.
+	_AT_BUS_reply_add_string("m Fix=");
+	_AT_BUS_reply_add_value(fix_duration_seconds, STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("s");
+	_AT_BUS_reply_send();
+	_AT_BUS_print_ok();
+errors:
+	USART2_power_off();
 	return;
 }
 #endif

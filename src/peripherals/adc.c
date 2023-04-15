@@ -76,6 +76,10 @@ typedef enum {
 #ifdef UHFM
 	ADC_CHANNEL_VRF = 7,
 #endif
+#ifdef GPSM
+	ADC_CHANNEL_VGPS = 0,
+	ADC_CHANNEL_VANT = 1,
+#endif
 	ADC_CHANNEL_VREFINT = 17,
 	ADC_CHANNEL_TMCU = 18,
 	ADC_CHANNEL_LAST = 19
@@ -128,6 +132,10 @@ static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
 #endif
 #ifdef UHFM
 	{ADC_CHANNEL_VRF, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
+#endif
+#ifdef GPSM
+	{ADC_CHANNEL_VGPS, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
+	{ADC_CHANNEL_VANT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
 #endif
 };
 static ADC_context_t adc_ctx;
@@ -305,10 +313,10 @@ ADC_status_t ADC1_init(void) {
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 	GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
-#if (defined LVRM) || (defined BPSM) || (defined DDRM)
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined GPSM)
 	GPIO_configure(&GPIO_ADC1_IN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
-#if (defined LVRM) && (defined HW2_0)
+#if ((defined LVRM) && (defined HW2_0)) || (defined GPSM)
 	GPIO_configure(&GPIO_ADC1_IN1, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #if ((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM)
@@ -389,6 +397,11 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Turn RF front-end on.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 #endif
+#ifdef GPSM
+	// Turn GPS front-end on.
+	GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
+	GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
+#endif
 #if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM) || ((defined LVRM) && (defined HW2_0))
 	// Wait voltage dividers stabilization.
 	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
@@ -417,6 +430,11 @@ errors:
 #ifdef UHFM
 	// Turn RF front-end off.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
+#endif
+#ifdef GPSM
+	// Turn GPS front-end off.
+	GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
+	GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
 #endif
 	// Disable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.

@@ -12,10 +12,9 @@
 #include "tim.h"
 #include "types.h"
 
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-
 /*** LED functions ***/
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 /* INIT LED.
  * @param:	None.
  * @return:	None.
@@ -29,7 +28,9 @@ void LED_init(void) {
 	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* START A SINGLE LED BLINK.
  * @param blink_period_ms:	Blink duration in ms.
  * @param led_color:		Color to set.
@@ -53,7 +54,9 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
 errors:
 	return status;
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* CHECK LED BLINK STATUS.
  * @param:	None.
  * @return:	'1' if the blink is done, '0' otherwise.
@@ -61,7 +64,9 @@ errors:
 uint8_t LED_is_single_blink_done(void) {
 	return TIM21_is_single_blink_done();
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* STOP LED BLINK.
  * @param:	None.
  * @return:	None.
@@ -73,5 +78,101 @@ void LED_stop_blink(void) {
 	// Turn LED off.
 	LED_init();
 }
+#endif
 
-#endif /* LVRM or DDRM or RRM */
+#ifdef GPSM
+LED_status_t LED_set(LED_color_t color) {
+	// Local variables.
+	LED_status_t status = LED_SUCCESS;
+	// Check color.
+	switch (color) {
+	case LED_COLOR_OFF:
+		GPIO_write(&GPIO_LED_RED, 1);
+		GPIO_write(&GPIO_LED_GREEN, 1);
+		GPIO_write(&GPIO_LED_BLUE, 1);
+		break;
+	case LED_COLOR_RED:
+		GPIO_write(&GPIO_LED_RED, 0);
+		GPIO_write(&GPIO_LED_GREEN, 1);
+		GPIO_write(&GPIO_LED_BLUE, 1);
+		break;
+	case LED_COLOR_GREEN:
+		GPIO_write(&GPIO_LED_RED, 1);
+		GPIO_write(&GPIO_LED_GREEN, 0);
+		GPIO_write(&GPIO_LED_BLUE, 1);
+		break;
+	case LED_COLOR_YELLOW:
+		GPIO_write(&GPIO_LED_RED, 0);
+		GPIO_write(&GPIO_LED_GREEN, 0);
+		GPIO_write(&GPIO_LED_BLUE, 1);
+		break;
+	case LED_COLOR_BLUE:
+		GPIO_write(&GPIO_LED_RED, 1);
+		GPIO_write(&GPIO_LED_GREEN, 1);
+		GPIO_write(&GPIO_LED_BLUE, 0);
+		break;
+	case LED_COLOR_MAGENTA:
+		GPIO_write(&GPIO_LED_RED, 0);
+		GPIO_write(&GPIO_LED_GREEN, 1);
+		GPIO_write(&GPIO_LED_BLUE, 0);
+		break;
+	case LED_COLOR_CYAN:
+		GPIO_write(&GPIO_LED_RED, 1);
+		GPIO_write(&GPIO_LED_GREEN, 0);
+		GPIO_write(&GPIO_LED_BLUE, 0);
+		break;
+	case LED_COLOR_WHITE:
+		GPIO_write(&GPIO_LED_RED, 0);
+		GPIO_write(&GPIO_LED_GREEN, 0);
+		GPIO_write(&GPIO_LED_BLUE, 0);
+		break;
+	default:
+		status = LED_ERROR_COLOR;
+		break;
+	}
+	return status;
+}
+#endif
+
+#ifdef GPSM
+LED_status_t LED_toggle(LED_color_t color) {
+	// Local variables.
+	LED_status_t status = LED_SUCCESS;
+	// Check color.
+	switch (color) {
+	case LED_COLOR_OFF:
+		// Nothing to do.
+		break;
+	case LED_COLOR_RED:
+		GPIO_toggle(&GPIO_LED_RED);
+		break;
+	case LED_COLOR_GREEN:
+		GPIO_toggle(&GPIO_LED_GREEN);
+		break;
+	case LED_COLOR_YELLOW:
+		GPIO_toggle(&GPIO_LED_RED);
+		GPIO_toggle(&GPIO_LED_GREEN);
+		break;
+	case LED_COLOR_BLUE:
+		GPIO_toggle(&GPIO_LED_BLUE);
+		break;
+	case LED_COLOR_MAGENTA:
+		GPIO_toggle(&GPIO_LED_RED);
+		GPIO_toggle(&GPIO_LED_BLUE);
+		break;
+	case LED_COLOR_CYAN:
+		GPIO_toggle(&GPIO_LED_GREEN);
+		GPIO_toggle(&GPIO_LED_BLUE);
+		break;
+	case LED_COLOR_WHITE:
+		GPIO_toggle(&GPIO_LED_RED);
+		GPIO_toggle(&GPIO_LED_GREEN);
+		GPIO_toggle(&GPIO_LED_BLUE);
+		break;
+	default:
+		status = LED_ERROR_COLOR;
+		break;
+	}
+	return status;
+}
+#endif
