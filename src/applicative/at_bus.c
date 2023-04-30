@@ -619,16 +619,16 @@ static void _AT_BUS_read_callback(void) {
 #endif /* SM */
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
-	case LVRM_REGISTER_RELAY_ENABLE:
+	case LVRM_REGISTER_RELAY_STATE:
 #endif
 #ifdef BPSM
 	case BPSM_REGISTER_BACKUP_ENABLE:
 #endif
 #ifdef DDRM
-	case DDRM_REGISTER_DC_DC_ENABLE:
+	case DDRM_REGISTER_DC_DC_STATE:
 #endif
 #ifdef RRM
-	case RRM_REGISTER_REGULATOR_ENABLE:
+	case RRM_REGISTER_REGULATOR_STATE:
 #endif
 		load_status = LOAD_get_output_state(&generic_u8);
 		LOAD_error_check_print();
@@ -697,16 +697,16 @@ static void _AT_BUS_write_callback(void) {
 	switch (register_address) {
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 #ifdef LVRM
-	case LVRM_REGISTER_RELAY_ENABLE:
+	case LVRM_REGISTER_RELAY_STATE:
 #endif
 #ifdef BPSM
 	case BPSM_REGISTER_BACKUP_ENABLE:
 #endif
 #ifdef DDRM
-	case DDRM_REGISTER_DC_DC_ENABLE:
+	case DDRM_REGISTER_DC_DC_STATE:
 #endif
 #ifdef RRM
-	case RRM_REGISTER_REGULATOR_ENABLE:
+	case RRM_REGISTER_REGULATOR_STATE:
 #endif
 		// Read new output state.
 		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
