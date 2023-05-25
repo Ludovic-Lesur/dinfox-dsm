@@ -31,6 +31,7 @@
 #define NEOM8N_CHECKSUM_OVERHEAD_LENGTH		4
 #define NEOM8N_CHECKSUM_OFFSET				2
 #define NEOM8N_CFG_MSG_PAYLOAD_LENGTH		8
+#define NEOM8N_CFG_TP5_PAYLOAD_LENGTH		32
 #define NEOM8N_TIMEOUT_SECONDS_MIN			10
 
 #define NMEA_RX_BUFFER_SIZE					128
@@ -49,6 +50,8 @@
 #define NMEA_GGA_METERS						'M'
 #define NMEA_GGA_ALTITUDE_STABILITY_FILTER	// Enable altitude stability filter if defined.
 #define NMEA_GGA_ALTITUDE_STABILITY_COUNT	10
+
+#define NEOM8N_TIMEPULSE_FREQUENCY_MAX_HZ	10000000
 
 /*** NEOM8N local structures ***/
 
@@ -587,7 +590,7 @@ static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mas
 	uint8_t nmea_message_id[18] = {0x0A, 0x44, 0x09, 0x00, 0x01, 0x43, 0x42, 0x0D, 0x40, 0x06, 0x02, 0x07, 0x03, 0x04, 0x41, 0x0F, 0x05, 0x08};
 	uint8_t nmea_message_id_idx = 0;
 	// See p.174 for NEOM8N message format.
-	uint8_t neom8n_cfg_msg[NEOM8N_MSG_OVERHEAD_LENGTH+NEOM8N_CFG_MSG_PAYLOAD_LENGTH] = {0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t neom8n_cfg_msg[NEOM8N_MSG_OVERHEAD_LENGTH + NEOM8N_CFG_MSG_PAYLOAD_LENGTH] = {0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	uint8_t neom8n_cfg_msg_idx = 0;
 	// Send commands.
 	for (nmea_message_id_idx=0 ; nmea_message_id_idx<18 ; nmea_message_id_idx++) {
@@ -600,7 +603,7 @@ static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mas
 		// Bytes 14-15 = NEOM8N checksum (CK_A and CK_B).
 		status = _NEOM8N_compute_ubx_checksum(neom8n_cfg_msg, NEOM8N_CFG_MSG_PAYLOAD_LENGTH);
 		if (status != NEOM8N_SUCCESS) goto errors;
-		for (neom8n_cfg_msg_idx=0 ; neom8n_cfg_msg_idx<(NEOM8N_MSG_OVERHEAD_LENGTH+NEOM8N_CFG_MSG_PAYLOAD_LENGTH) ; neom8n_cfg_msg_idx++) {
+		for (neom8n_cfg_msg_idx=0 ; neom8n_cfg_msg_idx<(NEOM8N_MSG_OVERHEAD_LENGTH + NEOM8N_CFG_MSG_PAYLOAD_LENGTH) ; neom8n_cfg_msg_idx++) {
 			usart2_status = USART2_send_byte(neom8n_cfg_msg[neom8n_cfg_msg_idx]); // Send command.
 			USART2_status_check(NEOM8N_ERROR_BASE_USART);
 		}
@@ -901,6 +904,64 @@ errors:
 	_NEOM8N_stop();
 	// Turn LED off.
 	LED_set(LED_COLOR_OFF);
+	return status;
+}
+
+/* SET TIMEPULSE OUTPUT FREQUENCY.
+ * @param frequency_hz:	Output signal frequency in Hz.
+ * @return status:		Function execution status.
+ */
+NEOM8N_status_t NEOM8N_configure_timepulse(NEOM8N_timepulse_config_t* timepulse_config){
+	// Local variables.
+	NEOM8N_status_t status = NEOM8N_SUCCESS;
+	USART_status_t usart2_status = USART_SUCCESS;
+	uint8_t idx = 0;
+	uint64_t pulse_length_ratio = 0;
+	// See p.222 for NEOM8N message format.
+	uint8_t neom8n_cfg_tp5[NEOM8N_MSG_OVERHEAD_LENGTH + NEOM8N_CFG_TP5_PAYLOAD_LENGTH] = {
+		0xB5, 0x62, 0x06, 0x31, 0x20, 0x00, // Header.
+		0x00, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // Payload.
+		0, 0 // Checksum.
+	};
+	// Check parameters.
+	if (timepulse_config == NULL) {
+		status = NEOM8N_ERROR_NULL_PARAMETER;
+		goto errors;
+	}
+	if ((timepulse_config -> frequency_hz) > NEOM8N_TIMEPULSE_FREQUENCY_MAX_HZ) {
+		status = NEOM8N_ERROR_TIMEPULSE_FREQUENCY;
+		goto errors;
+	}
+	if ((timepulse_config -> duty_cycle_percent) > 100) {
+		status = NEOM8N_ERROR_TIMEPULSE_DUTY_CYCLE;
+		goto errors;
+	}
+	// Frequency
+	neom8n_cfg_tp5[14] = (uint8_t) (((timepulse_config -> frequency_hz) >> 0) & 0xFF);
+	neom8n_cfg_tp5[15] = (uint8_t) (((timepulse_config -> frequency_hz) >> 8) & 0xFF);
+	neom8n_cfg_tp5[16] = (uint8_t) (((timepulse_config -> frequency_hz) >> 16) & 0xFF);
+	neom8n_cfg_tp5[17] = (uint8_t) (((timepulse_config -> frequency_hz) >> 24) & 0xFF);
+	// Pulse length radio.
+	pulse_length_ratio = ((uint64_t) (timepulse_config -> duty_cycle_percent)) * ((uint64_t) (0xFFFFFFFF));
+	pulse_length_ratio /= 100;
+	neom8n_cfg_tp5[22] = (uint8_t) ((pulse_length_ratio >> 0) & 0xFF);
+	neom8n_cfg_tp5[23] = (uint8_t) ((pulse_length_ratio >> 8) & 0xFF);
+	neom8n_cfg_tp5[24] = (uint8_t) ((pulse_length_ratio >> 16) & 0xFF);
+	neom8n_cfg_tp5[25] = (uint8_t) ((pulse_length_ratio >> 24) & 0xFF);
+	// Flags.
+	neom8n_cfg_tp5[34] = ((timepulse_config -> active) == 0) ? 0x4A : 0x4B;
+	neom8n_cfg_tp5[35] = 0;
+	neom8n_cfg_tp5[36] = 0;
+	neom8n_cfg_tp5[37] = 0;
+	// NEOM8N checksum (CK_A and CK_B).
+	status = _NEOM8N_compute_ubx_checksum(neom8n_cfg_tp5, NEOM8N_CFG_TP5_PAYLOAD_LENGTH);
+	if (status != NEOM8N_SUCCESS) goto errors;
+	// Send message.
+	for (idx=0 ; idx<(NEOM8N_MSG_OVERHEAD_LENGTH + NEOM8N_CFG_TP5_PAYLOAD_LENGTH) ; idx++) {
+		usart2_status = USART2_send_byte(neom8n_cfg_tp5[idx]);
+		USART2_status_check(NEOM8N_ERROR_BASE_USART);
+	}
+errors:
 	return status;
 }
 

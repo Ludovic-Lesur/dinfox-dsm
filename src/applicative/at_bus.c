@@ -85,6 +85,7 @@ static void _AT_BUS_rssi_callback(void);
 #ifdef GPSM
 static void _AT_BUS_time_callback(void);
 static void _AT_BUS_gps_callback(void);
+static void _AT_BUS_pulse_callback(void);
 #endif /* GPSM */
 
 /*** AT local structures ***/
@@ -96,6 +97,17 @@ typedef struct {
 	char_t* description;
 	void (*callback)(void);
 } AT_BUS_command_t;
+
+#ifdef GPSM
+typedef union {
+	struct {
+		unsigned time_fix_running : 1;
+		unsigned geoloc_fix_running : 1;
+		unsigned timepulse_running : 1;
+	};
+	uint8_t all;
+} AT_BUS_gps_functions_state_t;
+#endif
 
 typedef struct {
 	// Command.
@@ -113,6 +125,9 @@ typedef struct {
 	uint8_t sigfox_rc_idx;
 	uint8_t sigfox_dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
 	uint8_t sigfox_dl_payload_available;
+#endif
+#ifdef GPSM
+	AT_BUS_gps_functions_state_t gps_functions_state;
 #endif
 } AT_BUS_context_t;
 
@@ -146,6 +161,7 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 #ifdef GPSM
 	{PARSER_MODE_HEADER, "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
 	{PARSER_MODE_HEADER, "AT$GPS=", "timeout[s]", "Get GPS position", _AT_BUS_gps_callback},
+	{PARSER_MODE_HEADER, "AT$PULSE=", "enable[bit],frequency[hz],duty_cycle[percent]", "Start or stop GPS timepulse output", _AT_BUS_pulse_callback},
 #endif
 };
 
@@ -1250,6 +1266,7 @@ static void _AT_BUS_time_callback(void) {
 	USART2_error_check_print();
 	NEOM8N_set_backup(1);
 	// Start time aquisition.
+	at_bus_ctx.gps_functions_state.time_fix_running = 1;
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
 	neom8n_status = NEOM8N_get_time(&gps_time, (uint32_t) timeout_seconds);
@@ -1289,7 +1306,7 @@ static void _AT_BUS_time_callback(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 errors:
-	USART2_power_off();
+	at_bus_ctx.gps_functions_state.time_fix_running = 0;
 	return;
 }
 #endif
@@ -1315,6 +1332,7 @@ static void _AT_BUS_gps_callback(void) {
 	USART2_error_check_print();
 	NEOM8N_set_backup(1);
 	// Start GPS fix.
+	at_bus_ctx.gps_functions_state.geoloc_fix_running = 1;
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
 	neom8n_status = NEOM8N_get_position(&gps_position, (uint32_t) timeout_seconds, &fix_duration_seconds);
@@ -1347,7 +1365,48 @@ static void _AT_BUS_gps_callback(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 errors:
-	USART2_power_off();
+	at_bus_ctx.gps_functions_state.geoloc_fix_running = 0;
+	return;
+}
+#endif
+
+#ifdef GPSM
+/* AT$PULSE EXECUTION CALLBACK.
+ * @param:	None.
+ * @return:	None.
+ */
+static void _AT_BUS_pulse_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
+	USART_status_t usart2_status = LPUART_SUCCESS;
+	int32_t active = 0;
+	int32_t frequency_hz = 0;
+	int32_t duty_cycle_percent;
+	NEOM8N_timepulse_config_t timepulse_config;
+	// Read parameters.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, AT_BUS_CHAR_SEPARATOR, &active);
+	PARSER_error_check_print();
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, AT_BUS_CHAR_SEPARATOR, &frequency_hz);
+	PARSER_error_check_print();
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &duty_cycle_percent);
+	PARSER_error_check_print();
+	// Build timepulse configuration structure.
+	timepulse_config.active = (uint8_t) active;
+	timepulse_config.frequency_hz = (uint32_t) frequency_hz;
+	timepulse_config.duty_cycle_percent = (uint8_t) duty_cycle_percent;
+	// Power on GPS.
+	usart2_status = USART2_power_on();
+	USART2_error_check_print();
+	NEOM8N_set_backup(1);
+	// Configure timepulse.
+	neom8n_status = NEOM8N_configure_timepulse(&timepulse_config);
+	NEOM8N_error_check_print();
+	at_bus_ctx.gps_functions_state.timepulse_running = active;
+	_AT_BUS_print_ok();
+	return;
+errors:
+	at_bus_ctx.gps_functions_state.timepulse_running = 0;
 	return;
 }
 #endif
@@ -1414,6 +1473,9 @@ void AT_BUS_init(NODE_address_t self_address) {
 	at_bus_ctx.sigfox_rc_idx = SFX_RC1;
 	at_bus_ctx.sigfox_dl_payload_available = 0;
 #endif
+#ifdef GPSM
+	at_bus_ctx.gps_functions_state.all = 0;
+#endif
 	// Init LBUS layer.
 	lbus_status = LBUS_init(self_address);
 	LBUS_error_check();
@@ -1433,6 +1495,12 @@ void AT_BUS_task(void) {
 		_AT_BUS_decode();
 		LPUART1_enable_rx();
 	}
+#ifdef GPSM
+	// Manage GPS power supply.
+	if (at_bus_ctx.gps_functions_state.all == 0) {
+		USART2_power_off();
+	}
+#endif
 }
 
 /* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).

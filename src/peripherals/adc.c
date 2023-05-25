@@ -375,6 +375,13 @@ ADC_status_t ADC1_perform_measurements(void) {
 	ADC_status_t status = ADC_SUCCESS;
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint32_t loop_count = 0;
+#ifdef UHFM
+	uint8_t rf_on = 0;
+#endif
+#ifdef GPSM
+	uint8_t gps_on = 0;
+	uint8_t ant_on = 0;
+#endif
 	// Enable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 0); // ADEN='1'.
 	while (((ADC1 -> ISR) & (0b1 << 0)) == 0) {
@@ -394,10 +401,15 @@ ADC_status_t ADC1_perform_measurements(void) {
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
 #endif
 #ifdef UHFM
+	// Read current state of power enable pin.
+	rf_on = GPIO_read(&GPIO_RF_POWER_ENABLE);
 	// Turn RF front-end on.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 #endif
 #ifdef GPSM
+	// Read current state of power enable pins.
+	gps_on = GPIO_read(&GPIO_GPS_POWER_ENABLE);
+	ant_on = GPIO_read(&GPIO_ANT_POWER_ENABLE);
 	// Turn GPS front-end on.
 	GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
 	GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
@@ -428,13 +440,19 @@ errors:
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
 #ifdef UHFM
-	// Turn RF front-end off.
-	GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
+	// Turn RF front-end off if it was off before.
+	if (rf_on == 0) {
+		GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
+	}
 #endif
 #ifdef GPSM
-	// Turn GPS front-end off.
-	GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
-	GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
+	// Turn GPS front-end off if it was off before.
+	if (gps_on == 0) {
+		GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
+	}
+	if (ant_on == 0) {
+		GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
+	}
 #endif
 	// Disable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.

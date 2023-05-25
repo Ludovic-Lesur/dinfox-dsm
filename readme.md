@@ -13,6 +13,7 @@ The LVRM, BPSM, DDRM, UHFM, RRM, SM and GPSM boards are DIN rail modules of the 
 # Hardware
 The boards were designed on **Circuit Maker V2.0**. Hardware documentation and design files are available @
 * https://circuitmaker.com/Projects/Details/Ludovic-Lesur/LVRMHW1-0
+* https://circuitmaker.com/Projects/Details/Ludovic-Lesur/LVRMHW2-0
 * https://circuitmaker.com/Projects/Details/Ludovic-Lesur/BPSMHW1-0
 * https://circuitmaker.com/Projects/Details/Ludovic-Lesur/DDRMHW1-0
 * https://circuitmaker.com/Projects/Details/Ludovic-Lesur/RRMHW1-0

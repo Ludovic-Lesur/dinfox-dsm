@@ -95,7 +95,7 @@ USART_status_t USART2_power_on(void) {
 	GPIO_configure(&GPIO_USART2_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Turn NEOM8N on.
 	GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
-	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
+	lptim1_status = LPTIM1_delay_milliseconds(1000, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_status_check(USART_ERROR_BASE_LPTIM);
 errors:
 	return status;
