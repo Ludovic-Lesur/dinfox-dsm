@@ -199,7 +199,7 @@ static void _XM_perform_measurements(void) {
 #endif
 #endif /* SM */
 	// Perform analog measurements.
-	adc1_status = ADC1_perform_measurements();
+	adc1_status = ADC1_perform_measurements(1);
 	ADC1_error_check();
 #ifdef SM
 #ifdef SM_DIO_ENABLE

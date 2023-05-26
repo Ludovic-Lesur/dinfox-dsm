@@ -337,7 +337,7 @@ static void _AT_BUS_adc_callback(void) {
 	uint8_t idx = 0;
 #endif
 	// Trigger internal ADC conversions.
-	adc1_status = ADC1_perform_measurements();
+	adc1_status = ADC1_perform_measurements(0);
 	ADC1_error_check_print();
 	// Read and print data.
 	// MCU voltage.

@@ -100,7 +100,7 @@ sfx_u8 MCU_API_get_voltage_temperature(sfx_u16* voltage_idle, sfx_u16* voltage_t
 	uint32_t mcu_supply_voltage_mv = 0;
 	int8_t mcu_temperature_degrees = 0;
 	// Perform measurements.
-	adc1_status = ADC1_perform_measurements();
+	adc1_status = ADC1_perform_measurements(1);
 	if (adc1_status != ADC_SUCCESS) goto errors;
 	// Get MCU supply voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &mcu_supply_voltage_mv);
