@@ -125,7 +125,7 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT, &timeout_seconds);
 	if (status != NODE_SUCCESS) goto errors;
 	// Reset status flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TSF, 0);
+	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 0);
 	// Perform time fix.
 	neom8n_status = NEOM8N_get_time(&gps_time, timeout_seconds, &time_fix_duration);
 	// Check status.
@@ -139,7 +139,7 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_SECOND, (uint32_t) gps_time.seconds);
 		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION, time_fix_duration);
 		// Update status flag.
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TSF, 1);
+		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 1);
 	}
 	else {
 		// Do not consider timeout error.

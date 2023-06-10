@@ -20,6 +20,21 @@
 
 #define NODE_BOARD_ID	DINFOX_BOARD_ID_UHFM
 
+/*** UHFM structures ***/
+
+typedef union {
+	struct {
+		unsigned ul_frame_1 : 1;
+		unsigned ul_frame_2 : 1;
+		unsigned ul_frame_3 : 1;
+		unsigned dl_frame : 1;
+		unsigned dl_conf_frame : 1;
+		unsigned network_error : 1; // For LBT and downlink timeout.
+		unsigned execution_error : 1; // For internal execution errors.
+	};
+	uint8_t all;
+} UHFM_message_status_t;
+
 /*** UHFM global variables ***/
 
 static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {

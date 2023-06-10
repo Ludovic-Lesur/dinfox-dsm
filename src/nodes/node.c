@@ -231,7 +231,7 @@ NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t
 	// Byte loop.
 	for (idx=0 ; idx<data_size_byte ; idx++) {
 		// Read byte.
-		status = NODE_read_field(request_source, (reg_addr_base + (idx / 4)), (uint32_t) (0xFF << (idx % 4)), &data_byte);
+		status = NODE_read_field(request_source, (reg_addr_base + (idx / 4)), (uint32_t) (0xFF << (8 * (idx % 4))), &data_byte);
 		if (status != NODE_SUCCESS) goto errors;
 		// Fill data.
 		data[idx] = (uint8_t) data_byte;
@@ -317,7 +317,7 @@ NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_
 	// Byte loop.
 	for (idx=0 ; idx<data_size_byte ; idx++) {
 		// Write byte.
-		status = NODE_write_field(request_source, (reg_addr_base + (idx / 4)), (uint32_t) (0xFF << (idx % 4)), (uint32_t) (data[idx]));
+		status = NODE_write_field(request_source, (reg_addr_base + (idx / 4)), (uint32_t) (0xFF << (8 * (idx % 4))), (uint32_t) (data[idx]));
 		if (status != NODE_SUCCESS) goto errors;
 	}
 errors:
