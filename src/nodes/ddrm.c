@@ -8,7 +8,7 @@
 #include "ddrm.h"
 
 #include "adc.h"
-#include "dinfox_types.h"
+#include "dinfox_common.h"
 #include "load.h"
 #include "ddrm_reg.h"
 #include "node.h"
@@ -51,7 +51,7 @@ errors:
 	return status;
 }
 
-/* UPDATE DDRM VOLATILE REGISTERS.
+/* UPDATE DDRM REGISTER.
  * @param reg_addr:	Address of the register to update.
  * @return status:	Function execution status.
  */
@@ -77,7 +77,7 @@ errors:
 	return status;
 }
 
-/* CHECK DDRM CONTROL REGISTERS.
+/* CHECK DDRM NODE ACTIONS.
  * @param reg_addr:	Address of the register to check.
  * @return status:	Function execution status.
  */
@@ -124,17 +124,17 @@ NODE_status_t DDRM_mtrg_callback(void) {
 	// Relay common voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, DDRM_REG_ANALOG_DATA_1_MASK_VIN, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, DDRM_REG_ANALOG_DATA_1_MASK_VIN, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// Relay output voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, DDRM_REG_ANALOG_DATA_1_MASK_VOUT, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, DDRM_REG_ANALOG_DATA_1_MASK_VOUT, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// Relay output current.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, DDRM_REG_ANALOG_DATA_2_MASK_IOUT, (uint32_t) DINFOX_TYPES_convert_ua(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, DDRM_REG_ANALOG_DATA_2_MASK_IOUT, (uint32_t) DINFOX_convert_ua(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	return status;

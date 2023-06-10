@@ -8,7 +8,7 @@
 #ifndef __LVRM_REG_H__
 #define __LVRM_REG_H__
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 #include "types.h"
 
 #ifdef LVRM
@@ -16,7 +16,7 @@
 /*** LVRM registers address ***/
 
 typedef enum {
-	LVRM_REG_ADDR_STATUS_CONTROL_1 = DINFOX_REG_ADDR_LAST,
+	LVRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	LVRM_REG_ADDR_ANALOG_DATA_1,
 	LVRM_REG_ADDR_ANALOG_DATA_2,
 	NODE_REG_ADDR_LAST,

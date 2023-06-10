@@ -8,7 +8,7 @@
 #ifndef __SM_REG_H__
 #define __SM_REG_H__
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 #include "types.h"
 
 #ifdef SM
@@ -16,7 +16,7 @@
 /*** SM registers mapping ***/
 
 typedef enum {
-	SM_REG_ADDR_ANALOG_DATA_1 = DINFOX_REG_ADDR_LAST,
+	SM_REG_ADDR_ANALOG_DATA_1 = COMMON_REG_ADDR_LAST,
 	SM_REG_ADDR_ANALOG_DATA_2,
 	SM_REG_ADDR_ANALOG_DATA_3,
 	SM_REG_ADDR_DIGITAL_DATA,

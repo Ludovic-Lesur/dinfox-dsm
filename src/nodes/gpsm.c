@@ -8,7 +8,7 @@
 #include "gpsm.h"
 
 #include "adc.h"
-#include "dinfox_types.h"
+#include "dinfox_common.h"
 #include "load.h"
 #include "neom8n.h"
 #include "gpsm_reg.h"
@@ -262,7 +262,7 @@ errors:
 	return status;
 }
 
-/* UPDATE GPSM VOLATILE REGISTERS.
+/* UPDATE GPSM REGISTER.
  * @param reg_addr:	Address of the register to update.
  * @return status:	Function execution status.
  */
@@ -284,7 +284,7 @@ errors:
 	return status;
 }
 
-/* CHECK GPSM CONTROL REGISTERS.
+/* CHECK GPSM NODE ACTIONS.
  * @param reg_addr:	Address of the register to check.
  * @return status:	Function execution status.
  */
@@ -417,12 +417,12 @@ NODE_status_t GPSM_mtrg_callback(void) {
 	// GPS voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VGPS_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// Active antenna voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VANT_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	// Turn GPS off is possible.

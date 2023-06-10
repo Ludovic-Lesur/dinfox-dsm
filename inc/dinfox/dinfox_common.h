@@ -1,16 +1,16 @@
 /*
- * dinfox_types.h
+ * dinfox_common.h
  *
  *  Created on: 30 may. 2023
  *      Author: Ludo
  */
 
-#ifndef __DINFOX_TYPES_H__
-#define __DINFOX_TYPES_H__
+#ifndef __DINFOX_COMMON_H__
+#define __DINFOX_COMMON_H__
 
 #include "types.h"
 
-/*** DINFOX TYPES macros ***/
+/*** DINFOX common macros ***/
 
 #define DINFOX_NODE_ADDRESS_RANGE_R4S8CR	15
 
@@ -30,9 +30,7 @@
 #define DINFOX_CURRENT_UNIT_SIZE_BITS		2
 #define DINFOX_CURRENT_VALUE_SIZE_BITS		14
 
-/*** DINFOX TYPES structures ***/
-
-typedef uint8_t	NODE_address_t;
+/*** DINFOX common structures ***/
 
 typedef enum {
 	DINFOX_BOARD_ID_LVRM = 0,
@@ -65,6 +63,12 @@ typedef enum {
 	DINFOX_NODE_ADDRESS_R4S8CR_START = 0x70,
 	DINFOX_NODE_ADDRESS_BROADCAST = (DINFOX_NODE_ADDRESS_R4S8CR_START + DINFOX_NODE_ADDRESS_RANGE_R4S8CR)
 } DINFOX_address_t;
+
+typedef enum {
+	DINFOX_REG_ACCESS_READ_ONLY = 0,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_LAST
+} DINFOX_register_access_t;
 
 typedef enum {
 	DINFOX_TIME_UNIT_SECOND = 0,
@@ -122,21 +126,25 @@ typedef union {
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_current_t;
 
-/*** DINFOX TYPES functions ***/
+/*** DINFOX common functions ***/
 
-uint8_t DINFOX_TYPES_convert_seconds(uint32_t time_seconds);
-uint32_t DINFOX_TYPES_get_seconds(uint8_t dinfox_time);
+uint8_t DINFOX_get_field_offset(uint32_t field_mask);
 
-uint8_t DINFOX_TYPES_convert_degrees(int8_t temperature_degrees);
-int8_t DINFOX_TYPES_get_degrees(uint8_t dinfox_temperature);
+uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes);
 
-uint16_t DINFOX_TYPES_convert_mv(uint32_t voltage_mv);
-uint32_t DINFOX_TYPES_get_mv(uint16_t dinfox_voltage);
+uint8_t DINFOX_convert_seconds(uint32_t time_seconds);
+uint32_t DINFOX_get_seconds(uint8_t dinfox_time);
 
-uint16_t DINFOX_TYPES_convert_ua(uint32_t current_ua);
-uint32_t DINFOX_TYPES_get_ua(uint16_t dinfox_current);
+uint8_t DINFOX_convert_degrees(int8_t temperature_degrees);
+int8_t DINFOX_get_degrees(uint8_t dinfox_temperature);
 
-uint8_t DINFOX_TYPES_convert_dbm(int16_t rf_power_dbm);
-int16_t DINFOX_TYPES_get_dbm(uint8_t dinfox_rf_power);
+uint16_t DINFOX_convert_mv(uint32_t voltage_mv);
+uint32_t DINFOX_get_mv(uint16_t dinfox_voltage);
 
-#endif /* __DINFOX_TYPES_H__ */
+uint16_t DINFOX_convert_ua(uint32_t current_ua);
+uint32_t DINFOX_get_ua(uint16_t dinfox_current);
+
+uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm);
+int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power);
+
+#endif /* __DINFOX_COMMON_H__ */

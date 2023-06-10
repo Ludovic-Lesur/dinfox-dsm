@@ -8,7 +8,7 @@
 #ifndef __UHFM_REG_H__
 #define __UHFM_REG_H__
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 #include "types.h"
 
 #ifdef UHFM
@@ -16,7 +16,7 @@
 /*** UHFM registers address ***/
 
 typedef enum {
-	UHFM_REG_ADDR_STATUS_CONTROL_1 = DINFOX_REG_ADDR_LAST,
+	UHFM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	UHFM_REG_ADDR_ANALOG_DATA_1,
 	UHFM_REG_ADDR_SIGFOX_EP_ID,
 	UHFM_REG_ADDR_SIGFOX_EP_KEY_0,

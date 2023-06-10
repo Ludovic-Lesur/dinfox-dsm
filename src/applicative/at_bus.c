@@ -10,8 +10,8 @@
 #include "aes.h"
 #include "bpsm_reg.h"
 #include "ddrm_reg.h"
-#include "dinfox_reg.h"
-#include "dinfox_types.h"
+#include "common_reg.h"
+#include "dinfox_common.h"
 #include "error.h"
 #include "gpsm_reg.h"
 #include "lvrm_reg.h"
@@ -340,27 +340,27 @@ static void _AT_BUS_print_sw_version(void) {
 	uint32_t generic_u32 = 0;
 	_AT_BUS_reply_add_string("SW");
 	// Major version.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_SW_VERSION_0, DINFOX_REG_SW_VERSION_0_MASK_MAJOR, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_0, COMMON_REG_SW_VERSION_0_MASK_MAJOR, &generic_u32);
 	NODE_error_check_print();
 	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	// Minor version.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_SW_VERSION_0, DINFOX_REG_SW_VERSION_0_MASK_MINOR, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_0, COMMON_REG_SW_VERSION_0_MASK_MINOR, &generic_u32);
 	NODE_error_check_print();
 	_AT_BUS_reply_add_string(".");
 	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	// Commit index.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_SW_VERSION_0, DINFOX_REG_SW_VERSION_0_MASK_COMMIT_INDEX, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_0, COMMON_REG_SW_VERSION_0_MASK_COMMIT_INDEX, &generic_u32);
 	NODE_error_check_print();
 	_AT_BUS_reply_add_string(".");
 	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 	// Dirty flag.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_SW_VERSION_0, DINFOX_REG_SW_VERSION_0_MASK_DTYF, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_0, COMMON_REG_SW_VERSION_0_MASK_DTYF, &generic_u32);
 	NODE_error_check_print();
 	if (generic_u32 != 0) {
 		_AT_BUS_reply_add_string(".d");
 	}
 	// Commit ID.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_SW_VERSION_1, DINFOX_REG_SW_VERSION_1_MASK_COMMIT_ID, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_1, COMMON_REG_SW_VERSION_1_MASK_COMMIT_ID, &generic_u32);
 	NODE_error_check_print();
 	_AT_BUS_reply_add_string(" (");
 	_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_HEXADECIMAL, 1);
@@ -391,7 +391,7 @@ static void _AT_BUS_print_error_stack(void) {
 		_AT_BUS_reply_add_string("[ ");
 		do {
 			// Read error stack.
-			node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_ERROR_STACK, DINFOX_REG_ERROR_STACK_MASK_ERROR, &generic_u32);
+			node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ERROR_STACK, COMMON_REG_ERROR_STACK_MASK_ERROR, &generic_u32);
 			NODE_error_check_print();
 			error = (ERROR_t) generic_u32;
 			// Check value.
@@ -420,21 +420,21 @@ static void _AT_BUS_adc_callback(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t generic_u32 = 0;
 	// Trigger measurements.
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_STATUS_CONTROL_0, DINFOX_REG_STATUS_CONTROL_0_MASK_MTRG, 0b1);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG, 0b1);
 	NODE_error_check_print();
 	// Read and print data.
 	// MCU voltage.
 	_AT_BUS_reply_add_string("Vmcu=");
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_ANALOG_DATA_0, DINFOX_REG_ANALOG_DATA_0_MASK_VMCU, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, COMMON_REG_ANALOG_DATA_0_MASK_VMCU, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// MCU temperature.
 	_AT_BUS_reply_add_string("Tmcu=");
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, DINFOX_REG_ADDR_ANALOG_DATA_0, DINFOX_REG_ANALOG_DATA_0_MASK_TMCU, &generic_u32);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, COMMON_REG_ANALOG_DATA_0_MASK_TMCU, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_degrees((uint8_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_degrees((uint8_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("dC");
 	_AT_BUS_reply_send();
 	// Input voltage.
@@ -456,7 +456,7 @@ static void _AT_BUS_adc_callback(void) {
 #endif
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -465,7 +465,7 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("Vstr=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -488,7 +488,7 @@ static void _AT_BUS_adc_callback(void) {
 #endif
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -506,7 +506,7 @@ static void _AT_BUS_adc_callback(void) {
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT, &generic_u32);
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_ua((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_ua((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("uA");
 	_AT_BUS_reply_send();
 #endif
@@ -516,28 +516,28 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("AIN0=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// AIN1 voltage.
 	_AT_BUS_reply_add_string("AIN1=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// AIN2 voltage.
 	_AT_BUS_reply_add_string("AIN2=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// AIN3 voltage.
 	_AT_BUS_reply_add_string("AIN3=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -547,14 +547,14 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("Vrf_tx=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// RX voltage.
 	_AT_BUS_reply_add_string("Vrf_rx=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -563,7 +563,7 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("Vgps=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #ifdef GPSM_ACTIVE_ANTENNA
@@ -571,7 +571,7 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("Vant=");
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, &generic_u32);
 	NODE_error_check_print();
-	_AT_BUS_reply_add_value((int32_t) DINFOX_TYPES_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((uint16_t) generic_u32), STRING_FORMAT_DECIMAL, 0);
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 #endif
@@ -986,7 +986,7 @@ static void _AT_BUS_cw_callback(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, (uint32_t) frequency_hz);
 	NODE_error_check_print();
 	if (power_given != 0) {
-		node_status = NODE_write_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_TYPES_convert_dbm(power_dbm));
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(power_dbm));
 		NODE_error_check_print();
 	}
 	// Start or stop mode.
@@ -1035,7 +1035,7 @@ static void _AT_BUS_dl_callback(void) {
 			node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, &generic_u32);
 			NODE_error_check_print();
 			// Print data.
-			_AT_BUS_print_dl_phy_content(dl_phy_content, DINFOX_TYPES_get_dbm(generic_u32));
+			_AT_BUS_print_dl_phy_content(dl_phy_content, DINFOX_get_dbm(generic_u32));
 		}
 	}
 	while (message_status.dl_frame != 0);
@@ -1078,7 +1078,7 @@ static void _AT_BUS_rssi_callback(void) {
 		NODE_error_check_print();
 		// Print RSSI.
 		_AT_BUS_reply_add_string("+RSSI=");
-		_AT_BUS_reply_add_value(DINFOX_TYPES_get_dbm(generic_u32), STRING_FORMAT_DECIMAL, 0);
+		_AT_BUS_reply_add_value(DINFOX_get_dbm(generic_u32), STRING_FORMAT_DECIMAL, 0);
 		_AT_BUS_reply_add_string("dBm");
 		_AT_BUS_reply_send();
 		// Report delay.

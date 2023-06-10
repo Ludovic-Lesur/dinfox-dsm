@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "i2c.h"
 #include "digital.h"
-#include "dinfox_types.h"
+#include "dinfox_common.h"
 #include "load.h"
 #include "node.h"
 #include "sht3x.h"
@@ -31,7 +31,7 @@ NODE_status_t SM_init_registers(void) {
 	return status;
 }
 
-/* UPDATE SM VOLATILE REGISTERS.
+/* UPDATE SM REGISTER.
  * @param reg_addr:	Address of the register to update.
  * @return status:	Function execution status.
  */
@@ -42,7 +42,7 @@ NODE_status_t SM_update_register(uint8_t reg_addr) {
 	return status;
 }
 
-/* CHECK SM CONTROL REGISTERS.
+/* CHECK SM NODE ACTIONS.
  * @param reg_addr:	Address of the register to check.
  * @return status:	Function execution status.
  */
@@ -81,22 +81,22 @@ NODE_status_t SM_mtrg_callback(void) {
 	// AIN0.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN0_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// AIN0.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN1_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// AIN2.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN2_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 	// AIN3.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN3_MV, &adc_data);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, (uint32_t) DINFOX_TYPES_convert_mv(adc_data));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, (uint32_t) DINFOX_convert_mv(adc_data));
 	if (status != NODE_SUCCESS) goto errors;
 #endif
 #ifdef SM_DIO_ENABLE
@@ -134,7 +134,7 @@ NODE_status_t SM_mtrg_callback(void) {
 	// Tamb.
 	sht3x_status = SHT3X_get_temperature(&tamb_degrees);
 	SHT3X_status_check(NODE_ERROR_BASE_SHT3X);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_TAMB, (uint32_t) DINFOX_TYPES_convert_degrees(tamb_degrees));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_TAMB, (uint32_t) DINFOX_convert_degrees(tamb_degrees));
 	if (status != NODE_SUCCESS) goto errors;
 	// Tamb.
 	sht3x_status = SHT3X_get_humidity(&hamb_percent);

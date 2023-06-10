@@ -8,7 +8,7 @@
 #ifndef __BPSM_REG_H__
 #define __BPSM_REG_H__
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 #include "types.h"
 
 #ifdef BPSM
@@ -16,7 +16,7 @@
 /*** BPSM registers address ***/
 
 typedef enum {
-	BPSM_REG_ADDR_STATUS_CONTROL_1 = DINFOX_REG_ADDR_LAST,
+	BPSM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	BPSM_REG_ADDR_ANALOG_DATA_1,
 	BPSM_REG_ADDR_ANALOG_DATA_2,
 	NODE_REG_ADDR_LAST,

@@ -8,8 +8,9 @@
 #include "node.h"
 
 #include "bpsm.h"
+#include "common.h"
 #include "ddrm.h"
-#include "dinfox.h"
+#include "dinfox_common.h"
 #include "error.h"
 #include "gpsm.h"
 #include "lvrm.h"
@@ -22,22 +23,6 @@
 static uint32_t NODE_REGISTERS[NODE_REG_ADDR_LAST];
 
 /*** NODE local functions ***/
-
-/* RETURN THE MASK OFFSET.
- * @param reg_mask:	Register mask.
- * @return shift:	Position of the first bit 1.
- */
-static uint8_t _NODE_get_field_offset(uint32_t field_mask) {
-	// Local variables.
-	uint8_t offset = 0;
-	// Compute shift according to mask.
-	for (offset=0 ; offset<(8 * DINFOX_REG_SIZE_BYTES) ; offset++) {
-		if ((field_mask & (0b1 << offset)) != 0) {
-			break;
-		}
-	}
-	return offset;
-}
 
 /* UPDATE NODE REGISTERS.
  * @param reg_addr:	Address of the register to update.
@@ -52,7 +37,7 @@ static NODE_status_t _NODE_update_register(uint8_t reg_addr) {
 		goto errors;
 	}
 	// Update common registers.
-	status = DINFOX_update_register(reg_addr);
+	status = COMMON_update_register(reg_addr);
 	if (status != NODE_SUCCESS) goto errors;
 	// Update specific registers.
 #ifdef LVRM
@@ -88,7 +73,7 @@ static NODE_status_t _NODE_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	// Check common registers.
-	status = DINFOX_check_register(reg_addr);
+	status = COMMON_check_register(reg_addr);
 	if (status != NODE_SUCCESS) goto errors;
 	// Check specific registers.
 #ifdef LVRM
@@ -131,7 +116,7 @@ NODE_status_t NODE_init(void) {
 		NODE_REGISTERS[idx] = 0;
 	}
 	// Init common registers.
-	status = DINFOX_init_registers();
+	status = COMMON_init_registers();
 	if (status != NODE_SUCCESS) goto errors;
 	// Init specific registers.
 #ifdef LVRM
@@ -203,7 +188,7 @@ NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_
 	status = NODE_read_register(request_source, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
 	// Isolate field.
-	(*field_value) = ((reg_value & field_mask) >> _NODE_get_field_offset(field_mask));
+	(*field_value) = ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
 errors:
 	return status;
 }
@@ -290,7 +275,7 @@ NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	// Write register.
-	status = NODE_write_register(request_source, reg_addr, field_mask, (field_value << _NODE_get_field_offset(field_mask)));
+	status = NODE_write_register(request_source, reg_addr, field_mask, (field_value << DINFOX_get_field_offset(field_mask)));
 	return status;
 }
 

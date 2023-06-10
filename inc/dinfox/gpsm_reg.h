@@ -10,12 +10,12 @@
 
 #ifdef GPSM
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 
 /*** GPSM registers address ***/
 
 typedef enum {
-	GPSM_REG_ADDR_STATUS_CONTROL_1 = DINFOX_REG_ADDR_LAST,
+	GPSM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	GPSM_REG_ADDR_ANALOG_DATA_1,
 	GPSM_REG_ADDR_TIMEOUT,
 	GPSM_REG_ADDR_TIME_DATA_0,

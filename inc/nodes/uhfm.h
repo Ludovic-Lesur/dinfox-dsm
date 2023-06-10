@@ -8,9 +8,9 @@
 #ifndef __UHFM_H__
 #define __UHFM_H__
 
-#include "dinfox.h"
-#include "dinfox_reg.h"
-#include "dinfox_types.h"
+#include "common.h"
+#include "common_reg.h"
+#include "dinfox_common.h"
 #include "node.h"
 #include "uhfm_reg.h"
 
@@ -38,7 +38,7 @@ typedef union {
 /*** UHFM global variables ***/
 
 static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {
-	DINFOX_REG_ACCESS
+	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY,

@@ -1,11 +1,11 @@
 /*
- * dinfox_types.c
+ * dinfox_common.c
  *
  *  Created on: 30 may. 2023
  *      Author: Ludo
  */
 
-#include "dinfox_types.h"
+#include "dinfox_common.h"
 
 #include "math.h"
 #include "types.h"
@@ -26,11 +26,43 @@
 
 /*** DINFOX TYPES functions ***/
 
+/* RETURN THE OFFSET OF A FIELD MASK.
+ * @param reg_mask:	Register mask.
+ * @return shift:	Position of the first bit 1.
+ */
+uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
+	// Local variables.
+	uint8_t offset = 0;
+	// Compute shift according to mask.
+	for (offset=0 ; offset<(8 * DINFOX_REG_SIZE_BYTES) ; offset++) {
+		if ((field_mask & (0b1 << offset)) != 0) {
+			break;
+		}
+	}
+	return offset;
+}
+
+uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes) {
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint8_t data_size = data_size_bytes;
+	uint8_t idx = 0;
+	// Clamp size.
+	if (data_size > DINFOX_REG_SIZE_BYTES) {
+		data_size = DINFOX_REG_SIZE_BYTES;
+	}
+	// Bytes loop.
+	for (idx=0 ; idx<data_size ; idx++) {
+		reg_value |= (data[data_size - idx - 1] << (8 * idx));
+	}
+	return reg_value;
+}
+
 /* CONVERT SECONDS TO DINFOX TIME REPRESENTATION.
  * @param time_seconds:	Time in seconds.
  * @return dinfox_time:	DINFox duration representation.
  */
-uint8_t DINFOX_TYPES_convert_seconds(uint32_t time_seconds) {
+uint8_t DINFOX_convert_seconds(uint32_t time_seconds) {
 	// Local variables.
 	DINFOX_time_t dinfox_time;
 	uint32_t value = time_seconds;
@@ -62,7 +94,7 @@ uint8_t DINFOX_TYPES_convert_seconds(uint32_t time_seconds) {
  * @param dinfox_time:		DINFox duration representation.
  * @return time_seconds:	Time in seconds.
  */
-uint32_t DINFOX_TYPES_get_seconds(uint8_t dinfox_time) {
+uint32_t DINFOX_get_seconds(uint8_t dinfox_time) {
 	// Local variables.
 	uint32_t time_seconds = 0;
 	uint8_t local_dinfox_time = dinfox_time;
@@ -93,7 +125,7 @@ uint32_t DINFOX_TYPES_get_seconds(uint8_t dinfox_time) {
  * @param temperature_degrees:	Temperature in degreees.
  * @return dinfox_temperature:	DINFox temperature representation.
  */
-uint8_t DINFOX_TYPES_convert_degrees(int8_t temperature_degrees) {
+uint8_t DINFOX_convert_degrees(int8_t temperature_degrees) {
 	// Local variables.
 	uint32_t dinfox_temperature = 0;
 	int32_t temp_degrees = (int32_t) temperature_degrees;
@@ -106,7 +138,7 @@ uint8_t DINFOX_TYPES_convert_degrees(int8_t temperature_degrees) {
  * @param dinfox_temperature:	DINFox temperature representation.
  * @return temperature_degrees:	Temperature in degreees.
  */
-int8_t DINFOX_TYPES_get_degrees(uint8_t dinfox_temperature) {
+int8_t DINFOX_get_degrees(uint8_t dinfox_temperature) {
 	// Local variables.
 	int32_t temperature_degrees = 0;
 	uint8_t local_dinfox_temperature = dinfox_temperature;
@@ -122,7 +154,7 @@ int8_t DINFOX_TYPES_get_degrees(uint8_t dinfox_temperature) {
  * @param voltage_mv:		Votage in mV.
  * @return dinfox_voltage:	DINFox voltage representation.
  */
-uint16_t DINFOX_TYPES_convert_mv(uint32_t voltage_mv) {
+uint16_t DINFOX_convert_mv(uint32_t voltage_mv) {
 	// Local variables.
 	DINFOX_voltage_t dinfox_voltage;
 	// Select format.
@@ -141,7 +173,7 @@ uint16_t DINFOX_TYPES_convert_mv(uint32_t voltage_mv) {
  * @param dinfox_voltage:	DINFox voltage representation.
  * @return voltage_mv:		Votage in mV.
  */
-uint32_t DINFOX_TYPES_get_mv(uint16_t dinfox_voltage) {
+uint32_t DINFOX_get_mv(uint16_t dinfox_voltage) {
 	// Local variables.
 	uint32_t voltage_mv = 0;
 	uint16_t local_dinfox_voltage = dinfox_voltage;
@@ -159,7 +191,7 @@ uint32_t DINFOX_TYPES_get_mv(uint16_t dinfox_voltage) {
  * @param current_ua:		Current in uA.
  * @return dinfox_current:	DINFox current representation.
  */
-uint16_t DINFOX_TYPES_convert_ua(uint32_t current_ua) {
+uint16_t DINFOX_convert_ua(uint32_t current_ua) {
 	// Local variables.
 	DINFOX_current_t dinfox_current;
 	uint32_t value = current_ua;
@@ -191,7 +223,7 @@ uint16_t DINFOX_TYPES_convert_ua(uint32_t current_ua) {
  * @param dinfox_current:	DINFox current representation.
  * @return current_ua:		Current in uA.
  */
-uint32_t DINFOX_TYPES_get_ua(uint16_t dinfox_current) {
+uint32_t DINFOX_get_ua(uint16_t dinfox_current) {
 	// Local variables.
 	uint32_t current_ua = 0;
 	uint8_t local_dinfox_current = dinfox_current;
@@ -222,7 +254,7 @@ uint32_t DINFOX_TYPES_get_ua(uint16_t dinfox_current) {
  * @param rf_power_dbm:		RF power in dBm.
  * @return dinfox_rf_power:	DINFox RF power representation.
  */
-uint8_t DINFOX_TYPES_convert_dbm(int16_t rf_power_dbm) {
+uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
 	return ((uint8_t) (rf_power_dbm + DINFOX_TYPES_RF_POWER_OFFSET));
 }
 
@@ -230,6 +262,6 @@ uint8_t DINFOX_TYPES_convert_dbm(int16_t rf_power_dbm) {
  * @param dinfox_rf_power:	DINFox RF power representation.
  * @return rf_power_dbm:	RF power in dBm.
  */
-int16_t DINFOX_TYPES_get_dbm(uint8_t dinfox_rf_power) {
+int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power) {
 	return ((uint16_t) (dinfox_rf_power - DINFOX_TYPES_RF_POWER_OFFSET));
 }

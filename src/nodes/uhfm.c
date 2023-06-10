@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "addon_sigfox_rf_protocol_api.h"
 #include "aes.h"
-#include "dinfox_types.h"
+#include "dinfox_common.h"
 #include "load.h"
 #include "lvrm_reg.h"
 #include "node.h"
@@ -163,7 +163,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 				status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DOWNLINK_DATA_SIZE_BYTES);
 				if (status != NODE_SUCCESS) goto errors;
 				// Write DL RSSI.
-				status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_TYPES_convert_dbm(dl_rssi_dbm));
+				status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
 				if (status != NODE_SUCCESS) goto errors;
 				// Update message status.
 				message_status.dl_frame = 1;
@@ -256,7 +256,7 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 		status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, (uint8_t*) dl_phy_content, SIGFOX_DOWNLINK_PHY_SIZE_BYTES);
 		if (status != NODE_SUCCESS) goto errors;
 		// Write DL RSSI.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_TYPES_convert_dbm(dl_rssi_dbm));
+		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
 		if (status != NODE_SUCCESS) goto errors;
 		// Update message status.
 		message_status.dl_frame = 1;
@@ -294,7 +294,7 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, &tx_power);
 	if (status != NODE_SUCCESS) goto errors;
 	// Convert power.
-	tx_power_dbm = (int8_t) DINFOX_TYPES_get_dbm(tx_power);
+	tx_power_dbm = (int8_t) DINFOX_get_dbm(tx_power);
 	// Check state.
 	if (state == 0) {
 		// Check radio state.
@@ -429,7 +429,7 @@ errors:
 	return status;
 }
 
-/* UPDATE UHFM VOLATILE REGISTERS.
+/* UPDATE UHFM REGISTER.
  * @param reg_addr:	Address of the register to update.
  * @return status:	Function execution status.
  */
@@ -445,7 +445,7 @@ NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 		s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_RUN, &rssi_dbm);
 		S2LP_status_check(NODE_ERROR_BASE_S2LP);
 		// Write field.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_RSSI, (uint32_t) DINFOX_TYPES_convert_dbm(rssi_dbm));
+		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_RSSI, (uint32_t) DINFOX_convert_dbm(rssi_dbm));
 		if (status != NODE_SUCCESS) goto errors;
 		break;
 	default:
@@ -555,7 +555,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
 	// Configure frequency and TX power for measure.
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
 	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_TYPES_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
 	if (status != NODE_SUCCESS) goto errors;
 	// Start CW.
 	status = _UHFM_cwen_callback(1);
@@ -569,7 +569,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
 	// VRF_TX.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, (uint32_t) DINFOX_TYPES_convert_mv(vrf_mv));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, (uint32_t) DINFOX_convert_mv(vrf_mv));
 	if (status != NODE_SUCCESS) goto errors;
 	// Start RX.
 	status = _UHFM_rsen_callback(1);
@@ -583,7 +583,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
 	// VRF_RX.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
 	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, (uint32_t) DINFOX_TYPES_convert_mv(vrf_mv));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, (uint32_t) DINFOX_convert_mv(vrf_mv));
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	// Restore radio test registers.

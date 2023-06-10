@@ -8,7 +8,7 @@
 #ifndef __RRM_REG_H__
 #define __RRM_REG_H__
 
-#include "dinfox_reg.h"
+#include "common_reg.h"
 #include "types.h"
 
 #ifdef RRM
@@ -16,7 +16,7 @@
 /*** RRM registers address ***/
 
 typedef enum {
-	RRM_REG_ADDR_STATUS_CONTROL_1 = DINFOX_REG_ADDR_LAST,
+	RRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	RRM_REG_ADDR_ANALOG_DATA_1,
 	RRM_REG_ADDR_ANALOG_DATA_2,
 	NODE_REG_ADDR_LAST,
