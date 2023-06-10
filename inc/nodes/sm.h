@@ -1,7 +1,7 @@
 /*
  * sm.h
  *
- *  Created on: 16 jan. 2023
+ *  Created on: 10 jun. 2023
  *      Author: Ludo
  */
 
@@ -9,23 +9,36 @@
 #define __SM_H__
 
 #include "dinfox.h"
-
-/*** BPSM registers mapping ***/
+#include "dinfox_reg.h"
+#include "dinfox_types.h"
+#include "sm_reg.h"
+#include "node.h"
 
 #ifdef SM
-typedef enum {
-	SM_REGISTER_AIN0_MV = DINFOX_REGISTER_LAST,
-	SM_REGISTER_AIN1_MV,
-	SM_REGISTER_AIN2_MV,
-	SM_REGISTER_AIN3_MV,
-	SM_REGISTER_DIO0,
-	SM_REGISTER_DIO1,
-	SM_REGISTER_DIO2,
-	SM_REGISTER_DIO3,
-	SM_REGISTER_TAMB_DEGREES,
-	SM_REGISTER_HAMB_PERCENT,
-	SM_REGISTER_LAST,
-} SM_register_address_t;
-#endif
+
+/*** SM macros ***/
+
+#define NODE_BOARD_ID	DINFOX_BOARD_ID_SM
+
+/*** SM global variables ***/
+
+static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {
+	DINFOX_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+
+/*** SM functions ***/
+
+NODE_status_t SM_init_registers(void);
+
+NODE_status_t SM_update_register(uint8_t reg_addr);
+NODE_status_t SM_check_register(uint8_t reg_addr);
+
+NODE_status_t SM_mtrg_callback(void);
+
+#endif /* SM */
 
 #endif /* __SM_H__ */

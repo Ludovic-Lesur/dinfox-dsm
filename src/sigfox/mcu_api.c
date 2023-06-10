@@ -100,7 +100,7 @@ sfx_u8 MCU_API_get_voltage_temperature(sfx_u16* voltage_idle, sfx_u16* voltage_t
 	uint32_t mcu_supply_voltage_mv = 0;
 	int8_t mcu_temperature_degrees = 0;
 	// Perform measurements.
-	adc1_status = ADC1_perform_measurements(1);
+	adc1_status = ADC1_perform_measurements();
 	if (adc1_status != ADC_SUCCESS) goto errors;
 	// Get MCU supply voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &mcu_supply_voltage_mv);
@@ -487,7 +487,7 @@ sfx_u8 MCU_API_get_device_id_and_payload_encryption_flag(sfx_u8 dev_id[ID_LENGTH
 	(*payload_encryption_enabled) = SFX_FALSE;
 	// Get device ID.
 	for (byte_idx=0 ; byte_idx<ID_LENGTH ; byte_idx++) {
-		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + byte_idx), &(dev_id[byte_idx]));
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + ID_LENGTH - byte_idx - 1), &(dev_id[byte_idx]));
 		if (nvm_status != NVM_SUCCESS) goto errors;
 	}
 	return SFX_ERR_NONE;

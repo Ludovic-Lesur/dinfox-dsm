@@ -1,27 +1,43 @@
 /*
  * bpsm.h
  *
- *  Created on: 27 nov. 2022
+ *  Created on: 4 jun. 2023
  *      Author: Ludo
  */
 
 #ifndef __BPSM_H__
 #define __BPSM_H__
 
+#include "bpsm_reg.h"
 #include "dinfox.h"
-
-/*** BPSM registers mapping ***/
+#include "dinfox_reg.h"
+#include "dinfox_types.h"
+#include "node.h"
 
 #ifdef BPSM
-typedef enum {
-	BPSM_REGISTER_VSRC_MV = DINFOX_REGISTER_LAST,
-	BPSM_REGISTER_VSTR_MV,
-	BPSM_REGISTER_VBKP_MV,
-	BPSM_REGISTER_CHARGE_ENABLE,
-	BPSM_REGISTER_CHARGE_STATUS,
-	BPSM_REGISTER_BACKUP_ENABLE,
-	BPSM_REGISTER_LAST,
-} BPSM_register_address_t;
-#endif
+
+/*** BPSM macros ***/
+
+#define NODE_BOARD_ID	DINFOX_BOARD_ID_BPSM
+
+/*** BPSM global variables ***/
+
+static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {
+	DINFOX_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+
+/*** BPSM functions ***/
+
+NODE_status_t BPSM_init_registers(void);
+
+NODE_status_t BPSM_update_register(uint8_t reg_addr);
+NODE_status_t BPSM_check_register(uint8_t reg_addr);
+
+NODE_status_t BPSM_mtrg_callback(void);
+
+#endif /* BPSM */
 
 #endif /* __BPSM_H__ */

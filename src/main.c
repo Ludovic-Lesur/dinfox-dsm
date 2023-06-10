@@ -38,13 +38,12 @@
 
 /*** MAIN local macros ***/
 
-#define XM_MEASUREMENTS_PERIOD_HIGH_SECONDS		10
-#define XM_MEASUREMENTS_PERIOD_LOW_SECONDS		60
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+#define XM_STATIC_MEASUREMENTS_PERIOD_SECONDS	60
 #define XM_IOUT_INDICATOR_PERIOD_SECONDS		10
 #define XM_IOUT_INDICATOR_RANGE					7
-#endif
 #define XM_HIGH_PERIOD_THRESHOLD_MV				6000
+#endif
 
 /*** MAIN local structures ***/
 
@@ -55,15 +54,13 @@ typedef struct {
 } XM_iout_indicator_t;
 #endif
 
-
-typedef struct {
-	uint32_t measurements_seconds_count;
-	uint32_t measurements_period_seconds;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+typedef struct {
+	uint32_t static_measurements_seconds_count;
 	uint32_t iout_indicator_seconds_count;
 	uint8_t iout_indicator_enable;
-#endif
 } XM_context_t;
+#endif
 
 /*** MAIN local global variables ***/
 
@@ -77,24 +74,23 @@ static const XM_iout_indicator_t LVRM_IOUT_INDICATOR[XM_IOUT_INDICATOR_RANGE] = 
 	{3000000, LED_COLOR_CYAN},
 	{4000000, LED_COLOR_WHITE}
 };
-#endif
 static XM_context_t xm_ctx;
+#endif
 
 /*** MAIN local functions ***/
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* COMMON INIT FUNCTION FOR MAIN CONTEXT.
  * @param:	None.
  * @return:	None.
  */
 static void _XM_init_context(void) {
 	// Init context.
-	xm_ctx.measurements_seconds_count = 0;
-	xm_ctx.measurements_period_seconds = XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	xm_ctx.static_measurements_seconds_count = 0;
 	xm_ctx.iout_indicator_seconds_count = XM_IOUT_INDICATOR_PERIOD_SECONDS;
 	xm_ctx.iout_indicator_enable = 0;
-#endif
 }
+#endif
 
 /* COMMON INIT FUNCTION FOR PERIPHERALS AND COMPONENTS.
  * @param:	None.
@@ -107,6 +103,7 @@ static void _XM_init_hw(void) {
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	NODE_address_t self_address;
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
@@ -178,55 +175,25 @@ static void _XM_init_hw(void) {
 #ifdef GPSM
 	NEOM8N_init();
 #endif
+	// Init registers.
+	node_status = NODE_init();
+	NODE_error_check();
 	// Init AT interface.
 	AT_BUS_init(self_address);
 }
 
-/* PERFORM EXTERNAL MEASUREMENTS.
- * @param:	None.
- * @return:	None.
- */
-static void _XM_perform_measurements(void) {
-	// Local variables.
-	ADC_status_t adc1_status = ADC_SUCCESS;
-#ifdef SM
-#ifdef SM_DIO_ENABLE
-	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
-#endif
-#ifdef SM_DIGITAL_SENSORS_ENABLE
-	I2C_status_t i2c1_status = I2C_SUCCESS;
-	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
-#endif
-#endif /* SM */
-	// Perform analog measurements.
-	adc1_status = ADC1_perform_measurements(1);
-	ADC1_error_check();
-#ifdef SM
-#ifdef SM_DIO_ENABLE
-	// Perform digital measurements.
-	digital_status = DIGITAL_perform_measurements();
-	DIGITAL_error_check();
-#endif
-#ifdef SM_DIGITAL_SENSORS_ENABLE
-	// Perform temperature / humidity measurements.
-	i2c1_status = I2C1_power_on();
-	I2C1_error_check();
-	sht3x_status = SHT3X_perform_measurements(SHT3X_I2C_ADDRESS);
-	SHT3X_error_check();
-	I2C1_power_off();
-#endif
-#endif /* SM */
-}
-
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /* UPDATE MEASUREMENTS PERIOD ACCORDING TO INPUT VOLTAGE.
  * @param:	None.
  * @return:	None.
  */
-static void _XM_update_measurements_period(void) {
+static void _XM_static_measurements(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t input_voltage_mv = 0;
+	// Perform static analog measurements.
+	adc1_status = ADC1_perform_measurements();
+	ADC1_error_check();
 	// Check input voltage.
 #ifdef LVRM
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &input_voltage_mv);
@@ -238,11 +205,8 @@ static void _XM_update_measurements_period(void) {
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &input_voltage_mv);
 #endif
 	ADC1_error_check();
-	// Update periods according to input voltage.
-	xm_ctx.measurements_period_seconds = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? XM_MEASUREMENTS_PERIOD_HIGH_SECONDS : XM_MEASUREMENTS_PERIOD_LOW_SECONDS;
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	// Enable RGB LED only if power input supplies the board.
 	xm_ctx.iout_indicator_enable = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? 1 : 0;
-#endif
 }
 #endif
 
@@ -283,14 +247,14 @@ static void _XM_iout_indicator(void) {
  */
 int main(void) {
 	// Init board.
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	_XM_init_context();
+#endif
 	_XM_init_hw();
 	// Local variables.
 	RTC_status_t rtc_status = RTC_SUCCESS;
-	// Perform first measurements.
-	_XM_perform_measurements();
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-	_XM_update_measurements_period();
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	_XM_static_measurements();
 #endif
 	// Main loop.
 	while (1) {
@@ -317,18 +281,15 @@ int main(void) {
 		if (RTC_get_wakeup_timer_flag() != 0) {
 			// Clear flag.
 			RTC_clear_wakeup_timer_flag();
-			// Increment seconds count.
-			xm_ctx.measurements_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
-			// Check ADC period.
-			if (xm_ctx.measurements_seconds_count >= xm_ctx.measurements_period_seconds) {
-				// Reset count.
-				xm_ctx.measurements_seconds_count = 0;
-				_XM_perform_measurements();
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-				_XM_update_measurements_period();
-#endif
-			}
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+			// Increment seconds count.
+			xm_ctx.static_measurements_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
+			// Check ADC period.
+			if (xm_ctx.static_measurements_seconds_count >= XM_STATIC_MEASUREMENTS_PERIOD_SECONDS) {
+				// Reset count.
+				xm_ctx.static_measurements_seconds_count = 0;
+				_XM_static_measurements();
+			}
 			// Increment seconds count.
 			xm_ctx.iout_indicator_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
 			// Check Iout indicator period.

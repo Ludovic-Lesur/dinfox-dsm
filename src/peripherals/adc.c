@@ -93,15 +93,8 @@ typedef enum {
 	ADC_CONVERSION_TYPE_LAST
 } ADC_conversion_t;
 
-typedef enum {
-	ADC_CONNECTION_DIRECT = 0,
-	ADC_CONNECTION_INDIRECT,
-	ADC_CONNECTION_LAST
-} ADC_connection_t;
-
 typedef struct {
 	ADC_channel_t channel;
-	ADC_connection_t connection;
 	ADC_conversion_t gain_type;
 	uint32_t gain;
 } ADC_input_t;
@@ -115,34 +108,34 @@ typedef struct {
 /*** ADC local global variables ***/
 
 static const ADC_input_t ADC_INPUTS[ADC_DATA_INDEX_LAST] = {
-	{ADC_CHANNEL_VREFINT, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_VMCU, 0},
+	{ADC_CHANNEL_VREFINT, ADC_CONVERSION_TYPE_VMCU, 0},
 #ifdef LVRM
-	{ADC_CHANNEL_VCOM, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_VCOM, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
 #endif
 #if (defined DDRM) || (defined RRM)
-	{ADC_CHANNEL_VIN, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_VIN, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-	{ADC_CHANNEL_VOUT, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
-	{ADC_CHANNEL_IOUT, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_LT6106, 1}
+	{ADC_CHANNEL_VOUT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_IOUT, ADC_CONVERSION_TYPE_LT6106, 1}
 #endif
 #ifdef BPSM
-	{ADC_CHANNEL_VSRC, ADC_CONNECTION_DIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
-	{ADC_CHANNEL_VSTR, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO},
-	{ADC_CHANNEL_VBKP, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10}
+	{ADC_CHANNEL_VSRC, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10},
+	{ADC_CHANNEL_VSTR, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO},
+	{ADC_CHANNEL_VBKP, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 10}
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
-	{ADC_CHANNEL_AIN0, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
-	{ADC_CHANNEL_AIN1, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
-	{ADC_CHANNEL_AIN2, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
-	{ADC_CHANNEL_AIN3, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1}
+	{ADC_CHANNEL_AIN0, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN1, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN2, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1},
+	{ADC_CHANNEL_AIN3, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 1}
 #endif
 #ifdef UHFM
-	{ADC_CHANNEL_VRF, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
+	{ADC_CHANNEL_VRF, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
 #endif
 #ifdef GPSM
-	{ADC_CHANNEL_VGPS, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
-	{ADC_CHANNEL_VANT, ADC_CONNECTION_INDIRECT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
+	{ADC_CHANNEL_VGPS, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
+	{ADC_CHANNEL_VANT, ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION, 2},
 #endif
 };
 static ADC_context_t adc_ctx;
@@ -242,10 +235,10 @@ errors:
 }
 
 /* COMPUTE ALL ADC CHANNELS.
- * @param static_flag:	If non zero, perform conversion on direct-connected channels only.
- * @return status:		Function execution status.
+ * @param:			None.
+ * @return status:	Function execution status.
  */
-static ADC_status_t _ADC1_compute_all_channels(uint8_t static_flag) {
+static ADC_status_t _ADC1_compute_all_channels(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
 	uint8_t idx = 0;
@@ -261,41 +254,38 @@ static ADC_status_t _ADC1_compute_all_channels(uint8_t static_flag) {
 		if (ADC_INPUTS[idx].channel == ADC_CHANNEL_VREFINT) {
 			adc_ctx.vrefint_12bits = voltage_12bits;
 		}
-		// Check connection type and static flag before updating the data.
-		if ((ADC_INPUTS[idx].connection == ADC_CONNECTION_DIRECT) || (static_flag == 0)) {
-			// Convert to mV using VREFINT.
-			switch (ADC_INPUTS[idx].gain_type) {
-			case ADC_CONVERSION_TYPE_VMCU:
-				// Retrieve supply voltage from bandgap result.
-				adc_ctx.data[idx] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
-				break;
-			case ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION:
-				adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits * ADC_INPUTS[idx].gain) / (adc_ctx.vrefint_12bits);
-				break;
-			case ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION:
-				adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits) / (adc_ctx.vrefint_12bits * ADC_INPUTS[idx].gain);
-				break;
-			case ADC_CONVERSION_TYPE_LT6106:
-				// Current conversion.
-				num = voltage_12bits;
-				num *= ADC_VREFINT_VOLTAGE_MV;
-				num *= 1000000;
-				den = adc_ctx.vrefint_12bits;
-				den *= ADC_LT6106_VOLTAGE_GAIN;
-				den *= ADC_LT6106_SHUNT_RESISTOR_MOHMS;
-				adc_ctx.data[idx] = (num) / (den);
-				// Remove offset current.
-				if (adc_ctx.data[idx] < ADC_LT6106_OFFSET_CURRENT_UA) {
-					adc_ctx.data[idx] = 0;
-				}
-				else {
-					adc_ctx.data[idx] -= ADC_LT6106_OFFSET_CURRENT_UA;
-				}
-				break;
-			default:
-				status = ADC_ERROR_CONVERSION_TYPE;
-				goto errors;
+		// Convert to mV using VREFINT.
+		switch (ADC_INPUTS[idx].gain_type) {
+		case ADC_CONVERSION_TYPE_VMCU:
+			// Retrieve supply voltage from bandgap result.
+			adc_ctx.data[idx] = (VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (adc_ctx.vrefint_12bits);
+			break;
+		case ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION:
+			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits * ADC_INPUTS[idx].gain) / (adc_ctx.vrefint_12bits);
+			break;
+		case ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION:
+			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits) / (adc_ctx.vrefint_12bits * ADC_INPUTS[idx].gain);
+			break;
+		case ADC_CONVERSION_TYPE_LT6106:
+			// Current conversion.
+			num = voltage_12bits;
+			num *= ADC_VREFINT_VOLTAGE_MV;
+			num *= 1000000;
+			den = adc_ctx.vrefint_12bits;
+			den *= ADC_LT6106_VOLTAGE_GAIN;
+			den *= ADC_LT6106_SHUNT_RESISTOR_MOHMS;
+			adc_ctx.data[idx] = (num) / (den);
+			// Remove offset current.
+			if (adc_ctx.data[idx] < ADC_LT6106_OFFSET_CURRENT_UA) {
+				adc_ctx.data[idx] = 0;
 			}
+			else {
+				adc_ctx.data[idx] -= ADC_LT6106_OFFSET_CURRENT_UA;
+			}
+			break;
+		default:
+			status = ADC_ERROR_CONVERSION_TYPE;
+			goto errors;
 		}
 	}
 errors:
@@ -377,21 +367,14 @@ errors:
 }
 
 /* PERFORM INTERNAL ADC MEASUREMENTS.
- * @param static_flag:	If non zero, perform conversions statically without controlling any external power pin (for direct voltage dividers only).
- * @return status:		Function execution status.
+ * @param:			None.
+ * @return status:	Function execution status.
  */
-ADC_status_t ADC1_perform_measurements(uint8_t static_flag) {
+ADC_status_t ADC1_perform_measurements(void) {
 	// Local variables.
 	ADC_status_t status = ADC_SUCCESS;
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint32_t loop_count = 0;
-#ifdef UHFM
-	uint8_t rf_on = 0;
-#endif
-#ifdef GPSM
-	uint8_t gps_on = 0;
-	uint8_t ant_on = 0;
-#endif
 	// Enable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 0); // ADEN='1'.
 	while (((ADC1 -> ISR) & (0b1 << 0)) == 0) {
@@ -402,74 +385,39 @@ ADC_status_t ADC1_perform_measurements(uint8_t static_flag) {
 			goto errors;
 		}
 	}
-	// Manage external power supply if non-static conversion.
-	if (static_flag == 0) {
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-		// Enable voltage dividers.
-		GPIO_write(&GPIO_MNTR_EN, 1);
+	// Enable voltage dividers.
+	GPIO_write(&GPIO_MNTR_EN, 1);
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
-		// Turn analog front-end on.
-		GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
-#endif
-#ifdef UHFM
-		// Read current state of power enable pin.
-		rf_on = GPIO_read(&GPIO_RF_POWER_ENABLE);
-		// Turn RF front-end on.
-		GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
-#endif
-#ifdef GPSM
-		// Read current state of power enable pins.
-		gps_on = GPIO_read(&GPIO_GPS_POWER_ENABLE);
-		ant_on = GPIO_read(&GPIO_ANT_POWER_ENABLE);
-		// Turn GPS front-end on.
-		GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
-		GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
+	// Turn analog front-end on.
+	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
 #endif
 #if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM) || ((defined LVRM) && (defined HW2_0))
-		// Wait voltage dividers stabilization.
-		lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
-		LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
+	// Wait voltage dividers stabilization.
+	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
+	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 #endif
-	}
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEN='1'.
 	lptim1_status = LPTIM1_delay_milliseconds(10, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_status_check(ADC_ERROR_BASE_LPTIM);
 	// Perform conversions.
-	status = _ADC1_compute_all_channels(static_flag);
+	status = _ADC1_compute_all_channels();
 	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_tmcu();
 	if (status != ADC_SUCCESS) goto errors;
 errors:
 	// Switch internal voltage reference off.
 	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
-	// Manage external power supply if non-static conversion.
-	if (static_flag == 0) {
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-		// Disable voltage dividers.
-		GPIO_write(&GPIO_MNTR_EN, 0);
+	// Disable voltage dividers.
+	GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
-		// Turn analog front-end off.
-		GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
+	// Turn analog front-end off.
+	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
-#ifdef UHFM
-		// Turn RF front-end off if it was off before.
-		if (rf_on == 0) {
-			GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
-		}
-#endif
-#ifdef GPSM
-		// Turn GPS front-end off if it was off before.
-		if (gps_on == 0) {
-			GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
-		}
-		if (ant_on == 0) {
-			GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
-		}
-#endif
-	}
 	// Disable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
 	return status;

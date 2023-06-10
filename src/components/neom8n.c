@@ -622,12 +622,7 @@ static NEOM8N_status_t _NEOM8N_start(uint32_t timeout_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
-	// Release chip.
 	GPIO_write(&GPIO_GPS_RESET, 1);
-#ifdef GPSM_ACTIVE_ANTENNA
-	// Turn active antenna on.
-	GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
-#endif
 	// Start RTC wake-up timer.
 	RTC_clear_wakeup_timer_flag();
 	rtc_status = RTC_start_wakeup_timer(timeout_seconds);
@@ -650,10 +645,6 @@ errors:
 static void _NEOM8N_stop(void) {
 	// Reset chip.
 	GPIO_write(&GPIO_GPS_RESET, 0);
-#ifdef GPSM_ACTIVE_ANTENNA
-	// Turn active antenna on.
-	GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
-#endif
 	// Stop DMA.
 	DMA1_stop_channel6();
 	// Stop USART.
@@ -676,10 +667,6 @@ void NEOM8N_init(void) {
 	// Init backup and reset pins.
 	GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_GPS_RESET, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-#ifdef GPSM_ACTIVE_ANTENNA
-	// Init active antenna control pin.
-	GPIO_configure(&GPIO_ANT_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-#endif
 	// Init context.
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buf1[idx] = 0;
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buf2[idx] = 0;
@@ -735,17 +722,18 @@ uint8_t NEOM8N_get_backup(void) {
 }
 
 /* GET GPS TIMESTAMP.
- * @param gps_time:	Pointer to time structure that will contain the data.
- * @param timeout_seconds:	Timeout in seconds.
- * @return status:			Function execution status.
+ * @param gps_time:				Pointer to time structure that will contain the data.
+ * @param timeout_seconds:		Timeout in seconds.
+ * @param fix_duration_seconds:	Pointer that will contain effective fix duration.
+ * @return status:				Function execution status.
  */
-NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds) {
+NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
 	// Reset flags.
 	neom8n_ctx.line_end_flag = 0;
 	// Check parameters.
-	if (gps_time == NULL) {
+	if ((gps_time == NULL) || (fix_duration_seconds == NULL)) {
 		status = NEOM8N_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
@@ -753,6 +741,8 @@ NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds) 
 		status = NEOM8N_ERROR_TIMEOUT;
 		goto errors;
 	}
+	// Reset fix duration and start RTC wake-up timer for timeout.
+	(*fix_duration_seconds) = 0;
 	// Select ZDA message to get complete date and time.
 	status = _NEOM8N_select_nmea_messages(NMEA_ZDA_MASK);
 	if (status != NEOM8N_SUCCESS) goto errors;
@@ -765,7 +755,9 @@ NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds) 
 		PWR_enter_sleep_mode();
 		// Toggle yellow LED.
 		LED_toggle(LED_COLOR_YELLOW);
-		// Wake-up: check LF flag to trigger parsing operation.
+		// Wake-up.
+		(*fix_duration_seconds)++; // NMEA frames are output every seconds.
+		// Check LF flag to trigger parsing operation.
 		if (neom8n_ctx.line_end_flag != 0) {
 			// Decode incoming NMEA message.
 			if (neom8n_ctx.fill_buf1 != 0) {
@@ -782,8 +774,10 @@ NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds) 
 		IWDG_reload();
 	}
 errors:
-	if (RTC_get_wakeup_timer_flag() > 0) {
-		status = NEOM8N_ERROR_TIME_TIMEOUT;
+	// Clamp fix duration.
+	if ((RTC_get_wakeup_timer_flag() > 0) || ((*fix_duration_seconds) > timeout_seconds)) {
+		(*fix_duration_seconds) = timeout_seconds;
+		status = NEOM8N_ERROR_POSITION_TIMEOUT;
 	}
 	_NEOM8N_stop();
 	// Turn LED off.

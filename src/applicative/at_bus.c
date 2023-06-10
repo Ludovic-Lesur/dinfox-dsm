@@ -9,36 +9,38 @@
 
 #include "adc.h"
 #include "aes.h"
+
 #include "addon_sigfox_rf_protocol_api.h"
-#include "bpsm.h"
-#include "ddrm.h"
+#include "bpsm_reg.h"
+#include "ddrm_reg.h"
 #include "digital.h"
-#include "dinfox.h"
+#include "dinfox_reg.h"
+#include "dinfox_types.h"
 #include "error.h"
 #include "flash_reg.h"
-#include "gpsm.h"
+#include "gpsm_reg.h"
 #include "i2c.h"
 #include "load.h"
 #include "lpuart.h"
-#include "lvrm.h"
+#include "lvrm_reg.h"
 #include "mapping.h"
 #include "math.h"
 #include "mode.h"
 #include "neom8n.h"
+#include "node.h"
 #include "nvic.h"
 #include "nvm.h"
 #include "parser.h"
 #include "pwr.h"
-#include "rcc_reg.h"
 #include "rf_api.h"
-#include "rrm.h"
+#include "rrm_reg.h"
 #include "rtc.h"
 #include "sht3x.h"
 #include "sigfox_api.h"
-#include "sm.h"
+#include "sm_reg.h"
 #include "string.h"
 #include "types.h"
-#include "uhfm.h"
+#include "uhfm_reg.h"
 #include "version.h"
 
 /*** AT local macros ***/
@@ -60,13 +62,15 @@
 /*** AT callbacks declaration ***/
 
 static void _AT_BUS_print_ok(void);
+#ifdef ATM
 static void _AT_BUS_print_command_list(void);
 static void _AT_BUS_print_sw_version(void);
 static void _AT_BUS_print_error_stack(void);
 static void _AT_BUS_adc_callback(void);
+#endif
 static void _AT_BUS_read_callback(void);
 static void _AT_BUS_write_callback(void);
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 static void _AT_BUS_nvmr_callback(void);
 static void _AT_BUS_nvm_callback(void);
 static void _AT_BUS_get_id_callback(void);
@@ -82,7 +86,7 @@ static void _AT_BUS_cw_callback(void);
 static void _AT_BUS_dl_callback(void);
 static void _AT_BUS_rssi_callback(void);
 #endif /* UHFM */
-#ifdef GPSM
+#if (defined GPSM) && (defined ATM)
 static void _AT_BUS_time_callback(void);
 static void _AT_BUS_gps_callback(void);
 static void _AT_BUS_pulse_callback(void);
@@ -98,17 +102,6 @@ typedef struct {
 	void (*callback)(void);
 } AT_BUS_command_t;
 
-#ifdef GPSM
-typedef union {
-	struct {
-		unsigned time_fix_running : 1;
-		unsigned geoloc_fix_running : 1;
-		unsigned timepulse_running : 1;
-	};
-	uint8_t all;
-} AT_BUS_gps_functions_state_t;
-#endif
-
 typedef struct {
 	// Command.
 	volatile char_t command[AT_BUS_COMMAND_BUFFER_SIZE];
@@ -119,30 +112,25 @@ typedef struct {
 	char_t reply[AT_BUS_REPLY_BUFFER_SIZE];
 	uint32_t reply_size;
 #ifdef UHFM
-	// Sigfox RC.
-	sfx_rc_t sigfox_rc;
-	sfx_u32 sigfox_rc_std_config[SIGFOX_RC_STD_CONFIG_SIZE];
-	uint8_t sigfox_rc_idx;
 	uint8_t sigfox_dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
 	uint8_t sigfox_dl_payload_available;
-#endif
-#ifdef GPSM
-	AT_BUS_gps_functions_state_t gps_functions_state;
 #endif
 } AT_BUS_context_t;
 
 /*** AT local global variables ***/
 
 static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
+#ifdef ATM
 	{PARSER_MODE_COMMAND, "AT", STRING_NULL, "Ping command", _AT_BUS_print_ok},
 	{PARSER_MODE_COMMAND, "AT?", STRING_NULL, "List all available commands", _AT_BUS_print_command_list},
 	{PARSER_MODE_COMMAND, "AT$V?", STRING_NULL, "Get SW version", _AT_BUS_print_sw_version},
 	{PARSER_MODE_COMMAND, "AT$ERROR?", STRING_NULL, "Read error stack", _AT_BUS_print_error_stack},
 	{PARSER_MODE_COMMAND, "AT$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
 	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC measurements", _AT_BUS_adc_callback},
-	{PARSER_MODE_HEADER, "AT$R=", "address[hex]", "Read register", _AT_BUS_read_callback},
-	{PARSER_MODE_HEADER, "AT$W=", "address[hex],value[hex]", "Write register",_AT_BUS_write_callback},
-#ifdef UHFM
+#endif
+	{PARSER_MODE_HEADER, "AT$R=", "reg_addr[hex]", "Read register", _AT_BUS_read_callback},
+	{PARSER_MODE_HEADER, "AT$W=", "reg_addr[hex],reg_value[hex],(reg_mask[hex])", "Write register",_AT_BUS_write_callback},
+#if (defined UHFM) && (defined ATM)
 	{PARSER_MODE_COMMAND, "AT$NVMR", STRING_NULL, "Reset NVM data", _AT_BUS_nvmr_callback},
 	{PARSER_MODE_HEADER,  "AT$NVM=", "address[dec]", "Get NVM data", _AT_BUS_nvm_callback},
 	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox device ID", _AT_BUS_get_id_callback},
@@ -158,7 +146,7 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_BUS_dl_callback},
 	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_BUS_rssi_callback},
 #endif /* UHFM */
-#ifdef GPSM
+#if (defined GPSM) && (defined ATM)
 	{PARSER_MODE_HEADER, "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
 	{PARSER_MODE_HEADER, "AT$GPS=", "timeout[s]", "Get GPS position", _AT_BUS_gps_callback},
 	{PARSER_MODE_HEADER, "AT$PULSE=", "enable[bit],frequency[hz],duty_cycle[percent]", "Start or stop GPS timepulse output", _AT_BUS_pulse_callback},
@@ -189,7 +177,7 @@ static void _AT_BUS_reply_add_string(char_t* tx_string) {
 	}
 }
 
-/* APPEND A VALUE TO THE REPONSE BUFFER.
+/* APPEND A VALUE TO THE REPLY BUFFER.
  * @param tx_value:		Value to add.
  * @param format:       Printing format.
  * @param print_prefix: Print base prefix is non zero.
@@ -204,6 +192,29 @@ static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, ui
 	for (idx=0 ; idx<AT_BUS_STRING_VALUE_BUFFER_SIZE ; idx++) str_value[idx] = STRING_CHAR_NULL;
 	// Convert value to string.
 	string_status = STRING_value_to_string(tx_value, format, print_prefix, str_value);
+	STRING_error_check();
+	// Add string.
+	_AT_BUS_reply_add_string(str_value);
+}
+
+/* APPEND A REGISTER VALUE TO THE REPLY BUFFER.
+ * @param reg_value:	Register value to add.
+ * @return:				None.
+ */
+static void _AT_BUS_reply_add_register(uint32_t reg_value) {
+	// Local variables.
+	STRING_status_t string_status = STRING_SUCCESS;
+	uint8_t reg_value_byte_array[DINFOX_REG_SIZE_BYTES];
+	char_t str_value[AT_BUS_STRING_VALUE_BUFFER_SIZE];
+	uint8_t idx = 0;
+	// Reset string.
+	for (idx=0 ; idx<AT_BUS_STRING_VALUE_BUFFER_SIZE ; idx++) str_value[idx] = STRING_CHAR_NULL;
+	// Convert 32-bits value to byte array.
+	for (idx=0 ; idx<DINFOX_REG_SIZE_BYTES ; idx++) {
+		reg_value_byte_array[idx] = (uint8_t) ((reg_value >> (8 * (DINFOX_REG_SIZE_BYTES - 1 - idx))) & 0xFF);
+	}
+	// Convert byte array to string.
+	string_status = STRING_byte_array_to_hexadecimal_string(reg_value_byte_array, DINFOX_REG_SIZE_BYTES, 0, str_value);
 	STRING_error_check();
 	// Add string.
 	_AT_BUS_reply_add_string(str_value);
@@ -253,6 +264,7 @@ static void _AT_BUS_print_error(ERROR_t error) {
 	_AT_BUS_reply_send();
 }
 
+#ifdef ATM
 /* PRINT ALL SUPPORTED AT COMMANDS.
  * @param:	None.
  * @return:	None.
@@ -274,7 +286,9 @@ static void _AT_BUS_print_command_list(void) {
 	}
 	_AT_BUS_print_ok();
 }
+#endif
 
+#ifdef ATM
 /* PRINT SW VERSION.
  * @param:	None.
  * @return:	None.
@@ -295,7 +309,9 @@ static void _AT_BUS_print_sw_version(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 }
+#endif
 
+#ifdef ATM
 /* PRINT ERROR STACK.
  * @param:	None.
  * @return:	None.
@@ -323,7 +339,9 @@ static void _AT_BUS_print_error_stack(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 }
+#endif
 
+#ifdef ATM
 /* AT$ADC? EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -337,7 +355,7 @@ static void _AT_BUS_adc_callback(void) {
 	uint8_t idx = 0;
 #endif
 	// Trigger internal ADC conversions.
-	adc1_status = ADC1_perform_measurements(0);
+	adc1_status = ADC1_perform_measurements();
 	ADC1_error_check_print();
 	// Read and print data.
 	// MCU voltage.
@@ -446,6 +464,7 @@ static void _AT_BUS_adc_callback(void) {
 errors:
 	return;
 }
+#endif
 
 /* AT$R EXECUTION CALLBACK.
  * @param:	None.
@@ -454,216 +473,17 @@ errors:
 static void _AT_BUS_read_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
-	NVM_status_t nvm_status = NVM_SUCCESS;
-	ADC_status_t adc1_status = ADC_SUCCESS;
-	MATH_status_t math_status = MATH_SUCCESS;
-#ifdef SM
-	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
-	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
-#endif
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-	LOAD_status_t load_status = LOAD_SUCCESS;
-#endif
-	int32_t register_address = 0;
-	uint8_t generic_u8 = 0;
-	int8_t generic_s8 = 0;
-	uint32_t generic_u32 = 0;
+	NODE_status_t node_status = NODE_SUCCESS;
+	int32_t reg_addr = 0;
+	uint32_t reg_value = 0;
 	// Read address parameter.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &register_address);
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_addr);
 	PARSER_error_check_print();
-	// Get data.
-	switch (register_address) {
-	case DINFOX_REGISTER_NODE_ADDRESS:
-		nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &generic_u8);
-		NVM_error_check_print();
-		_AT_BUS_reply_add_value(generic_u8, STRING_FORMAT_HEXADECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_BOARD_ID:
-#ifdef LVRM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_LVRM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef BPSM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_BPSM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef DDRM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_DDRM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef RRM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_RRM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef SM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_SM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef UHFM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_UHFM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-#ifdef GPSM
-		_AT_BUS_reply_add_value(DINFOX_BOARD_ID_GPSM, STRING_FORMAT_HEXADECIMAL, 0);
-#endif
-		break;
-	case DINFOX_REGISTER_HW_VERSION_MAJOR:
-#ifdef HW1_0
-		_AT_BUS_reply_add_value(1, STRING_FORMAT_DECIMAL, 0);
-#endif
-#ifdef HW2_0
-		_AT_BUS_reply_add_value(2, STRING_FORMAT_DECIMAL, 0);
-#endif
-		break;
-	case DINFOX_REGISTER_HW_VERSION_MINOR:
-#if (defined HW1_0) || (defined HW2_0)
-		_AT_BUS_reply_add_value(0, STRING_FORMAT_DECIMAL, 0);
-#endif
-		break;
-	case DINFOX_REGISTER_SW_VERSION_MAJOR:
-		_AT_BUS_reply_add_value(GIT_MAJOR_VERSION, STRING_FORMAT_DECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_SW_VERSION_MINOR:
-		_AT_BUS_reply_add_value(GIT_MINOR_VERSION, STRING_FORMAT_DECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_SW_VERSION_COMMIT_INDEX:
-		_AT_BUS_reply_add_value(GIT_COMMIT_INDEX, STRING_FORMAT_DECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_SW_VERSION_COMMIT_ID:
-		_AT_BUS_reply_add_value(GIT_COMMIT_ID, STRING_FORMAT_HEXADECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_SW_VERSION_DIRTY_FLAG:
-		_AT_BUS_reply_add_value(GIT_DIRTY_FLAG, STRING_FORMAT_BOOLEAN, 0);
-		break;
-	case DINFOX_REGISTER_ERROR_STACK:
-		_AT_BUS_reply_add_value(ERROR_stack_read(), STRING_FORMAT_HEXADECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_RESET_REASON:
-		_AT_BUS_reply_add_value((((RCC -> CSR) >> 24) & 0xFF), STRING_FORMAT_HEXADECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_VMCU_MV:
-#ifdef LVRM
-	case LVRM_REGISTER_VCOM_MV:
-	case LVRM_REGISTER_VOUT_MV:
-	case LVRM_REGISTER_IOUT_UA:
-#endif
-#ifdef BPSM
-	case BPSM_REGISTER_VSRC_MV:
-	case BPSM_REGISTER_VSTR_MV:
-	case BPSM_REGISTER_VBKP_MV:
-#endif
-#ifdef DDRM
-	case DDRM_REGISTER_VIN_MV:
-	case DDRM_REGISTER_VOUT_MV:
-	case DDRM_REGISTER_IOUT_UA:
-#endif
-#ifdef RRM
-	case RRM_REGISTER_VIN_MV:
-	case RRM_REGISTER_VOUT_MV:
-	case RRM_REGISTER_IOUT_UA:
-#endif
-#ifdef SM
-	case SM_REGISTER_AIN0_MV:
-	case SM_REGISTER_AIN1_MV:
-	case SM_REGISTER_AIN2_MV:
-	case SM_REGISTER_AIN3_MV:
-#endif
-#ifdef UHFM
-	case UHFM_REGISTER_VRF_MV:
-#endif
-#ifdef GPSM
-	case GPSM_REGISTER_VGPS_MV:
-	case GPSM_REGISTER_VANT_MV:
-#endif
-#if (defined SM) && !(defined SM_AIN_ENABLE)
-		// AINx are disabled.
-		if (register_address != DINFOX_REGISTER_VMCU_MV) {
-			_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
-			goto errors;
-		}
-#endif
-		// Note: indexing only works if registers addresses are ordered in the same way as ADC data indexes.
-		adc1_status = ADC1_get_data((register_address - DINFOX_REGISTER_VMCU_MV), &generic_u32);
-		ADC1_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
-		break;
-	case DINFOX_REGISTER_TMCU_DEGREES:
-		// Read temperature.
-		adc1_status = ADC1_get_tmcu(&generic_s8);
-		ADC1_error_check_print();
-		// Convert to 1-complement.
-		math_status = MATH_one_complement(generic_s8, 7, &generic_u32);
-		MATH_error_check_print();
-		// Send result.
-		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
-		break;
-#ifdef SM
-	case SM_REGISTER_DIO0:
-	case SM_REGISTER_DIO1:
-	case SM_REGISTER_DIO2:
-	case SM_REGISTER_DIO3:
-#if !(defined SM_DIO_ENABLE)
-		// DIOx are disabled.
-		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
-		goto errors;
-#endif
-		// Note: indexing only works if registers addresses are ordered in the same way as digital data indexes.
-		digital_status = DIGITAL_read((register_address - SM_REGISTER_DIO0), &generic_u8);
-		DIGITAL_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_BOOLEAN, 0);
-		break;
-	case SM_REGISTER_TAMB_DEGREES:
-#if !(defined SM_DIGITAL_SENSORS_ENABLE)
-		// Digital sensors are disabled.
-		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
-		goto errors;
-#endif
-		// Read temperature.
-		sht3x_status = SHT3X_get_temperature(&generic_s8);
-		SHT3X_error_check_print();
-		// Convert to 1-complement.
-		math_status = MATH_one_complement(generic_s8, 7, &generic_u32);
-		MATH_error_check_print();
-		// Send result.
-		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
-		break;
-	case SM_REGISTER_HAMB_PERCENT:
-#if !(defined SM_DIGITAL_SENSORS_ENABLE)
-		// Digital sensors are disabled.
-		_AT_BUS_print_error(ERROR_REGISTER_UNSUPPORTED);
-		goto errors;
-#endif
-		// Read humidity.
-		sht3x_status = SHT3X_get_humidity(&generic_u8);
-		SHT3X_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_DECIMAL, 0);
-		break;
-#endif /* SM */
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-#ifdef LVRM
-	case LVRM_REGISTER_RELAY_STATE:
-#endif
-#ifdef BPSM
-	case BPSM_REGISTER_BACKUP_ENABLE:
-#endif
-#ifdef DDRM
-	case DDRM_REGISTER_DC_DC_STATE:
-#endif
-#ifdef RRM
-	case RRM_REGISTER_REGULATOR_STATE:
-#endif
-		load_status = LOAD_get_output_state(&generic_u8);
-		LOAD_error_check_print();
-		_AT_BUS_reply_add_value((int32_t) generic_u8, STRING_FORMAT_BOOLEAN, 0);
-		break;
-#endif
-#ifdef BPSM
-	case BPSM_REGISTER_CHARGE_ENABLE:
-		_AT_BUS_reply_add_value(LOAD_get_charge_state(), STRING_FORMAT_BOOLEAN, 0);
-		break;
-	case BPSM_REGISTER_CHARGE_STATUS:
-		_AT_BUS_reply_add_value(LOAD_get_charge_status(), STRING_FORMAT_BOOLEAN, 0);
-		break;
-#endif
-	default:
-		_AT_BUS_print_error(ERROR_REGISTER_ADDRESS);
-		goto errors;
-	}
-	// Send response.
+	// Read register.
+	node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, &reg_value);
+	NODE_error_check_print();
+	// Send reply.
+	_AT_BUS_reply_add_register(reg_value);
 	_AT_BUS_reply_send();
 errors:
 	return;
@@ -676,82 +496,37 @@ errors:
 static void _AT_BUS_write_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
-	int32_t register_address = 0;
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-	int32_t register_value = 0;
-	LOAD_status_t load_status = LOAD_SUCCESS;
-#endif
+	NODE_status_t node_status = NODE_SUCCESS;
+	int32_t reg_addr = 0;
+	int32_t reg_value = 0;
+	int32_t reg_mask = 0;
 	// Read address parameter.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &register_address);
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &reg_addr);
 	PARSER_error_check_print();
-	// Check address.
-#ifdef LVRM
-	if (register_address >= LVRM_REGISTER_LAST) {
-#endif
-#ifdef BPSM
-	if (register_address >= BPSM_REGISTER_LAST) {
-#endif
-#ifdef DDRM
-	if (register_address >= DDRM_REGISTER_LAST) {
-#endif
-#ifdef RRM
-	if (register_address >= RRM_REGISTER_LAST) {
-#endif
-#ifdef SM
-	if (register_address >= SM_REGISTER_LAST) {
-#endif
-#ifdef UHFM
-	if (register_address >= UHFM_REGISTER_LAST) {
-#endif
-#ifdef GPSM
-	if (register_address >= GPSM_REGISTER_LAST) {
-#endif
-		_AT_BUS_print_error(ERROR_REGISTER_ADDRESS);
-		goto errors;
-	}
-	// Write data.
-	switch (register_address) {
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-#ifdef LVRM
-	case LVRM_REGISTER_RELAY_STATE:
-#endif
-#ifdef BPSM
-	case BPSM_REGISTER_BACKUP_ENABLE:
-#endif
-#ifdef DDRM
-	case DDRM_REGISTER_DC_DC_STATE:
-#endif
-#ifdef RRM
-	case RRM_REGISTER_REGULATOR_STATE:
-#endif
-		// Read new output state.
-		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
+	// First try with 3 parameters.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &reg_value);
+	if (parser_status == PARSER_SUCCESS) {
+		// Try parsing register mask parameter.
+		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_mask);
 		PARSER_error_check_print();
-		// Set output state.
-		load_status = LOAD_set_output_state(register_value);
-		LOAD_error_check_print();
-		break;
-#endif /* LVRM or BPSM or DDRM or RRM */
-#ifdef BPSM
-	case BPSM_REGISTER_CHARGE_ENABLE:
-		// Read new output state.
-		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &register_value);
-		PARSER_error_check_print();
-		// Set charge state.
-		LOAD_set_charge_state(register_value);
-		break;
-#endif
-	default:
-		_AT_BUS_print_error(ERROR_REGISTER_READ_ONLY);
-		goto errors;
 	}
+	else {
+		// Try with only 2 parameters.
+		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_value);
+		PARSER_error_check_print();
+		// Perform full write operation since mask is not given.
+		reg_mask = DINFOX_REG_MASK_ALL;
+	}
+	// Write register.
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, reg_mask, reg_value);
+	NODE_error_check_print();
 	// Operation completed.
 	_AT_BUS_print_ok();
 errors:
 	return;
 }
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$NVMR EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -768,7 +543,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$NVM EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -794,7 +569,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$ID? EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -806,7 +581,7 @@ static void _AT_BUS_get_id_callback(void) {
 	uint8_t id_byte = 0;
 	// Retrieve device ID in NVM.
 	for (idx=0 ; idx<ID_LENGTH ; idx++) {
-		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + ID_LENGTH - idx - 1), &id_byte);
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + idx), &id_byte);
 		NVM_error_check_print();
 		_AT_BUS_reply_add_value(id_byte, STRING_FORMAT_HEXADECIMAL, (idx==0 ? 1 : 0));
 	}
@@ -817,7 +592,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$ID EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -834,7 +609,7 @@ static void _AT_BUS_set_id_callback(void) {
 	PARSER_error_check_print();
 	// Write device ID in NVM.
 	for (idx=0 ; idx<ID_LENGTH ; idx++) {
-		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + ID_LENGTH - idx - 1), device_id[idx]);
+		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + idx), device_id[idx]);
 		NVM_error_check_print();
 	}
 	_AT_BUS_print_ok();
@@ -843,7 +618,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$KEY? EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -866,7 +641,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$KEY EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -892,7 +667,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$SO EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -900,8 +675,9 @@ errors:
 static void _AT_BUS_so_callback(void) {
 	// Local variables.
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	sfx_rc_t sigfox_rc = RC1;
 	// Send Sigfox OOB frame.
-	sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
+	sigfox_api_status = SIGFOX_API_open(&sigfox_rc);
 	SIGFOX_API_error_check_print();
 	sigfox_api_status = SIGFOX_API_send_outofband(SFX_OOB_SERVICE);
 	SIGFOX_API_error_check_print();
@@ -913,7 +689,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$SB EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -922,6 +698,7 @@ static void _AT_BUS_sb_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	sfx_rc_t sigfox_rc = RC1;
 	int32_t data = 0;
 	int32_t bidir_flag = 0;
 	// First try with 2 parameters.
@@ -935,7 +712,7 @@ static void _AT_BUS_sb_callback(void) {
 			at_bus_ctx.sigfox_dl_payload_available = 0;
 		}
 		// Send Sigfox bit with specified downlink request.
-		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
+		sigfox_api_status = SIGFOX_API_open(&sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, at_bus_ctx.sigfox_dl_payload, 2, (sfx_bool) bidir_flag);
 		// Catch downlink timeout error.
@@ -956,7 +733,7 @@ static void _AT_BUS_sb_callback(void) {
 		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &data);
 		PARSER_error_check_print();
 		// Send Sigfox bit with no downlink request (by default).
-		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
+		sigfox_api_status = SIGFOX_API_open(&sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_bit((sfx_bool) data, at_bus_ctx.sigfox_dl_payload, 2, 0);
 		SIGFOX_API_error_check_print();
@@ -969,7 +746,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$SF EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -978,6 +755,7 @@ static void _AT_BUS_sf_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	sfx_rc_t sigfox_rc = RC1;
 	sfx_u8 data[SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES];
 	uint8_t extracted_length = 0;
 	int32_t bidir_flag = 0;
@@ -992,7 +770,7 @@ static void _AT_BUS_sf_callback(void) {
 			at_bus_ctx.sigfox_dl_payload_available = 0;
 		}
 		// Send Sigfox frame with specified downlink request.
-		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
+		sigfox_api_status = SIGFOX_API_open(&sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, at_bus_ctx.sigfox_dl_payload, 2, bidir_flag);
 		// Catch downlink timeout error.
@@ -1013,7 +791,7 @@ static void _AT_BUS_sf_callback(void) {
 		parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, 12, 0, data, &extracted_length);
 		PARSER_error_check_print();
 		// Send Sigfox frame with no downlink request (by default).
-		sigfox_api_status = SIGFOX_API_open(&at_bus_ctx.sigfox_rc);
+		sigfox_api_status = SIGFOX_API_open(&sigfox_rc);
 		SIGFOX_API_error_check_print();
 		sigfox_api_status = SIGFOX_API_send_frame(data, extracted_length, at_bus_ctx.sigfox_dl_payload, 2, 0);
 		SIGFOX_API_error_check_print();
@@ -1026,7 +804,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$DL? EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1051,7 +829,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* PRINT SIGFOX DOWNLINK FRAME ON AT INTERFACE.
  * @param dl_payload:	Downlink data to print.
  * @return:				None.
@@ -1071,7 +849,7 @@ static void _AT_BUS_print_dl_phy_content(sfx_u8* dl_phy_content, int32_t rssi_db
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$TM EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1097,7 +875,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$CW EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1148,7 +926,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$DL EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1189,7 +967,7 @@ errors:
 }
 #endif
 
-#ifdef UHFM
+#if (defined UHFM) && (defined ATM)
 /* AT$RSSI EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1246,7 +1024,7 @@ errors:
 }
 #endif
 
-#ifdef GPSM
+#if (defined GPSM) && (defined ATM)
 /* AT$TIME EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1257,6 +1035,7 @@ static void _AT_BUS_time_callback(void) {
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	USART_status_t usart2_status = LPUART_SUCCESS;
 	int32_t timeout_seconds = 0;
+	uint32_t fix_duration_seconds = 0;
 	RTC_time_t gps_time;
 	// Read timeout parameter.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &timeout_seconds);
@@ -1266,10 +1045,9 @@ static void _AT_BUS_time_callback(void) {
 	USART2_error_check_print();
 	NEOM8N_set_backup(1);
 	// Start time aquisition.
-	at_bus_ctx.gps_functions_state.time_fix_running = 1;
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
-	neom8n_status = NEOM8N_get_time(&gps_time, (uint32_t) timeout_seconds);
+	neom8n_status = NEOM8N_get_time(&gps_time, (uint32_t) timeout_seconds, &fix_duration_seconds);
 	NEOM8N_error_check_print();
 	// Year.
 	_AT_BUS_reply_add_value((gps_time.year), STRING_FORMAT_DECIMAL, 0);
@@ -1306,12 +1084,13 @@ static void _AT_BUS_time_callback(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 errors:
-	at_bus_ctx.gps_functions_state.time_fix_running = 0;
+	// Power off GPS.
+	USART2_power_off();
 	return;
 }
 #endif
 
-#ifdef GPSM
+#if (defined GPSM) && (defined ATM)
 /* AT$GPS EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1332,7 +1111,6 @@ static void _AT_BUS_gps_callback(void) {
 	USART2_error_check_print();
 	NEOM8N_set_backup(1);
 	// Start GPS fix.
-	at_bus_ctx.gps_functions_state.geoloc_fix_running = 1;
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
 	neom8n_status = NEOM8N_get_position(&gps_position, (uint32_t) timeout_seconds, &fix_duration_seconds);
@@ -1365,12 +1143,13 @@ static void _AT_BUS_gps_callback(void) {
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 errors:
-	at_bus_ctx.gps_functions_state.geoloc_fix_running = 0;
+	// Power off GPS.
+	USART2_power_off();
 	return;
 }
 #endif
 
-#ifdef GPSM
+#if (defined GPSM) && (defined ATM)
 /* AT$PULSE EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1402,11 +1181,11 @@ static void _AT_BUS_pulse_callback(void) {
 	// Configure timepulse.
 	neom8n_status = NEOM8N_configure_timepulse(&timepulse_config);
 	NEOM8N_error_check_print();
-	at_bus_ctx.gps_functions_state.timepulse_running = active;
 	_AT_BUS_print_ok();
 	return;
 errors:
-	at_bus_ctx.gps_functions_state.timepulse_running = 0;
+	// Power off GPS.
+	USART2_power_off();
 	return;
 }
 #endif
@@ -1468,14 +1247,6 @@ void AT_BUS_init(NODE_address_t self_address) {
 	LBUS_status_t lbus_status = LBUS_SUCCESS;
 	// Init context.
 	_AT_BUS_reset_parser();
-#ifdef UHFM
-	at_bus_ctx.sigfox_rc = (sfx_rc_t) RC1;
-	at_bus_ctx.sigfox_rc_idx = SFX_RC1;
-	at_bus_ctx.sigfox_dl_payload_available = 0;
-#endif
-#ifdef GPSM
-	at_bus_ctx.gps_functions_state.all = 0;
-#endif
 	// Init LBUS layer.
 	lbus_status = LBUS_init(self_address);
 	LBUS_error_check();
@@ -1495,12 +1266,6 @@ void AT_BUS_task(void) {
 		_AT_BUS_decode();
 		LPUART1_enable_rx();
 	}
-#ifdef GPSM
-	// Manage GPS power supply.
-	if (at_bus_ctx.gps_functions_state.all == 0) {
-		USART2_power_off();
-	}
-#endif
 }
 
 /* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).

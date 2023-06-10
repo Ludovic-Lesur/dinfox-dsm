@@ -64,7 +64,7 @@ typedef enum {
 /*** ADC functions ***/
 
 ADC_status_t ADC1_init(void);
-ADC_status_t ADC1_perform_measurements(uint8_t static_flag);
+ADC_status_t ADC1_perform_measurements(void);
 ADC_status_t ADC1_get_data(ADC_data_index_t data_idx, uint32_t* data);
 ADC_status_t ADC1_get_tmcu(int8_t* tmcu_degrees);
 

@@ -64,6 +64,10 @@ void USART2_init(void) {
 	RCC -> APB1ENR |= (0b1 << 17); // USART2EN='1'.
 	// Configure power enable pin.
 	GPIO_configure(&GPIO_GPS_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#ifdef GPSM_ACTIVE_ANTENNA
+	// Init active antenna control pin.
+	GPIO_configure(&GPIO_ANT_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 	USART2_power_off();
 	// Configure peripheral.
 	USART2 -> CR3 |= (0b1 << 12); // No overrun detection (OVRDIS='0').
@@ -95,8 +99,14 @@ USART_status_t USART2_power_on(void) {
 	GPIO_configure(&GPIO_USART2_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Turn NEOM8N on.
 	GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
-	lptim1_status = LPTIM1_delay_milliseconds(1000, LPTIM_DELAY_MODE_STOP);
+	lptim1_status = LPTIM1_delay_milliseconds(500, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_status_check(USART_ERROR_BASE_LPTIM);
+#ifdef GPSM_ACTIVE_ANTENNA
+	// Turn active antenna on.
+	GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
+	lptim1_status = LPTIM1_delay_milliseconds(500, LPTIM_DELAY_MODE_STOP);
+	LPTIM1_status_check(USART_ERROR_BASE_LPTIM);
+#endif
 errors:
 	return status;
 }
@@ -106,6 +116,10 @@ errors:
  * @return:	None.
  */
 void USART2_power_off(void) {
+#ifdef GPSM_ACTIVE_ANTENNA
+	// Turn active antenna on.
+	GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
+#endif
 	// Turn NEOM8N off.
 	GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
 	// Disable USART alternate function.
