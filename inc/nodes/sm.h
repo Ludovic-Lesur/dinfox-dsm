@@ -18,11 +18,12 @@
 
 /*** SM macros ***/
 
-#define NODE_BOARD_ID	DINFOX_BOARD_ID_SM
+#define NODE_BOARD_ID		DINFOX_BOARD_ID_SM
+#define NODE_REG_ADDR_LAST	SM_REG_ADDR_LAST
 
 /*** SM global variables ***/
 
-static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {
+static const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY,

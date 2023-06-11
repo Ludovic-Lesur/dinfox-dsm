@@ -26,11 +26,6 @@ typedef enum {
 } NODE_reply_type_t;
 
 typedef struct {
-	NODE_address_t address;
-	uint8_t board_id;
-} NODE_t;
-
-typedef struct {
 	NODE_reply_type_t type;
 	uint32_t timeout_ms;
 } NODE_reply_parameters_t;

@@ -19,7 +19,7 @@ typedef enum {
 	RRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	RRM_REG_ADDR_ANALOG_DATA_1,
 	RRM_REG_ADDR_ANALOG_DATA_2,
-	NODE_REG_ADDR_LAST,
+	RRM_REG_ADDR_LAST,
 } RRM_register_address_t;
 
 /*** RRM registers mask ***/

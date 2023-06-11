@@ -37,7 +37,7 @@ typedef enum {
 	UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_3,
 	UHFM_REG_ADDR_RADIO_TEST_0,
 	UHFM_REG_ADDR_RADIO_TEST_1,
-	NODE_REG_ADDR_LAST,
+	UHFM_REG_ADDR_LAST,
 } UHFM_register_address_t;
 
 /*** UHFM registers mask ***/

@@ -20,7 +20,7 @@ typedef enum {
 	SM_REG_ADDR_ANALOG_DATA_2,
 	SM_REG_ADDR_ANALOG_DATA_3,
 	SM_REG_ADDR_DIGITAL_DATA,
-	NODE_REG_ADDR_LAST,
+	SM_REG_ADDR_LAST,
 } SM_register_address_t;
 #endif
 

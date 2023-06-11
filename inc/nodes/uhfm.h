@@ -18,7 +18,8 @@
 
 /*** UHFM macros ***/
 
-#define NODE_BOARD_ID	DINFOX_BOARD_ID_UHFM
+#define NODE_BOARD_ID		DINFOX_BOARD_ID_UHFM
+#define NODE_REG_ADDR_LAST	UHFM_REG_ADDR_LAST
 
 /*** UHFM structures ***/
 
@@ -37,7 +38,7 @@ typedef union {
 
 /*** UHFM global variables ***/
 
-static const DINFOX_register_access_t NODE_REG_ACCESS[NODE_REG_ADDR_LAST] = {
+static const DINFOX_register_access_t NODE_REG_ACCESS[UHFM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_ONLY,
