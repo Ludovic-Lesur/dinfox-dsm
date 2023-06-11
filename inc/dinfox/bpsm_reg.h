@@ -11,8 +11,6 @@
 #include "common_reg.h"
 #include "types.h"
 
-#ifdef BPSM
-
 /*** BPSM registers address ***/
 
 typedef enum {
@@ -21,6 +19,10 @@ typedef enum {
 	BPSM_REG_ADDR_ANALOG_DATA_2,
 	BPSM_REG_ADDR_LAST,
 } BPSM_register_address_t;
+
+/*** BPSM number of specific registers ***/
+
+#define BPSM_NUMBER_OF_SPECIFIC_REG				(BPSM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
 
 /*** BPSM registers mask ***/
 
@@ -32,8 +34,6 @@ typedef enum {
 #define BPSM_REG_STATUS_CONTROL_1_MASK_BKEN		0x00000001
 #define BPSM_REG_STATUS_CONTROL_1_MASK_CHEN		0x00000002
 #define BPSM_REG_STATUS_CONTROL_1_MASK_CHST		0x00000004
-
-#endif /* BPSM */
 
 #endif /* __BPSM_REG_H__ */
 

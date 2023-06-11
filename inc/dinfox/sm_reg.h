@@ -11,8 +11,6 @@
 #include "common_reg.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** SM registers mapping ***/
 
 typedef enum {
@@ -39,5 +37,3 @@ typedef enum {
 #define SM_REG_DIGITAL_DATA_MASK_DIO1		0x00000002
 #define SM_REG_DIGITAL_DATA_MASK_DIO2		0x00000004
 #define SM_REG_DIGITAL_DATA_MASK_DIO3		0x00000008
-
-#endif /* __SM_REG_H__ */

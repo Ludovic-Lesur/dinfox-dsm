@@ -11,8 +11,6 @@
 #include "common_reg.h"
 #include "types.h"
 
-#ifdef LVRM
-
 /*** LVRM registers address ***/
 
 typedef enum {
@@ -30,7 +28,5 @@ typedef enum {
 #define LVRM_REG_ANALOG_DATA_2_MASK_IOUT	0x0000FFFF
 
 #define LVRM_REG_STATUS_CONTROL_1_MASK_RLST	0x00000001
-
-#endif /* LVRM */
 
 #endif /* __LVRM_REG_H__ */

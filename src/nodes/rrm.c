@@ -28,6 +28,26 @@ typedef union {
 
 static RRM_flags_t rrm_flags;
 
+/*** RRM local functions ***/
+
+/* RESET RRM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _RRM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, RRM_REG_ANALOG_DATA_1_MASK_VIN, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, RRM_REG_ANALOG_DATA_1_MASK_VOUT, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /*** RRM functions ***/
 
 /* INIT RRM REGISTERS.
@@ -46,6 +66,9 @@ NODE_status_t RRM_init_registers(void) {
 	rrm_flags.ren = (dc_dc_state == 0) ? 0 : 1;
 	// Status and control register 1.
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_STATUS_CONTROL_1, RRM_REG_STATUS_CONTROL_1_MASK_REN, (uint32_t) dc_dc_state);
+	if (status != NODE_SUCCESS) goto errors;
+	// Load default values.
+	status = _RRM_reset_analog_data();
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	return status;
@@ -118,6 +141,9 @@ NODE_status_t RRM_mtrg_callback(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	// Reset result.
+	status = _RRM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_status_check(NODE_ERROR_BASE_ADC);

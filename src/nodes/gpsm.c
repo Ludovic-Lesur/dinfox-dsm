@@ -45,6 +45,22 @@ static GPSM_flags_t gpsm_flags;
 
 /*** GPSM local functions ***/
 
+/* RESET RRM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _GPSM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /* CONTROL GPS POWER SUPPLY.
  * @param state:	0 to turn GPS on, 1 to turn GPS on.
  * @return status:	Function execution status.
@@ -252,6 +268,8 @@ NODE_status_t GPSM_init_registers(void) {
 	// Init flags.
 	gpsm_flags.all = 0;
 	// Load default values.
+	status = _GPSM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEOUT_DEFAULT_VALUE);
 	if (status != NODE_SUCCESS) goto errors;
 	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_0_DEFAULT_VALUE);
@@ -408,6 +426,9 @@ NODE_status_t GPSM_mtrg_callback(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	// Reset results.
+	status = _GPSM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;

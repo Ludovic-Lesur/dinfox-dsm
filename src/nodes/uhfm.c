@@ -54,6 +54,22 @@ static UHFM_flags_t uhfm_flags;
 
 /*** UHFM local functions ***/
 
+/* RESET UHFM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _UHFM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /* CHECK RADIO STATE.
  * @param expected_state:	Expected radio state.
  * @return status:			Function execution status.
@@ -415,6 +431,8 @@ NODE_status_t UHFM_init_registers(void) {
 	status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, AES_BLOCK_SIZE);
 	if (status != NODE_SUCCESS) goto errors;
 	// Load default values.
+	status = _UHFM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_DEFAULT_VALUE);
 	if (status != NODE_SUCCESS) goto errors;
 	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_1, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_1_DEFAULT_VALUE);
@@ -544,6 +562,9 @@ NODE_status_t UHFM_mtrg_callback(void) {
 	uint32_t vrf_mv = 0;
 	uint32_t radio_test_0 = 0;
 	uint32_t radio_test_1 = 0;
+	// Reset results.
+	status = _UHFM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;

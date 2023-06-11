@@ -11,8 +11,6 @@
 #include "common_reg.h"
 #include "types.h"
 
-#ifdef DDRM
-
 /*** DDRM registers address ***/
 
 typedef enum {
@@ -30,7 +28,5 @@ typedef enum {
 #define DDRM_REG_ANALOG_DATA_2_MASK_IOUT	0x0000FFFF
 
 #define DDRM_REG_STATUS_CONTROL_1_MASK_DDEN	0x00000001
-
-#endif /* DDRM */
 
 #endif /* __DDRM_REG_H__ */

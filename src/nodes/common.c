@@ -27,16 +27,35 @@
 
 /*** COMMON local functions ***/
 
+/* RESET COMMON ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _COMMON_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, COMMON_REG_ANALOG_DATA_0_MASK_VMCU, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, COMMON_REG_ANALOG_DATA_0_MASK_TMCU, DINFOX_TEMPERATURE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /* MEASURE TRIGGER CALLBACK.
  * @param:			None.
  * @return status:	Function execution status.
  */
-NODE_status_t _DINFOX_mtrg_callback(void) {
+NODE_status_t _COMMON_mtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t vmcu_mv = 0;
 	int8_t tmcu_degrees = 0;
+	// Reset results.
+	status = _COMMON_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 #ifdef LVRM
 	status = LVRM_mtrg_callback();
 	if (status != NODE_SUCCESS) goto errors;
@@ -122,6 +141,9 @@ NODE_status_t COMMON_init_registers(void) {
 	// Reset flags registers.
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, COMMON_REG_RESET_FLAGS_MASK_ALL, ((uint8_t) (((RCC -> CSR) >> 24) & 0xFF)));
 	if (status != NODE_SUCCESS) goto errors;
+	// Load default values.
+	status = _COMMON_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 errors:
 	return status;
 }
@@ -175,7 +197,7 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr) {
 		// Check bit.
 		if (generic_u32 != 0) {
 			// Perform measurements.
-			status = _DINFOX_mtrg_callback();
+			status = _COMMON_mtrg_callback();
 			// Clear flag.
 			NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG, 0);
 			// Check status.

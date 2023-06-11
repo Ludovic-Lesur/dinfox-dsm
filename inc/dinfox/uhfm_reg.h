@@ -11,8 +11,6 @@
 #include "common_reg.h"
 #include "types.h"
 
-#ifdef UHFM
-
 /*** UHFM registers address ***/
 
 typedef enum {
@@ -116,7 +114,5 @@ typedef enum {
 
 #define UHFM_REG_RADIO_TEST_1_MASK_TX_POWER						0x000000FF
 #define UHFM_REG_RADIO_TEST_1_MASK_RSSI							0x0000FF00
-
-#endif /* UHFM */
 
 #endif /* __UHFM_REG_H__ */

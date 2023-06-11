@@ -12,17 +12,17 @@
 
 /*** DINFOX TYPES local macros ***/
 
-#define DINFOX_TYPES_SECONDS_PER_MINUTE		60
-#define DINFOX_TYPES_MINUTES_PER_HOUR		60
-#define DINFOX_TYPES_HOURS_PER_DAY			24
+#define DINFOX_SECONDS_PER_MINUTE	60
+#define DINFOX_MINUTES_PER_HOUR		60
+#define DINFOX_HOURS_PER_DAY		24
 
-#define DINFOX_TYPES_MV_PER_DV				100
+#define DINFOX_MV_PER_DV			100
 
-#define DINFOX_TYPES_UA_PER_DMA				100
-#define DINFOX_TYPES_DMA_PER_MA				10
-#define DINFOX_TYPES_MA_PER_DA				100
+#define DINFOX_UA_PER_DMA			100
+#define DINFOX_DMA_PER_MA			10
+#define DINFOX_MA_PER_DA			100
 
-#define DINFOX_TYPES_RF_POWER_OFFSET		174
+#define DINFOX_RF_POWER_OFFSET		174
 
 /*** DINFOX TYPES functions ***/
 
@@ -71,17 +71,17 @@ uint8_t DINFOX_convert_seconds(uint32_t time_seconds) {
 		dinfox_time.unit = DINFOX_TIME_UNIT_SECOND;
 	}
 	else {
-		value /= DINFOX_TYPES_SECONDS_PER_MINUTE;
+		value /= DINFOX_SECONDS_PER_MINUTE;
 		if (value < (0b1 << DINFOX_TIME_VALUE_SIZE_BITS)) {
 			dinfox_time.unit = DINFOX_TIME_UNIT_MINUTE;
 		}
 		else {
-			value /= DINFOX_TYPES_MINUTES_PER_HOUR;
+			value /= DINFOX_MINUTES_PER_HOUR;
 			if (value < (0b1 << DINFOX_TIME_VALUE_SIZE_BITS)) {
 				dinfox_time.unit = DINFOX_TIME_UNIT_HOUR;
 			}
 			else {
-				value /= DINFOX_TYPES_HOURS_PER_DAY;
+				value /= DINFOX_HOURS_PER_DAY;
 				dinfox_time.unit = DINFOX_TIME_UNIT_DAY;
 			}
 		}
@@ -109,13 +109,13 @@ uint32_t DINFOX_get_seconds(uint8_t dinfox_time) {
 		time_seconds = (uint32_t) value;
 		break;
 	case DINFOX_TIME_UNIT_MINUTE:
-		time_seconds = (uint32_t) (DINFOX_TYPES_SECONDS_PER_MINUTE * value);
+		time_seconds = (uint32_t) (DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	case DINFOX_TIME_UNIT_HOUR:
-		time_seconds = (uint32_t) (DINFOX_TYPES_MINUTES_PER_HOUR * DINFOX_TYPES_SECONDS_PER_MINUTE * value);
+		time_seconds = (uint32_t) (DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	default:
-		time_seconds = (uint32_t) (DINFOX_TYPES_HOURS_PER_DAY * DINFOX_TYPES_MINUTES_PER_HOUR * DINFOX_TYPES_SECONDS_PER_MINUTE * value);
+		time_seconds = (uint32_t) (DINFOX_HOURS_PER_DAY * DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	}
 	return time_seconds;
@@ -183,7 +183,7 @@ uint32_t DINFOX_get_mv(uint16_t dinfox_voltage) {
 	unit = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> unit;
 	value = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> value;
 	// Compute mV.
-	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? ((uint32_t) value) : ((uint32_t) (value / DINFOX_TYPES_MV_PER_DV));
+	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? ((uint32_t) value) : ((uint32_t) (value / DINFOX_MV_PER_DV));
 	return voltage_mv;
 }
 
@@ -200,17 +200,17 @@ uint16_t DINFOX_convert_ua(uint32_t current_ua) {
 		dinfox_current.unit = DINFOX_CURRENT_UNIT_UA;
 	}
 	else {
-		value /= DINFOX_TYPES_UA_PER_DMA;
+		value /= DINFOX_UA_PER_DMA;
 		if (value < (0b1 << DINFOX_CURRENT_VALUE_SIZE_BITS)) {
 			dinfox_current.unit = DINFOX_CURRENT_UNIT_DMA;
 		}
 		else {
-			value /= DINFOX_TYPES_DMA_PER_MA;
+			value /= DINFOX_DMA_PER_MA;
 			if (value < (0b1 << DINFOX_CURRENT_VALUE_SIZE_BITS)) {
 				dinfox_current.unit = DINFOX_CURRENT_UNIT_MA;
 			}
 			else {
-				value /= DINFOX_TYPES_MA_PER_DA;
+				value /= DINFOX_MA_PER_DA;
 				dinfox_current.unit = DINFOX_CURRENT_UNIT_DA;
 			}
 		}
@@ -238,13 +238,13 @@ uint32_t DINFOX_get_ua(uint16_t dinfox_current) {
 		current_ua = (uint32_t) value;
 		break;
 	case DINFOX_CURRENT_UNIT_DMA:
-		current_ua = (uint32_t) (DINFOX_TYPES_UA_PER_DMA * value);
+		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * value);
 		break;
 	case DINFOX_CURRENT_UNIT_MA:
-		current_ua = (uint32_t) (DINFOX_TYPES_UA_PER_DMA * DINFOX_TYPES_DMA_PER_MA * value);
+		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * value);
 		break;
 	default:
-		current_ua = (uint32_t) (DINFOX_TYPES_UA_PER_DMA * DINFOX_TYPES_DMA_PER_MA * DINFOX_TYPES_MA_PER_DA * value);
+		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * DINFOX_MA_PER_DA * value);
 		break;
 	}
 	return current_ua;
@@ -255,7 +255,7 @@ uint32_t DINFOX_get_ua(uint16_t dinfox_current) {
  * @return dinfox_rf_power:	DINFox RF power representation.
  */
 uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
-	return ((uint8_t) (rf_power_dbm + DINFOX_TYPES_RF_POWER_OFFSET));
+	return ((uint8_t) (rf_power_dbm + DINFOX_RF_POWER_OFFSET));
 }
 
 /* CONVERT DINFOX RF POWER REPRESENTATION TO DBM.
@@ -263,5 +263,5 @@ uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
  * @return rf_power_dbm:	RF power in dBm.
  */
 int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power) {
-	return ((uint16_t) (dinfox_rf_power - DINFOX_TYPES_RF_POWER_OFFSET));
+	return ((uint16_t) (dinfox_rf_power - DINFOX_RF_POWER_OFFSET));
 }

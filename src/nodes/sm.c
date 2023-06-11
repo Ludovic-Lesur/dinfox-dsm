@@ -18,6 +18,32 @@
 
 #ifdef SM
 
+/*** SM local functions ***/
+
+/* RESET SM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _SM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_TAMB, DINFOX_TEMPERATURE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_HAMB, DINFOX_HUMIDITY_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /*** SM functions ***/
 
 /* INIT SM REGISTERS.
@@ -27,7 +53,10 @@
 NODE_status_t SM_init_registers(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	// Nothing to do on SM registers.
+	// Load default values.
+	status = _SM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
+errors:
 	return status;
 }
 
@@ -74,6 +103,9 @@ NODE_status_t SM_mtrg_callback(void) {
 	int8_t tamb_degrees = 0;
 	uint8_t hamb_percent = 0;
 #endif
+	// Reset results.
+	status = _SM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 #ifdef SM_AIN_ENABLE
 	// Perform analog measurements.
 	adc1_status = ADC1_perform_measurements();

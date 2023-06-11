@@ -10,7 +10,7 @@
 
 #include "types.h"
 
-/*** Common registers address ***/
+/*** COMMON registers address ***/
 
 typedef enum {
 	COMMON_REG_ADDR_NODE_ID = 0,
@@ -24,7 +24,7 @@ typedef enum {
 	COMMON_REG_ADDR_LAST
 } COMMON_register_address_t;
 
-/*** Common registers mask ***/
+/*** COMMON registers mask ***/
 
 #define COMMON_REG_NODE_ID_MASK_NODE_ADDR			0x0000007F
 #define COMMON_REG_NODE_ID_MASK_BOARD_ID			0x0000FF00

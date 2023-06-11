@@ -29,6 +29,26 @@ typedef union {
 
 static BPSM_flags_t bpsm_flags;
 
+/*** BPSM local functions ***/
+
+/* RESET BPSM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _BPSM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
 /*** BPSM functions ***/
 
 /* INIT BPSM REGISTERS.
@@ -53,6 +73,9 @@ NODE_status_t BPSM_init_registers(void) {
 	bpsm_flags.bken = (state == 0) ? 0 : 1;
 	// Status and control register 1.
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) state);
+	if (status != NODE_SUCCESS) goto errors;
+	// Load default values.
+	status = _BPSM_reset_analog_data();
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	return status;
@@ -146,6 +169,9 @@ NODE_status_t BPSM_mtrg_callback(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	// Reset results.
+	status = _BPSM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_status_check(NODE_ERROR_BASE_ADC);

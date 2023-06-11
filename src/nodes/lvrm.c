@@ -28,6 +28,28 @@ typedef union {
 
 static LVRM_flags_t lvrm_flags;
 
+/*** LVRM local functions ***/
+
+/* RESET RRM ANALOG DATA.
+ * @param:			None.
+ * @return status:	Function execution status.
+ */
+static NODE_status_t _LVRM_reset_analog_data(void) {
+	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
+	// Reset fields to error value.
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, DINFOX_VOLTAGE_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+	return status;
+}
+
+/*** LVRM functions ***/
+
 /* INIT LVRM REGISTERS.
  * @param:			None.
  * @return status:	Function execution status.
@@ -44,6 +66,9 @@ NODE_status_t LVRM_init_registers(void) {
 	lvrm_flags.rlst = (relay_state == 0) ? 0 : 1;
 	// Status and control register 1.
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
+	if (status != NODE_SUCCESS) goto errors;
+	// Load defaults values.
+	status = _LVRM_reset_analog_data();
 	if (status != NODE_SUCCESS) goto errors;
 errors:
 	return status;
@@ -116,6 +141,9 @@ NODE_status_t LVRM_mtrg_callback(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	// Reset results.
+	status = _LVRM_reset_analog_data();
+	if (status != NODE_SUCCESS) goto errors;
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_status_check(NODE_ERROR_BASE_ADC);

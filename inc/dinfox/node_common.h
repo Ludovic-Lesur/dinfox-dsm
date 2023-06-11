@@ -44,7 +44,6 @@ typedef struct {
 typedef struct {
 	NODE_address_t node_address;
 	uint8_t register_address;
-	uint32_t value;
 	NODE_reply_parameters_t reply_params;
 } NODE_write_parameters_t;
 

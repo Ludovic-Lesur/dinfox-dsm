@@ -8,8 +8,6 @@
 #ifndef __GPSM_REG_H__
 #define __GPSM_REG_H__
 
-#ifdef GPSM
-
 #include "common_reg.h"
 
 /*** GPSM registers address ***/
@@ -77,7 +75,5 @@ typedef enum {
 #define GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY	DINFOX_REG_MASK_ALL
 
 #define GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CUCLE	0x000000FF
-
-#endif /* GPSM */
 
 #endif /* __GPSM_REG_H__ */
