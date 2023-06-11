@@ -31,21 +31,15 @@ typedef struct {
 } NODE_reply_parameters_t;
 
 typedef struct {
-	NODE_address_t node_address;
+	NODE_address_t node_addr;
 	char_t* command;
 } NODE_command_parameters_t;
 
 typedef struct {
-	NODE_address_t node_address;
-	uint8_t register_address;
+	NODE_address_t node_addr;
+	uint8_t reg_addr;
 	NODE_reply_parameters_t reply_params;
-} NODE_read_parameters_t;
-
-typedef struct {
-	NODE_address_t node_address;
-	uint8_t register_address;
-	NODE_reply_parameters_t reply_params;
-} NODE_write_parameters_t;
+} NODE_access_parameters_t;
 
 typedef union {
 	struct {

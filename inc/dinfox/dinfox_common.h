@@ -134,8 +134,8 @@ typedef union {
 /*** DINFOX common functions ***/
 
 uint8_t DINFOX_get_field_offset(uint32_t field_mask);
-
 uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes);
+uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask);
 
 uint8_t DINFOX_convert_seconds(uint32_t time_seconds);
 uint32_t DINFOX_get_seconds(uint8_t dinfox_time);

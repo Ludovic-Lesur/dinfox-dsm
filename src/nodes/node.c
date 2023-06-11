@@ -188,7 +188,7 @@ NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_
 	status = NODE_read_register(request_source, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
 	// Isolate field.
-	(*field_value) = ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
+	(*field_value) = DINFOX_get_field_value(reg_value, field_mask);
 errors:
 	return status;
 }

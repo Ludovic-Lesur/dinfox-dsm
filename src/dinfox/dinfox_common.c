@@ -58,6 +58,16 @@ uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes) {
 	return reg_value;
 }
 
+/* GET FIELD VALUE FROM REGISTER.
+ * @param reg_value:	Register value.
+ * @param field_mask:	Field mask.
+ * @return field_value:	Field value.
+ */
+uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask) {
+	// Isolate field.
+	return ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
+}
+
 /* CONVERT SECONDS TO DINFOX TIME REPRESENTATION.
  * @param time_seconds:	Time in seconds.
  * @return dinfox_time:	DINFox duration representation.
