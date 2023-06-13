@@ -55,18 +55,19 @@ uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask) {
 }
 
 /* CONVERT A BYTE ARRAY TO 32 BITS INTEGER.
- * @param data:				Byte array to convert.
- * @param data_size_bytes:	Size of the input byte array.
- * @return value:			32 bits result.
+ * @param parser_ctx:	Pointer to the parser context.
+ * @param separator:	Separator of the register.
+ * @param reg_value:	Pointer to the register value.
+ * @return status:		Function execution status.
  */
-PARSER_status_t DINFOX_parser_register(PARSER_context_t* parser_ctx, uint32_t* reg_value) {
+PARSER_status_t DINFOX_parse_register(PARSER_context_t* parser_ctx, char_t separator, uint32_t* reg_value) {
 	// Local variables.
 	PARSER_status_t status = PARSER_SUCCESS;
 	uint8_t reg_bytes[DINFOX_REG_SIZE_BYTES];
 	uint8_t reg_size_bytes = 0;
 	uint8_t idx = 0;
 	// Parse register as byte array.
-	status = PARSER_get_byte_array(parser_ctx, STRING_CHAR_NULL, DINFOX_REG_SIZE_BYTES, 0, (uint8_t*) reg_bytes, &reg_size_bytes);
+	status = PARSER_get_byte_array(parser_ctx, separator, DINFOX_REG_SIZE_BYTES, 0, (uint8_t*) reg_bytes, &reg_size_bytes);
 	if (status != PARSER_SUCCESS) goto errors;
 	// Convert byte array to 32 bits value.
 	(*reg_value) = 0;

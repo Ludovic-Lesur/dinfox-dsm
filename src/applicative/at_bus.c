@@ -248,7 +248,7 @@ static void _AT_BUS_read_callback(void) {
 	uint32_t reg_addr = 0;
 	uint32_t reg_value = 0;
 	// Read address parameter.
-	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_addr);
+	parser_status = DINFOX_parse_register(&at_bus_ctx.parser, STRING_CHAR_NULL, &reg_addr);
 	PARSER_error_check_print();
 	// Read register.
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, &reg_value);
@@ -272,18 +272,18 @@ static void _AT_BUS_write_callback(void) {
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Read address parameter.
-	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_addr);
+	parser_status = DINFOX_parse_register(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, &reg_addr);
 	PARSER_error_check_print();
 	// First try with 3 parameters.
-	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_value);
+	parser_status = DINFOX_parse_register(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, &reg_value);
 	if (parser_status == PARSER_SUCCESS) {
 		// Try parsing register mask parameter.
-		parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_mask);
+		parser_status = DINFOX_parse_register(&at_bus_ctx.parser, STRING_CHAR_NULL, &reg_mask);
 		PARSER_error_check_print();
 	}
 	else {
 		// Try with only 2 parameters.
-		parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_value);
+		parser_status = DINFOX_parse_register(&at_bus_ctx.parser, STRING_CHAR_NULL, &reg_value);
 		PARSER_error_check_print();
 		// Perform full write operation since mask is not given.
 		reg_mask = DINFOX_REG_MASK_ALL;
