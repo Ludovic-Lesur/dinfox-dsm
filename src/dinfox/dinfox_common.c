@@ -71,7 +71,7 @@ PARSER_status_t DINFOX_parser_register(PARSER_context_t* parser_ctx, uint32_t* r
 	// Convert byte array to 32 bits value.
 	(*reg_value) = 0;
 	for (idx=0 ; idx<reg_size_bytes ; idx++) {
-		(*reg_value) |= (reg_bytes[idx] >> (8 * (reg_size_bytes - 1 - idx)));
+		(*reg_value) |= (reg_bytes[idx] << (8 * (reg_size_bytes - 1 - idx)));
 	}
 errors:
 	return status;
