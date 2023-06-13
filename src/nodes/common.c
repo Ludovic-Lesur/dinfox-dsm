@@ -159,7 +159,7 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_ERROR_STACK:
 		// Unstack error.
-		status = NODE_write_field(COMMON_REG_ADDR_ERROR_STACK, ERROR_stack_read(), COMMON_REG_ERROR_STACK_MASK_ERROR, 0);
+		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ERROR_STACK, COMMON_REG_ERROR_STACK_MASK_ERROR, ERROR_stack_read());
 		if (status != NODE_SUCCESS) goto errors;
 		break;
 	default:

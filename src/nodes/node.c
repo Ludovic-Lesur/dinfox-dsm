@@ -20,7 +20,7 @@
 
 /*** NODE local global variables ***/
 
-static uint32_t NODE_REGISTERS[NODE_REG_ADDR_LAST];
+static volatile uint32_t NODE_REGISTERS[NODE_REG_ADDR_LAST];
 
 /*** NODE local functions ***/
 

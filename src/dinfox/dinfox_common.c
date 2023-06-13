@@ -61,20 +61,20 @@ uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask) {
  */
 PARSER_status_t DINFOX_parser_register(PARSER_context_t* parser_ctx, uint32_t* reg_value) {
 	// Local variables.
-	PARSER_status_t parser_status = PARSER_SUCCESS;
+	PARSER_status_t status = PARSER_SUCCESS;
 	uint8_t reg_bytes[DINFOX_REG_SIZE_BYTES];
 	uint8_t reg_size_bytes = 0;
 	uint8_t idx = 0;
 	// Parse register as byte array.
-	parser_status = PARSER_get_byte_array(parser_ctx, STRING_CHAR_NULL, DINFOX_REG_SIZE_BYTES, 0, (uint8_t*) reg_bytes, &reg_size_bytes);
-	if (parser_status != PARSER_SUCCESS) goto errors;
+	status = PARSER_get_byte_array(parser_ctx, STRING_CHAR_NULL, DINFOX_REG_SIZE_BYTES, 0, (uint8_t*) reg_bytes, &reg_size_bytes);
+	if (status != PARSER_SUCCESS) goto errors;
 	// Convert byte array to 32 bits value.
 	(*reg_value) = 0;
 	for (idx=0 ; idx<reg_size_bytes ; idx++) {
 		(*reg_value) |= (reg_bytes[idx] >> (8 * (reg_size_bytes - 1 - idx)));
 	}
 errors:
-	return parser_status;
+	return status;
 }
 
 /* CONVERT A REGISTER VALUE INTO THE SHORTEST HEXADECIMAL STRING.
@@ -87,17 +87,26 @@ STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str) {
 	STRING_status_t status = STRING_SUCCESS;
 	uint8_t byte = 0;
 	uint8_t idx = 0;
+	uint8_t str_idx = 0;
+	uint8_t first_non_zero_found = 0;
 	// Convert 32-bits value to byte array.
 	for (idx=0 ; idx<DINFOX_REG_SIZE_BYTES ; idx++) {
 		// Compute byte.
 		byte = (uint8_t) ((reg_value >> (8 * (DINFOX_REG_SIZE_BYTES - 1 - idx))) & 0xFF);
-		// Check value.
+		// Update flag.
 		if (byte != 0) {
-			status = STRING_value_to_string((int32_t) byte, STRING_FORMAT_HEXADECIMAL, 0, &(str[2 * idx]));
+			first_non_zero_found = 1;
+		}
+		// Check flag and index.
+		if ((first_non_zero_found != 0) || (idx == (DINFOX_REG_SIZE_BYTES - 1))) {
+			// Convert byte.
+			status = STRING_value_to_string((int32_t) byte, STRING_FORMAT_HEXADECIMAL, 0, &(str[2 * str_idx]));
+			str_idx++;
+			// Check status.
 			if (status != STRING_SUCCESS) break;
 		}
 	}
-	str[2 * idx] = STRING_CHAR_NULL;
+	str[2 * str_idx] = STRING_CHAR_NULL;
 	return status;
 }
 

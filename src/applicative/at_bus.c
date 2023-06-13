@@ -185,7 +185,7 @@ static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, ui
 static void _AT_BUS_reply_add_register(uint32_t reg_value) {
 	// Local variables.
 	STRING_status_t string_status = STRING_SUCCESS;
-	char_t str_value[AT_BUS_STRING_VALUE_BUFFER_SIZE];
+	char_t str_value[AT_BUS_STRING_VALUE_BUFFER_SIZE] = {STRING_CHAR_NULL};
 	// Convert register to string.
 	string_status = DINFOX_register_to_string(reg_value, str_value);
 	STRING_error_check();
