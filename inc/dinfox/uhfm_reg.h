@@ -38,6 +38,10 @@ typedef enum {
 	UHFM_REG_ADDR_LAST,
 } UHFM_register_address_t;
 
+/*** UHFM number of specific registers ***/
+
+#define UHFM_NUMBER_OF_SPECIFIC_REG								(UHFM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+
 /*** UHFM registers mask ***/
 
 #define UHFM_REG_STATUS_CONTROL_1_MASK_STRG						0x00000001

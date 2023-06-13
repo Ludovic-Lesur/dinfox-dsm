@@ -20,7 +20,10 @@ typedef enum {
 	SM_REG_ADDR_DIGITAL_DATA,
 	SM_REG_ADDR_LAST,
 } SM_register_address_t;
-#endif
+
+/*** SM number of specific registers ***/
+
+#define SM_NUMBER_OF_SPECIFIC_REG			(SM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
 
 /*** SM registers mask ***/
 
@@ -37,3 +40,5 @@ typedef enum {
 #define SM_REG_DIGITAL_DATA_MASK_DIO1		0x00000002
 #define SM_REG_DIGITAL_DATA_MASK_DIO2		0x00000004
 #define SM_REG_DIGITAL_DATA_MASK_DIO3		0x00000008
+
+#endif /* __SM_REG_H__ */

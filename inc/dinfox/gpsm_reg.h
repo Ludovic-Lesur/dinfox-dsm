@@ -28,6 +28,10 @@ typedef enum {
 	GPSM_REG_ADDR_LAST,
 } GPSM_register_address_t;
 
+/*** GPSM number of specific registers ***/
+
+#define GPSM_NUMBER_OF_SPECIFIC_REG							(GPSM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+
 /*** GPSM registers mask ***/
 
 #define GPSM_REG_STATUS_CONTROL_1_MASK_TTRG					0x00000001

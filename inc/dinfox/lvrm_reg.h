@@ -20,6 +20,10 @@ typedef enum {
 	LVRM_REG_ADDR_LAST,
 } LVRM_register_address_t;
 
+/*** LVRM number of specific registers ***/
+
+#define LVRM_NUMBER_OF_SPECIFIC_REG			(LVRM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+
 /*** LVRM registers mask ***/
 
 #define LVRM_REG_ANALOG_DATA_1_MASK_VCOM	0x0000FFFF

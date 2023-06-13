@@ -185,17 +185,9 @@ static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, ui
 static void _AT_BUS_reply_add_register(uint32_t reg_value) {
 	// Local variables.
 	STRING_status_t string_status = STRING_SUCCESS;
-	uint8_t reg_value_byte_array[DINFOX_REG_SIZE_BYTES];
 	char_t str_value[AT_BUS_STRING_VALUE_BUFFER_SIZE];
-	uint8_t idx = 0;
-	// Reset string.
-	for (idx=0 ; idx<AT_BUS_STRING_VALUE_BUFFER_SIZE ; idx++) str_value[idx] = STRING_CHAR_NULL;
-	// Convert 32-bits value to byte array.
-	for (idx=0 ; idx<DINFOX_REG_SIZE_BYTES ; idx++) {
-		reg_value_byte_array[idx] = (uint8_t) ((reg_value >> (8 * (DINFOX_REG_SIZE_BYTES - 1 - idx))) & 0xFF);
-	}
-	// Convert byte array to string.
-	string_status = STRING_byte_array_to_hexadecimal_string(reg_value_byte_array, DINFOX_REG_SIZE_BYTES, 0, str_value);
+	// Convert register to string.
+	string_status = DINFOX_register_to_string(reg_value, str_value);
 	STRING_error_check();
 	// Add string.
 	_AT_BUS_reply_add_string(str_value);
@@ -253,10 +245,10 @@ static void _AT_BUS_read_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	int32_t reg_addr = 0;
+	uint32_t reg_addr = 0;
 	uint32_t reg_value = 0;
 	// Read address parameter.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_addr);
+	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_addr);
 	PARSER_error_check_print();
 	// Read register.
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, &reg_value);
@@ -276,22 +268,22 @@ static void _AT_BUS_write_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	int32_t reg_addr = 0;
-	int32_t reg_value = 0;
-	int32_t reg_mask = 0;
+	uint32_t reg_addr = 0;
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
 	// Read address parameter.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &reg_addr);
+	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_addr);
 	PARSER_error_check_print();
 	// First try with 3 parameters.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &reg_value);
+	parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_value);
 	if (parser_status == PARSER_SUCCESS) {
 		// Try parsing register mask parameter.
-		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_mask);
+		parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_mask);
 		PARSER_error_check_print();
 	}
 	else {
 		// Try with only 2 parameters.
-		parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &reg_value);
+		parser_status = DINFOX_parser_register(&at_bus_ctx.parser, &reg_value);
 		PARSER_error_check_print();
 		// Perform full write operation since mask is not given.
 		reg_mask = DINFOX_REG_MASK_ALL;

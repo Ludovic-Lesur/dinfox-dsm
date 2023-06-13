@@ -8,6 +8,8 @@
 #include "dinfox_common.h"
 
 #include "math.h"
+#include "parser.h"
+#include "string.h"
 #include "types.h"
 
 /*** DINFOX TYPES local macros ***/
@@ -42,22 +44,6 @@ uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
 	return offset;
 }
 
-uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes) {
-	// Local variables.
-	uint32_t reg_value = 0;
-	uint8_t data_size = data_size_bytes;
-	uint8_t idx = 0;
-	// Clamp size.
-	if (data_size > DINFOX_REG_SIZE_BYTES) {
-		data_size = DINFOX_REG_SIZE_BYTES;
-	}
-	// Bytes loop.
-	for (idx=0 ; idx<data_size ; idx++) {
-		reg_value |= (data[data_size - idx - 1] << (8 * idx));
-	}
-	return reg_value;
-}
-
 /* GET FIELD VALUE FROM REGISTER.
  * @param reg_value:	Register value.
  * @param field_mask:	Field mask.
@@ -66,6 +52,53 @@ uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes) {
 uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask) {
 	// Isolate field.
 	return ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
+}
+
+/* CONVERT A BYTE ARRAY TO 32 BITS INTEGER.
+ * @param data:				Byte array to convert.
+ * @param data_size_bytes:	Size of the input byte array.
+ * @return value:			32 bits result.
+ */
+PARSER_status_t DINFOX_parser_register(PARSER_context_t* parser_ctx, uint32_t* reg_value) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_SUCCESS;
+	uint8_t reg_bytes[DINFOX_REG_SIZE_BYTES];
+	uint8_t reg_size_bytes = 0;
+	uint8_t idx = 0;
+	// Parse register as byte array.
+	parser_status = PARSER_get_byte_array(parser_ctx, STRING_CHAR_NULL, DINFOX_REG_SIZE_BYTES, 0, (uint8_t*) reg_bytes, &reg_size_bytes);
+	if (parser_status != PARSER_SUCCESS) goto errors;
+	// Convert byte array to 32 bits value.
+	(*reg_value) = 0;
+	for (idx=0 ; idx<reg_size_bytes ; idx++) {
+		(*reg_value) |= (reg_bytes[idx] >> (8 * (reg_size_bytes - 1 - idx)));
+	}
+errors:
+	return parser_status;
+}
+
+/* CONVERT A REGISTER VALUE INTO THE SHORTEST HEXADECIMAL STRING.
+ * @param regvalue:	Register value to convert.
+ * @param str:		Destination string.
+ * @return status:	Function execution status.
+ */
+STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str) {
+	// Local variables.
+	STRING_status_t status = STRING_SUCCESS;
+	uint8_t byte = 0;
+	uint8_t idx = 0;
+	// Convert 32-bits value to byte array.
+	for (idx=0 ; idx<DINFOX_REG_SIZE_BYTES ; idx++) {
+		// Compute byte.
+		byte = (uint8_t) ((reg_value >> (8 * (DINFOX_REG_SIZE_BYTES - 1 - idx))) & 0xFF);
+		// Check value.
+		if (byte != 0) {
+			status = STRING_value_to_string((int32_t) byte, STRING_FORMAT_HEXADECIMAL, 0, &(str[2 * idx]));
+			if (status != STRING_SUCCESS) break;
+		}
+	}
+	str[2 * idx] = STRING_CHAR_NULL;
+	return status;
 }
 
 /* CONVERT SECONDS TO DINFOX TIME REPRESENTATION.
@@ -150,14 +183,16 @@ uint8_t DINFOX_convert_degrees(int8_t temperature_degrees) {
  */
 int8_t DINFOX_get_degrees(uint8_t dinfox_temperature) {
 	// Local variables.
-	int32_t temperature_degrees = 0;
+	int8_t temperature_degrees = 0;
 	uint8_t local_dinfox_temperature = dinfox_temperature;
-	uint32_t value = 0;
-	// Parse value.
+	uint8_t sign = 0;
+	uint8_t value = 0;
+	// Parse sign and value.
+	sign = (uint32_t) (((DINFOX_temperature_t*) &local_dinfox_temperature) -> sign);
 	value = (uint32_t) (((DINFOX_temperature_t*) &local_dinfox_temperature) -> value);
-	// DINFox representation is equivalent to one complement.
-	MATH_two_complement(value, DINFOX_TEMPERATURE_VALUE_SIZE_BITS, &temperature_degrees);
-	return ((int8_t) temperature_degrees);
+	// Check sign.
+	temperature_degrees = (sign == DINFOX_TEMPERATURE_SIGN_POSITIVE) ? (value) : ((-1) * value);
+	return temperature_degrees;
 }
 
 /* CONVERT MV TO DINFOX VOLTAGE REPRESENTATION.

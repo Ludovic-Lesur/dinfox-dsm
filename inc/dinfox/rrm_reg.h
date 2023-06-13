@@ -20,6 +20,10 @@ typedef enum {
 	RRM_REG_ADDR_LAST,
 } RRM_register_address_t;
 
+/*** RRM number of specific registers ***/
+
+#define RRM_NUMBER_OF_SPECIFIC_REG			(RRM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+
 /*** RRM registers mask ***/
 
 #define RRM_REG_ANALOG_DATA_1_MASK_VIN		0x0000FFFF

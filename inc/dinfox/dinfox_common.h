@@ -8,6 +8,8 @@
 #ifndef __DINFOX_COMMON_H__
 #define __DINFOX_COMMON_H__
 
+#include "parser.h"
+#include "string.h"
 #include "types.h"
 
 /*** DINFOX common macros ***/
@@ -99,7 +101,7 @@ typedef union {
 	uint8_t representation;
 	struct {
 		unsigned value : DINFOX_TEMPERATURE_VALUE_SIZE_BITS;
-		DINFOX_temperature_sign_t unit : DINFOX_TEMPERATURE_SIGN_SIZE_BITS;
+		DINFOX_temperature_sign_t sign : DINFOX_TEMPERATURE_SIGN_SIZE_BITS;
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_temperature_t;
 
@@ -134,8 +136,10 @@ typedef union {
 /*** DINFOX common functions ***/
 
 uint8_t DINFOX_get_field_offset(uint32_t field_mask);
-uint32_t DINFOX_byte_array_to_u32(uint8_t* data, uint8_t data_size_bytes);
 uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask);
+
+PARSER_status_t DINFOX_parser_register(PARSER_context_t* parser_ctx, uint32_t* reg_value);
+STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str);
 
 uint8_t DINFOX_convert_seconds(uint32_t time_seconds);
 uint32_t DINFOX_get_seconds(uint8_t dinfox_time);

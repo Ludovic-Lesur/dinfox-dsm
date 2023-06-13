@@ -20,6 +20,10 @@ typedef enum {
 	DDRM_REG_ADDR_LAST,
 } DDRM_register_address_t;
 
+/*** BPSM number of specific registers ***/
+
+#define DDRM_NUMBER_OF_SPECIFIC_REG			(DDRM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+
 /*** DDRM registers mask ***/
 
 #define DDRM_REG_ANALOG_DATA_1_MASK_VIN		0x0000FFFF
