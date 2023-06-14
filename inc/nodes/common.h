@@ -13,19 +13,9 @@
 #include "node.h"
 #include "types.h"
 
-/*** DINFOX macros ***/
+/*** COMMON macros ***/
 
-#define COMMON_REG_ACCESS \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-	DINFOX_REG_ACCESS_READ_WRITE, \
-	DINFOX_REG_ACCESS_READ_ONLY,  \
-
-/*** DINFOX functions ***/
+/*** COMMON functions ***/
 
 NODE_status_t COMMON_init_registers(void);
 NODE_status_t COMMON_update_register(uint8_t reg_addr);

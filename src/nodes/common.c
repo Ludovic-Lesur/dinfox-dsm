@@ -139,7 +139,7 @@ NODE_status_t COMMON_init_registers(void) {
 	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_1, COMMON_REG_SW_VERSION_1_MASK_COMMIT_ID, GIT_COMMIT_ID);
 	if (status != NODE_SUCCESS) goto errors;
 	// Reset flags registers.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, COMMON_REG_RESET_FLAGS_MASK_ALL, ((uint8_t) (((RCC -> CSR) >> 24) & 0xFF)));
+	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, COMMON_REG_RESET_FLAGS_MASK_ALL, ((uint32_t) (((RCC -> CSR) >> 24) & 0xFF)));
 	if (status != NODE_SUCCESS) goto errors;
 	// Load default values.
 	status = _COMMON_reset_analog_data();

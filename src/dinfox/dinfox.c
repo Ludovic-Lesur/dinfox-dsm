@@ -44,12 +44,25 @@ uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
 	return offset;
 }
 
+/* WRITE FIELD IN REGISTER.
+ * @param reg_value:	Pointer to the register value.
+ * @param field_value:	Field value.
+ * @param field_mask:	Field mask.
+ * @return:				None.
+ */
+void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask) {
+	// Reset bits.
+	(*reg_value) &= ~(field_mask);
+	// Set field.
+	(*reg_value) |= ((field_value << DINFOX_get_field_offset(field_mask)) & field_mask);
+}
+
 /* GET FIELD VALUE FROM REGISTER.
  * @param reg_value:	Register value.
  * @param field_mask:	Field mask.
  * @return field_value:	Field value.
  */
-uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask) {
+uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask) {
 	// Isolate field.
 	return ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
 }

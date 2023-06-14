@@ -136,7 +136,9 @@ typedef union {
 /*** DINFOX functions ***/
 
 uint8_t DINFOX_get_field_offset(uint32_t field_mask);
-uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask);
+
+void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask);
+uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask);
 
 PARSER_status_t DINFOX_parse_register(PARSER_context_t* parser_ctx, char_t separator, uint32_t* reg_value);
 STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str);

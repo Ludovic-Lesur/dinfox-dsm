@@ -13,6 +13,7 @@
 #include "i2c.h"
 #include "load.h"
 #include "neom8n.h"
+#include "node_common.h"
 #include "nvm.h"
 #include "s2lp.h"
 #include "sht3x.h"
@@ -48,8 +49,6 @@ typedef enum {
 	NODE_REQUEST_SOURCE_EXTERNAL,
 	NODE_REQUEST_SOURCE_LAST
 } NODE_request_source_t;
-
-typedef uint8_t	NODE_address_t;
 
 /*** NODE functions ***/
 

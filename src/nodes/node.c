@@ -145,9 +145,9 @@ errors:
 }
 
 /* READ NODE REGISTER.
+ * @param request_source:	Function call source.
  * @param reg_addr:		Address of the register to read.
  * @param reg_value:	Pointer that will contain the register value.
- * @param update:		Update register value is non zero.
  * @return status:		Function execution status.
  */
 NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value) {
@@ -175,6 +175,7 @@ errors:
 }
 
 /* READ SINGLE FIELD IN NODE REGISTER.
+ * @param request_source:	Function call source.
  * @param reg_addr:		Address of the register to read.
  * @param field_mask:	Field mask.
  * @param field_value:	Pointer that will contain the field value.
@@ -188,12 +189,13 @@ NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_
 	status = NODE_read_register(request_source, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
 	// Isolate field.
-	(*field_value) = DINFOX_get_field_value(reg_value, field_mask);
+	(*field_value) = DINFOX_read_field(reg_value, field_mask);
 errors:
 	return status;
 }
 
 /* READ BYTE ARRAY IN NODE REGISTERS.
+ * @param request_source:	Function call source.
  * @param reg_addr_base:	Register address where the array starts.
  * @param data:				Pointer that will contain the read data.
  * @param data_size_byte:	Number of bytes to read.
@@ -226,11 +228,10 @@ errors:
 }
 
 /* WRITE NODE REG.
+ * @param request_source:	Function call source.
  * @param reg_addr:			Address of the register to read.
  * @param reg_mask:			Write operation mask.
  * @param reg_value:		Value to write in register.
- * @param check_access:		Check register access if non zero.
- * @param check_action:		Check control bits if non zero.
  * @return status:			Function execution status.
  */
 NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value) {
@@ -265,11 +266,11 @@ errors:
 }
 
 /* WRITE SINGLE FIELD IN NODE REG.
- * @param reg_addr:		Address of the register to read.
- * @param field_mask:	Field mask.
- * @param field_value:	Field value to write in register.
- * @param check_access:		Check register access if non zero.
- * @return status:		Function execution status.
+ * @param request_source:	Function call source.
+ * @param reg_addr:			Address of the register to read.
+ * @param field_mask:		Field mask.
+ * @param field_value:		Field value to write in register.
+ * @return status:			Function execution status.
  */
 NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value) {
 	// Local variables.
@@ -280,10 +281,10 @@ NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg
 }
 
 /* WRITE BYTE ARRAY IN NODE REGISTERS.
+ * @param request_source:	Function call source.
  * @param reg_addr_base:	Register address where the array starts.
  * @param data:				Byte array to write.
  * @param data_size_byte:	Number of bytes to write.
- * @param check_access:		Check register access if non zero.
  * @return status:			Function execution status.
  */
 NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte) {
