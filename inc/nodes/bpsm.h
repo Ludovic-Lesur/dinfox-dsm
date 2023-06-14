@@ -11,7 +11,7 @@
 #include "bpsm_reg.h"
 #include "common.h"
 #include "common_reg.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "node.h"
 
 #ifdef BPSM

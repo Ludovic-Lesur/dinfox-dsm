@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "addon_sigfox_rf_protocol_api.h"
 #include "aes.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "lvrm_reg.h"
 #include "node.h"

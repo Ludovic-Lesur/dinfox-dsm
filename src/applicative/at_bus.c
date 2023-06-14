@@ -11,7 +11,7 @@
 #include "bpsm_reg.h"
 #include "ddrm_reg.h"
 #include "common_reg.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "error.h"
 #include "gpsm_reg.h"
 #include "lvrm_reg.h"

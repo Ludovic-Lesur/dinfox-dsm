@@ -8,7 +8,7 @@
 #include "ddrm.h"
 
 #include "adc.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "ddrm_reg.h"
 #include "node.h"

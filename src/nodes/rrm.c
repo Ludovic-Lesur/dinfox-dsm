@@ -8,7 +8,7 @@
 #include "rrm.h"
 
 #include "adc.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "rrm_reg.h"
 #include "node.h"

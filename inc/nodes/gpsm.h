@@ -10,7 +10,7 @@
 
 #include "common.h"
 #include "common_reg.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "gpsm_reg.h"
 #include "node.h"
 

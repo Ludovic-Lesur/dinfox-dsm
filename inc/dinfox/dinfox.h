@@ -1,18 +1,18 @@
 /*
- * dinfox_common.h
+ * dinfox.h
  *
  *  Created on: 30 may. 2023
  *      Author: Ludo
  */
 
-#ifndef __DINFOX_COMMON_H__
-#define __DINFOX_COMMON_H__
+#ifndef __DINFOX_H__
+#define __DINFOX_H__
 
 #include "parser.h"
 #include "string.h"
 #include "types.h"
 
-/*** DINFOX common macros ***/
+/*** DINFOX macros ***/
 
 #define DINFOX_NODE_ADDRESS_RANGE_R4S8CR	15
 
@@ -37,7 +37,7 @@
 #define DINFOX_CURRENT_VALUE_SIZE_BITS		14
 #define DINFOX_CURRENT_ERROR_VALUE			0xFFFF
 
-/*** DINFOX common structures ***/
+/*** DINFOX structures ***/
 
 typedef enum {
 	DINFOX_BOARD_ID_LVRM = 0,
@@ -133,7 +133,7 @@ typedef union {
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_current_t;
 
-/*** DINFOX common functions ***/
+/*** DINFOX functions ***/
 
 uint8_t DINFOX_get_field_offset(uint32_t field_mask);
 uint32_t DINFOX_get_field_value(uint32_t reg_value, uint32_t field_mask);
@@ -156,4 +156,4 @@ uint32_t DINFOX_get_ua(uint16_t dinfox_current);
 uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm);
 int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power);
 
-#endif /* __DINFOX_COMMON_H__ */
+#endif /* __DINFOX_H__ */

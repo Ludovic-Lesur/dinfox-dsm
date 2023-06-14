@@ -1,11 +1,11 @@
 /*
- * dinfox_common.c
+ * dinfox.c
  *
  *  Created on: 30 may. 2023
  *      Author: Ludo
  */
 
-#include "dinfox_common.h"
+#include "dinfox.h"
 
 #include "math.h"
 #include "parser.h"

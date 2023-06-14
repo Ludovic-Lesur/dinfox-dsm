@@ -9,7 +9,7 @@
 #define __COMMON_H__
 
 #include "common_reg.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "node.h"
 #include "types.h"
 

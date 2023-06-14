@@ -8,7 +8,7 @@
 #include "gpsm.h"
 
 #include "adc.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "neom8n.h"
 #include "gpsm_reg.h"

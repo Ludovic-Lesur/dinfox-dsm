@@ -10,7 +10,7 @@
 #include "bpsm.h"
 #include "common.h"
 #include "ddrm.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "error.h"
 #include "gpsm.h"
 #include "lvrm.h"

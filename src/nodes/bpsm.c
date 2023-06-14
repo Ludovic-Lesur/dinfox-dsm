@@ -8,7 +8,7 @@
 #include "bpsm.h"
 
 #include "adc.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "bpsm_reg.h"
 #include "node.h"

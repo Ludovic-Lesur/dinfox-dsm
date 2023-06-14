@@ -8,7 +8,7 @@
 #include "lvrm.h"
 
 #include "adc.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "lvrm_reg.h"
 #include "node.h"

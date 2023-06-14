@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "i2c.h"
 #include "digital.h"
-#include "dinfox_common.h"
+#include "dinfox.h"
 #include "load.h"
 #include "node.h"
 #include "sht3x.h"
