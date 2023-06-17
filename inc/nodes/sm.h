@@ -33,12 +33,12 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST] = {
 
 /*** SM functions ***/
 
-NODE_status_t SM_init_registers(void);
+void SM_init_registers(void);
 
 NODE_status_t SM_update_register(uint8_t reg_addr);
 NODE_status_t SM_check_register(uint8_t reg_addr);
 
-NODE_status_t SM_mtrg_callback(void);
+NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status);
 
 #endif /* SM */
 

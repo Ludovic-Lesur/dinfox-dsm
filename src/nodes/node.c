@@ -104,44 +104,40 @@ errors:
 /*** NODE functions ***/
 
 /* INIT NODE REGISTERS.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-NODE_status_t NODE_init(void) {
+void NODE_init(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
 	uint8_t idx = 0;
 	// Clean all registers.
 	for (idx=0 ; idx<NODE_REG_ADDR_LAST ; idx++) {
 		NODE_REGISTERS[idx] = 0;
 	}
 	// Init common registers.
-	status = COMMON_init_registers();
-	if (status != NODE_SUCCESS) goto errors;
+	COMMON_init_registers();
 	// Init specific registers.
 #ifdef LVRM
-	status = LVRM_init_registers();
+	LVRM_init_registers();
 #endif
 #ifdef BPSM
-	status = BPSM_init_registers();
+	BPSM_init_registers();
 #endif
 #ifdef DDRM
-	status = DDRM_init_registers();
+	DDRM_init_registers();
 #endif
 #ifdef UHFM
-	status = UHFM_init_registers();
+	UHFM_init_registers();
 #endif
 #ifdef GPSM
-	status = GPSM_init_registers();
+	GPSM_init_registers();
 #endif
 #ifdef SM
-	status = SM_init_registers();
+	SM_init_registers();
 #endif
 #ifdef RRM
-	status = RRM_init_registers();
+	RRM_init_registers();
 #endif
-errors:
-	return status;
 }
 
 /* READ NODE REGISTER.

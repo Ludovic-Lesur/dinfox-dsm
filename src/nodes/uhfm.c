@@ -11,6 +11,7 @@
 #include "addon_sigfox_rf_protocol_api.h"
 #include "aes.h"
 #include "dinfox.h"
+#include "error.h"
 #include "load.h"
 #include "lvrm_reg.h"
 #include "node.h"
@@ -55,19 +56,17 @@ static UHFM_flags_t uhfm_flags;
 /*** UHFM local functions ***/
 
 /* RESET UHFM ANALOG DATA.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-static NODE_status_t _UHFM_reset_analog_data(void) {
+static void _UHFM_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Reset fields to error value.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
 }
 
 /* CHECK RADIO STATE.
@@ -93,6 +92,7 @@ errors:
 static NODE_status_t _UHFM_strg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	uint32_t rc_index = 0;
 	uint32_t bidir_flag = 0;
@@ -107,34 +107,34 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	// Reset status.
 	message_status.all = 0;
 	// Read RC index.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
+	NODE_error_check();
 	// Read number of frames.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_NFR, &number_of_frames);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_NFR, &number_of_frames);
+	NODE_error_check();
 	// Read control message flag.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG, &control_message_flag);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG, &control_message_flag);
+	NODE_error_check();
 	// Read message type.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT, &message_type);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT, &message_type);
+	NODE_error_check();
 	// Read bidirectional flag.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF, &bidir_flag);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF, &bidir_flag);
+	NODE_error_check();
 	// Read UL payload size.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE, &ul_payload_size);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE, &ul_payload_size);
+	NODE_error_check();
 	// Read UL payload.
 	if (ul_payload_size > 0) {
-		status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
+		NODE_error_check();
 	}
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
 	// Open library.
 	sigfox_api_status = SIGFOX_API_open(&(UHFM_SIGFOX_RC[rc_index]));
-	SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+	SIGFOX_API_error_check();
 	// Update radio state.
 	uhfm_flags.radio_state = 1;
 	// Check control message flag.
@@ -168,7 +168,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 			if (sigfox_api_status != SFX_ERR_NONE) {
 				message_status.execution_error = 1;
 			}
-			SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+			SIGFOX_API_error_check();
 			// Update message status.
 			message_status.ul_frame_1 = 1;
 			message_status.ul_frame_2 = 1;
@@ -176,11 +176,11 @@ static NODE_status_t _UHFM_strg_callback(void) {
 			// Check bidirectional flag.
 			if (bidir_flag != 0) {
 				// Write DL payload registers.
-				status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DOWNLINK_DATA_SIZE_BYTES);
-				if (status != NODE_SUCCESS) goto errors;
+				node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DOWNLINK_DATA_SIZE_BYTES);
+				NODE_error_check();
 				// Write DL RSSI.
-				status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
-				if (status != NODE_SUCCESS) goto errors;
+				node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
+				NODE_error_check();
 				// Update message status.
 				message_status.dl_frame = 1;
 				message_status.dl_conf_frame = 1;
@@ -189,17 +189,20 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	}
 	else {
 		sigfox_api_status = SIGFOX_API_send_outofband(SFX_OOB_SERVICE);
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 	}
 errors:
 	// Close library.
-	SIGFOX_API_close();
+	sigfox_api_status = SIGFOX_API_close();
+	SIGFOX_API_error_check();
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
 	// Update message status in register.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS, (uint32_t) (message_status.all));
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS, (uint32_t) (message_status.all));
+	NODE_error_check();
 	// Clear flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG, 0);
+	NODE_error_check();
 	// Return status.
 	return status;
 }
@@ -211,15 +214,16 @@ errors:
 static NODE_status_t _UHFM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	uint32_t rc_index = 0;
 	uint32_t test_mode = 0;
 	// Read RC index.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
+	NODE_error_check();
 	// Read test mode.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE, &test_mode);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE, &test_mode);
+	NODE_error_check();
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
@@ -227,12 +231,13 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	uhfm_flags.radio_state = 1;
 	// Call test mode function wth public key.
 	sigfox_api_status = ADDON_SIGFOX_RF_PROTOCOL_API_test_mode((sfx_rc_enum_t) rc_index, (sfx_test_mode_t) test_mode);
-	SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+	SIGFOX_API_error_check();
 errors:
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
 	// Clear flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, 0);
+	NODE_error_check();
 	return status;
 }
 
@@ -243,6 +248,7 @@ errors:
 static NODE_status_t _UHFM_dtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	uint32_t rf_frequency_hz = 0;
 	sfx_rx_state_enum_t dl_status = DL_PASSED;
@@ -252,8 +258,8 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	// Reset status.
 	message_status.all = 0;
 	// Read RF frequency.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
+	NODE_error_check();
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
@@ -261,32 +267,35 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	uhfm_flags.radio_state = 1;
 	// Start radio.
 	sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
-	SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+	SIGFOX_API_error_check();
 	sigfox_api_status = RF_API_change_frequency(rf_frequency_hz);
-	SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+	SIGFOX_API_error_check();
 	sigfox_api_status = RF_API_wait_frame(dl_phy_content, &dl_rssi_dbm, &dl_status);
-	SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+	SIGFOX_API_error_check();
 	// Check status.
 	if (dl_status == DL_PASSED) {
 		// Write DL PHY content registers.
-		status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, (uint8_t*) dl_phy_content, SIGFOX_DOWNLINK_PHY_SIZE_BYTES);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, (uint8_t*) dl_phy_content, SIGFOX_DOWNLINK_PHY_SIZE_BYTES);
+		NODE_error_check();
 		// Write DL RSSI.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
+		NODE_error_check();
 		// Update message status.
 		message_status.dl_frame = 1;
 	}
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		RF_API_stop();
+		sigfox_api_status = RF_API_stop();
+		SIGFOX_API_error_check();
 	}
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
 	// Update message status in register.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS, (uint32_t) (message_status.all));
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS, (uint32_t) (message_status.all));
+	NODE_error_check();
 	// Clear flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, 0);
+	NODE_error_check();
 	// Return.
 	return status;
 }
@@ -298,17 +307,18 @@ errors:
 static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	uint32_t rf_frequency_hz = 0;
 	uint32_t tx_power = 0;
 	int8_t tx_power_dbm = 0;
 	// Read RF frequency.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
+	NODE_error_check();
 	// Read CW power.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, &tx_power);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, &tx_power);
+	NODE_error_check();
 	// Convert power.
 	tx_power_dbm = (int8_t) DINFOX_get_dbm(tx_power);
 	// Check state.
@@ -318,7 +328,7 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 		if (status != NODE_SUCCESS) goto errors;
 		// Stop CW.
 		sigfox_api_status = SIGFOX_API_stop_continuous_transmission();
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
@@ -330,14 +340,15 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 		uhfm_flags.radio_state = 1;
 		// Start CW.
 		sigfox_api_status = SIGFOX_API_start_continuous_transmission((sfx_u32) rf_frequency_hz, SFX_NO_MODULATION);
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 		s2lp_status = S2LP_set_rf_output_power(tx_power_dbm);
-		S2LP_status_check(NODE_ERROR_BASE_S2LP);
+		S2LP_error_check();
 	}
 	return status;
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		SIGFOX_API_stop_continuous_transmission();
+		sigfox_api_status = SIGFOX_API_stop_continuous_transmission();
+		SIGFOX_API_error_check();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
@@ -351,12 +362,13 @@ errors:
 static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	uint32_t rf_frequency_hz = 0;
 	// Read RF frequency.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, &rf_frequency_hz);
+	NODE_error_check();
 	// Check state.
 	if (state == 0) {
 		// Check radio state.
@@ -364,7 +376,7 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 		if (status != NODE_SUCCESS) goto errors;
 		// Stop continuous listening.
 		sigfox_api_status = RF_API_stop();
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
@@ -376,22 +388,23 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 		uhfm_flags.radio_state = 1;
 		// Init radio.
 		sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 		sigfox_api_status = RF_API_change_frequency((sfx_u32) rf_frequency_hz);
-		SIGFOX_API_status_check(NODE_ERROR_BASE_SIGFOX);
+		SIGFOX_API_error_check();
 		// Start continuous listening.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_READY);
-		S2LP_status_check(NODE_ERROR_BASE_S2LP);
+		S2LP_error_check();
 		s2lp_status = S2LP_wait_for_state(S2LP_STATE_READY);
-		S2LP_status_check(NODE_ERROR_BASE_S2LP);
+		S2LP_error_check();
 		// Start radio.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_RX);
-		S2LP_status_check(NODE_ERROR_BASE_S2LP);
+		S2LP_error_check();
 	}
 	return status;
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		RF_API_stop();
+		sigfox_api_status = RF_API_stop();
+		SIGFOX_API_error_check();
 	}
 	// Update local flag.
 	uhfm_flags.rsen = 0;
@@ -401,12 +414,12 @@ errors:
 /*** UHFM functions ***/
 
 /* INIT UHFM REGISTERS.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-NODE_status_t UHFM_init_registers(void) {
+void UHFM_init_registers(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	uint8_t idx = 0;
 	uint8_t sigfox_ep_tab[AES_BLOCK_SIZE];
@@ -416,35 +429,32 @@ NODE_status_t UHFM_init_registers(void) {
 	for (idx=0 ; idx<ID_LENGTH ; idx++) {
 		// Read byte.
 		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + idx), &(sigfox_ep_tab[idx]));
-		NVM_status_check(NODE_ERROR_BASE_NVM);
+		NVM_error_check();
 	}
 	// Write registers.
-	status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, ID_LENGTH);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, ID_LENGTH);
+	NODE_error_check();
 	// Sigfox EP key register.
 	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
 		// Read byte.
 		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), &(sigfox_ep_tab[idx]));
-		NVM_status_check(NODE_ERROR_BASE_NVM);
+		NVM_error_check();
 	}
 	// Write registers.
-	status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, AES_BLOCK_SIZE);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, AES_BLOCK_SIZE);
+	NODE_error_check();
 	// Load default values.
-	status = _UHFM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_1, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_1_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_0_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	_UHFM_reset_analog_data();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_1, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_1_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, DINFOX_REG_MASK_ALL, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_0_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE);
+	NODE_error_check();
 }
 
 /* UPDATE UHFM REGISTER.
@@ -454,23 +464,26 @@ errors:
 NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	int16_t rssi_dbm = 0;
 	// Check address.
 	switch (reg_addr) {
 	case UHFM_REG_ADDR_RADIO_TEST_1:
-		// RSSI.
-		s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_RUN, &rssi_dbm);
-		S2LP_status_check(NODE_ERROR_BASE_S2LP);
-		// Write field.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_RSSI, (uint32_t) DINFOX_convert_dbm(rssi_dbm));
-		if (status != NODE_SUCCESS) goto errors;
+		// Check radio state.
+		if ((uhfm_flags.radio_state != 0) && (uhfm_flags.rsen != 0)) {
+			// RSSI.
+			s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_RUN, &rssi_dbm);
+			S2LP_error_check();
+			// Write field.
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_RSSI, (uint32_t) DINFOX_convert_dbm(rssi_dbm));
+			NODE_error_check();
+		}
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
@@ -481,13 +494,15 @@ errors:
 NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t bit = 0;
 	// Check address.
 	switch (reg_addr) {
 	case UHFM_REG_ADDR_STATUS_CONTROL_1:
 		// Read STRG bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG, &bit);
-		if (status != NODE_SUCCESS) goto errors;
+		bit = 0;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG, &bit);
+		NODE_error_check();
 		// Check bit.
 		if (bit != 0) {
 			// Send Sigfox message.
@@ -495,8 +510,9 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			if (status != NODE_SUCCESS) goto errors;
 		}
 		// Read TTRG bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit);
-		if (status != NODE_SUCCESS) goto errors;
+		bit = 0;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit);
+		NODE_error_check();
 		// Check bit.
 		if (bit != 0) {
 			// Perform Sigfox test mode.
@@ -504,8 +520,9 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			if (status != NODE_SUCCESS) goto errors;
 		}
 		// Read DTRG bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, &bit);
-		if (status != NODE_SUCCESS) goto errors;
+		bit = 0;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, &bit);
+		NODE_error_check();
 		// Check bit.
 		if (bit != 0) {
 			// Start downlink decoder.
@@ -513,8 +530,9 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			if (status != NODE_SUCCESS) goto errors;
 		}
 		// Read CWEN bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN, &bit);
-		if (status != NODE_SUCCESS) goto errors;
+		bit = uhfm_flags.cwen;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN, &bit);
+		NODE_error_check();
 		// Check bit change.
 		if (bit != uhfm_flags.cwen) {
 			// Start or stop CW.
@@ -528,8 +546,9 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			uhfm_flags.cwen = bit;
 		}
 		// Read RSSI bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN, &bit);
-		if (status != NODE_SUCCESS) goto errors;
+		bit = uhfm_flags.rsen;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN, &bit);
+		NODE_error_check();
 		// Check bit change.
 		if (bit != uhfm_flags.rsen) {
 			// Start or stop RSSI measurement.
@@ -552,64 +571,80 @@ errors:
 }
 
 /* MEASURE TRIGGER CALLBACK.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param adc_status:	Pointer to the ADC measurements status.
+ * @return status:		Function execution status.
  */
-NODE_status_t UHFM_mtrg_callback(void) {
+NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t vrf_mv = 0;
 	uint32_t radio_test_0 = 0;
 	uint32_t radio_test_1 = 0;
 	// Reset results.
-	status = _UHFM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
+	_UHFM_reset_analog_data();
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
 	// Save radio test registers.
-	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, &radio_test_0);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &radio_test_1);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, &radio_test_0);
+	NODE_error_check();
+	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &radio_test_1);
+	NODE_error_check();
 	// Configure frequency and TX power for measure.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
+	NODE_error_check();
 	// Start CW.
-	status = _UHFM_cwen_callback(1);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = _UHFM_cwen_callback(1);
+	NODE_error_check();
 	// Perform measurements in TX state.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
+	ADC1_error_check();
 	// Stop CW.
-	status = _UHFM_cwen_callback(0);
-	if (status != NODE_SUCCESS) goto errors;
-	// VRF_TX.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, (uint32_t) DINFOX_convert_mv(vrf_mv));
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = _UHFM_cwen_callback(0);
+	NODE_error_check();
+	// Check status.
+	if (adc1_status == ADC_SUCCESS) {
+		// VRF_TX.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX, (uint32_t) DINFOX_convert_mv(vrf_mv));
+			NODE_error_check();
+		}
+	}
 	// Start RX.
-	status = _UHFM_rsen_callback(1);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = _UHFM_rsen_callback(1);
+	NODE_error_check();
 	// Perform measurements in RX state.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
+	ADC1_error_check();
 	// Stop RX.
-	status = _UHFM_rsen_callback(0);
-	if (status != NODE_SUCCESS) goto errors;
-	// VRF_RX.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, (uint32_t) DINFOX_convert_mv(vrf_mv));
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = _UHFM_rsen_callback(0);
+	NODE_error_check();
+	// Update parameter.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
+	}
+	// Check status.
+	if (adc1_status == ADC_SUCCESS) {
+		// VRF_RX.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VRF_MV, &vrf_mv);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, (uint32_t) DINFOX_convert_mv(vrf_mv));
+			NODE_error_check();
+		}
+	}
 errors:
 	// Restore radio test registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, radio_test_0);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, radio_test_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, radio_test_0);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, radio_test_1);
+	NODE_error_check();
 	return status;
 }
 

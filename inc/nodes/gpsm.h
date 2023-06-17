@@ -41,12 +41,12 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[GPSM_REG_ADDR_LAST] = {
 
 /*** GPSM functions ***/
 
-NODE_status_t GPSM_init_registers(void);
+void GPSM_init_registers(void);
 
 NODE_status_t GPSM_update_register(uint8_t reg_addr);
 NODE_status_t GPSM_check_register(uint8_t reg_addr);
 
-NODE_status_t GPSM_mtrg_callback(void);
+NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status);
 
 #endif /* GPSM */
 

@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "dinfox.h"
+#include "error.h"
 #include "load.h"
 #include "lvrm_reg.h"
 #include "node.h"
@@ -31,47 +32,42 @@ static LVRM_flags_t lvrm_flags;
 /*** LVRM local functions ***/
 
 /* RESET RRM ANALOG DATA.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-static NODE_status_t _LVRM_reset_analog_data(void) {
+static void _LVRM_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Reset fields to error value.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
+	NODE_error_check();
 }
 
 /*** LVRM functions ***/
 
 /* INIT LVRM REGISTERS.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-NODE_status_t LVRM_init_registers(void) {
+void LVRM_init_registers(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint8_t relay_state = 0;
 	// Read init state.
 	load_status = LOAD_get_output_state(&relay_state);
-	LOAD_status_check(NODE_ERROR_BASE_LOAD);
+	LOAD_error_check();
 	// Init context.
 	lvrm_flags.rlst = (relay_state == 0) ? 0 : 1;
 	// Status and control register 1.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
+	NODE_error_check();
 	// Load defaults values.
-	status = _LVRM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	_LVRM_reset_analog_data();
 }
 
 /* UPDATE LVRM REGISTER.
@@ -81,6 +77,7 @@ errors:
 NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint8_t relay_state = 0;
 	// Check address.
@@ -88,15 +85,14 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Relay state.
 		load_status = LOAD_get_output_state(&relay_state);
-		LOAD_status_check(NODE_ERROR_BASE_LOAD);
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
-		if (status != NODE_SUCCESS) goto errors;
+		LOAD_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
+		NODE_error_check();
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
@@ -107,62 +103,74 @@ errors:
 NODE_status_t LVRM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint32_t relay_state = 0;
 	// Check address.
 	switch (reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Check relay control bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, &relay_state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, &relay_state);
+		NODE_error_check();
 		// Check bit change.
-		if (((lvrm_flags.rlst == 0) && (relay_state != 0)) || ((lvrm_flags.rlst != 0) && (relay_state == 0))) {
+		if (lvrm_flags.rlst != relay_state) {
 			// Set relay state.
 			load_status = LOAD_set_output_state((uint8_t) relay_state);
-			LOAD_status_check(NODE_ERROR_BASE_LOAD);
+			LOAD_error_check();
 			// Update local flag.
-			lvrm_flags.rlst = (relay_state == 0) ? 0 : 1;
+			lvrm_flags.rlst = relay_state;
 		}
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
 /* MEASURE TRIGGER CALLBACK.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param adc_status:	Pointer to the ADC measurements status.
+ * @return status:		Function execution status.
  */
-NODE_status_t LVRM_mtrg_callback(void) {
+NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
 	// Reset results.
-	status = _LVRM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
+	_LVRM_reset_analog_data();
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	// Relay common voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-	// Relay output voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-	// Relay output current.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, (uint32_t) DINFOX_convert_ua(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-errors:
+	ADC1_error_check();
+	// Update parameter.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
+	}
+	// Check status.
+	if (adc1_status == ADC_SUCCESS) {
+		// Relay common voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+		// Relay output voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+		// Relay output current.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, (uint32_t) DINFOX_convert_ua(adc_data));
+			NODE_error_check();
+		}
+	}
 	return status;
 }
 

@@ -103,7 +103,6 @@ static void _XM_init_hw(void) {
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	NODE_address_t self_address;
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
@@ -176,8 +175,7 @@ static void _XM_init_hw(void) {
 	NEOM8N_init();
 #endif
 	// Init registers.
-	node_status = NODE_init();
-	NODE_error_check();
+	NODE_init();
 	// Init AT interface.
 	AT_BUS_init(self_address);
 }

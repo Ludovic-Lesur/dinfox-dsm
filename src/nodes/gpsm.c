@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "dinfox.h"
+#include "error.h"
 #include "load.h"
 #include "neom8n.h"
 #include "gpsm_reg.h"
@@ -46,34 +47,31 @@ static GPSM_flags_t gpsm_flags;
 /*** GPSM local functions ***/
 
 /* RESET RRM ANALOG DATA.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-static NODE_status_t _GPSM_reset_analog_data(void) {
+static void _GPSM_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Reset fields to error value.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
 }
 
 /* CONTROL GPS POWER SUPPLY.
  * @param state:	0 to turn GPS on, 1 to turn GPS on.
- * @return status:	Function execution status.
+ * @return:			None.
  */
-static NODE_status_t _GPSM_power_control(uint8_t state) {
+static void _GPSM_power_control(uint8_t state) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
 	USART_status_t usart2_status = USART_SUCCESS;
 	// Check on transition.
 	if ((state != 0) && (gpsm_flags.gps_power == 0)) {
 		// Turn GPS on.
 		usart2_status = USART2_power_on();
-		USART2_status_check(NODE_ERROR_BASE_USART2);
+		USART2_error_check();
 	}
 	// Check on transition.
 	if ((state == 0) && (gpsm_flags.gps_power != 0)) {
@@ -82,8 +80,6 @@ static NODE_status_t _GPSM_power_control(uint8_t state) {
 	}
 	// Update local flag.
 	gpsm_flags.gps_power = (state == 0) ? 0 : 1;
-errors:
-	return status;
 }
 
 /* MANAGE GPS POWER SUPPLY.
@@ -93,22 +89,21 @@ errors:
 static NODE_status_t _GPSM_power_request(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t status_control_1 = 0;
 	// Get power mode.
-	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
+	NODE_error_check();
 	// Check power mode.
 	if ((status_control_1 & GPSM_REG_STATUS_CONTROL_1_MASK_PWMD) == 0) {
 		// Power managed by the node.
 		if ((state == 0) && ((status_control_1 & 0x00000015) == 0)) {
 			// Turn GPS off.
-			status = _GPSM_power_control(0);
-			if (status != NODE_SUCCESS) goto errors;
+			_GPSM_power_control(0);
 		}
 		if (state != 0) {
 			// Turn GPS on.
-			status = _GPSM_power_control(1);
-			if (status != NODE_SUCCESS) goto errors;
+			_GPSM_power_control(1);
 		}
 	}
 	else {
@@ -130,6 +125,7 @@ errors:
 static NODE_status_t _GPSM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	uint32_t timeout_seconds = 0;
 	RTC_time_t gps_time;
@@ -138,36 +134,47 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT, &timeout_seconds);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT, &timeout_seconds);
+	NODE_error_check();
 	// Reset status flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 0);
+	NODE_error_check();
 	// Perform time fix.
 	neom8n_status = NEOM8N_get_time(&gps_time, timeout_seconds, &time_fix_duration);
 	// Check status.
 	if (neom8n_status == NEOM8N_SUCCESS) {
 		// Fill registers with time data.
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_YEAR, (uint32_t) (gps_time.year - GPSM_REG_TIME_DATA_0_YEAR_OFFSET));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_MONTH, (uint32_t) gps_time.month);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_DATE, (uint32_t) gps_time.date);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_HOUR, (uint32_t) gps_time.hours);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_MINUTE, (uint32_t) gps_time.minutes);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_SECOND, (uint32_t) gps_time.seconds);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION, time_fix_duration);
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_YEAR, (uint32_t) (gps_time.year - GPSM_REG_TIME_DATA_0_YEAR_OFFSET));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_MONTH, (uint32_t) gps_time.month);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, GPSM_REG_TIME_DATA_0_MASK_DATE, (uint32_t) gps_time.date);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_HOUR, (uint32_t) gps_time.hours);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_MINUTE, (uint32_t) gps_time.minutes);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, GPSM_REG_TIME_DATA_1_MASK_SECOND, (uint32_t) gps_time.seconds);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION, time_fix_duration);
+		NODE_error_check();
 		// Update status flag.
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 1);
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS, 1);
+		NODE_error_check();
 	}
 	else {
 		// Do not consider timeout error.
 		if (neom8n_status != NEOM8N_ERROR_TIME_TIMEOUT) {
-			NEOM8N_status_check(NODE_ERROR_BASE_NEOM8N);
+			NEOM8N_error_check();
 		}
 	}
 errors:
 	// Clear flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TTRG, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TTRG, 0);
+	NODE_error_check();
 	// Turn GPS off is possible.
-	_GPSM_power_request(0);
+	node_status = _GPSM_power_request(0);
+	NODE_error_check();
 	return status;
 }
 
@@ -178,6 +185,7 @@ errors:
 static NODE_status_t _GPSM_gtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	uint32_t timeout_seconds = 0;
 	NEOM8N_position_t gps_position;
@@ -186,39 +194,53 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT, &timeout_seconds);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT, &timeout_seconds);
+	NODE_error_check();
 	// Reset status flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GFS, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GFS, 0);
+	NODE_error_check();
 	// Perform time fix.
 	neom8n_status = NEOM8N_get_position(&gps_position, timeout_seconds, &geoloc_fix_duration);
 	// Check status.
 	if (neom8n_status == NEOM8N_SUCCESS) {
 		// Fill registers with time data.
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_NF, (uint32_t) (gps_position.lat_north_flag));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_SECOND, gps_position.lat_seconds);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_MINUTE, (uint32_t) (gps_position.lat_minutes));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_DEGREE, (uint32_t) (gps_position.lat_degrees));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_EF, (uint32_t) (gps_position.long_east_flag));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_SECOND, gps_position.long_seconds);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_MINUTE, (uint32_t) (gps_position.long_minutes));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_DEGREE, (uint32_t) (gps_position.long_degrees));
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, GPSM_REG_GEOLOC_DATA_2_MASK_ALTITUDE, gps_position.altitude);
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, GPSM_REG_GEOLOC_DATA_3_MASK_FIX_DURATION, geoloc_fix_duration);
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_NF, (uint32_t) (gps_position.lat_north_flag));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_SECOND, gps_position.lat_seconds);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_MINUTE, (uint32_t) (gps_position.lat_minutes));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, GPSM_REG_GEOLOC_DATA_0_MASK_DEGREE, (uint32_t) (gps_position.lat_degrees));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_EF, (uint32_t) (gps_position.long_east_flag));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_SECOND, gps_position.long_seconds);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_MINUTE, (uint32_t) (gps_position.long_minutes));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, GPSM_REG_GEOLOC_DATA_1_MASK_DEGREE, (uint32_t) (gps_position.long_degrees));
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, GPSM_REG_GEOLOC_DATA_2_MASK_ALTITUDE, gps_position.altitude);
+		NODE_error_check();
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, GPSM_REG_GEOLOC_DATA_3_MASK_FIX_DURATION, geoloc_fix_duration);
+		NODE_error_check();
 		// Update status flag.
-		NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GFS, 1);
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GFS, 1);
+		NODE_error_check();
 	}
 	else {
 		// Do not consider position error.
 		if (neom8n_status != NEOM8N_ERROR_POSITION_TIMEOUT) {
-			NEOM8N_status_check(NODE_ERROR_BASE_NEOM8N);
+			NEOM8N_error_check();
 		}
 	}
 errors:
 	// Clear flag.
-	NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GTRG, 0);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GTRG, 0);
+	NODE_error_check();
 	// Turn GPS off is possible.
-	_GPSM_power_request(0);
+	node_status = _GPSM_power_request(0);
+	NODE_error_check();
 	return status;
 }
 
@@ -229,6 +251,7 @@ errors:
 static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	NEOM8N_timepulse_config_t timepulse_config;
 	uint32_t generic_u32 = 0;
@@ -238,46 +261,44 @@ static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
 	// Set state.
 	timepulse_config.active = state;
 	// Read frequency.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY, &generic_u32);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY, &generic_u32);
+	NODE_error_check();
 	timepulse_config.frequency_hz = generic_u32;
 	// Read duty cycle.
-	status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CUCLE, &generic_u32);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CUCLE, &generic_u32);
+	NODE_error_check();
 	timepulse_config.duty_cycle_percent = (uint8_t) generic_u32;
 	// Set timepulse.
 	neom8n_status = NEOM8N_configure_timepulse(&timepulse_config);
-	NEOM8N_status_check(NODE_ERROR_BASE_NEOM8N);
+	NEOM8N_error_check();
 	// Update local flag.
 	gpsm_flags.tpen = (state == 0) ? 0 : 1;
 errors:
 	// Turn GPS off is possible.
-	_GPSM_power_request(0);
+	node_status = _GPSM_power_request(0);
+	NODE_error_check();
 	return status;
 }
 
 /*** GPSM functions ***/
 
 /* INIT GPSM REGISTERS.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-NODE_status_t GPSM_init_registers(void) {
+void GPSM_init_registers(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Init flags.
 	gpsm_flags.all = 0;
 	// Load default values.
-	status = _GPSM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEOUT_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_0_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_1_DEFAULT_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	_GPSM_reset_analog_data();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEOUT_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_0_DEFAULT_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_1_DEFAULT_VALUE);
+	NODE_error_check();
 }
 
 /* UPDATE GPSM REGISTER.
@@ -287,18 +308,18 @@ errors:
 NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Check address.
 	switch (reg_addr) {
 	case GPSM_REG_ADDR_STATUS_CONTROL_1:
 		// GPS backup voltage.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) (NEOM8N_get_backup()));
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) (NEOM8N_get_backup()));
+		NODE_error_check();
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
@@ -309,14 +330,15 @@ errors:
 NODE_status_t GPSM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t bit_0 = 0;
 	uint32_t bit_1 = 0;
 	// Check address.
 	switch (reg_addr) {
 	case GPSM_REG_ADDR_STATUS_CONTROL_1:
 		// Check time fix trigger bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit_0);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit_0);
+		NODE_error_check();
 		// Check bit.
 		if (bit_0 != 0) {
 			// Start GPS time fix.
@@ -324,8 +346,8 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr) {
 			if (status != NODE_SUCCESS) goto errors;
 		}
 		// Check geolocation fix trigger bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GTRG, &bit_0);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_GTRG, &bit_0);
+		NODE_error_check();
 		// Check bit.
 		if (bit_0 != 0) {
 			// Start GPS geolocation fix.
@@ -333,65 +355,52 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr) {
 			if (status != NODE_SUCCESS) goto errors;
 		}
 		// Read TPEN bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN, &bit_0);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN, &bit_0);
+		NODE_error_check();
 		// Check bit change.
 		if (bit_0 != gpsm_flags.tpen) {
 			// Start timepulse.
 			status = _GPSM_tpen_callback(bit_0);
 			if (status != NODE_SUCCESS) {
 				// Clear request.
-				NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN, gpsm_flags.tpen);
+				node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN, gpsm_flags.tpen);
+				NODE_error_check();
 				goto errors;
 			}
 			// Update local flag.
 			gpsm_flags.tpen = bit_0;
 		}
 		// Read power bits.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWMD, &bit_0);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWMD, &bit_0);
+		NODE_error_check();
 		// Read power enable bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWEN, &bit_1);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWEN, &bit_1);
+		NODE_error_check();
 		// Check PWMD bit change.
 		if ((bit_0 != 0) && (gpsm_flags.pwmd == 0)) {
 			// Apply PWEN bit.
-			status = _GPSM_power_control(bit_1);
-			if (status != NODE_SUCCESS) {
-				// Clear request.
-				NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWMD, gpsm_flags.pwmd);
-				goto errors;
-			}
+			_GPSM_power_control(bit_1);
 			// Update local flag.
 			gpsm_flags.pwmd = bit_0;
 		}
 		// Check PWMD bit change.
 		if ((bit_0 == 0) && (gpsm_flags.pwmd != 0)) {
 			// Try turning GPS off.
-			status = _GPSM_power_request(0);
-			if (status != NODE_SUCCESS) {
-				// Clear request.
-				NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWMD, gpsm_flags.pwmd);
-				goto errors;
-			}
+			node_status = _GPSM_power_request(0);
+			NODE_error_check();
 			// Update local flag.
 			gpsm_flags.pwmd = bit_0;
 		}
 		// Check PWEN bit change.
 		if ((bit_0 != 0) && (bit_1 != gpsm_flags.pwen)) {
 			// Apply PWEN bit.
-			status = _GPSM_power_control(bit_1);
-			if (status != NODE_SUCCESS) {
-				// Clear request.
-				NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_PWMD, gpsm_flags.pwmd);
-				goto errors;
-			}
+			_GPSM_power_control(bit_1);
 			// Update local flag.
 			gpsm_flags.pwen = bit_1;
 		}
 		// Read backup voltage control bits.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_BKEN, &bit_0);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, GPSM_REG_STATUS_CONTROL_1_MASK_BKEN, &bit_0);
+		NODE_error_check();
 		// Check bit change.
 		if (bit_0 != gpsm_flags.bken) {
 			// Start timepulse.
@@ -418,36 +427,48 @@ errors:
 }
 
 /* MEASURE TRIGGER CALLBACK.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param adc_status:	Pointer to the ADC measurements status.
+ * @return status:		Function execution status.
  */
-NODE_status_t GPSM_mtrg_callback(void) {
+NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
 	// Reset results.
-	status = _GPSM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
+	_GPSM_reset_analog_data();
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	// GPS voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VGPS_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-	// Active antenna voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VANT_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
+	ADC1_error_check();
+	// Update parameter.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
+	}
+	// Check status.
+	if (adc1_status == ADC_SUCCESS) {
+		// GPS voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VGPS_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+		// Active antenna voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VANT_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+	}
 errors:
 	// Turn GPS off is possible.
-	_GPSM_power_request(0);
+	node_status = _GPSM_power_request(0);
+	NODE_error_check();
 	return status;
 }
 

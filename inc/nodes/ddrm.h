@@ -32,12 +32,12 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[DDRM_REG_ADDR_LAST] = {
 
 /*** DDRM functions ***/
 
-NODE_status_t DDRM_init_registers(void);
+void DDRM_init_registers(void);
 
 NODE_status_t DDRM_update_register(uint8_t reg_addr);
 NODE_status_t DDRM_check_register(uint8_t reg_addr);
 
-NODE_status_t DDRM_mtrg_callback(void);
+NODE_status_t DDRM_mtrg_callback(ADC_status_t* adc_status);
 
 #endif /* DDRM */
 

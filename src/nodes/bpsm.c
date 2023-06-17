@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "dinfox.h"
+#include "error.h"
 #include "load.h"
 #include "bpsm_reg.h"
 #include "node.h"
@@ -32,32 +33,30 @@ static BPSM_flags_t bpsm_flags;
 /*** BPSM local functions ***/
 
 /* RESET BPSM ANALOG DATA.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-static NODE_status_t _BPSM_reset_analog_data(void) {
+static void _BPSM_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	// Reset fields to error value.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, DINFOX_VOLTAGE_ERROR_VALUE);
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, DINFOX_VOLTAGE_ERROR_VALUE);
+	NODE_error_check();
 }
 
 /*** BPSM functions ***/
 
 /* INIT BPSM REGISTERS.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param:	None.
+ * @return:	None.
  */
-NODE_status_t BPSM_init_registers(void) {
+void BPSM_init_registers(void) {
 	// Local variables.
-	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint8_t state = 0;
 	// Read init state.
@@ -65,20 +64,18 @@ NODE_status_t BPSM_init_registers(void) {
 	// Init context.
 	bpsm_flags.chen = (state == 0) ? 0 : 1;
 	// Status and control register 1.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, (uint32_t) state);
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, (uint32_t) state);
+	NODE_error_check();
 	// Read init state.
 	load_status = LOAD_get_output_state(&state);
-	LOAD_status_check(NODE_ERROR_BASE_LOAD);
+	LOAD_error_check();
 	// Init context.
 	bpsm_flags.bken = (state == 0) ? 0 : 1;
 	// Status and control register 1.
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) state);
-	if (status != NODE_SUCCESS) goto errors;
+	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) state);
+	NODE_error_check();
 	// Load default values.
-	status = _BPSM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
-errors:
-	return status;
+	_BPSM_reset_analog_data();
 }
 
 /* UPDATE BPSM REGISTER.
@@ -88,6 +85,7 @@ errors:
 NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint8_t state = 0;
 	// Check address.
@@ -96,25 +94,24 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 		// Charge status.
 		state = LOAD_get_charge_status();
 		// Write field.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHST, (uint32_t) state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHST, (uint32_t) state);
+		NODE_error_check();
 		// Charge state.
 		state = LOAD_get_charge_state();
 		// Write field.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, (uint32_t) state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, (uint32_t) state);
+		NODE_error_check();
 		// Backup_output state.
 		load_status = LOAD_get_output_state(&state);
-		LOAD_status_check(NODE_ERROR_BASE_LOAD);
+		LOAD_error_check();
 		// Write field.
-		status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, (uint32_t) state);
+		NODE_error_check();
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
@@ -125,72 +122,84 @@ errors:
 NODE_status_t BPSM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint32_t state = 0;
 	// Check address.
 	switch (reg_addr) {
 	case BPSM_REG_ADDR_STATUS_CONTROL_1:
 		// Check charge control bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, &state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN, &state);
+		NODE_error_check();
 		// Check bit change.
-		if (((bpsm_flags.chen == 0) && (state != 0)) || ((bpsm_flags.chen != 0) && (state == 0))) {
+		if (bpsm_flags.chen != state) {
 			// Set charge state.
 			LOAD_set_charge_state((uint8_t) state);
 			// Update local flag.
-			bpsm_flags.chen = (state == 0) ? 0 : 1;
+			bpsm_flags.chen = state;
 		}
 		// Check relay control bit.
-		status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, &state);
-		if (status != NODE_SUCCESS) goto errors;
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_STATUS_CONTROL_1, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN, &state);
+		NODE_error_check();
 		// Check bit change.
-		if (((bpsm_flags.bken == 0) && (state != 0)) || ((bpsm_flags.bken != 0) && (state == 0))) {
+		if (bpsm_flags.bken != state) {
 			// Set relay state.
 			load_status = LOAD_set_output_state((uint8_t) state);
-			LOAD_status_check(NODE_ERROR_BASE_LOAD);
+			LOAD_error_check();
 			// Update local flag.
-			bpsm_flags.bken = (state == 0) ? 0 : 1;
+			bpsm_flags.bken = state;
 		}
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	return status;
 }
 
 /* MEASURE TRIGGER CALLBACK.
- * @param:			None.
- * @return status:	Function execution status.
+ * @param adc_status:	Pointer to the ADC measurements status.
+ * @return status:		Function execution status.
  */
-NODE_status_t BPSM_mtrg_callback(void) {
+NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	NODE_status_t node_status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
 	// Reset results.
-	status = _BPSM_reset_analog_data();
-	if (status != NODE_SUCCESS) goto errors;
+	_BPSM_reset_analog_data();
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	// Relay common voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-	// Relay output voltage.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSTR_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-	// Relay output current.
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VBKP_MV, &adc_data);
-	ADC1_status_check(NODE_ERROR_BASE_ADC);
-	status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, (uint32_t) DINFOX_convert_mv(adc_data));
-	if (status != NODE_SUCCESS) goto errors;
-errors:
+	ADC1_error_check();
+	// Update parameter.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
+	}
+	// Check status.
+	if (adc1_status == ADC_SUCCESS) {
+		// Relay common voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+		// Relay output voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSTR_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, BPSM_REG_ANALOG_DATA_1_MASK_VSTR, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+		// Relay output current.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VBKP_MV, &adc_data);
+		ADC1_error_check();
+		if (adc1_status == ADC_SUCCESS) {
+			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, (uint32_t) DINFOX_convert_mv(adc_data));
+			NODE_error_check();
+		}
+	}
 	return status;
 }
 

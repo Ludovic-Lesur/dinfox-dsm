@@ -32,12 +32,12 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST] = {
 
 /*** LVRM functions ***/
 
-NODE_status_t LVRM_init_registers(void);
+void LVRM_init_registers(void);
 
 NODE_status_t LVRM_update_register(uint8_t reg_addr);
 NODE_status_t LVRM_check_register(uint8_t reg_addr);
 
-NODE_status_t LVRM_mtrg_callback(void);
+NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status);
 
 #endif /* LVRM */
 
