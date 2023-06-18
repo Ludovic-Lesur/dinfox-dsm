@@ -11,6 +11,18 @@
 #include "node.h"
 #include "types.h"
 
+/*** COMMON macros ***/
+
+#define COMMON_REG_ACCESS \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+	DINFOX_REG_ACCESS_READ_WRITE, \
+	DINFOX_REG_ACCESS_READ_ONLY,  \
+
 /*** COMMON functions ***/
 
 void COMMON_init_registers(void);

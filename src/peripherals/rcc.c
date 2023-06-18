@@ -47,8 +47,6 @@ void RCC_init(void) {
 	// All peripherals clocked via the corresponding APBx line.
 	// Reset clock is MSI 2.1MHz.
 	rcc_sysclk_khz = RCC_MSI_RESET_FREQUENCY_KHZ;
-	// Enable LSI and LSE ready interrupts.
-	RCC -> CIER |= (0b11 << 0);
 }
 
 /* CONFIGURE AND USE HSI AS SYSTEM CLOCK (16MHz INTERNAL RC).
@@ -111,6 +109,7 @@ void RCC_enable_lsi(void) {
 	// Enable LSI.
 	RCC -> CSR |= (0b1 << 0); // LSION='1'.
 	// Enable interrupt.
+	RCC -> CIER |= (0b1 << 0);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 	// Wait for LSI to be stable.
 	while (((RCC -> CSR) & (0b1 << 1)) == 0) {
@@ -127,6 +126,7 @@ void RCC_enable_lse(void) {
 	// Enable LSE (32.768kHz crystal).
 	RCC -> CSR |= (0b1 << 8); // LSEON='1'.
 	// Enable interrupt.
+	RCC -> CIER |= (0b1 << 1);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 	// Wait for LSE to be stable.
 	while (((RCC -> CSR) & (0b1 << 9)) == 0) {
