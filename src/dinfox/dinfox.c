@@ -232,7 +232,7 @@ uint16_t DINFOX_convert_mv(uint32_t voltage_mv) {
 	}
 	else {
 		dinfox_voltage.unit = DINFOX_VOLTAGE_UNIT_DV;
-		dinfox_voltage.value = (voltage_mv / 100);
+		dinfox_voltage.value = (voltage_mv / DINFOX_MV_PER_DV);
 	}
 	return (dinfox_voltage.representation);
 }
@@ -251,7 +251,7 @@ uint32_t DINFOX_get_mv(uint16_t dinfox_voltage) {
 	unit = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> unit;
 	value = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> value;
 	// Compute mV.
-	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? ((uint32_t) value) : ((uint32_t) (value / DINFOX_MV_PER_DV));
+	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? ((uint32_t) value) : ((uint32_t) (value * DINFOX_MV_PER_DV));
 	return voltage_mv;
 }
 
