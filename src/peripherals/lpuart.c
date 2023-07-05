@@ -7,12 +7,12 @@
 
 #include "lpuart.h"
 
-#include "at_bus.h"
 #include "exti.h"
 #include "gpio.h"
 #include "lbus.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
+#include "node_common.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"

@@ -8,8 +8,8 @@
 #ifndef __LBUS_H__
 #define __LBUS_H__
 
-#include "node.h"
 #include "lpuart.h"
+#include "node_common.h"
 #include "types.h"
 
 /*** LBUS macros ***/

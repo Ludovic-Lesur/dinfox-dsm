@@ -8,12 +8,15 @@
 #ifndef __NODE_COMMON_H__
 #define __NODE_COMMON_H__
 
+#include "types.h"
+
 /*** NODES common structures ***/
 
 typedef uint8_t	NODE_address_t;
 
 typedef enum {
-	NODE_PROTOCOL_AT_BUS = 0,
+	NODE_PROTOCOL_NONE = 0,
+	NODE_PROTOCOL_AT_BUS,
 	NODE_PROTOCOL_R4S8CR,
 	NODE_PROTOCOL_LAST
 } NODE_protocol_t;

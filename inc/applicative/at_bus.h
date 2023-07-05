@@ -8,7 +8,7 @@
 #ifndef __AT_BUS_H__
 #define __AT_BUS_H__
 
-#include "node.h"
+#include "node_common.h"
 #include "types.h"
 
 /*** AT functions ***/

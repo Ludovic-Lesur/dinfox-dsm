@@ -9,7 +9,7 @@
 
 #include "at_bus.h"
 #include "lpuart.h"
-#include "node.h"
+#include "node_common.h"
 #include "types.h"
 
 /*** LBUS local macros ***/

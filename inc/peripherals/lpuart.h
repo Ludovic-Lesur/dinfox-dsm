@@ -8,7 +8,7 @@
 #ifndef __LPUART_H__
 #define __LPUART_H__
 
-#include "node.h"
+#include "node_common.h"
 #include "types.h"
 
 /*** LPUART structures ***/
