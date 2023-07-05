@@ -16,18 +16,16 @@
 
 /*** LOAD local macros ***/
 
+#define LOAD_STATE_UNKNOWN_VALUE		0xFF
 #if (defined LVRM) && (defined HW2_0)
 #define LOAD_DC_DC_DELAY_MS				100
 #define LOAD_VCOIL_DELAY_MS				100
 #define LOAD_RELAY_CONTROL_DURATION_MS	1000
-#define LOAD_STATE_UNKNOWN_VALUE		0xFF
 #endif
 
 /*** LOAD local global variables ***/
 
-#if (defined LVRM) && (defined HW2_0)
 static uint8_t load_state = LOAD_STATE_UNKNOWN_VALUE;
-#endif
 
 /*** LOAD functions ***/
 
@@ -61,6 +59,8 @@ void LOAD_init(void) {
 LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
+	// Directly exit with success if state is already set.
+	if ((state == load_state) && (load_state != LOAD_STATE_UNKNOWN_VALUE)) goto errors;
 #if (defined LVRM) && (defined HW2_0)
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	// Enable DC-DC.
@@ -82,15 +82,13 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	GPIO_write(&GPIO_OUT_SELECT, 0);
 	GPIO_write(&GPIO_COIL_POWER_ENABLE, 0);
 	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 0);
-	// Update state.
-	load_state = state;
 #else
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, state);
 #endif
-#if (defined LVRM) && (defined HW2_0)
+	// Update state.
+	load_state = state;
 errors:
-#endif
 	return status;
 }
 
@@ -101,19 +99,13 @@ errors:
 LOAD_status_t LOAD_get_output_state(uint8_t* state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
-#if (defined LVRM) && (defined HW2_0)
+	// Check state.
 	if (load_state == LOAD_STATE_UNKNOWN_VALUE) {
 		status = LOAD_ERROR_STATE_UNKNOWN;
 		goto errors;
 	}
 	(*state) = load_state;
-#else
-	// Directly read GPIO.
-	(*state) = (GPIO_read(&GPIO_OUT_EN));
-#endif
-#if (defined LVRM) && (defined HW2_0)
 errors:
-#endif
 	return status;
 }
 
