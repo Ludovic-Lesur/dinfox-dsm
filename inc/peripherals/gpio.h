@@ -11,6 +11,10 @@
 #include "gpio_reg.h"
 #include "types.h"
 
+/*** GPIO macros ***/
+
+#define GPIO_PINS_PER_PORT	16
+
 /*** GPIO structures ***/
 
 typedef struct {

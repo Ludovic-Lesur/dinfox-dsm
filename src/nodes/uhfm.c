@@ -8,18 +8,20 @@
 #include "uhfm.h"
 
 #include "adc.h"
-#include "addon_sigfox_rf_protocol_api.h"
 #include "aes.h"
 #include "dinfox.h"
 #include "error.h"
 #include "load.h"
-#include "lvrm_reg.h"
 #include "node.h"
 #include "nvm.h"
-#include "rf_api.h"
+#ifdef UHFM
+#include "manuf/rf_api.h"
 #include "s2lp.h"
-#include "sigfox_api.h"
+#include "sigfox_ep_addon_rfp_api.h"
+#include "sigfox_ep_api.h"
+#include "sigfox_rc.h"
 #include "sigfox_types.h"
+#endif
 
 #ifdef UHFM
 
@@ -37,6 +39,11 @@
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ				830000000
 #define UHFM_ADC_MEASUREMENTS_TX_POWER_DBM					14
 
+#define UHFM_FEATURE_ADDON_RFP
+#define UHFM_FEATURE_CW
+#define UHFM_FEATURE_DL
+#define UHFM_FEATURE_RSSI
+
 /*** UHFM local structures ***/
 
 typedef union {
@@ -50,10 +57,15 @@ typedef union {
 
 /*** UHFM local global variables ***/
 
-static sfx_rc_t UHFM_SIGFOX_RC[UHFM_NUMBER_OF_SIGFOX_RC] = {RC1, RC2, RC3C, RC4, RC5, RC6, RC7};
 static UHFM_flags_t uhfm_flags;
 
 /*** UHFM local functions ***/
+
+#define SIGFOX_EP_API_status_check(void) { if (sigfox_ep_api_status != SIGFOX_EP_API_SUCCESS) { status = NODE_ERROR_SIGFOX_EP_LIB; goto errors; } }
+
+#define SIGFOX_EP_ADDON_RFP_status_check(void) { if (sigfox_ep_addon_rfp_status != SIGFOX_EP_ADDON_RFP_API_SUCCESS) { status = NODE_ERROR_SIGFOX_EP_ADDON_RFP; goto errors; } }
+
+#define RF_API_status_check(void) { if (rf_api_status != RF_API_SUCCESS) { status = NODE_ERROR_SIGFOX_RF_API; goto errors; } }
 
 /* RESET UHFM ANALOG DATA.
  * @param:	None.
@@ -93,27 +105,25 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
-	uint32_t rc_index = 0;
+	SIGFOX_EP_API_status_t sigfox_ep_api_status = SIGFOX_EP_API_SUCCESS;
+	SIGFOX_EP_API_config_t lib_config;
+	SIGFOX_EP_API_application_message_t application_message;
+	SIGFOX_EP_API_message_status_t message_status;
 	uint32_t bidir_flag = 0;
 	uint32_t number_of_frames = 0;
-	uint32_t control_message_flag = 0;
+	uint32_t ul_bit_rate = 0;
 	uint32_t message_type = 0;
 	uint32_t ul_payload_size = 0;
-	uint8_t ul_payload[SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES];
-	uint8_t dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
-	int16_t dl_rssi_dbm = 0;
-	UHFM_message_status_t message_status;
+	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
+	sfx_u8 dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
+	sfx_s16 dl_rssi_dbm = 0;
 	// Reset status.
 	message_status.all = 0;
-	// Read RC index.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
-	NODE_error_check();
 	// Read number of frames.
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_NFR, &number_of_frames);
 	NODE_error_check();
-	// Read control message flag.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG, &control_message_flag);
+	// Read bit rate.
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_BR, &ul_bit_rate);
 	NODE_error_check();
 	// Read message type.
 	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT, &message_type);
@@ -133,68 +143,41 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
 	// Open library.
-	sigfox_api_status = SIGFOX_API_open(&(UHFM_SIGFOX_RC[rc_index]));
-	SIGFOX_API_error_check();
+	lib_config.rc = &SIGFOX_RC1;
+	sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
+	SIGFOX_EP_API_status_check();
 	// Update radio state.
 	uhfm_flags.radio_state = 1;
-	// Check control message flag.
-	if (control_message_flag == 0) {
-		// Check message type.
-		switch (message_type) {
-		case 1:
-			sigfox_api_status = SIGFOX_API_send_bit(0, dl_payload, (number_of_frames - 1), (sfx_bool) bidir_flag);
-			break;
-		case 2:
-			sigfox_api_status = SIGFOX_API_send_bit(1, dl_payload, (number_of_frames - 1), (sfx_bool) bidir_flag);
-			break;
-		case 3:
-			sigfox_api_status = SIGFOX_API_send_frame(ul_payload, ul_payload_size, dl_payload, (number_of_frames - 1), (sfx_bool) bidir_flag);
-			break;
-		default:
-			// Empty frame or unknown value.
-			status = NODE_ERROR_MESSAGE_TYPE;
-			goto errors;
-		}
-		// Do not consider downlink timeout error.
-		if (((sfx_u8) (sigfox_api_status & 0x00FF)) == SFX_ERR_INT_GET_RECEIVED_FRAMES_TIMEOUT) {
-			// Update message status.
-			message_status.ul_frame_1 = 1;
-			message_status.ul_frame_2 = 1;
-			message_status.ul_frame_3 = 1;
-			message_status.network_error = 1;
-		}
-		else {
-			// Check status.
-			if (sigfox_api_status != SFX_ERR_NONE) {
-				message_status.execution_error = 1;
-			}
-			SIGFOX_API_error_check();
-			// Update message status.
-			message_status.ul_frame_1 = 1;
-			message_status.ul_frame_2 = 1;
-			message_status.ul_frame_3 = 1;
-			// Check bidirectional flag.
-			if (bidir_flag != 0) {
-				// Write DL payload registers.
-				node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DOWNLINK_DATA_SIZE_BYTES);
-				NODE_error_check();
-				// Write DL RSSI.
-				node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
-				NODE_error_check();
-				// Update message status.
-				message_status.dl_frame = 1;
-				message_status.dl_conf_frame = 1;
-			}
-		}
-	}
-	else {
-		sigfox_api_status = SIGFOX_API_send_outofband(SFX_OOB_SERVICE);
-		SIGFOX_API_error_check();
+	// Build message structure.
+	application_message.common_parameters.number_of_frames = (sfx_u8) number_of_frames;
+	application_message.common_parameters.ul_bit_rate = (SIGFOX_ul_bit_rate_t) ul_bit_rate;
+#ifdef PUBLIC_KEY_CAPABLE
+	application_message.common_parameters.ep_key_type = SIGFOX_EP_KEY_PRIVATE;
+#endif
+	application_message.type = (SIGFOX_application_message_type_t) message_type;
+	application_message.bidirectional_flag = (sfx_u8) bidir_flag;
+	application_message.ul_payload = (sfx_u8*) ul_payload;
+	application_message.ul_payload_size_bytes = (sfx_u8) ul_payload_size;
+	// Send message.
+	sigfox_ep_api_status = SIGFOX_EP_API_send_application_message(&application_message);
+	SIGFOX_EP_API_status_check();
+	// Read message status.
+	message_status = SIGFOX_EP_API_get_message_status();
+	// Check bidirectional flag.
+	if ((bidir_flag != 0) && (message_status.field.dl_frame != 0)) {
+		// Read downlink data.
+		sigfox_ep_api_status = SIGFOX_EP_API_get_dl_payload(dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES, &dl_rssi_dbm);
+		SIGFOX_EP_API_status_check();
+		// Write DL payload registers.
+		node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
+		NODE_error_check();
+		// Write DL RSSI.
+		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
+		NODE_error_check();
 	}
 errors:
 	// Close library.
-	sigfox_api_status = SIGFOX_API_close();
-	SIGFOX_API_error_check();
+	SIGFOX_EP_API_close();
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
 	// Update message status in register.
@@ -207,6 +190,7 @@ errors:
 	return status;
 }
 
+#ifdef UHFM_FEATURE_ADDON_RFP
 /* PERFORM SIGFOX TEST MODE.
  * @param:			None.
  * @return status:	Function execution status.
@@ -215,23 +199,34 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
-	uint32_t rc_index = 0;
-	uint32_t test_mode = 0;
-	// Read RC index.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC, &rc_index);
+	SIGFOX_EP_ADDON_RFP_API_status_t sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_SUCCESS;
+	SIGFOX_EP_ADDON_RFP_API_config_t addon_config;
+	SIGFOX_EP_ADDON_RFP_API_test_mode_t test_mode;
+	uint32_t ul_bit_rate = 0;
+	uint32_t test_mode_ref = 0;
+	// Read bit rate.
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_BR, &ul_bit_rate);
 	NODE_error_check();
 	// Read test mode.
-	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE, &test_mode);
+	node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE, &test_mode_ref);
 	NODE_error_check();
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
 	// Update radio state.
 	uhfm_flags.radio_state = 1;
-	// Call test mode function wth public key.
-	sigfox_api_status = ADDON_SIGFOX_RF_PROTOCOL_API_test_mode((sfx_rc_enum_t) rc_index, (sfx_test_mode_t) test_mode);
-	SIGFOX_API_error_check();
+	// Open addon.
+	addon_config.rc = &SIGFOX_RC1;
+	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_open(&addon_config);
+	SIGFOX_EP_ADDON_RFP_status_check();
+	// Call test mode function.
+	test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) test_mode_ref;
+	test_mode.ul_bit_rate = (SIGFOX_ul_bit_rate_t) ul_bit_rate;
+	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_test_mode(&test_mode);
+	if (sigfox_ep_addon_rfp_status != SIGFOX_EP_ADDON_RFP_API_SUCCESS) {
+		status = NODE_ERROR_SIGFOX_EP_ADDON_RFP;
+		goto errors;
+	}
 errors:
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
@@ -240,7 +235,9 @@ errors:
 	NODE_error_check();
 	return status;
 }
+#endif
 
+#ifdef UHFM_FEATURE_DL
 /* START DOWNLINK DECODER.
  * @param:			None.
  * @return status:	Function execution status.
@@ -249,12 +246,13 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	RF_API_status_t rf_api_status = RF_API_SUCCESS;
+	RF_API_radio_parameters_t radio_params;
+	RF_API_rx_data_t rx_data;
+	SIGFOX_EP_API_message_status_t  message_status;
 	uint32_t rf_frequency_hz = 0;
-	sfx_rx_state_enum_t dl_status = DL_PASSED;
-	sfx_u8 dl_phy_content[SIGFOX_DOWNLINK_PHY_SIZE_BYTES];
-	int16_t dl_rssi_dbm = 0;
-	UHFM_message_status_t message_status;
+	sfx_u8 dl_phy_content[SIGFOX_DL_PHY_CONTENT_SIZE_BYTES];
+	sfx_s16 dl_rssi_dbm = 0;
 	// Reset status.
 	message_status.all = 0;
 	// Read RF frequency.
@@ -265,28 +263,37 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	if (status != NODE_SUCCESS) goto errors;
 	// Update radio state.
 	uhfm_flags.radio_state = 1;
-	// Start radio.
-	sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
-	SIGFOX_API_error_check();
-	sigfox_api_status = RF_API_change_frequency(rf_frequency_hz);
-	SIGFOX_API_error_check();
-	sigfox_api_status = RF_API_wait_frame(dl_phy_content, &dl_rssi_dbm, &dl_status);
-	SIGFOX_API_error_check();
+	// Wake-up radio.
+	rf_api_status = RF_API_wake_up();
+	RF_API_status_check();
+	// Init radio.
+	radio_params.rf_mode = RF_API_MODE_RX;
+	radio_params.frequency_hz = (sfx_u32) rf_frequency_hz;
+	radio_params.modulation = RF_API_MODULATION_GFSK;
+	radio_params.bit_rate_bps = SIGFOX_DL_BIT_RATE_BPS;
+	radio_params.tx_power_dbm_eirp = TX_POWER_DBM_EIRP;
+	radio_params.deviation_hz = SIGFOX_DL_GFSK_DEVIATION_HZ;
+	rf_api_status = RF_API_init(&radio_params);
+	RF_API_status_check();
+	// Start downlink frame listening.
+	rf_api_status = RF_API_receive(&rx_data);
+	RF_API_status_check();
 	// Check status.
-	if (dl_status == DL_PASSED) {
+	if (rx_data.data_received == SFX_TRUE) {
 		// Write DL PHY content registers.
-		node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, (uint8_t*) dl_phy_content, SIGFOX_DOWNLINK_PHY_SIZE_BYTES);
+		node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, (uint8_t*) dl_phy_content, SIGFOX_DL_PHY_CONTENT_SIZE_BYTES);
 		NODE_error_check();
 		// Write DL RSSI.
 		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm));
 		NODE_error_check();
 		// Update message status.
-		message_status.dl_frame = 1;
+		message_status.field.dl_frame = 1;
 	}
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		sigfox_api_status = RF_API_stop();
-		SIGFOX_API_error_check();
+		// Stop radio.
+		RF_API_de_init();
+		RF_API_sleep();
 	}
 	// Update radio state.
 	uhfm_flags.radio_state = 0;
@@ -299,7 +306,9 @@ errors:
 	// Return.
 	return status;
 }
+#endif
 
+#ifdef UHFM_FEATURE_CW
 /* MANAGE CONTINUOUS WAVE MODE.
  * @param state:	Start (1) or stop (0) continuous wave generation.
  * @return status:	Function execution status.
@@ -308,7 +317,8 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	RF_API_status_t rf_api_status = RF_API_SUCCESS;
+	RF_API_radio_parameters_t radio_params;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	uint32_t rf_frequency_hz = 0;
 	uint32_t tx_power = 0;
@@ -327,8 +337,10 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 		status = _UHFM_check_radio_state(1);
 		if (status != NODE_SUCCESS) goto errors;
 		// Stop CW.
-		sigfox_api_status = SIGFOX_API_stop_continuous_transmission();
-		SIGFOX_API_error_check();
+		rf_api_status = RF_API_de_init();
+		RF_API_status_check();
+		rf_api_status = RF_API_sleep();
+		RF_API_status_check();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
@@ -338,23 +350,40 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 		if (status != NODE_SUCCESS) goto errors;
 		// Update radio state.
 		uhfm_flags.radio_state = 1;
+		// Wake-up radio.
+		rf_api_status = RF_API_wake_up();
+		RF_API_status_check();
+		// Init radio.
+		radio_params.rf_mode = RF_API_MODE_TX;
+		radio_params.frequency_hz = (sfx_u32) rf_frequency_hz;
+		radio_params.modulation = RF_API_MODULATION_NONE;
+		radio_params.bit_rate_bps = 0;
+		radio_params.tx_power_dbm_eirp = tx_power_dbm;
+		radio_params.deviation_hz = 0;
+		rf_api_status = RF_API_init(&radio_params);
+		RF_API_status_check();
 		// Start CW.
-		sigfox_api_status = SIGFOX_API_start_continuous_transmission((sfx_u32) rf_frequency_hz, SFX_NO_MODULATION);
-		SIGFOX_API_error_check();
-		s2lp_status = S2LP_set_rf_output_power(tx_power_dbm);
-		S2LP_error_check();
+		s2lp_status = S2LP_send_command(S2LP_COMMAND_READY);
+		if (s2lp_status != S2LP_SUCCESS) goto errors;
+		s2lp_status = S2LP_wait_for_state(S2LP_STATE_READY);
+		if (s2lp_status != S2LP_SUCCESS) goto errors;
+		s2lp_status = S2LP_send_command(S2LP_COMMAND_TX);
+		if (s2lp_status != S2LP_SUCCESS) goto errors;
 	}
 	return status;
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		sigfox_api_status = SIGFOX_API_stop_continuous_transmission();
-		SIGFOX_API_error_check();
+		// Stop radio.
+		RF_API_de_init();
+		RF_API_sleep();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
 	return status;
 }
+#endif
 
+#ifdef UHFM_FEATURE_RSSI
 /* MANAGE CONTINUOUS RSSI MODE.
  * @param state:	Start (1) or stop (0) continuous RSSI measurement.
  * @return status:	Function execution status.
@@ -363,7 +392,8 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
-	sfx_error_t sigfox_api_status = SFX_ERR_NONE;
+	RF_API_status_t rf_api_status = RF_API_SUCCESS;
+	RF_API_radio_parameters_t radio_params;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	uint32_t rf_frequency_hz = 0;
 	// Read RF frequency.
@@ -375,8 +405,10 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 		status = _UHFM_check_radio_state(1);
 		if (status != NODE_SUCCESS) goto errors;
 		// Stop continuous listening.
-		sigfox_api_status = RF_API_stop();
-		SIGFOX_API_error_check();
+		rf_api_status = RF_API_de_init();
+		RF_API_status_check();
+		rf_api_status = RF_API_sleep();
+		RF_API_status_check();
 		// Update radio state.
 		uhfm_flags.radio_state = 0;
 	}
@@ -386,30 +418,38 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 		if (status != NODE_SUCCESS) goto errors;
 		// Update radio state.
 		uhfm_flags.radio_state = 1;
+		// Wake-up radio.
+		rf_api_status = RF_API_wake_up();
+		RF_API_status_check();
 		// Init radio.
-		sigfox_api_status = RF_API_init(SFX_RF_MODE_RX);
-		SIGFOX_API_error_check();
-		sigfox_api_status = RF_API_change_frequency((sfx_u32) rf_frequency_hz);
-		SIGFOX_API_error_check();
+		radio_params.rf_mode = RF_API_MODE_RX;
+		radio_params.frequency_hz = (sfx_u32) rf_frequency_hz;
+		radio_params.modulation = RF_API_MODULATION_NONE;
+		radio_params.bit_rate_bps = 0;
+		radio_params.tx_power_dbm_eirp = 0;
+		radio_params.deviation_hz = 0;
+		rf_api_status = RF_API_init(&radio_params);
+		RF_API_status_check();
 		// Start continuous listening.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_READY);
 		S2LP_error_check();
 		s2lp_status = S2LP_wait_for_state(S2LP_STATE_READY);
 		S2LP_error_check();
-		// Start radio.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_RX);
 		S2LP_error_check();
 	}
 	return status;
 errors:
 	if (status != NODE_ERROR_RADIO_STATE) {
-		sigfox_api_status = RF_API_stop();
-		SIGFOX_API_error_check();
+		// Stop radio.
+		RF_API_de_init();
+		RF_API_sleep();
 	}
 	// Update local flag.
 	uhfm_flags.rsen = 0;
 	return status;
 }
+#endif
 
 /*** UHFM functions ***/
 
@@ -422,26 +462,26 @@ void UHFM_init_registers(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	uint8_t idx = 0;
-	uint8_t sigfox_ep_tab[AES_BLOCK_SIZE];
+	uint8_t sigfox_ep_tab[SIGFOX_EP_KEY_SIZE_BYTES];
 	// Init flags.
 	uhfm_flags.all = 0;
 	// Sigfox EP ID register.
-	for (idx=0 ; idx<ID_LENGTH ; idx++) {
+	for (idx=0 ; idx<SIGFOX_EP_ID_SIZE_BYTES ; idx++) {
 		// Read byte.
-		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + idx), &(sigfox_ep_tab[idx]));
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_ID + idx), &(sigfox_ep_tab[idx]));
 		NVM_error_check();
 	}
 	// Write registers.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, ID_LENGTH);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, SIGFOX_EP_ID_SIZE_BYTES);
 	NODE_error_check();
 	// Sigfox EP key register.
-	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
+	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
 		// Read byte.
-		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), &(sigfox_ep_tab[idx]));
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), &(sigfox_ep_tab[idx]));
 		NVM_error_check();
 	}
 	// Write registers.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, AES_BLOCK_SIZE);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_tab, SIGFOX_EP_KEY_SIZE_BYTES);
 	NODE_error_check();
 	// Load default values.
 	_UHFM_reset_analog_data();
@@ -509,6 +549,7 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_strg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
+#ifdef UHFM_FEATURE_ADDON_RFP
 		// Read TTRG bit.
 		bit = 0;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit);
@@ -519,6 +560,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_ttrg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
+#endif
+#ifdef UHFM_FEATURE_DL
 		// Read DTRG bit.
 		bit = 0;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, &bit);
@@ -529,6 +572,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_dtrg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
+#endif
+#ifdef UHFM_FEATURE_CW
 		// Read CWEN bit.
 		bit = uhfm_flags.cwen;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN, &bit);
@@ -545,6 +590,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			// Update local flag.
 			uhfm_flags.cwen = bit;
 		}
+#endif
+#ifdef UHFM_FEATURE_RSSI
 		// Read RSSI bit.
 		bit = uhfm_flags.rsen;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN, &bit);
@@ -561,6 +608,7 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			// Update local flag.
 			uhfm_flags.rsen = bit;
 		}
+#endif
 		break;
 	default:
 		// Nothing to do for other registers.
@@ -597,15 +645,19 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	NODE_error_check();
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
 	NODE_error_check();
+#ifdef UHFM_FEATURE_CW
 	// Start CW.
 	node_status = _UHFM_cwen_callback(1);
 	NODE_error_check();
+#endif
 	// Perform measurements in TX state.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_error_check();
+#ifdef UHFM_FEATURE_CW
 	// Stop CW.
 	node_status = _UHFM_cwen_callback(0);
 	NODE_error_check();
+#endif
 	// Check status.
 	if (adc1_status == ADC_SUCCESS) {
 		// VRF_TX.
@@ -616,15 +668,19 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 			NODE_error_check();
 		}
 	}
+#ifdef UHFM_FEATURE_RSSI
 	// Start RX.
 	node_status = _UHFM_rsen_callback(1);
 	NODE_error_check();
+#endif
 	// Perform measurements in RX state.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_error_check();
+#ifdef UHFM_FEATURE_RSSI
 	// Stop RX.
 	node_status = _UHFM_rsen_callback(0);
 	NODE_error_check();
+#endif
 	// Update parameter.
 	if (adc_status != NULL) {
 		(*adc_status) = adc1_status;

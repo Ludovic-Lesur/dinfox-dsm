@@ -119,19 +119,4 @@ typedef enum {
 #define UHFM_REG_RADIO_TEST_1_MASK_TX_POWER						0x000000FF
 #define UHFM_REG_RADIO_TEST_1_MASK_RSSI							0x0000FF00
 
-/*** Temporary message status ***/
-
-typedef union {
-	struct {
-		unsigned ul_frame_1 : 1;
-		unsigned ul_frame_2 : 1;
-		unsigned ul_frame_3 : 1;
-		unsigned dl_frame : 1;
-		unsigned dl_conf_frame : 1;
-		unsigned network_error : 1; // For LBT and downlink timeout.
-		unsigned execution_error : 1; // For internal execution errors.
-	};
-	uint8_t all;
-} UHFM_message_status_t;
-
 #endif /* __UHFM_REG_H__ */

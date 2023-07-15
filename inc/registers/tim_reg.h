@@ -13,27 +13,32 @@
 /*** TIMx registers ***/
 
 typedef struct {
-	volatile uint32_t CR1;    		// Control register 1.
-	volatile uint32_t CR2;    		// Control register 2.
-	volatile uint32_t SMCR;    		// Slave mode controler register (!)
-	volatile uint32_t DIER;    		// DMA interrupt enable register.
-	volatile uint32_t SR;    		// Status register.
-	volatile uint32_t EGR;    		// Event generation register.
-	volatile uint32_t CCMR1;    	// Capture/compare mode register 1 (!).
-	volatile uint32_t CCMR2;    	// Capture/compare mode register 2 (!).
-	volatile uint32_t CCER;    		// Capture/compare enable register (!).
-	volatile uint32_t CNT;    		// Counter register.
-	volatile uint32_t PSC;    		// Prescaler register.
-	volatile uint32_t ARR;    		// Auto-reload register.
-	volatile uint32_t RESERVED0;	// Reserved 0x30.
-	volatile uint32_t CCR1;    		// Capture/compare register 1 (!).
-	volatile uint32_t CCR2;    		// Capture/compare register 2 (!).
-	volatile uint32_t CCR3;    		// Capture/compare register 3 (!).
-	volatile uint32_t CCR4;    		// Capture/compare register 4 (!).
-	volatile uint32_t RESERVED1;    // Reserved 0x44
-	volatile uint32_t DCR;    		// DMA control register (!).
-	volatile uint32_t DMAR;    		// DMA address for full transfer register (!).
-	volatile uint32_t OR;    		// Option register (!).
+	volatile uint32_t CR1;    			// Control register 1.
+	volatile uint32_t CR2;    			// Control register 2.
+	volatile uint32_t SMCR;    			// Slave mode controler register (!)
+	volatile uint32_t DIER;    			// DMA interrupt enable register.
+	volatile uint32_t SR;    			// Status register.
+	volatile uint32_t EGR;    			// Event generation register.
+	volatile uint32_t CCMR1;    		// Capture/compare mode register 1 (!).
+	volatile uint32_t CCMR2;    		// Capture/compare mode register 2 (!).
+	volatile uint32_t CCER;    			// Capture/compare enable register (!).
+	volatile uint32_t CNT;    			// Counter register.
+	volatile uint32_t PSC;    			// Prescaler register.
+	volatile uint32_t ARR;    			// Auto-reload register.
+	volatile uint32_t RESERVED0;		// Reserved 0x30.
+	union {
+		struct {
+			volatile uint32_t CCR1;		// Capture/compare register 1 (!).
+			volatile uint32_t CCR2;		// Capture/compare register 2 (!).
+			volatile uint32_t CCR3;		// Capture/compare register 3 (!).
+			volatile uint32_t CCR4;		// Capture/compare register 4 (!).
+		};
+		volatile uint32_t CCRx[4];		// Capture/compare registers (!).
+	};
+	volatile uint32_t RESERVED1;    	// Reserved 0x44
+	volatile uint32_t DCR;    			// DMA control register (!).
+	volatile uint32_t DMAR;    			// DMA address for full transfer register (!).
+	volatile uint32_t OR;    			// Option register (!).
 } TIM_registers_t;
 
 /*** TIMx base addresses ***/

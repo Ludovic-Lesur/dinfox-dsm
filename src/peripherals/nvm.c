@@ -140,6 +140,7 @@ errors:
 	return status;
 }
 
+#ifdef UHFM
 /* RESET ALL NVM FIELDS TO DEFAULT VALUE.
  * @param:			None.
  * @return status:	Function execution status.
@@ -147,21 +148,13 @@ errors:
 NVM_status_t NVM_reset_default(void) {
 	// Local variables.
 	NVM_status_t status = NVM_SUCCESS;
-	// Sigfox parameters.
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_PN + 0), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_PN + 1), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER + 0), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER + 1), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_FH + 0), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte((NVM_ADDRESS_SIGFOX_FH + 1), 0x00);
-	if (status != NVM_SUCCESS) goto errors;
-	status = NVM_write_byte(NVM_ADDRESS_SIGFOX_RL, 0x00);
-	if (status != NVM_SUCCESS) goto errors;
+	uint8_t idx = 0;
+	// Sigfox EP LIB data.
+	for (idx=0 ; idx<SIGFOX_NVM_DATA_SIZE_BYTES ; idx++) {
+		status = NVM_write_byte((NVM_ADDRESS_SIGFOX_EP_LIB_DATA + idx), 0x00);
+		if (status != NVM_SUCCESS) goto errors;
+	}
 errors:
 	return status;
 }
+#endif

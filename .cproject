@@ -62,7 +62,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -84,7 +83,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -100,8 +98,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1104573276" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1345163505" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -129,6 +125,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -208,7 +207,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -230,7 +228,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -246,8 +243,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1644426658" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1015661034" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -275,6 +270,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -354,7 +352,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -376,7 +373,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -392,8 +388,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.500548045" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.506660683" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -421,6 +415,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -500,7 +497,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -522,7 +518,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -538,8 +533,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.2140521454" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1230644112" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -567,6 +560,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -646,7 +642,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -668,7 +663,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -684,8 +678,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.203140265" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499403968" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -713,6 +705,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -785,6 +780,20 @@
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_2"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
+									<listOptionValue builtIn="false" value="RC1"/>
+									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
+									<listOptionValue builtIn="false" value="BIDIRECTIONAL"/>
+									<listOptionValue builtIn="false" value="LOW_LEVEL_OPEN_CLOSE"/>
+									<listOptionValue builtIn="false" value="LATENCY_COMPENSATION"/>
+									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
+									<listOptionValue builtIn="false" value="T_IFU_MS=1000"/>
+									<listOptionValue builtIn="false" value="T_CONF_MS=2000"/>
+									<listOptionValue builtIn="false" value="MESSAGE_COUNTER_ROLLOVER=4096"/>
+									<listOptionValue builtIn="false" value="PARAMETERS_CHECK"/>
+									<listOptionValue builtIn="false" value="CERTIFICATION"/>
+									<listOptionValue builtIn="false" value="ERROR_CODES"/>
+									<listOptionValue builtIn="false" value="ERROR_STACK=32"/>
+									<listOptionValue builtIn="false" value="PUBLIC_KEY_CAPABLE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1396808884" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
@@ -792,10 +801,11 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib/sigfox-ep-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib/sigfox-ep-addon-rfp/inc&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.650230120" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -807,6 +817,20 @@
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_2"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
+									<listOptionValue builtIn="false" value="RC1"/>
+									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
+									<listOptionValue builtIn="false" value="BIDIRECTIONAL"/>
+									<listOptionValue builtIn="false" value="LOW_LEVEL_OPEN_CLOSE"/>
+									<listOptionValue builtIn="false" value="LATENCY_COMPENSATION"/>
+									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
+									<listOptionValue builtIn="false" value="T_IFU_MS=1000"/>
+									<listOptionValue builtIn="false" value="T_CONF_MS=2000"/>
+									<listOptionValue builtIn="false" value="MESSAGE_COUNTER_ROLLOVER=4096"/>
+									<listOptionValue builtIn="false" value="PARAMETERS_CHECK"/>
+									<listOptionValue builtIn="false" value="CERTIFICATION"/>
+									<listOptionValue builtIn="false" value="ERROR_CODES"/>
+									<listOptionValue builtIn="false" value="ERROR_STACK=32"/>
+									<listOptionValue builtIn="false" value="PUBLIC_KEY_CAPABLE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.715225220" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
@@ -814,10 +838,11 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib/sigfox-ep-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib/sigfox-ep-addon-rfp/inc&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1165254743" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -830,8 +855,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.873768034" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.2134532020" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -859,6 +882,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -938,7 +964,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -960,7 +985,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -976,8 +1000,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.12676179" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1530074900" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -1005,6 +1027,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -1084,7 +1109,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -1106,7 +1130,6 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/peripherals&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/components&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/sigfox&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/nodes&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/applicative&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc/dinfox&quot;"/>
@@ -1122,8 +1145,6 @@
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1754468635" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_LIB_V2.10.0"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="SFX_ADDON_V0.8.0"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499023170" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
@@ -1151,6 +1172,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

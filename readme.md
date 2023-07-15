@@ -36,8 +36,13 @@ The project is organized as follow:
     * `peripherals`: internal MCU **peripherals** drivers.
     * `utils`: **utility** functions.
     * `components`: external **components** drivers.
-    * `sigfox`: **Sigfox library** API and low level implementation.
+    * `sigfox`: **Sigfox EP library** low level implementation.
     * `nodes` : Nodes **descriptors**.
     * `applicative`: high-level **application** layers.
+* `lib`: **Sigfox EP and ADDON-RFP libraries** submodules.
 * `startup`: MCU **startup** code (from ARM).
 * `linker`: MCU **linker** script (from ARM).
+
+## Sigfox library
+
+The **UHFM** board uses Sigfox technology to perform the system remote monitoring (and light remote control). The project is based on the [Sigfox end-point open source library](https://github.com/sigfox-tech-radio/sigfox-ep-lib) which is embedded as a Git submodule.

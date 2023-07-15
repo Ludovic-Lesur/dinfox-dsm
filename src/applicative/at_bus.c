@@ -23,12 +23,15 @@
 #include "parser.h"
 #include "pwr.h"
 #include "rrm_reg.h"
-#include "sigfox_api.h"
 #include "sm_reg.h"
 #include "string.h"
 #include "types.h"
 #include "uhfm.h"
 #include "uhfm_reg.h"
+#ifdef UHFM
+#include "sigfox_ep_api.h"
+#include "sigfox_types.h"
+#endif
 
 /*** AT local macros ***/
 
@@ -42,7 +45,10 @@
 #define AT_BUS_FRAME_END					STRING_CHAR_CR
 #define AT_BUS_REPLY_TAB					"     "
 #ifdef UHFM
-// Duration of RSSI command.
+#define AT_BUS_ADDON_RFP_COMMAND
+#define AT_BUS_CW_COMMAND
+#define AT_BUS_DL_COMMAND
+#define AT_BUS_RSSI_COMMAND
 #define AT_BUS_RSSI_REPORT_PERIOD_MS		500
 #endif
 
@@ -68,10 +74,18 @@ static void _AT_BUS_so_callback(void);
 static void _AT_BUS_sb_callback(void);
 static void _AT_BUS_sf_callback(void);
 static void _AT_BUS_print_dl_payload(void);
+#ifdef AT_BUS_ADDON_RFP_COMMAND
 static void _AT_BUS_tm_callback(void);
+#endif
+#ifdef AT_BUS_CW_COMMAND
 static void _AT_BUS_cw_callback(void);
+#endif
+#ifdef AT_BUS_DL_COMMAND
 static void _AT_BUS_dl_callback(void);
+#endif
+#ifdef AT_BUS_RSSI_COMMAND
 static void _AT_BUS_rssi_callback(void);
+#endif
 #endif /* UHFM */
 #if (defined GPSM) && (defined ATM)
 static void _AT_BUS_time_callback(void);
@@ -124,10 +138,18 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_HEADER,  "AT$SB=", "data[bit],(bidir_flag[bit])", "Sigfox send bit", _AT_BUS_sb_callback},
 	{PARSER_MODE_HEADER,  "AT$SF=", "data[hex],(bidir_flag[bit])", "Sigfox send frame", _AT_BUS_sf_callback},
 	{PARSER_MODE_COMMAND, "AT$DL?", STRING_NULL, "Read last DL payload", _AT_BUS_print_dl_payload},
+#ifdef AT_BUS_ADDON_RFP_COMMAND
 	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Execute Sigfox test mode", _AT_BUS_tm_callback},
+#endif
+#ifdef AT_BUS_CW_COMMAND
 	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Start or stop continuous radio transmission", _AT_BUS_cw_callback},
+#endif
+#ifdef AT_BUS_DL_COMMAND
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_BUS_dl_callback},
+#endif
+#ifdef AT_BUS_RSSI_COMMAND
 	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_BUS_rssi_callback},
+#endif
 #endif /* UHFM */
 #if (defined GPSM) && (defined ATM)
 	{PARSER_MODE_HEADER,  "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
@@ -376,28 +398,45 @@ static void _AT_BUS_print_error_stack(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t generic_u32 = 0;
 	ERROR_t error = SUCCESS;
-	// Read stack.
-	if (ERROR_stack_is_empty() != 0) {
-		_AT_BUS_reply_add_string("Error stack empty");
-	}
-	else {
-		// Unstack all errors.
-		_AT_BUS_reply_add_string("[ ");
-		do {
-			// Read error stack.
-			node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ERROR_STACK, COMMON_REG_ERROR_STACK_MASK_ERROR, &generic_u32);
-			NODE_error_check_print();
-			error = (ERROR_t) generic_u32;
-			// Check value.
-			if (error != SUCCESS) {
-				_AT_BUS_reply_add_value((int32_t) error, STRING_FORMAT_HEXADECIMAL, 1);
-				_AT_BUS_reply_add_string(" ");
-			}
+#ifdef UHFM
+	SIGFOX_EP_API_status_t sigfox_ep_api_status = SIGFOX_EP_API_SUCCESS;
+	SIGFOX_ERROR_t sigfox_error;
+#endif
+	// Unstack all errors.
+	_AT_BUS_reply_add_string("[ ");
+	do {
+		// Read error stack.
+		node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ERROR_STACK, COMMON_REG_ERROR_STACK_MASK_ERROR, &generic_u32);
+		NODE_error_check_print();
+		error = (ERROR_t) generic_u32;
+		// Check value.
+		if (error != SUCCESS) {
+			_AT_BUS_reply_add_value((int32_t) error, STRING_FORMAT_HEXADECIMAL, 1);
+			_AT_BUS_reply_add_string(" ");
 		}
-		while (error != SUCCESS);
-		_AT_BUS_reply_add_string("]");
 	}
+	while (error != SUCCESS);
+	_AT_BUS_reply_add_string("]");
 	_AT_BUS_reply_send();
+#ifdef UHFM
+	// Print Sigfox library errors stack.
+	_AT_BUS_reply_add_string("SIGFOX_EP_LIB [ ");
+	do {
+		// Read error stack.
+		sigfox_ep_api_status = SIGFOX_EP_API_unstack_error(&sigfox_error);
+		ERROR_status_check_print(sigfox_ep_api_status, SIGFOX_EP_API_SUCCESS, ERROR_BASE_SIGFOX);
+		// Check value.
+		if (sigfox_error.code != SIGFOX_EP_API_SUCCESS) {
+			_AT_BUS_reply_add_value((int32_t) sigfox_error.source, STRING_FORMAT_HEXADECIMAL, 1);
+			_AT_BUS_reply_add_string("-");
+			_AT_BUS_reply_add_value((int32_t) sigfox_error.code, STRING_FORMAT_HEXADECIMAL, 1);
+			_AT_BUS_reply_add_string(" ");
+		}
+	}
+	while (sigfox_error.code != SIGFOX_EP_API_SUCCESS);
+	_AT_BUS_reply_add_string("]");
+	_AT_BUS_reply_send();
+#endif /* UHFM */
 	_AT_BUS_print_ok();
 errors:
 	return;
@@ -627,13 +666,13 @@ errors:
 static void _AT_BUS_get_id_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
-	uint8_t sigfox_ep_id[ID_LENGTH];
+	uint8_t sigfox_ep_id[SIGFOX_EP_ID_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read ID.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, sigfox_ep_id, ID_LENGTH);
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
 	NODE_error_check_print();
 	// Print ID.
-	for (idx=0 ; idx<ID_LENGTH ; idx++) {
+	for (idx=0 ; idx<SIGFOX_EP_ID_SIZE_BYTES ; idx++) {
 		_AT_BUS_reply_add_value(sigfox_ep_id[idx], STRING_FORMAT_HEXADECIMAL, (idx==0 ? 1 : 0));
 	}
 	_AT_BUS_reply_send();
@@ -653,19 +692,19 @@ static void _AT_BUS_set_id_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	uint8_t sigfox_ep_id[ID_LENGTH];
+	uint8_t sigfox_ep_id[SIGFOX_EP_ID_SIZE_BYTES];
 	uint8_t extracted_length = 0;
 	uint8_t idx = 0;
 	// Read ID parameter.
-	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, ID_LENGTH, 1, sigfox_ep_id, &extracted_length);
+	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, SIGFOX_EP_ID_SIZE_BYTES, 1, sigfox_ep_id, &extracted_length);
 	PARSER_error_check_print();
 	// Write device ID in NVM.
-	for (idx=0 ; idx<ID_LENGTH ; idx++) {
-		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_ID + idx), sigfox_ep_id[idx]);
+	for (idx=0 ; idx<SIGFOX_EP_ID_SIZE_BYTES ; idx++) {
+		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_EP_ID + idx), sigfox_ep_id[idx]);
 		NVM_error_check_print();
 	}
 	// Update register.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_id, ID_LENGTH);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
 	NODE_error_check_print();
 	_AT_BUS_print_ok();
 errors:
@@ -681,13 +720,13 @@ errors:
 static void _AT_BUS_get_key_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
-	uint8_t sigfox_ep_key[AES_BLOCK_SIZE];
+	uint8_t sigfox_ep_key[SIGFOX_EP_KEY_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read key.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, sigfox_ep_key, AES_BLOCK_SIZE);
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
 	NODE_error_check_print();
 	// Print key.
-	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
+	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
 		_AT_BUS_reply_add_value(sigfox_ep_key[idx], STRING_FORMAT_HEXADECIMAL, (idx==0 ? 1 : 0));
 	}
 	_AT_BUS_reply_send();
@@ -707,19 +746,19 @@ static void _AT_BUS_set_key_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
-	uint8_t sigfox_ep_key[AES_BLOCK_SIZE];
+	uint8_t sigfox_ep_key[SIGFOX_EP_KEY_SIZE_BYTES];
 	uint8_t extracted_length = 0;
 	uint8_t idx = 0;
 	// Read key parameter.
-	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, AES_BLOCK_SIZE, 1, sigfox_ep_key, &extracted_length);
+	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, SIGFOX_EP_KEY_SIZE_BYTES, 1, sigfox_ep_key, &extracted_length);
 	PARSER_error_check_print();
 	// Write device ID in NVM.
-	for (idx=0 ; idx<AES_BLOCK_SIZE ; idx++) {
-		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), sigfox_ep_key[idx]);
+	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
+		nvm_status = NVM_write_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), sigfox_ep_key[idx]);
 		NVM_error_check_print();
 	}
 	// Update registers.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_key, AES_BLOCK_SIZE);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
 	NODE_error_check_print();
 	_AT_BUS_print_ok();
 errors:
@@ -766,7 +805,7 @@ static void _AT_BUS_sb_callback(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	int32_t ul_bit = 0;
 	int32_t bidir_flag = 0;
-	UHFM_message_status_t message_status;
+	SIGFOX_EP_API_message_status_t message_status;
 	uint32_t generic_u32 = 0;
 	// First try with 2 parameters.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, AT_BUS_CHAR_SEPARATOR, &ul_bit);
@@ -803,7 +842,7 @@ static void _AT_BUS_sb_callback(void) {
 	_AT_BUS_reply_add_value(message_status.all, STRING_FORMAT_HEXADECIMAL, 1);
 	_AT_BUS_reply_send();
 	// Print DL payload if required.
-	if ((bidir_flag != 0) && (message_status.dl_frame != 0)) {
+	if ((bidir_flag != 0) && (message_status.field.dl_frame != 0)) {
 		_AT_BUS_print_dl_payload();
 	}
 	_AT_BUS_print_ok();
@@ -821,13 +860,13 @@ static void _AT_BUS_sf_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
-	uint8_t ul_payload[SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES];
+	uint8_t ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
 	uint8_t ul_payload_size = 0;
 	int32_t bidir_flag = 0;
-	UHFM_message_status_t message_status;
+	SIGFOX_EP_API_message_status_t message_status;
 	uint32_t generic_u32 = 0;
 	// First try with 2 parameters.
-	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
+	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
 	if (parser_status == PARSER_SUCCESS) {
 		// Try parsing downlink request parameter.
 		parser_status =  PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, STRING_CHAR_NULL, &bidir_flag);
@@ -835,7 +874,7 @@ static void _AT_BUS_sf_callback(void) {
 	}
 	else {
 		// Try with 1 parameter.
-		parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, SIGFOX_UPLINK_DATA_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
+		parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, STRING_CHAR_NULL, SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
 		PARSER_error_check_print();
 	}
 	// Configure message.
@@ -863,7 +902,7 @@ static void _AT_BUS_sf_callback(void) {
 	_AT_BUS_reply_add_value(message_status.all, STRING_FORMAT_HEXADECIMAL, 1);
 	_AT_BUS_reply_send();
 	// Print DL payload if required.
-	if ((bidir_flag != 0) && (message_status.dl_frame != 0)) {
+	if ((bidir_flag != 0) && (message_status.field.dl_frame != 0)) {
 		_AT_BUS_print_dl_payload();
 	}
 	_AT_BUS_print_ok();
@@ -880,14 +919,14 @@ errors:
 static void _AT_BUS_print_dl_payload(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
-	uint8_t dl_payload[SIGFOX_DOWNLINK_DATA_SIZE_BYTES];
+	uint8_t dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read registers.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DOWNLINK_DATA_SIZE_BYTES);
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
 	NODE_error_check_print();
 	// Print DL payload.
 	_AT_BUS_reply_add_string("+RX=");
-	for (idx=0 ; idx<SIGFOX_DOWNLINK_DATA_SIZE_BYTES ; idx++) {
+	for (idx=0 ; idx<SIGFOX_DL_PAYLOAD_SIZE_BYTES ; idx++) {
 		_AT_BUS_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
 	}
 	_AT_BUS_reply_send();
@@ -896,7 +935,7 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM)
+#if (defined UHFM) && (defined ATM) && (defined AT_BUS_DL_COMMAND)
 /* PRINT SIGFOX DOWNLINK FRAME ON AT INTERFACE.
  * @param dl_payload:	Downlink data to print.
  * @return:				None.
@@ -906,7 +945,7 @@ static void _AT_BUS_print_dl_phy_content(uint8_t* dl_phy_content, int32_t rssi_d
 	uint8_t idx = 0;
 	// Print DL-PHY content.
 	_AT_BUS_reply_add_string("+DL_PHY=");
-	for (idx=0 ; idx<SIGFOX_DOWNLINK_PHY_SIZE_BYTES ; idx++) {
+	for (idx=0 ; idx<SIGFOX_DL_PHY_CONTENT_SIZE_BYTES ; idx++) {
 		_AT_BUS_reply_add_value(dl_phy_content[idx], STRING_FORMAT_HEXADECIMAL, 0);
 	}
 	_AT_BUS_reply_add_string(" RSSI=");
@@ -916,7 +955,7 @@ static void _AT_BUS_print_dl_phy_content(uint8_t* dl_phy_content, int32_t rssi_d
 }
 #endif
 
-#if (defined UHFM) && (defined ATM)
+#if (defined UHFM) && (defined ATM) && (defined AT_BUS_ADDON_RFP_COMMAND)
 /* AT$TM EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -947,7 +986,7 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM)
+#if (defined UHFM) && (defined ATM) && (defined AT_BUS_CW_COMMAND)
 /* AT$CW EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -992,7 +1031,7 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM)
+#if (defined UHFM) && (defined ATM) && (defined AT_BUS_DL_COMMAND)
 /* AT$DL EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1001,8 +1040,8 @@ static void _AT_BUS_dl_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
-	UHFM_message_status_t message_status;
-	uint8_t dl_phy_content[SIGFOX_DOWNLINK_PHY_SIZE_BYTES];
+	SIGFOX_EP_API_message_status_t message_status;
+	uint8_t dl_phy_content[SIGFOX_DL_PHY_CONTENT_SIZE_BYTES];
 	int32_t frequency_hz = 0;
 	uint32_t generic_u32 = 0;
 	// Read frequency parameter.
@@ -1021,9 +1060,9 @@ static void _AT_BUS_dl_callback(void) {
 		NODE_error_check_print();
 		message_status.all = (uint8_t) generic_u32;
 		// Print DL frame if received.
-		if (message_status.dl_frame != 0) {
+		if (message_status.field.dl_frame != 0) {
 			// Read frame.
-			node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, dl_phy_content, SIGFOX_DOWNLINK_PHY_SIZE_BYTES);
+			node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PHY_CONTENT_0, dl_phy_content, SIGFOX_DL_PHY_CONTENT_SIZE_BYTES);
 			NODE_error_check_print();
 			// Read RSSI.
 			node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI, &generic_u32);
@@ -1032,14 +1071,14 @@ static void _AT_BUS_dl_callback(void) {
 			_AT_BUS_print_dl_phy_content(dl_phy_content, DINFOX_get_dbm(generic_u32));
 		}
 	}
-	while (message_status.dl_frame != 0);
+	while (message_status.field.dl_frame != 0);
 	_AT_BUS_print_ok();
 errors:
 	return;
 }
 #endif
 
-#if (defined UHFM) && (defined ATM)
+#if (defined UHFM) && (defined ATM) && (defined AT_BUS_RSSI_COMMAND)
 /* AT$RSSI EXECUTION CALLBACK.
  * @param:	None.
  * @return:	None.
@@ -1400,19 +1439,24 @@ void AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
 	}
 }
 
-/* PRINT SIGFOX LIBRARY RESULT.
- * @param test_result:	Test result.
- * @param rssi:			Downlink signal rssi in dBm.
+#if (defined UHFM) && (defined ATM)
+/* PRINT SIGFOX DL PAYLOAD.
+ * @param dl_payload:		Downlink payload to print.
+ * @param dl_payload_size:	Number of bytes to print.
+ * @param rssi_dbm:			RSSI of the received downlink frame (16-bits signed value).
+ * @return:					None.
  */
-void AT_BUS_print_test_result(uint8_t test_result, int16_t rssi_dbm) {
-	// Check result.
-	if (test_result == 0) {
-		_AT_BUS_reply_add_string("Test failed.");
+void AT_BUS_print_dl_payload(sfx_u8 *dl_payload, sfx_u8 dl_payload_size, sfx_s16 rssi_dbm) {
+	// Local variables.
+	uint8_t idx = 0;
+	// Print DL payload.
+	_AT_BUS_reply_add_string("+RX=");
+	for (idx=0 ; idx<dl_payload_size ; idx++) {
+		_AT_BUS_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
 	}
-	else {
-		_AT_BUS_reply_add_string("Test passed. RSSI=");
-		_AT_BUS_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
-		_AT_BUS_reply_add_string("dBm");
-	}
+	_AT_BUS_reply_add_string(" (RSSI=");
+	_AT_BUS_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("dBm)");
 	_AT_BUS_reply_send();
 }
+#endif

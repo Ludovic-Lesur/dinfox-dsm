@@ -140,6 +140,9 @@ static void _XM_init_hw(void) {
 	LPTIM1_init();
 	adc1_status = ADC1_init();
 	ADC1_error_check();
+#ifdef UHFM
+	TIM2_init();
+#endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	TIM2_init();
 	TIM21_init();
@@ -170,6 +173,7 @@ static void _XM_init_hw(void) {
 #endif
 #ifdef UHFM
 	S2LP_init();
+	S2LP_set_rx_bandwidth(3000);
 #endif
 #ifdef GPSM
 	NEOM8N_init();
@@ -254,11 +258,11 @@ int main(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	_XM_static_measurements();
 #endif
+	// Start periodic wakeup timer.
+	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
+	RTC_error_check();
 	// Main loop.
 	while (1) {
-		// Start periodic wakeup timer.
-		rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
-		RTC_error_check();
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 		// Enter sleep or stop mode depending on LED state.
 		if (TIM21_is_single_blink_done() != 0) {
@@ -272,9 +276,6 @@ int main(void) {
 		// Enter stop mode.
 		PWR_enter_stop_mode();
 #endif
-		// Wake-up: stop wakeup timer.
-		rtc_status = RTC_stop_wakeup_timer();
-		RTC_error_check();
 		// Check RTC flag.
 		if (RTC_get_wakeup_timer_flag() != 0) {
 			// Clear flag.

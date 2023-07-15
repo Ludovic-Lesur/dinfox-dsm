@@ -11,6 +11,10 @@
 #include "lptim.h"
 #include "types.h"
 
+/*** SPI macros ***/
+
+#define SPI_POWER_ON_DELAY_MS	50
+
 /*** SPI structures ***/
 
 typedef enum {
@@ -32,9 +36,9 @@ void SPI1_power_off(void);
 SPI_status_t SPI1_write_byte(uint8_t tx_data);
 SPI_status_t SPI1_read_byte(uint8_t tx_data, uint8_t* rx_data);
 
-#define SPI1_status_check(error_base) { if (spi_status != SPI_SUCCESS) { status = error_base + spi_status; goto errors; }}
-#define SPI1_error_check() { ERROR_status_check(spi_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
-#define SPI1_error_check_print() { ERROR_status_check_print(spi_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
+#define SPI1_status_check(error_base) { if (spi1_status != SPI_SUCCESS) { status = error_base + spi1_status; goto errors; }}
+#define SPI1_error_check() { ERROR_status_check(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
+#define SPI1_error_check_print() { ERROR_status_check_print(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
 
 #endif /* UHFM */
 

@@ -10,10 +10,6 @@
 
 #include "types.h"
 
-/*** AES macros ***/
-
-#define AES_BLOCK_SIZE 	16 // 128-bits is 16 bytes.
-
 /*** AES structures ***/
 
 typedef enum {

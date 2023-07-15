@@ -9,6 +9,9 @@
 #define __NVM_H__
 
 #include "types.h"
+#ifdef UHFM
+#include "sigfox_types.h"
+#endif
 
 /*** NVM macros ***/
 
@@ -24,13 +27,14 @@ typedef enum {
 
 typedef enum {
 	NVM_ADDRESS_SELF_ADDRESS = 0,
-	NVM_ADDRESS_SIGFOX_DEVICE_ID = 1,
-	NVM_ADDRESS_SIGFOX_DEVICE_KEY = 5,
-	NVM_ADDRESS_SIGFOX_PN = 21,
-	NVM_ADDRESS_SIGFOX_MESSAGE_COUNTER = 23,
-	NVM_ADDRESS_SIGFOX_FH = 25,
-	NVM_ADDRESS_SIGFOX_RL = 27,
+#ifdef UHFM
+	NVM_ADDRESS_SIGFOX_EP_ID = 1,
+	NVM_ADDRESS_SIGFOX_EP_KEY = (NVM_ADDRESS_SIGFOX_EP_ID + SIGFOX_EP_ID_SIZE_BYTES),
+	NVM_ADDRESS_SIGFOX_EP_LIB_DATA = (NVM_ADDRESS_SIGFOX_EP_KEY + SIGFOX_EP_KEY_SIZE_BYTES),
+	NVM_ADDRESS_LAST = (NVM_ADDRESS_SIGFOX_EP_LIB_DATA + SIGFOX_NVM_DATA_SIZE_BYTES)
+#else
 	NVM_ADDRESS_LAST
+#endif
 } NVM_address_t;
 
 /*** NVM functions ***/
@@ -38,7 +42,9 @@ typedef enum {
 void NVM_init(void);
 NVM_status_t NVM_read_byte(NVM_address_t address_offset, uint8_t* data);
 NVM_status_t NVM_write_byte(NVM_address_t address_offset, uint8_t data);
+#ifdef UHFM
 NVM_status_t NVM_reset_default(void);
+#endif
 
 #define NVM_status_check(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; }}
 #define NVM_error_check() { ERROR_status_check(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
