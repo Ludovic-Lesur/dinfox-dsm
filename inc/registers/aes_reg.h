@@ -10,8 +10,17 @@
 
 #include "types.h"
 
-/*** AES registers ***/
+/*** AES REG macros ***/
 
+// Peripheral base address.
+#define AES		((AES_registers_t*) ((uint32_t) 0x40026000))
+
+/*** AES REG structures ***/
+
+/*!******************************************************************
+ * \enum AES_registers_t
+ * \brief AES registers map.
+ *******************************************************************/
 typedef struct {
 	volatile uint32_t CR;    	// AES control register.
 	volatile uint32_t SR;    	// AES status register.
@@ -26,9 +35,5 @@ typedef struct {
 	volatile uint32_t IVR2;    	// AES initialization vector register 2.
 	volatile uint32_t IVR3;    	// AES initialization vector register 3.
 } AES_registers_t;
-
-/*** AES base address ***/
-
-#define AES		((AES_registers_t*) ((uint32_t) 0x40026000))
 
 #endif /* __AES_REG_H__ */

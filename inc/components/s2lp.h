@@ -65,6 +65,27 @@ typedef enum {
 } S2LP_status_t;
 
 /*!******************************************************************
+ * \enum S2LP_command_t
+ * \brief S2LP commands list.
+ *******************************************************************/
+typedef enum {
+	S2LP_COMMAND_TX = 0x60,
+	S2LP_COMMAND_RX,
+	S2LP_COMMAND_READY,
+	S2LP_COMMAND_STANDBY,
+	S2LP_COMMAND_SLEEP,
+	S2LP_COMMAND_LOCKRX,
+	S2LP_COMMAND_LOCKTX,
+	S2LP_COMMAND_SABORT,
+	S2LP_COMMAND_LDC_RELOAD,
+	S2LP_COMMAND_SRES = 0x70,
+	S2LP_COMMAND_FLUSHRXFIFO,
+	S2LP_COMMAND_FLUSHTXFIFO,
+	S2LP_COMMAND_SEQUENCE_UPDATE,
+	S2LP_COMMAND_LAST
+} S2LP_command_t;
+
+/*!******************************************************************
  * \enum S2LP_state_t
  * \brief S2LP internal states.
  *******************************************************************/
