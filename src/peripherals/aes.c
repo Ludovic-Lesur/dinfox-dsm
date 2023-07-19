@@ -1,7 +1,7 @@
 /*
  * aes.c
  *
- *  Created on: 19 juin 2018
+ *  Created on: 19 jun. 2018
  *      Author: Ludo
  */
 
@@ -11,32 +11,24 @@
 #include "rcc_reg.h"
 #include "types.h"
 
-#ifdef UHFM
-
 /*** AES local macros ***/
 
 #define AES_TIMEOUT_COUNT	1000000
 
 /*** AES functions ***/
 
-/* INIT AES HARDWARE PERIPHERAL.
- * @param:	None.
- * @return:	None.
- */
+#ifdef UHFM
+/*******************************************************************/
 void AES_init(void) {
 	// Enable peripheral clock.
 	RCC -> AHBENR |= (0b1 << 24); // CRYPTOEN='1'.
 	// Configure peripheral.
 	AES -> CR |= (0b01 << 5); // CBC algorithm (CHMOD='01').
 }
+#endif
 
-/* COMPUTE AES-128 CBC ALGORITHME WITH HARDWARE ACCELERATOR.
- * @param data_in:		Input data (16-bytes array).
- * @param data_out:		Output data (16-bytes array).
- * @param init_vector:	Initialisation vector (16-bytes array).
- * @param key			AES key (16-bytes array).
- * @return status:		Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* init_vector, uint8_t* key) {
 	// Local variables.
 	AES_status_t status = AES_SUCCESS;
@@ -96,5 +88,4 @@ AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* init_vect
 errors:
 	return status;
 }
-
-#endif /* UHFM */
+#endif

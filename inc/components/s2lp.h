@@ -17,7 +17,7 @@
 
 #define S2LP_FIFO_SIZE_BYTES	128
 #define S2LP_SHUTDOWN_DELAY_MS	50
-#define S2LP_TCXO_DELAY_MS		50
+#define S2LP_TCXO_DELAY_MS		100
 
 /*** S2LP structures ***/
 
@@ -625,8 +625,8 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes);
  *******************************************************************/
 S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes);
 
-#define S2LP_status_check(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; }}
-#define S2LP_error_check() { ERROR_status_check(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
-#define S2LP_error_check_print() { ERROR_status_check_print(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
+#define S2LP_check_status(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; }}
+#define S2LP_stack_error() { ERROR_stack_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
+#define S2LP_print_error() { ERROR_print_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
 
 #endif /* __S2LP_H__ */

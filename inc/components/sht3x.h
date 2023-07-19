@@ -34,9 +34,9 @@ SHT3X_status_t SHT3X_perform_measurements(uint8_t i2c_address);
 SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees);
 SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent);
 
-#define SHT3X_status_check(error_base) { if (sht3x_status != SHT3X_SUCCESS) { status = error_base + sht3x_status; goto errors; }}
-#define SHT3X_error_check() { ERROR_status_check(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
-#define SHT3X_error_check_print() { ERROR_status_check_print(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
+#define SHT3X_check_status(error_base) { if (sht3x_status != SHT3X_SUCCESS) { status = error_base + sht3x_status; goto errors; }}
+#define SHT3X_stack_error() { ERROR_stack_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
+#define SHT3X_print_error() { ERROR_print_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
 
 #endif /* SM */
 

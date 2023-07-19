@@ -16,7 +16,6 @@
 /*** RTC local macros ***/
 
 #define RTC_INIT_TIMEOUT_COUNT		1000
-#define RTC_WAKEUP_TIMER_DELAY_MAX	65536
 
 /*** RTC local global variables ***/
 
@@ -24,10 +23,14 @@ static volatile uint8_t rtc_wakeup_timer_flag = 0;
 
 /*** RTC local functions ***/
 
-/* RTC INTERRUPT HANDLER.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
+static inline void _RTC_clear_wakeup_timer_flags(void) {
+	// Clear RTC and EXTI flags.
+	RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
+	EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
+}
+
+/*******************************************************************/
 void __attribute__((optimize("-O0"))) RTC_IRQHandler(void) {
 	// Wake-up timer interrupt.
 	if (((RTC -> ISR) & (0b1 << 10)) != 0) {
@@ -36,15 +39,11 @@ void __attribute__((optimize("-O0"))) RTC_IRQHandler(void) {
 			rtc_wakeup_timer_flag = 1;
 		}
 		// Clear flags.
-		RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
-		EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
+		_RTC_clear_wakeup_timer_flags();
 	}
 }
 
-/* ENTER INITIALIZATION MODE TO ENABLE RTC REGISTERS UPDATE.
- * @param:			None.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 static RTC_status_t __attribute__((optimize("-O0"))) _RTC_enter_initialization_mode(void) {
 	// Local variables.
 	RTC_status_t status = RTC_SUCCESS;
@@ -65,20 +64,14 @@ static RTC_status_t __attribute__((optimize("-O0"))) _RTC_enter_initialization_m
 	return status;
 }
 
-/* EXIT INITIALIZATION MODE TO PROTECT RTC REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void __attribute__((optimize("-O0"))) _RTC_exit_initialization_mode(void) {
 	RTC -> ISR &= ~(0b1 << 7); // INIT='0'.
 }
 
 /*** RTC functions ***/
 
-/* RESET RTC PERIPHERAL.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void __attribute__((optimize("-O0"))) RTC_reset(void) {
 	// Local variables.
 	uint8_t j = 0;
@@ -88,11 +81,8 @@ void __attribute__((optimize("-O0"))) RTC_reset(void) {
 	RCC -> CSR &= ~(0b1 << 19); // RTCRST='0'.
 }
 
-/* INIT HARDWARE RTC PERIPHERAL.
- * @param:			None.
- * @return status:	Function execution status.
- */
-RTC_status_t __attribute__((optimize("-O0"))) RTC_init(void) {
+/*******************************************************************/
+RTC_status_t RTC_init(void) {
 	// Local variables.
 	RTC_status_t status = RTC_SUCCESS;
 	// Use LSE.
@@ -102,9 +92,11 @@ RTC_status_t __attribute__((optimize("-O0"))) RTC_init(void) {
 	// Switch to LSI if RTC failed to enter initialization mode.
 	status = _RTC_enter_initialization_mode();
 	if (status != RTC_SUCCESS) {
-		// Try using LSI.
 		RTC_reset();
+		// Use LSI.
+		RCC -> CSR &= ~(0b11 << 16); // Reset bits.
 		RCC -> CSR |= (0b10 << 16); // RTCSEL='10'.
+		// Enable RTC and register access.
 		RCC -> CSR |= (0b1 << 18); // RTCEN='1'.
 		status = _RTC_enter_initialization_mode();
 		if (status != RTC_SUCCESS) goto errors;
@@ -120,32 +112,19 @@ RTC_status_t __attribute__((optimize("-O0"))) RTC_init(void) {
 	// Configure wake-up timer.
 	RTC -> CR |= (0b100 << 0); // Wake-up timer clocked by RTC clock (1Hz).
 	_RTC_exit_initialization_mode();
-	// Configure EXTI line.
-	EXTI_configure_line(EXTI_LINE_RTC_WAKEUP_TIMER, EXTI_TRIGGER_RISING_EDGE);
-	// Disable interrupt and clear all flags.
-	RTC -> CR &= ~(0b1 << 14);
+	// Enable interrupt.
 	RTC -> ISR &= 0xFFFE0000;
-	EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
-	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_RTC, 2);
-	NVIC_enable_interrupt(NVIC_INTERRUPT_RTC);
+	EXTI_configure_line(EXTI_LINE_RTC_WAKEUP_TIMER, EXTI_TRIGGER_RISING_EDGE);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_RTC, NVIC_PRIORITY_RTC);
 errors:
 	return status;
 }
 
-/* START RTC WAKE-UP TIMER.
- * @param delay_seconds:	Delay in seconds.
- * @return status:			Function execution status.
- */
-RTC_status_t RTC_start_wakeup_timer(uint32_t delay_seconds) {
+/*******************************************************************/
+RTC_status_t RTC_start_wakeup_timer(uint16_t period_seconds) {
 	// Local variables.
 	RTC_status_t status = RTC_SUCCESS;
 	uint32_t loop_count = 0;
-	// Check parameter.
-	if (delay_seconds > RTC_WAKEUP_TIMER_DELAY_MAX) {
-		status = RTC_ERROR_WAKEUP_TIMER_DELAY;
-		goto errors;
-	}
 	// Check if timer is not already running.
 	if (((RTC -> CR) & (0b1 << 10)) != 0) {
 		status = RTC_ERROR_WAKEUP_TIMER_RUNNING;
@@ -166,9 +145,10 @@ RTC_status_t RTC_start_wakeup_timer(uint32_t delay_seconds) {
 		}
 	}
 	// Configure wake-up timer.
-	RTC -> WUTR = (delay_seconds - 1);
+	RTC -> WUTR = (uint32_t) (period_seconds - 1);
 	// Clear flags.
-	RTC_clear_wakeup_timer_flag();
+	_RTC_clear_wakeup_timer_flags();
+	rtc_wakeup_timer_flag = 0;
 	// Enable interrupt.
 	RTC -> CR |= (0b1 << 14); // WUTE='1'.
 	// Start timer.
@@ -178,10 +158,7 @@ errors:
 	return status;
 }
 
-/* STOP RTC WAKE-UP TIMER.
- * @param:			None.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 RTC_status_t RTC_stop_wakeup_timer(void) {
 	// Local variables.
 	RTC_status_t status = RTC_SUCCESS;
@@ -197,21 +174,13 @@ errors:
 	return status;
 }
 
-/* RETURN THE CURRENT ALARM INTERRUPT STATUS.
- * @param:	None.
- * @return:	1 if the RTC interrupt occured, 0 otherwise.
- */
+/*******************************************************************/
 volatile uint8_t RTC_get_wakeup_timer_flag(void) {
 	return rtc_wakeup_timer_flag;
 }
 
-/* CLEAR ALARM A INTERRUPT FLAG.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void RTC_clear_wakeup_timer_flag(void) {
 	// Clear flag.
-	RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
-	EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
 	rtc_wakeup_timer_flag = 0;
 }

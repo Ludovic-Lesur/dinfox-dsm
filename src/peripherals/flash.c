@@ -17,10 +17,7 @@
 
 /*** FLASH functions ***/
 
-/* SET FLASH LATENCY.
- * @param wait_states:	Number of wait states.
- * @return status:		Function execution status.
- */
+/*******************************************************************/
 FLASH_status_t FLASH_set_latency(uint8_t wait_states) {
 	// Local variables.
 	FLASH_status_t status = FLASH_SUCCESS;

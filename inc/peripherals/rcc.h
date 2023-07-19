@@ -19,6 +19,10 @@
 
 /*** RCC structures ***/
 
+/*!******************************************************************
+ * \enum RCC_status_t
+ * \brief RCC driver error codes.
+ *******************************************************************/
 typedef enum {
 	RCC_SUCCESS = 0,
 	RCC_ERROR_NULL_PARAMETER,
@@ -31,14 +35,58 @@ typedef enum {
 
 /*** RCC functions ***/
 
+/*!******************************************************************
+ * \fn void RCC_init(void)
+ * \brief Init MCU default clock tree.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void RCC_init(void);
+
+/*!******************************************************************
+ * \fn RCC_status_t RCC_switch_to_hsi(void)
+ * \brief Switch system clock to 16MHz HSI.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 RCC_status_t RCC_switch_to_hsi(void);
+
+/*!******************************************************************
+ * \fn uint32_t RCC_get_sysclk_khz(void)
+ * \brief Get the current system clock frequency.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		System clock frequency in kHz.
+ *******************************************************************/
 uint32_t RCC_get_sysclk_khz(void);
+
+/*!******************************************************************
+ * \fn void RCC_enable_lsi(void)
+ * \brief Start LSI oscillator.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void RCC_enable_lsi(void);
+
+/*!******************************************************************
+ * \fn void RCC_enable_lse(void)
+ * \brief Start LSE oscillator.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void RCC_enable_lse(void);
 
-#define RCC_status_check(error_base) { if (rcc_status != RCC_SUCCESS) { status = error_base + rcc_status; goto errors; }}
-#define RCC_error_check() { ERROR_status_check(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
-#define RCC_error_check_print() { ERROR_status_check_print(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
+/*******************************************************************/
+#define RCC_check_status(error_base) { if (rcc_status != RCC_SUCCESS) { status = error_base + rcc_status; goto errors; } }
+
+/*******************************************************************/
+#define RCC_stack_error() { ERROR_stack_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
+
+/*******************************************************************/
+#define RCC_print_error() { ERROR_print_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
 
 #endif /* __RCC_H__ */

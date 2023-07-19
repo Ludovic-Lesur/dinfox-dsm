@@ -10,7 +10,6 @@
 #include "exti_reg.h"
 #include "gpio.h"
 #include "mapping.h"
-#include "nvic.h"
 #include "rcc_reg.h"
 #include "syscfg_reg.h"
 #include "types.h"
@@ -88,9 +87,6 @@ void EXTI_init(void) {
 	for (idx=0 ; idx<GPIO_PINS_PER_PORT ; idx++) {
 		exti_gpio_irq_callbacks[idx] = NULL;
 	}
-#ifdef UHFM
-	NVIC_set_priority(NVIC_INTERRUPT_EXTI_4_15, 0);
-#endif
 }
 
 /*******************************************************************/

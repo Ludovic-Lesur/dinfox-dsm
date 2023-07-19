@@ -32,8 +32,8 @@ LBUS_status_t LBUS_init(NODE_address_t self_address);
 LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes);
 void LBUS_fill_rx_buffer(uint8_t rx_byte);
 
-#define LBUS_status_check(error_base) { if (lbus_status != LBUS_SUCCESS) { status = error_base + lbus_status; goto errors; }}
-#define LBUS_error_check() { ERROR_status_check(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
-#define LBUS_error_check_print() { ERROR_status_check_print(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
+#define LBUS_check_status(error_base) { if (lbus_status != LBUS_SUCCESS) { status = error_base + lbus_status; goto errors; }}
+#define LBUS_stack_error() { ERROR_stack_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
+#define LBUS_print_error() { ERROR_print_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
 
 #endif /* __LBUS_H__ */

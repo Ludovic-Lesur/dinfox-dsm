@@ -15,18 +15,14 @@
 #include "rcc_reg.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** I2C local macros ***/
 
 #define I2C_ACCESS_TIMEOUT_COUNT	1000000
 
 /*** I2C local functions ***/
 
-/* CLEAR ALL I2C PERIPHERAL FLAGS
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 static I2C_status_t _I2C1_clear(void) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
@@ -34,20 +30,19 @@ static I2C_status_t _I2C1_clear(void) {
 	// Disable peripheral.
 	I2C1 -> CR1 &= ~(0b1 << 0); // PE='0'.
 	lptim1_status = LPTIM1_delay_milliseconds(1, LPTIM_DELAY_MODE_ACTIVE);
-	LPTIM1_status_check(I2C_ERROR_BASE_LPTIM);
+	LPTIM1_check_status(I2C_ERROR_BASE_LPTIM);
 	// Enable peripheral and clear all flags.
 	I2C1 -> CR1 |= (0b1 << 0); // PE='1'.
 	I2C1 -> ICR |= 0x00003F38;
 errors:
 	return status;
 }
+#endif
 
 /*** I2C functions ***/
 
-/* CONFIGURE I2C1 PERIPHERAL.
- * @param:	None.
- * @return:	None.
- */
+#ifdef SM
+/*******************************************************************/
 void I2C1_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 21); // I2C1EN='1'.
@@ -61,11 +56,10 @@ void I2C1_init(void) {
 	// Enable peripheral.
 	I2C1 -> CR1 |= (0b1 << 0); // PE='1'.
 }
+#endif
 
-/* SWITCH ALL I2C1 SLAVES ON.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 I2C_status_t I2C1_power_on(void) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
@@ -77,15 +71,14 @@ I2C_status_t I2C1_power_on(void) {
 	GPIO_write(&GPIO_SEN_POWER_ENABLE, 1);
 	// Warm-up delay.
 	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_status_check(I2C_ERROR_BASE_LPTIM);
+	LPTIM1_check_status(I2C_ERROR_BASE_LPTIM);
 errors:
 	return status;
 }
+#endif
 
-/* SWITCH ALL I2C1 SLAVES ON.
- * @param:	None.
- * @return:	None.
- */
+#ifdef SM
+/*******************************************************************/
 void I2C1_power_off(void) {
 	// Turn sensors and pull-up resistors off.
 	GPIO_write(&GPIO_SEN_POWER_ENABLE, 0);
@@ -93,14 +86,10 @@ void I2C1_power_off(void) {
 	GPIO_configure(&GPIO_I2C1_SCL, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_I2C1_SDA, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
+#endif
 
-/* WRITE DATA ON I2C1 BUS (see algorithme on p.607 of RM0377 datasheet).
- * @param slave_address:	Slave address on 7 bits.
- * @param tx_buf:			Array containing the byte(s) to send.
- * @param tx_buf_length:	Number of bytes to send (length of 'tx_buf').
- * @param stop_flag:		Generate stop condition at the end of the transfer if non zero.
- * @return status:			Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* tx_buf, uint8_t tx_buf_length, uint8_t stop_flag) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
@@ -184,13 +173,10 @@ I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* tx_buf, uint8_t tx_buf_l
 errors:
 	return status;
 }
+#endif
 
-/* READ BYTES FROM I2C1 BUS (see algorithme on p.611 of RM0377 datasheet).
- * @param slave_address:	Slave address on 7 bits.
- * @param rx_buf:			Array that will contain the byte(s) to receive.
- * @param rx_buf_length:	Number of bytes to receive (length of 'rx_buf').
- * @return status:			Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* rx_buf, uint8_t rx_buf_length) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
@@ -264,5 +250,4 @@ I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* rx_buf, uint8_t rx_buf_le
 errors:
 	return status;
 }
-
-#endif /* SM */
+#endif

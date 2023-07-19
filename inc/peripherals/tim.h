@@ -90,7 +90,6 @@ typedef enum {
 /*** TIM functions ***/
 
 #ifdef UHFM
-
 /*!******************************************************************
  * \fn void TIM2_init(void)
  * \brief Init TIM2 peripheral for Sigfox library MCU API timers.
@@ -99,7 +98,9 @@ typedef enum {
  * \retval		none
  *******************************************************************/
 void TIM2_init(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms)
  * \brief Start a timer channel.
@@ -109,7 +110,9 @@ void TIM2_init(void);
  * \retval		Function execution status.
  *******************************************************************/
 TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn TIM_status_t TIM2_stop(TIM2_channel_t channel)
  * \brief Stop a timer channel.
@@ -118,7 +121,9 @@ TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms);
  * \retval		Function execution status.
  *******************************************************************/
 TIM_status_t TIM2_stop(TIM2_channel_t channel);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed)
  * \brief Get the status of a timer channel.
@@ -127,7 +132,9 @@ TIM_status_t TIM2_stop(TIM2_channel_t channel);
  * \retval		Function execution status.
  *******************************************************************/
 TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn TIM_status_t TIM2_wait_completion(TIM2_channel_t channel)
  * \brief Blocking function waiting for a timer channel completion.
@@ -136,11 +143,9 @@ TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed)
  * \retval		Function execution status.
  *******************************************************************/
 TIM_status_t TIM2_wait_completion(TIM2_channel_t channel);
-
-#endif /* UHFM */
+#endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-
 /*!******************************************************************
  * \fn void TIM2_init(void)
  * \brief Init TIM2 peripheral for RGB LED blinking operation.
@@ -149,7 +154,9 @@ TIM_status_t TIM2_wait_completion(TIM2_channel_t channel);
  * \retval		none
  *******************************************************************/
 void TIM2_init(void);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn void TIM2_start(TIM2_channel_mask_t led_color)
  * \brief Start PWM signal for a given color.
@@ -158,7 +165,9 @@ void TIM2_init(void);
  * \retval		none
  *******************************************************************/
 void TIM2_start(TIM2_channel_mask_t led_color);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn void TIM2_stop(void)
  * \brief Stop PWM signal.
@@ -167,7 +176,9 @@ void TIM2_start(TIM2_channel_mask_t led_color);
  * \retval		none
  *******************************************************************/
 void TIM2_stop(void);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn void TIM21_init(void)
  * \brief Init TIM21 peripheral for RGB LED blinking operation.
@@ -176,7 +187,9 @@ void TIM2_stop(void);
  * \retval		none
  *******************************************************************/
 void TIM21_init(void);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn void TIM21_start(uint32_t led_blink_period_ms)
  * \brief Start LED blink duration timer.
@@ -185,7 +198,9 @@ void TIM21_init(void);
  * \retval		none
  *******************************************************************/
 void TIM21_start(uint32_t led_blink_period_ms);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn void TIM21_stop(void)
  * \brief Stop LED blink timer.
@@ -194,7 +209,9 @@ void TIM21_start(uint32_t led_blink_period_ms);
  * \retval		none
  *******************************************************************/
 void TIM21_stop(void);
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \fn uint8_t TIM21_is_single_blink_done(void)
  * \brief Get the LED blink status.
@@ -203,11 +220,15 @@ void TIM21_stop(void);
  * \retval		0 if the LED blink id running, 1 if it is complete.
  *******************************************************************/
 uint8_t TIM21_is_single_blink_done(void);
+#endif
 
-#endif /* LVRM or DDRM or RRM */
+/*******************************************************************/
+#define TIM2_check_status(error_base) { if (tim2_status != TIM_SUCCESS) { status = error_base + tim2_status; goto errors; } }
 
-#define TIM2_status_check(error_base) { if (tim2_status != TIM_SUCCESS) { status = error_base + tim2_status; goto errors; }}
-#define TIM2_error_check() { ERROR_status_check(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
-#define TIM2_error_check_print() { ERROR_status_check_print(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
+/*******************************************************************/
+#define TIM2_stack_error() { ERROR_stack_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
+
+/*******************************************************************/
+#define TIM2_print_error() { ERROR_print_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
 
 #endif /* __TIM_H__ */

@@ -53,8 +53,8 @@ MATH_status_t MATH_atan2(int32_t x, int32_t y, uint32_t* alpha);
 MATH_status_t MATH_two_complement(uint32_t value, uint8_t sign_bit_position, int32_t* result);
 MATH_status_t MATH_one_complement(int32_t value, uint8_t sign_bit_position, uint32_t* result);
 
-#define MATH_status_check(error_base) { if (math_status != MATH_SUCCESS) { status = error_base + math_status; goto errors; }}
-#define MATH_error_check() { ERROR_status_check(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
-#define MATH_error_check_print() { ERROR_status_check_print(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
+#define MATH_check_status(error_base) { if (math_status != MATH_SUCCESS) { status = error_base + math_status; goto errors; }}
+#define MATH_stack_error() { ERROR_stack_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
+#define MATH_print_error() { ERROR_print_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
 
 #endif /* __MATH_H__ */

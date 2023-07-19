@@ -25,10 +25,7 @@
 
 /*** LPUART local functions ***/
 
-/* LPUART1 INTERRUPT HANDLER.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void LPUART1_IRQHandler(void) {
 	// Local variables.
 	uint8_t rx_byte = 0;
@@ -48,10 +45,7 @@ void LPUART1_IRQHandler(void) {
 	EXTI_clear_flag(EXTI_LINE_LPUART1);
 }
 
-/* FILL LPUART1 TX BUFFER WITH A NEW BYTE.
- * @param tx_byte:	Byte to append.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 static LPUART_status_t _LPUART1_fill_tx_buffer(uint8_t tx_byte) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;
@@ -73,10 +67,7 @@ errors:
 
 /*** LPUART functions ***/
 
-/* CONFIGURE LPUART1.
- * @param self_address:	Self bus address.
- * @return status:		Function execution status.
- */
+/*******************************************************************/
 LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;
@@ -111,7 +102,6 @@ LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 	brr /= LPUART_BAUD_RATE;
 	LPUART1 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate). See p.730 of RM0377 datasheet.
 	// Configure interrupt.
-	NVIC_set_priority(NVIC_INTERRUPT_LPUART1, 0);
 	EXTI_configure_line(EXTI_LINE_LPUART1, EXTI_TRIGGER_RISING_EDGE);
 	// Enable transmitter.
 	LPUART1 -> CR1 |= (0b1 << 3); // TE='1'.
@@ -120,16 +110,13 @@ LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 	return status;
 }
 
-/* EANABLE LPUART RX OPERATION.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void LPUART1_enable_rx(void) {
 	// Mute mode request.
 	LPUART1 -> RQR |= (0b1 << 2); // MMRQ='1'.
 	// Clear flag and enable interrupt.
 	LPUART1 -> RQR |= (0b1 << 3);
-	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1, NVIC_PRIORITY_LPUART1);
 	// Enable receiver.
 	LPUART1 -> CR1 |= (0b1 << 2); // RE='1'.
 #ifdef LPUART_USE_NRE
@@ -137,10 +124,7 @@ void LPUART1_enable_rx(void) {
 #endif
 }
 
-/* DISABLE LPUART RX OPERATION.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void LPUART1_disable_rx(void) {
 	// Disable receiver.
 #ifdef LPUART_USE_NRE
@@ -151,11 +135,7 @@ void LPUART1_disable_rx(void) {
 	NVIC_disable_interrupt(NVIC_INTERRUPT_LPUART1);
 }
 
-/* SEND A BYTE ARRAY THROUGH LPUART1.
- * @param data:				Byte array to send.
- * @param data_size_bytes:	Number of bytes to send.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;

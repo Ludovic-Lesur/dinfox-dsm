@@ -122,24 +122,24 @@ static void _XM_init_hw(void) {
 	// Init watchdog.
 #ifndef DEBUG
 	iwdg_status = IWDG_init();
-	IWDG_error_check();
+	IWDG_stack_error();
 #endif
 	// High speed oscillator.
 	IWDG_reload();
 	rcc_status = RCC_switch_to_hsi();
-	RCC_error_check();
+	RCC_stack_error();
 	// Init RTC.
 	RTC_reset();
 	RCC_enable_lse();
 	rtc_status = RTC_init();
-	RTC_error_check();
+	RTC_stack_error();
 	// Read self address in NVM.
 	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
-	NVM_error_check();
+	NVM_stack_error();
 	// Init peripherals.
 	LPTIM1_init();
 	adc1_status = ADC1_init();
-	ADC1_error_check();
+	ADC1_stack_error();
 #ifdef UHFM
 	TIM2_init();
 #endif
@@ -148,7 +148,7 @@ static void _XM_init_hw(void) {
 	TIM21_init();
 #endif
 	lpuart1_status = LPUART1_init(self_address);
-	LPUART1_error_check();
+	LPUART1_stack_error();
 #ifdef SM
 	I2C1_init();
 #endif
@@ -173,7 +173,6 @@ static void _XM_init_hw(void) {
 #endif
 #ifdef UHFM
 	S2LP_init();
-	S2LP_set_rx_bandwidth(3000);
 #endif
 #ifdef GPSM
 	NEOM8N_init();
@@ -195,7 +194,7 @@ static void _XM_static_measurements(void) {
 	uint32_t input_voltage_mv = 0;
 	// Perform static analog measurements.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_error_check();
+	ADC1_stack_error();
 	// Check input voltage.
 #ifdef LVRM
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &input_voltage_mv);
@@ -206,7 +205,7 @@ static void _XM_static_measurements(void) {
 #if (defined DDRM) || (defined RRM)
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &input_voltage_mv);
 #endif
-	ADC1_error_check();
+	ADC1_stack_error();
 	// Enable RGB LED only if power input supplies the board.
 	xm_ctx.iout_indicator_enable = (input_voltage_mv > XM_HIGH_PERIOD_THRESHOLD_MV) ? 1 : 0;
 }
@@ -226,7 +225,7 @@ static void _XM_iout_indicator(void) {
 	uint8_t idx = XM_IOUT_INDICATOR_RANGE;
 	// Read data.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &iout_ua);
-	ADC1_error_check();
+	ADC1_stack_error();
 	// Compute LED color according to output current..
 	do {
 		idx--;
@@ -237,7 +236,7 @@ static void _XM_iout_indicator(void) {
 	while (idx > 0);
 	// Blink LED.
 	led_status = LED_start_single_blink(2000, led_color);
-	LED_error_check();
+	LED_stack_error();
 }
 #endif
 
@@ -260,7 +259,7 @@ int main(void) {
 #endif
 	// Start periodic wakeup timer.
 	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
-	RTC_error_check();
+	RTC_stack_error();
 	// Main loop.
 	while (1) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

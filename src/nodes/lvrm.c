@@ -40,11 +40,11 @@ static void _LVRM_reset_analog_data(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	// Reset fields to error value.
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, DINFOX_VOLTAGE_ERROR_VALUE);
-	NODE_error_check();
+	NODE_stack_error();
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, DINFOX_VOLTAGE_ERROR_VALUE);
-	NODE_error_check();
+	NODE_stack_error();
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
-	NODE_error_check();
+	NODE_stack_error();
 }
 
 /*** LVRM functions ***/
@@ -60,12 +60,12 @@ void LVRM_init_registers(void) {
 	uint8_t relay_state = 0;
 	// Read init state.
 	load_status = LOAD_get_output_state(&relay_state);
-	LOAD_error_check();
+	LOAD_stack_error();
 	// Init context.
 	lvrm_flags.rlst = (relay_state == 0) ? 0 : 1;
 	// Status and control register 1.
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
-	NODE_error_check();
+	NODE_stack_error();
 	// Load defaults values.
 	_LVRM_reset_analog_data();
 }
@@ -85,9 +85,9 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Relay state.
 		load_status = LOAD_get_output_state(&relay_state);
-		LOAD_error_check();
+		LOAD_stack_error();
 		node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, (uint32_t) relay_state);
-		NODE_error_check();
+		NODE_stack_error();
 		break;
 	default:
 		// Nothing to do for other registers.
@@ -111,12 +111,12 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Check relay control bit.
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_STATUS_CONTROL_1, LVRM_REG_STATUS_CONTROL_1_MASK_RLST, &relay_state);
-		NODE_error_check();
+		NODE_stack_error();
 		// Check bit change.
 		if (lvrm_flags.rlst != relay_state) {
 			// Set relay state.
 			load_status = LOAD_set_output_state((uint8_t) relay_state);
-			LOAD_error_check();
+			LOAD_stack_error();
 			// Update local flag.
 			lvrm_flags.rlst = relay_state;
 		}
@@ -142,7 +142,7 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	_LVRM_reset_analog_data();
 	// Perform measurements.
 	adc1_status = ADC1_perform_measurements();
-	ADC1_error_check();
+	ADC1_stack_error();
 	// Update parameter.
 	if (adc_status != NULL) {
 		(*adc_status) = adc1_status;
@@ -151,24 +151,24 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	if (adc1_status == ADC_SUCCESS) {
 		// Relay common voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &adc_data);
-		ADC1_error_check();
+		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
 			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_error_check();
+			NODE_stack_error();
 		}
 		// Relay output voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
-		ADC1_error_check();
+		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
 			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, LVRM_REG_ANALOG_DATA_1_MASK_VOUT, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_error_check();
+			NODE_stack_error();
 		}
 		// Relay output current.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
-		ADC1_error_check();
+		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
 			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, (uint32_t) DINFOX_convert_ua(adc_data));
-			NODE_error_check();
+			NODE_stack_error();
 		}
 	}
 	return status;

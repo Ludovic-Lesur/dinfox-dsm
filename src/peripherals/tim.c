@@ -16,16 +16,10 @@
 
 /*** TIM local macros ***/
 
-#ifdef UHFM
-
-#define TIM2_CNT_VALUE_MAX				0xFFFF
-#define TIM2_ETRF_PRESCALER				32
-#define TIM2_ETRF_CLOCK_HZ				(RCC_LSE_FREQUENCY_HZ / TIM2_ETRF_PRESCALER)
-#define TIM2_TIMER_DURATION_MS_MAX		((TIM2_CNT_VALUE_MAX * 1000) / (TIM2_ETRF_CLOCK_HZ))
-
-#endif /* UHFM */
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+#define TIM2_CNT_VALUE_MAX			0xFFFF
+#define TIM2_ETRF_PRESCALER			16
+#define TIM2_ETRF_CLOCK_HZ			(RCC_LSE_FREQUENCY_HZ / TIM2_ETRF_PRESCALER)
+#define TIM2_TIMER_DURATION_MS_MAX	((TIM2_CNT_VALUE_MAX * 1000) / (TIM2_ETRF_CLOCK_HZ))
 
 #define TIM2_NUMBER_OF_CHANNELS		4
 
@@ -37,8 +31,6 @@
 
 #define TIM21_PRESCALER				8
 #define TIM21_DIMMING_LUT_LENGTH	100
-
-#endif /* LVRM or DDRM or RRM */
 
 /*** TIM local structures ***/
 
@@ -148,7 +140,6 @@ void _TIM2_reset_channels(void) {
 /*** TIM functions ***/
 
 #ifdef UHFM
-
 /*******************************************************************/
 void TIM2_init(void) {
 	// Local variables.
@@ -171,10 +162,11 @@ void TIM2_init(void) {
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.
-	NVIC_set_priority(NVIC_INTERRUPT_TIM2, NVIC_PRIORITY_MIN);
-	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM2);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM2, NVIC_PRIORITY_TIM2);
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms) {
 	// Local variables.
@@ -204,7 +196,9 @@ TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 TIM_status_t TIM2_stop(TIM2_channel_t channel) {
 	// Local variables.
@@ -233,7 +227,9 @@ TIM_status_t TIM2_stop(TIM2_channel_t channel) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed) {
 	// Local variables.
@@ -252,7 +248,9 @@ TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed)
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 TIM_status_t TIM2_wait_completion(TIM2_channel_t channel) {
 	// Local variables.
@@ -269,11 +267,9 @@ TIM_status_t TIM2_wait_completion(TIM2_channel_t channel) {
 errors:
 	return status;
 }
-
-#endif /* UHFM */
+#endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-
 /*******************************************************************/
 void TIM2_init(void) {
 	// Enable peripheral clock.
@@ -290,7 +286,9 @@ void TIM2_init(void) {
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM2_start(TIM2_channel_mask_t led_color) {
 	// Local variables.
@@ -310,7 +308,9 @@ void TIM2_start(TIM2_channel_mask_t led_color) {
 	// Enable counter.
 	TIM2 -> CR1 |= (0b1 << 0); // CEN='1'.
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM2_stop(void) {
 	// Disable all channels.
@@ -318,7 +318,9 @@ void TIM2_stop(void) {
 	// Disable and reset counter.
 	TIM2 -> CR1 &= ~(0b1 << 0); // CEN='0'.
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM21_init(void) {
 	// Init context.
@@ -333,10 +335,10 @@ void TIM21_init(void) {
 	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.
 	TIM21 -> DIER |= (0b1 << 0);
-	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_TIM21, 3);
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM21_start(uint32_t led_blink_period_ms) {
 	// Reset LUT index and flag.
@@ -348,11 +350,13 @@ void TIM21_start(uint32_t led_blink_period_ms) {
 	TIM21 -> ARR = (led_blink_period_ms * RCC_HSI_FREQUENCY_KHZ) / (TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
 	// Clear flag and enable interrupt.
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
-	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_TIM21);
 	// Enable TIM21 peripheral.
 	TIM21 -> CR1 |= (0b1 << 0); // Enable TIM21 (CEN='1').
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM21_stop(void) {
 	// Disable interrupt.
@@ -360,10 +364,11 @@ void TIM21_stop(void) {
 	// Stop TIM21.
 	TIM21 -> CR1 &= ~(0b1 << 0); // CEN='0'.
 }
+#endif
 
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 uint8_t TIM21_is_single_blink_done(void) {
 	return (tim21_ctx.single_blink_done);
 }
-
-#endif /* LVRM or DDRM or RRM */
+#endif

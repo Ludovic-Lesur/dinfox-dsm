@@ -46,9 +46,9 @@ PARSER_status_t PARSER_compare(PARSER_context_t* parser_ctx, PARSER_mode_t mode,
 PARSER_status_t PARSER_get_parameter(PARSER_context_t* parser_ctx, STRING_format_t param_type, char_t separator, int32_t* param);
 PARSER_status_t PARSER_get_byte_array(PARSER_context_t* parser_ctx, char_t separator, uint8_t maximum_length, uint8_t exact_length, uint8_t* param, uint8_t* extracted_length);
 
-#define PARSER_status_check(error_base) { if (parser_status != PARSER_SUCCESS) { status = error_base + parser_status; goto errors; }}
-#define PARSER_error_check() { ERROR_status_check(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
-#define PARSER_error_check_print() { ERROR_status_check_print(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
+#define PARSER_check_status(error_base) { if (parser_status != PARSER_SUCCESS) { status = error_base + parser_status; goto errors; }}
+#define PARSER_stack_error() { ERROR_stack_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
+#define PARSER_print_error() { ERROR_print_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
 
 #endif	/* __PARSER_H__ */
 

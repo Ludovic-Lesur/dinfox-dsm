@@ -5,8 +5,6 @@
  *      Author: Ludo
  */
 
-#ifdef GPSM
-
 #include "usart.h"
 
 #include "exti.h"
@@ -29,10 +27,8 @@
 
 /*** USART local functions ***/
 
-/* USART2 INTERRUPT HANDLER.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 	// Character match interrupt.
 	if (((USART2 -> ISR) & (0b1 << 17)) != 0) {
@@ -50,13 +46,12 @@ void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 	}
 	EXTI_clear_flag(EXTI_LINE_USART2);
 }
+#endif
 
 /*** USART functions ***/
 
-/* CONFIGURE USART2.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 void USART2_init(void) {
 	// Local variables.
 	uint32_t brr = 0;
@@ -78,18 +73,15 @@ void USART2_init(void) {
 	USART2 -> CR2 |= (STRING_CHAR_LF << 24); // LF character used to trigger CM interrupt.
 	USART2 -> CR3 |= (0b1 << 6); // Transfer is performed after each RXNE event.
 	USART2 -> CR1 |= (0b1 << 14); // Enable CM interrupt (CMIE='1').
-	// Set interrupt priority.
-	NVIC_set_priority(NVIC_INTERRUPT_USART2, 0);
 	// Enable USART2 transmitter and receiver.
 	USART2 -> CR1 |= (0b11 << 2); // TE='1' and RE='1'.
 	// Enable peripheral.
 	USART2 -> CR1 |= (0b1 << 0); // UE='1'.
 }
+#endif
 
-/* POWER USART2 SLAVE ON.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 USART_status_t USART2_power_on(void) {
 	// Local variables.
 	USART_status_t status = USART_SUCCESS;
@@ -100,21 +92,20 @@ USART_status_t USART2_power_on(void) {
 	// Turn NEOM8N on.
 	GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(500, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_status_check(USART_ERROR_BASE_LPTIM);
+	LPTIM1_check_status(USART_ERROR_BASE_LPTIM);
 #ifdef GPSM_ACTIVE_ANTENNA
 	// Turn active antenna on.
 	GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(500, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_status_check(USART_ERROR_BASE_LPTIM);
+	LPTIM1_check_status(USART_ERROR_BASE_LPTIM);
 #endif
 errors:
 	return status;
 }
+#endif
 
-/* POWER USART2 SLAVE OFF.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 void USART2_power_off(void) {
 #ifdef GPSM_ACTIVE_ANTENNA
 	// Turn active antenna on.
@@ -126,11 +117,10 @@ void USART2_power_off(void) {
 	GPIO_configure(&GPIO_USART2_TX, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_USART2_RX, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
+#endif
 
-/* SEND A BYTE THROUGH LOW POWER UART.
- * @param tx_byte:	Byte to send.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 USART_status_t USART2_send_byte(uint8_t tx_byte) {
 	// Local variables.
 	USART_status_t status = USART_SUCCESS;
@@ -149,5 +139,4 @@ USART_status_t USART2_send_byte(uint8_t tx_byte) {
 errors:
 	return status;
 }
-
-#endif /* GPSM */
+#endif

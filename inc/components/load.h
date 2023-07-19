@@ -33,9 +33,9 @@ uint8_t LOAD_get_charge_state(void);
 uint8_t LOAD_get_charge_status(void);
 #endif
 
-#define LOAD_status_check(error_base) { if (load_status != LOAD_SUCCESS) { status = error_base + load_status; goto errors; }}
-#define LOAD_error_check() { ERROR_status_check(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
-#define LOAD_error_check_print() { ERROR_status_check_print(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
+#define LOAD_check_status(error_base) { if (load_status != LOAD_SUCCESS) { status = error_base + load_status; goto errors; }}
+#define LOAD_stack_error() { ERROR_stack_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
+#define LOAD_print_error() { ERROR_print_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
 
 #endif
 

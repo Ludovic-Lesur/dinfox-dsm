@@ -161,7 +161,7 @@ STRING_status_t STRING_value_to_string(int32_t value, STRING_format_t format, ui
 	}
 	// Get absolute value.
 	math_status = MATH_abs(value, &abs_value);
-	MATH_status_check();
+	MATH_check_status();
 	// Build string according to format.
 	switch (format) {
 	case STRING_FORMAT_BOOLEAN:
@@ -213,7 +213,7 @@ STRING_status_t STRING_value_to_string(int32_t value, STRING_format_t format, ui
 		}
 		for (idx=(MATH_DECIMAL_MAX_LENGTH - 1) ; idx>=0 ; idx--) {
 			math_status = MATH_pow_10(idx, &current_power);
-			MATH_status_check(STRING_ERROR_BASE_MATH);
+			MATH_check_status(STRING_ERROR_BASE_MATH);
 			generic_byte = (abs_value - previous_decade) / current_power;
 			previous_decade += generic_byte * current_power;
 			if (generic_byte != 0) {
@@ -341,7 +341,7 @@ STRING_status_t STRING_string_to_value(char_t* str, STRING_format_t format, uint
 			if (status != STRING_SUCCESS) goto errors;
 			// Compute power.
 			math_status = MATH_pow_10((number_of_digits -char_idx - 1), &math_power10);
-			MATH_status_check(STRING_ERROR_BASE_MATH);
+			MATH_check_status(STRING_ERROR_BASE_MATH);
 			// Add digit to result.
 			(*value) += (math_power10 * digit_value);
 		}

@@ -52,8 +52,8 @@ STRING_status_t STRING_byte_array_to_hexadecimal_string(uint8_t* data, uint8_t d
 STRING_status_t STRING_string_to_value(char_t* str, STRING_format_t format, uint8_t number_of_digits, int32_t* value);
 STRING_status_t STRING_hexadecimal_string_to_byte_array(char_t* str, char_t end_char, uint8_t* data, uint8_t* extracted_length);
 
-#define STRING_status_check(error_base) { if (string_status != STRING_SUCCESS) { status = error_base + string_status; goto errors; }}
-#define STRING_error_check() { ERROR_status_check(string_status, STRING_SUCCESS, ERROR_BASE_STRING); }
-#define STRING_error_check_print() { ERROR_status_check_print(string_status, STRING_SUCCESS, ERROR_BASE_STRING); }
+#define STRING_check_status(error_base) { if (string_status != STRING_SUCCESS) { status = error_base + string_status; goto errors; }}
+#define STRING_stack_error() { ERROR_stack_error(string_status, STRING_SUCCESS, ERROR_BASE_STRING); }
+#define STRING_print_error() { ERROR_print_error(string_status, STRING_SUCCESS, ERROR_BASE_STRING); }
 
 #endif /* __STRING_H__ */

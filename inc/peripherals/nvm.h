@@ -1,7 +1,7 @@
 /*
  * nvm.h
  *
- *  Created on: 19 june 2018
+ *  Created on: 19 jun. 2018
  *      Author: Ludo
  */
 
@@ -15,6 +15,10 @@
 
 /*** NVM macros ***/
 
+/*!******************************************************************
+ * \enum NVM_status_t
+ * \brief NVM driver error codes.
+ *******************************************************************/
 typedef enum {
 	NVM_SUCCESS = 0,
 	NVM_ERROR_NULL_PARAMETER,
@@ -25,6 +29,10 @@ typedef enum {
 	NVM_ERROR_BASE_LAST = 0x0100
 } NVM_status_t;
 
+/*!******************************************************************
+ * \enum NVM_address_t
+ * \brief NVM address mapping.
+ *******************************************************************/
 typedef enum {
 	NVM_ADDRESS_SELF_ADDRESS = 0,
 #ifdef UHFM
@@ -39,15 +47,51 @@ typedef enum {
 
 /*** NVM functions ***/
 
+/*!******************************************************************
+ * \fn void NVM_init(void)
+ * \brief Init NVM interface.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void NVM_init(void);
-NVM_status_t NVM_read_byte(NVM_address_t address_offset, uint8_t* data);
-NVM_status_t NVM_write_byte(NVM_address_t address_offset, uint8_t data);
+
+/*!******************************************************************
+ * \fn NVM_status_t NVM_read_byte(NVM_address_t address_offset, uint8_t* data)
+ * \brief Read byte in NVM.
+ * \param[in]  	address: Address to read.
+ * \param[out] 	data: Pointer to byte that will contain the read value.
+ * \retval		Function execution status.
+ *******************************************************************/
+NVM_status_t NVM_read_byte(NVM_address_t address, uint8_t* data);
+
+/*!******************************************************************
+ * \fn NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data)
+ * \brief Write byte in NVM.
+ * \param[in]  	address: Address to write.
+ * \param[out] 	data: Byte to write.
+ * \retval		Function execution status.
+ *******************************************************************/
+NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data);
+
 #ifdef UHFM
+/*!******************************************************************
+ * \fn NVM_status_t NVM_reset_default(void)
+ * \brief Reset Sigfox EP library data.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NVM_status_t NVM_reset_default(void);
 #endif
 
-#define NVM_status_check(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; }}
-#define NVM_error_check() { ERROR_status_check(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
-#define NVM_error_check_print() { ERROR_status_check_print(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
+/*******************************************************************/
+#define NVM_check_status(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; } }
+
+/*******************************************************************/
+#define NVM_stack_error() { ERROR_stack_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
+
+/*******************************************************************/
+#define NVM_print_error() { ERROR_print_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
 
 #endif /* __NVM_H__ */

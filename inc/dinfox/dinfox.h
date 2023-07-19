@@ -127,7 +127,7 @@ typedef enum {
 } DINFOX_current_unit_t;
 
 typedef union {
-	uint8_t representation;
+	uint16_t representation;
 	struct {
 		unsigned value : DINFOX_CURRENT_VALUE_SIZE_BITS;
 		DINFOX_current_unit_t unit : DINFOX_CURRENT_UNIT_SIZE_BITS;

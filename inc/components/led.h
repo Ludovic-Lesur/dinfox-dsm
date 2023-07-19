@@ -63,9 +63,9 @@ LED_status_t LED_toggle(LED_color_t color);
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
-#define LED_status_check(error_base) { if (led_status != LED_SUCCESS) { status = error_base + led_status; goto errors; }}
-#define LED_error_check() { ERROR_status_check(led_status, LED_SUCCESS, ERROR_BASE_LED); }
-#define LED_error_check_print() { ERROR_status_check_print(led_status, LED_SUCCESS, ERROR_BASE_LED); }
+#define LED_check_status(error_base) { if (led_status != LED_SUCCESS) { status = error_base + led_status; goto errors; }}
+#define LED_stack_error() { ERROR_stack_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
+#define LED_print_error() { ERROR_print_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
 #endif
 
 #endif /* LED_H */

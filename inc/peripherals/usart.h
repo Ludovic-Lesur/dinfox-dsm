@@ -13,6 +13,10 @@
 
 /*** USART structures ***/
 
+/*!******************************************************************
+ * \enum USART_status_t
+ * \brief USART driver error codes.
+ *******************************************************************/
 typedef enum {
 	USART_SUCCESS = 0,
 	USART_ERROR_TX_TIMEOUT,
@@ -20,19 +24,59 @@ typedef enum {
 	USART_ERROR_BASE_LAST = (USART_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } USART_status_t;
 
-#ifdef GPSM
-
 /*** USART functions ***/
 
+#ifdef GPSM
+/*!******************************************************************
+ * \fn void USART2_init(void)
+ * \brief Init USART2 peripheral.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void USART2_init(void);
+#endif
+
+#ifdef GPSM
+/*!******************************************************************
+ * \fn USART_status_t USART2_power_on(void)
+ * \brief Power on all modules connected to the USART2 link.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 USART_status_t USART2_power_on(void);
+#endif
+
+#ifdef GPSM
+/*!******************************************************************
+ * \fn void USART2_power_off(void)
+ * \brief Power off all modules connected to the USART2 link.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void USART2_power_off(void);
-USART_status_t USART2_send_byte(uint8_t tx_byte);
+#endif
 
-#define USART2_status_check(error_base) { if (usart2_status != USART_SUCCESS) { status = error_base + usart2_status; goto errors; }}
-#define USART2_error_check() { ERROR_status_check(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
-#define USART2_error_check_print() { ERROR_status_check_print(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
+#ifdef GPSM
+/*!******************************************************************
+ * \fn USART_status_t USART2_send_byte(uint8_t data)
+ * \brief Send byte over USART2
+ * \param[in]	data: Byte to send.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
+USART_status_t USART2_send_byte(uint8_t data);
+#endif
 
-#endif /* GPSM */
+/*******************************************************************/
+#define USART2_check_status(error_base) { if (usart2_status != USART_SUCCESS) { status = error_base + usart2_status; goto errors; } }
+
+/*******************************************************************/
+#define USART2_stack_error() { ERROR_stack_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
+
+/*******************************************************************/
+#define USART2_print_error() { ERROR_print_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
 
 #endif /* __USART_H__ */

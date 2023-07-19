@@ -14,18 +14,14 @@
 #include "spi_reg.h"
 #include "types.h"
 
-#ifdef UHFM
-
 /*** SPI local macros ***/
 
 #define SPI_ACCESS_TIMEOUT_COUNT	1000000
 
 /*** SPI functions ***/
 
-/* CONFIGURE SPI1.
- * @param:	None.
- * @return:	None.
- */
+#ifdef UHFM
+/*******************************************************************/
 void SPI1_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 12); // SPI1EN='1'.
@@ -44,11 +40,10 @@ void SPI1_init(void) {
 	// Enable peripheral.
 	SPI1 -> CR1 |= (0b1 << 6); // SPE='1'.
 }
+#endif
 
-/* SWITCH ALL SPI1 SLAVES ON.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 SPI_status_t SPI1_power_on(void) {
 	// Local variables.
 	SPI_status_t status = SPI_SUCCESS;
@@ -61,17 +56,16 @@ SPI_status_t SPI1_power_on(void) {
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 	// Wait for power-on.
 	lptim1_status = LPTIM1_delay_milliseconds(SPI_POWER_ON_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_status_check(SPI_ERROR_BASE_LPTIM);
+	LPTIM1_check_status(SPI_ERROR_BASE_LPTIM);
 	// Chip select high by default.
 	GPIO_write(&GPIO_S2LP_CS, 1);
 errors:
 	return status;
 }
+#endif
 
-/* SWITCH ALL SPI1 SLAVES OFF.
- * @param:	None.
- * @return:	None.
- */
+#ifdef UHFM
+/*******************************************************************/
 void SPI1_power_off(void) {
 	// Turn SPI1 slaves off.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
@@ -81,11 +75,10 @@ void SPI1_power_off(void) {
 	GPIO_configure(&GPIO_SPI1_MOSI, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_SPI1_MISO, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
+#endif
 
-/* SEND A BYTE THROUGH SPI1.
- * @param tx_data:	8-bits data to send.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 SPI_status_t SPI1_write_byte(uint8_t tx_data) {
 	// Local variables.
 	SPI_status_t status = SPI_SUCCESS;
@@ -104,11 +97,10 @@ SPI_status_t SPI1_write_byte(uint8_t tx_data) {
 errors:
 	return status;
 }
+#endif
 
-/* READ A BYTE FROM SPI1.
- * @param rx_data:	Pointer to 8-bits value that will contain the data to read.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 SPI_status_t SPI1_read_byte(uint8_t tx_data, uint8_t* rx_data) {
 	// Local variables.
 	SPI_status_t status = SPI_SUCCESS;
@@ -145,5 +137,4 @@ SPI_status_t SPI1_read_byte(uint8_t tx_data, uint8_t* rx_data) {
 errors:
 	return status;
 }
-
-#endif /* UHFM */
+#endif

@@ -36,9 +36,9 @@ void DIGITAL_init(void);
 DIGITAL_status_t DIGITAL_perform_measurements(void);
 DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state);
 
-#define DIGITAL_status_check(error_base) { if (digital_status != DIGITAL_SUCCESS) { status = error_base + digital_status; goto errors; }}
-#define DIGITAL_error_check() { ERROR_status_check(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
-#define DIGITAL_error_check_print() { ERROR_status_check_print(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
+#define DIGITAL_check_status(error_base) { if (digital_status != DIGITAL_SUCCESS) { status = error_base + digital_status; goto errors; }}
+#define DIGITAL_stack_error() { ERROR_stack_error(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
+#define DIGITAL_print_error() { ERROR_print_error(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
 
 #endif /* SM */
 
