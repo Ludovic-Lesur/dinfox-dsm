@@ -23,6 +23,10 @@
 #define LPUART_TIMEOUT_COUNT	100000
 //#define LPUART_USE_NRE
 
+/*** LPUART local global variables ***/
+
+static LPUART_rx_irq_cb lpuart1_rx_irq_callback = NULL;
+
 /*** LPUART local functions ***/
 
 /*******************************************************************/
@@ -33,7 +37,10 @@ void LPUART1_IRQHandler(void) {
 	if (((LPUART1 -> ISR) & (0b1 << 5)) != 0) {
 		// Read incoming byte.
 		rx_byte = (LPUART1 -> RDR);
-		LBUS_fill_rx_buffer(rx_byte);
+		// Transmit byte to upper layer.
+		if (lpuart1_rx_irq_callback != NULL) {
+			lpuart1_rx_irq_callback(rx_byte);
+		}
 		// Clear RXNE flag.
 		LPUART1 -> RQR |= (0b1 << 3);
 	}
@@ -108,6 +115,12 @@ LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 	// Enable peripheral.
 	LPUART1 -> CR1 |= (0b1 << 0); // UE='1'.
 	return status;
+}
+
+/*******************************************************************/
+void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback) {
+	// Register callback.
+	lpuart1_rx_irq_callback = irq_callback;
 }
 
 /*******************************************************************/

@@ -24,6 +24,12 @@ typedef enum {
 	USART_ERROR_BASE_LAST = (USART_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } USART_status_t;
 
+/*!******************************************************************
+ * \fn USART_character_match_irq_cb
+ * \brief USART character match interrupt callback.
+ *******************************************************************/
+typedef void (*USART_character_match_irq_cb)(uint8_t line_end_flag);
+
 /*** USART functions ***/
 
 #ifdef GPSM
@@ -35,6 +41,17 @@ typedef enum {
  * \retval		none
  *******************************************************************/
 void USART2_init(void);
+#endif
+
+#ifdef GPSM
+/*!******************************************************************
+ * \fn void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback
+ * \brief Set USART character match interrupt callback.
+ * \param[in]  	irq_callback: Function to call on interrupt.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback);
 #endif
 
 #ifdef GPSM

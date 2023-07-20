@@ -8,7 +8,7 @@
 #ifndef __MODE_H__
 #define __MODE_H__
 
-/*** AT commands selection ***/
+/*** AT commands mode ***/
 
 //#define ATM	// AT command mode.
 

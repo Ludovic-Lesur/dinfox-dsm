@@ -172,6 +172,27 @@ static AT_BUS_context_t at_bus_ctx;
 
 /*** AT local functions ***/
 
+/* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).
+ * @param rx_byte:	Incoming byte.
+ * @return:			None.
+ */
+void _AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
+	// Append byte if line end flag is not allready set.
+	if (at_bus_ctx.line_end_flag == 0) {
+		// Check ending characters.
+		if (rx_byte == AT_BUS_FRAME_END) {
+			at_bus_ctx.command[at_bus_ctx.command_size] = STRING_CHAR_NULL;
+			at_bus_ctx.line_end_flag = 1;
+		}
+		else {
+			// Store new byte.
+			at_bus_ctx.command[at_bus_ctx.command_size] = rx_byte;
+			// Manage index.
+			at_bus_ctx.command_size = (at_bus_ctx.command_size + 1) % AT_BUS_COMMAND_BUFFER_SIZE;
+		}
+	}
+}
+
 /* GENERIC MACRO TO ADD A CHARACTER TO THE REPLY BUFFER.
  * @param character:	Character to add.
  * @return:				None.
@@ -1403,13 +1424,10 @@ errors:
  * @return:				None.
  */
 void AT_BUS_init(NODE_address_t self_address) {
-	// Local variables.
-	LBUS_status_t lbus_status = LBUS_SUCCESS;
 	// Init context.
 	_AT_BUS_reset_parser();
-	// Init LBUS layer.
-	lbus_status = LBUS_init(self_address);
-	LBUS_stack_error();
+	// Init LBUS callback.
+	LBUS_set_rx_callback(&_AT_BUS_fill_rx_buffer);
 	// Enable LPUART.
 	LPUART1_enable_rx();
 }
@@ -1425,27 +1443,6 @@ void AT_BUS_task(void) {
 		LPUART1_disable_rx();
 		_AT_BUS_decode();
 		LPUART1_enable_rx();
-	}
-}
-
-/* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).
- * @param rx_byte:	Incoming byte.
- * @return:			None.
- */
-void AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
-	// Append byte if line end flag is not allready set.
-	if (at_bus_ctx.line_end_flag == 0) {
-		// Check ending characters.
-		if (rx_byte == AT_BUS_FRAME_END) {
-			at_bus_ctx.command[at_bus_ctx.command_size] = STRING_CHAR_NULL;
-			at_bus_ctx.line_end_flag = 1;
-		}
-		else {
-			// Store new byte.
-			at_bus_ctx.command[at_bus_ctx.command_size] = rx_byte;
-			// Manage index.
-			at_bus_ctx.command_size = (at_bus_ctx.command_size + 1) % AT_BUS_COMMAND_BUFFER_SIZE;
-		}
 	}
 }
 

@@ -28,6 +28,12 @@ typedef enum {
 	LPUART_ERROR_BASE_LAST = 0x0100
 } LPUART_status_t;
 
+/*!******************************************************************
+ * \fn LPUART_rx_irq_cb
+ * \brief LPUART RX interrupt callback.
+ *******************************************************************/
+typedef void (*LPUART_rx_irq_cb)(uint8_t data);
+
 /*** LPUART functions ***/
 
 /*!******************************************************************
@@ -38,6 +44,15 @@ typedef enum {
  * \retval		Function execution status.
  *******************************************************************/
 LPUART_status_t LPUART1_init(NODE_address_t self_address);
+
+/*!******************************************************************
+ * \fn void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback)
+ * \brief Set LPUART1 RX callback.
+ * \param[in]  	irq_callback: Function to call on interrupt.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback);
 
 /*!******************************************************************
  * \fn void LPUART1_enable_rx(void)

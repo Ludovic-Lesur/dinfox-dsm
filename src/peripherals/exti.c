@@ -13,9 +13,6 @@
 #include "rcc_reg.h"
 #include "syscfg_reg.h"
 #include "types.h"
-#ifdef UHFM
-#include "manuf/rf_api.h"
-#endif
 
 /*** EXTI local macros ***/
 

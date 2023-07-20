@@ -102,6 +102,7 @@ static void _XM_init_hw(void) {
 	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
+	LBUS_status_t lbus_status = LBUS_SUCCESS;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	NODE_address_t self_address;
 #ifndef DEBUG
@@ -154,12 +155,12 @@ static void _XM_init_hw(void) {
 #endif
 #ifdef UHFM
 	AES_init();
-	DMA1_init_channel3();
+	DMA1_CH3_init();
 	SPI1_init();
 #endif
 #ifdef GPSM
 	USART2_init();
-	DMA1_init_channel6();
+	DMA1_CH6_init();
 #endif
 	// Init components.
 #ifdef SM
@@ -179,7 +180,10 @@ static void _XM_init_hw(void) {
 #endif
 	// Init registers.
 	NODE_init();
-	// Init AT interface.
+	// Init LBUS layer.
+	lbus_status = LBUS_init(self_address);
+	LBUS_stack_error();
+	// Init ATBUS layer.
 	AT_BUS_init(self_address);
 }
 

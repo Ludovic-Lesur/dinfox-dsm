@@ -1089,7 +1089,7 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes) {
 	}
 #ifdef S2LP_TX_FIFO_USE_DMA
 	// Set buffer address.
-	DMA1_set_channel3_source_addr((uint32_t) tx_data, tx_data_length_bytes);
+	DMA1_CH3_set_source_address((uint32_t) tx_data, tx_data_length_bytes);
 #endif
 	// Falling edge on CS pin.
 	GPIO_write(&GPIO_S2LP_CS, 0);
@@ -1100,11 +1100,11 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes) {
 	SPI1_check_status(S2LP_ERROR_BASE_SPI);
 #ifdef S2LP_TX_FIFO_USE_DMA
 	// Transfer buffer with DMA.
-	DMA1_start_channel3();
-	while (DMA1_get_channel3_status() == 0) {
+	DMA1_CH3_start();
+	while (DMA1_CH3_get_transfer_status() == 0) {
 		PWR_enter_sleep_mode();
 	}
-	DMA1_stop_channel3();
+	DMA1_CH3_stop();
 #else
 	for (idx=0 ; idx<tx_data_length_bytes ; idx++) {
 		spi1_status = SPI1_write_byte(tx_data[idx]);

@@ -12,7 +12,6 @@
 #include "lptim.h"
 #include "mapping.h"
 #include "mode.h"
-#include "neom8n.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
@@ -25,6 +24,12 @@
 #define USART_BAUD_RATE 		9600
 #define USART_TIMEOUT_COUNT		100000
 
+/*** USART local global variables ***/
+
+#ifdef GPSM
+static USART_character_match_irq_cb usart2_cm_irq_callback = NULL;
+#endif
+
 /*** USART local functions ***/
 
 #ifdef GPSM
@@ -33,8 +38,8 @@ void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 	// Character match interrupt.
 	if (((USART2 -> ISR) & (0b1 << 17)) != 0) {
 		// Switch DMA buffer and decode buffer.
-		if (((USART2 -> CR1) & (0b1 << 14)) != 0) {
-			NEOM8N_switch_dma_buffer(1);
+		if ((((USART2 -> CR1) & (0b1 << 14)) != 0) && (usart2_cm_irq_callback != NULL)) {
+			usart2_cm_irq_callback(1);
 		}
 		// Clear CM flag.
 		USART2 -> ICR |= (0b1 << 17);
@@ -77,6 +82,14 @@ void USART2_init(void) {
 	USART2 -> CR1 |= (0b11 << 2); // TE='1' and RE='1'.
 	// Enable peripheral.
 	USART2 -> CR1 |= (0b1 << 0); // UE='1'.
+}
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback) {
+	// Register callback.
+	usart2_cm_irq_callback = irq_callback;
 }
 #endif
 

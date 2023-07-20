@@ -628,10 +628,10 @@ static NEOM8N_status_t _NEOM8N_start(uint32_t timeout_seconds) {
 	rtc_status = RTC_start_wakeup_timer(timeout_seconds);
 	RTC_check_status(NEOM8N_ERROR_BASE_RTC);
 	// Start DMA.
-	DMA1_stop_channel6();
+	DMA1_CH6_stop();
 	neom8n_ctx.fill_buf1 = 1;
-	DMA1_set_channel6_dest_addr((uint32_t) &(neom8n_ctx.rx_buf1), NMEA_RX_BUFFER_SIZE); // Start with buffer 1.
-	DMA1_start_channel6();
+	DMA1_CH6_set_destination_address((uint32_t) &(neom8n_ctx.rx_buf1), NMEA_RX_BUFFER_SIZE); // Start with buffer 1.
+	DMA1_CH6_start();
 	// Start USART.
 	NVIC_enable_interrupt(NVIC_INTERRUPT_USART2, NVIC_PRIORITY_USART2);
 errors:
@@ -646,13 +646,35 @@ static void _NEOM8N_stop(void) {
 	// Reset chip.
 	GPIO_write(&GPIO_GPS_RESET, 0);
 	// Stop DMA.
-	DMA1_stop_channel6();
+	DMA1_CH6_stop();
 	// Stop USART.
 	NVIC_disable_interrupt(NVIC_INTERRUPT_USART2);
 	// Stop wake-up timer.
 	RTC_stop_wakeup_timer();
 	RTC_clear_wakeup_timer_flag();
 	// Note: RTC status is not used here since the data could be valid.
+}
+
+/* SWITCH DMA DESTINATION BUFFER (CALLED BY USART CM INTERRUPT).
+ * @param line_end_flag:	Indicates if characters match interrupt occured (USART).
+ * @return:					None.
+ */
+static void _NEOM8N_switch_dma_buffer(uint8_t line_end_flag) {
+	// Stop and start DMA transfer to switch buffer.
+	DMA1_CH6_stop();
+	// Switch buffer.
+	if (neom8n_ctx.fill_buf1 == 0) {
+		DMA1_CH6_set_destination_address((uint32_t) &(neom8n_ctx.rx_buf1), NMEA_RX_BUFFER_SIZE); // Switch to buffer 1.
+		neom8n_ctx.fill_buf1 = 1;
+	}
+	else {
+		DMA1_CH6_set_destination_address((uint32_t) &(neom8n_ctx.rx_buf2), NMEA_RX_BUFFER_SIZE); // Switch to buffer 2.
+		neom8n_ctx.fill_buf1 = 0;
+	}
+	// Update LF flag to start decoding or not.
+	neom8n_ctx.line_end_flag = line_end_flag;
+	// Restart DMA transfer.
+	DMA1_CH6_start();
 }
 
 /*** NEOM8N functions ***/
@@ -667,6 +689,9 @@ void NEOM8N_init(void) {
 	// Init backup and reset pins.
 	GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_GPS_RESET, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	// Init callbacks.
+	USART2_set_character_match_callback(&_NEOM8N_switch_dma_buffer);
+	DMA1_CH6_set_transfer_complete_callback(&_NEOM8N_switch_dma_buffer);
 	// Init context.
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buf1[idx] = 0;
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buf2[idx] = 0;
@@ -676,28 +701,6 @@ void NEOM8N_init(void) {
 	neom8n_ctx.gga_same_altitude_count = 0;
 	neom8n_ctx.gga_previous_altitude = 0;
 #endif
-}
-
-/* SWITCH DMA DESTINATION BUFFER (CALLED BY USART CM INTERRUPT).
- * @param line_end_flag:	Indicates if characters match interrupt occured (USART).
- * @return:					None.
- */
-void NEOM8N_switch_dma_buffer(uint8_t line_end_flag) {
-	// Stop and start DMA transfer to switch buffer.
-	DMA1_stop_channel6();
-	// Switch buffer.
-	if (neom8n_ctx.fill_buf1 == 0) {
-		DMA1_set_channel6_dest_addr((uint32_t) &(neom8n_ctx.rx_buf1), NMEA_RX_BUFFER_SIZE); // Switch to buffer 1.
-		neom8n_ctx.fill_buf1 = 1;
-	}
-	else {
-		DMA1_set_channel6_dest_addr((uint32_t) &(neom8n_ctx.rx_buf2), NMEA_RX_BUFFER_SIZE); // Switch to buffer 2.
-		neom8n_ctx.fill_buf1 = 0;
-	}
-	// Update LF flag to start decoding or not.
-	neom8n_ctx.line_end_flag = line_end_flag;
-	// Restart DMA transfer.
-	DMA1_start_channel6();
 }
 
 /* CONTROL BACKUP PIN.

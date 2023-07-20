@@ -19,7 +19,6 @@
 
 void AT_BUS_init(NODE_address_t self_address);
 void AT_BUS_task(void);
-void AT_BUS_fill_rx_buffer(uint8_t rx_byte);
 #if (defined UHFM) && (defined ATM)
 void AT_BUS_print_dl_payload(sfx_u8 *dl_payload, sfx_u8 dl_payload_size, sfx_s16 rssi_dbm);
 #endif

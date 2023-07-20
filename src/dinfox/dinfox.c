@@ -195,8 +195,8 @@ uint8_t DINFOX_convert_degrees(int8_t temperature_degrees) {
 	// Local variables.
 	uint32_t dinfox_temperature = 0;
 	int32_t temp_degrees = (int32_t) temperature_degrees;
-	// DINFox representation is equivalent to one complement.
-	MATH_one_complement(temp_degrees, DINFOX_TEMPERATURE_VALUE_SIZE_BITS, &dinfox_temperature);
+	// DINFox representation is equivalent to signed magnitude
+	MATH_int32_to_signed_magnitude(temp_degrees, DINFOX_TEMPERATURE_VALUE_SIZE_BITS, &dinfox_temperature);
 	return ((uint8_t) dinfox_temperature);
 }
 
