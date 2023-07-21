@@ -31,6 +31,7 @@ typedef enum {
  *******************************************************************/
 typedef enum {
 	LPTIM_DELAY_MODE_ACTIVE = 0,
+	LPTIM_DELAY_MODE_SLEEP,
 	LPTIM_DELAY_MODE_STOP,
 	LPTIM_DELAY_MODE_LAST
 } LPTIM_delay_mode_t;

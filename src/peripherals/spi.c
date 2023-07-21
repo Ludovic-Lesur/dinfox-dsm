@@ -55,7 +55,7 @@ SPI_status_t SPI1_power_on(void) {
 	// Turn SPI1 slaves on.
 	GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 	// Wait for power-on.
-	lptim1_status = LPTIM1_delay_milliseconds(SPI_POWER_ON_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+	lptim1_status = LPTIM1_delay_milliseconds(SPI_POWER_ON_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
 	LPTIM1_check_status(SPI_ERROR_BASE_LPTIM);
 	// Chip select high by default.
 	GPIO_write(&GPIO_S2LP_CS, 1);

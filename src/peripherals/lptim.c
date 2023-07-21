@@ -86,22 +86,27 @@ LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t d
 	arr &= 0xFFFF0000;
 	arr |= ((((delay_ms - 1) * LPTIM_CLOCK_FREQUENCY_HZ) / (1000)) & 0x0000FFFF);
 	LPTIM1 -> ARR = arr;
-	// Perform delay with the selected mode.
+	// Start timer.
+	lptim_wake_up = 0;
+	LPTIM1 -> CR |= (0b1 << 1); // SNGSTRT='1'.
+	// Perform delay with the selected waiting mode.
 	switch (delay_mode) {
 	case LPTIM_DELAY_MODE_ACTIVE:
-		// Start timer.
-		LPTIM1 -> CR |= (0b1 << 1); // SNGSTRT='1'.
 		// Wait for flag.
 		while (((LPTIM1 -> ISR) & (0b1 << 1)) == 0);
-		// Clear flag.
-		LPTIM1 -> ICR |= (0b1 << 1);
+		break;
+	case LPTIM_DELAY_MODE_SLEEP:
+		// Enable interrupt.
+		NVIC_enable_interrupt(NVIC_INTERRUPT_LPTIM1, NVIC_PRIORITY_LPTIM1);
+		// Wait for interrupt.
+		while (lptim_wake_up == 0) {
+			PWR_enter_sleep_mode();
+		}
+		NVIC_disable_interrupt(NVIC_INTERRUPT_LPTIM1);
 		break;
 	case LPTIM_DELAY_MODE_STOP:
 		// Enable interrupt.
 		NVIC_enable_interrupt(NVIC_INTERRUPT_LPTIM1, NVIC_PRIORITY_LPTIM1);
-		lptim_wake_up = 0;
-		// Start timer.
-		LPTIM1 -> CR |= (0b1 << 1); // SNGSTRT='1'.
 		// Wait for interrupt.
 		while (lptim_wake_up == 0) {
 			PWR_enter_stop_mode();
@@ -113,6 +118,8 @@ LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t d
 		break;
 	}
 errors:
+	// Clear flag.
+	LPTIM1 -> ICR |= (0b1 << 1);
 	// Disable timer.
 	LPTIM1 -> CR &= ~(0b1 << 0); // Disable LPTIM1 (ENABLE='0').
 	return status;

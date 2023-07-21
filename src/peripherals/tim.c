@@ -215,6 +215,8 @@ TIM_status_t TIM2_stop(TIM2_channel_t channel) {
 	TIM2 -> DIER &= ~(0b1 << (channel + 1));
 	// Clear flag.
 	TIM2 -> SR &= ~(0b1 << (channel + 1));
+	// Update flag.
+	tim2_channel_running[channel] = 0;
 	// Disable counter if all channels are stopped.
 	for (channel_idx=0 ; channel_idx<TIM2_CHANNEL_LAST ; channel_idx++) {
 		running_count += tim2_channel_running[channel_idx];
@@ -222,8 +224,6 @@ TIM_status_t TIM2_stop(TIM2_channel_t channel) {
 	if (running_count == 0) {
 		TIM2 -> CR1 &= ~(0b1 << 0);
 	}
-	// Update flag.
-	tim2_channel_running[channel] = 0;
 errors:
 	return status;
 }

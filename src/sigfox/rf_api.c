@@ -79,6 +79,11 @@
 #define RF_API_DOWNLINK_RSSI_THRESHOLD_DBM		-139
 #endif
 
+#if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION)
+#define RF_API_LATENCY_MARGIN_MS_UL_TIFX		1
+#define RF_API_LATENCY_MARGIN_MS_DL_WINDOW		100
+#endif
+
 static const sfx_u8 RF_API_RAMP_AMPLITUDE_PROFILE_14_DBM[RF_API_RAMP_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15, 17, 20, 22, 24, 27, 30, 34, 39, 45, 54, 80, 120, 220};
 static const sfx_u8 RF_API_BIT0_AMPLITUDE_PROFILE_14_DBM[RF_API_SYMBOL_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 1, 2, 2, 3, 4, 6, 8, 11, 15, 20, 24, 30, 39, 54, 220, 220, 54, 39, 30, 24, 20, 15, 11, 8, 6, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1};
 #ifdef BIDIRECTIONAL
@@ -87,6 +92,7 @@ static const sfx_u8 RF_API_DL_FT[SIGFOX_DL_FT_SIZE_BYTES] = SIGFOX_DL_FT;
 
 /*** RF API local structures ***/
 
+/*******************************************************************/
 typedef enum {
 	RF_API_ERROR_NULL_PARAMETER = (RF_API_SUCCESS + 1),
 	RF_API_ERROR_BUFFER_SIZE,
@@ -150,15 +156,15 @@ typedef struct {
 // Latency values (for SPI interface clocked at 8MHz).
 static sfx_u32 RF_API_LATENCY_MS[RF_API_LATENCY_LAST] = {
 	0, // Wake-up.
-	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 1), // TX init (power on delay + 1.16ms).
+	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 1 - RF_API_LATENCY_MARGIN_MS_UL_TIFX), // TX init (power on delay + 1.75ms - margin).
 	0, // Send start (depends on bit rate and will be computed during init function).
 	0, // Send stop (depends on bit rate and will be computed during init function).
 	0, // TX de init (70µs).
 	0, // Sleep.
 #ifdef BIDIRECTIONAL
-	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 6), // RX init (power on delay + 5.36ms).
-	0, // Receive start (300µs).
-	7, // Receive stop (6.7ms).
+	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 6 - RF_API_LATENCY_MARGIN_MS_UL_TIFX), // RX init (power on delay + 5.97ms - margin).
+	RF_API_LATENCY_MARGIN_MS_DL_WINDOW, // Receive start (margin + 300µs).
+	(RF_API_LATENCY_MARGIN_MS_DL_WINDOW + 7), // Receive stop (margin + 6.7ms).
 	0, // RX de init (70µs).
 #endif
 };

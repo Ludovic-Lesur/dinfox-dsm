@@ -338,7 +338,7 @@ S2LP_status_t S2LP_tcxo(uint8_t tcxo_enable) {
 	GPIO_write(&GPIO_TCXO_POWER_ENABLE, tcxo_enable);
 	// Warm-up delay.
 	if (tcxo_enable != 0) {
-		lptim1_status = LPTIM1_delay_milliseconds(S2LP_TCXO_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+		lptim1_status = LPTIM1_delay_milliseconds(S2LP_TCXO_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
 		LPTIM1_check_status(S2LP_ERROR_BASE_LPTIM);
 	}
 errors:
@@ -355,7 +355,7 @@ S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable) {
 		// Put SDN low.
 		GPIO_configure(&GPIO_S2LP_SDN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 		// Wait for reset time.
-		lptim1_status = LPTIM1_delay_milliseconds(S2LP_SHUTDOWN_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+		lptim1_status = LPTIM1_delay_milliseconds(S2LP_SHUTDOWN_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
 		LPTIM1_check_status(S2LP_ERROR_BASE_LPTIM);
 	}
 	else {
