@@ -25,9 +25,6 @@
 #define S2LP_HEADER_BYTE_WRITE					0x00
 #define S2LP_HEADER_BYTE_READ					0x01
 #define S2LP_HEADER_BYTE_COMMAND				0x80
-// State waiting timeout.
-#define S2LP_TIMEOUT_MS							1000
-#define S2LP_TIMEOUT_SUB_DELAY_MS				10
 // Crystal frequency ranges.
 #define S2LP_XO_FREQUENCY_HZ					49152000
 #define S2LP_XO_HIGH_RANGE_THRESHOLD_HZ			48000000
@@ -443,15 +440,6 @@ S2LP_status_t S2LP_wait_for_oscillator(void) {
 		status = _S2LP_read_register(S2LP_REG_MC_STATE0, &reg_value);
 		if (status != S2LP_SUCCESS) goto errors;
 		xo_on = (reg_value & 0x01);
-		// Internal delay.
-		lptim1_status = LPTIM1_delay_milliseconds(S2LP_TIMEOUT_SUB_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-		LPTIM1_check_status(S2LP_ERROR_BASE_LPTIM);
-		// Exit if timeout.
-		delay_ms += S2LP_TIMEOUT_SUB_DELAY_MS;
-		if (delay_ms > S2LP_TIMEOUT_MS) {
-			status = S2LP_ERROR_OSCILLATOR_TIMEOUT;
-			goto errors;
-		}
 	}
 	while (xo_on == 0);
 errors:

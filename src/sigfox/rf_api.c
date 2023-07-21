@@ -81,11 +81,10 @@
 
 #if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION)
 #define RF_API_LATENCY_MARGIN_MS_UL_TIFX		1
-#define RF_API_LATENCY_MARGIN_MS_DL_WINDOW		100
 #endif
 
-static const sfx_u8 RF_API_RAMP_AMPLITUDE_PROFILE_14_DBM[RF_API_RAMP_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 4, 5, 6, 7, 8, 9, 11, 13, 15, 17, 20, 22, 24, 27, 30, 34, 39, 45, 54, 80, 120, 220};
-static const sfx_u8 RF_API_BIT0_AMPLITUDE_PROFILE_14_DBM[RF_API_SYMBOL_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 1, 2, 2, 3, 4, 6, 8, 11, 15, 20, 24, 30, 39, 54, 220, 220, 54, 39, 30, 24, 20, 15, 11, 8, 6, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1};
+static const sfx_u8 RF_API_BIT0_AMPLITUDE_PROFILE_14_DBM[RF_API_SYMBOL_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 5, 7, 10, 14, 19, 25, 31, 39, 60, 220, 220, 60, 39, 31, 25, 19, 14, 10, 7, 5, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1};
+static const sfx_u8 RF_API_RAMP_AMPLITUDE_PROFILE_14_DBM[RF_API_RAMP_PROFILE_SIZE_BYTES] = {1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 5, 7, 10, 14, 19, 25, 31, 39, 60, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220, 220};
 #ifdef BIDIRECTIONAL
 static const sfx_u8 RF_API_DL_FT[SIGFOX_DL_FT_SIZE_BYTES] = SIGFOX_DL_FT;
 #endif
@@ -163,8 +162,8 @@ static sfx_u32 RF_API_LATENCY_MS[RF_API_LATENCY_LAST] = {
 	0, // Sleep.
 #ifdef BIDIRECTIONAL
 	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 6 - RF_API_LATENCY_MARGIN_MS_UL_TIFX), // RX init (power on delay + 5.97ms - margin).
-	RF_API_LATENCY_MARGIN_MS_DL_WINDOW, // Receive start (margin + 300µs).
-	(RF_API_LATENCY_MARGIN_MS_DL_WINDOW + 7), // Receive stop (margin + 6.7ms).
+	0, // Receive start (margin + 300µs).
+	7, // Receive stop (margin + 6.7ms).
 	0, // RX de init (70µs).
 #endif
 };
@@ -448,6 +447,8 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 	// Oscillator.
 	s2lp_status = S2LP_set_oscillator(S2LP_OSCILLATOR_TCXO);
+	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	s2lp_status = S2LP_wait_for_oscillator();
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 	// Charge pump.
 	s2lp_status = S2LP_configure_charge_pump();

@@ -377,14 +377,10 @@ ADC_status_t ADC1_perform_measurements(void) {
 	// Turn analog front-end on.
 	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
 #endif
-#if (defined BPSM) || ((defined SM) && (defined SM_AIN_ENABLE)) || (defined UHFM) || ((defined LVRM) && (defined HW2_0))
-	// Wait voltage dividers stabilization.
-	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_check_status(ADC_ERROR_BASE_LPTIM);
-#endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEN='1'.
-	lptim1_status = LPTIM1_delay_milliseconds(10, LPTIM_DELAY_MODE_ACTIVE);
+	// Wait for internal reference and voltage dividers stabilization.
+	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_check_status(ADC_ERROR_BASE_LPTIM);
 	// Perform conversions.
 	status = _ADC1_compute_all_channels();
