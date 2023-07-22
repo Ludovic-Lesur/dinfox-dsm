@@ -96,13 +96,20 @@ MCU_API_status_t MCU_API_timer_start(MCU_API_timer_t *timer) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
 	TIM_status_t tim2_status = TIM_SUCCESS;
+	TIM_waiting_mode_t tim2_waiting_mode = TIM_WAITING_MODE_LOW_POWER_SLEEP;
 	// Check parameter.
 	if (timer == SFX_NULL) {
 		status = MCU_API_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
+	// Update waiting mode according to timer reason.
+	if ((timer -> reason) == MCU_API_TIMER_REASON_T_RX) {
+		// T_RX completion is directly checked with the raw timer status within the RF_API_receive() function.
+		// All other timers completion are checked with the MCU_API_timer_wait_cplt() function, using low power sleep waiting mode.
+		tim2_waiting_mode = TIM_WAITING_MODE_ACTIVE;
+	}
 	// Start timer.
-	tim2_status = TIM2_start((timer -> instance), (timer -> duration_ms));
+	tim2_status = TIM2_start((timer -> instance), (timer -> duration_ms), tim2_waiting_mode);
 	TIM2_check_status(MCU_API_ERROR_BASE_TIM2);
 errors:
 	RETURN();

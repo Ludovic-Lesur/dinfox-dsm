@@ -19,7 +19,7 @@
 
 /*** RCC local global variables ***/
 
-static const uint32_t msi_range_frequency_khz[RCC_ERROR_MSI_RANGE] = {65, 131, 262, 524, 1048, 2097, 4194};
+static const uint32_t msi_range_frequency_khz[RCC_MSI_RANGE_LAST] = {65, 131, 262, 524, 1048, 2097, 4194};
 static uint32_t rcc_sysclk_khz;
 
 /*** RCC local functions ***/

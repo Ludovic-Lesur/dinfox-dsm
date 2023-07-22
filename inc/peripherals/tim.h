@@ -21,6 +21,7 @@ typedef enum {
 	TIM_SUCCESS = 0,
 	TIM_ERROR_NULL_PARAMETER,
 	TIM_ERROR_CHANNEL,
+	TIM_ERROR_DURATION_UNDERFLOW,
 	TIM_ERROR_DURATION_OVERFLOW,
 	TIM_ERROR_WAITING_MODE,
 	TIM_ERROR_BASE_RCC = 0x0100,
@@ -120,10 +121,11 @@ void TIM2_init(void);
  * \brief Start a timer channel.
  * \param[in]  	channel: Channel to start.
  * \param[in]	duration_ms: Timer duration in ms.
+ * \param[in]	waiting_mode: Completion waiting mode.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms);
+TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms, TIM_waiting_mode_t waiting_mode);
 #endif
 
 #ifdef UHFM

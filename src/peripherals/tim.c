@@ -17,21 +17,25 @@
 
 /*** TIM local macros ***/
 
-#define TIM2_CNT_VALUE_MAX			0xFFFF
-#define TIM2_ETRF_PRESCALER			16
-#define TIM2_ETRF_CLOCK_HZ			(RCC_LSE_FREQUENCY_HZ / TIM2_ETRF_PRESCALER)
-#define TIM2_TIMER_DURATION_MS_MAX	((TIM2_CNT_VALUE_MAX * 1000) / (TIM2_ETRF_CLOCK_HZ))
+#define TIM_TIMEOUT_COUNT				1000000
 
-#define TIM2_NUMBER_OF_CHANNELS		4
+#define TIM2_CNT_VALUE_MAX				0xFFFF
+#define TIM2_ETRF_PRESCALER				16
+#define TIM2_ETRF_CLOCK_HZ				(RCC_LSE_FREQUENCY_HZ / TIM2_ETRF_PRESCALER)
 
-#define TIM_TIMEOUT_COUNT			1000000
+#define TIM2_CLOCK_SWITCH_LATENCY_MS	2
 
-#define TIM2_CCRX_MASK_OFF			0xFFFF
-#define TIM2_PWM_FREQUENCY_HZ		10000
-#define TIM2_ARR_VALUE				((RCC_HSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
+#define TIM2_TIMER_DURATION_MS_MIN		1
+#define TIM2_TIMER_DURATION_MS_MAX		((TIM2_CNT_VALUE_MAX * 1000) / (TIM2_ETRF_CLOCK_HZ))
 
-#define TIM21_PRESCALER				8
-#define TIM21_DIMMING_LUT_LENGTH	100
+#define TIM2_NUMBER_OF_CHANNELS			4
+
+#define TIM2_CCRX_MASK_OFF				0xFFFF
+#define TIM2_PWM_FREQUENCY_HZ			10000
+#define TIM2_ARR_VALUE					((RCC_HSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
+
+#define TIM21_PRESCALER					8
+#define TIM21_DIMMING_LUT_LENGTH		100
 
 /*** TIM local structures ***/
 
@@ -169,13 +173,29 @@ void TIM2_init(void) {
 
 #ifdef UHFM
 /*******************************************************************/
-TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms) {
+TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms, TIM_waiting_mode_t waiting_mode) {
 	// Local variables.
 	TIM_status_t status = TIM_SUCCESS;
 	uint32_t compare_value = 0;
+	uint32_t local_duration_ms = duration_ms;
+	uint32_t duration_min_ms = TIM2_TIMER_DURATION_MS_MIN;
+	// Check parameters.
+	if (waiting_mode >= TIM_WAITING_MODE_LAST) {
+		status = TIM_ERROR_WAITING_MODE;
+		goto errors;
+	}
+	// Check waiting mode.
+	if (waiting_mode == TIM_WAITING_MODE_LOW_POWER_SLEEP) {
+		// Compensate clock switch latency.
+		duration_min_ms += TIM2_CLOCK_SWITCH_LATENCY_MS;
+	}
 	// Check parameters.
 	if (channel >= TIM2_CHANNEL_LAST) {
 		status = TIM_ERROR_CHANNEL;
+		goto errors;
+	}
+	if (duration_ms < duration_min_ms) {
+		status = TIM_ERROR_DURATION_UNDERFLOW;
 		goto errors;
 	}
 	if (duration_ms > TIM2_TIMER_DURATION_MS_MAX) {
@@ -183,7 +203,10 @@ TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms) {
 		goto errors;
 	}
 	// Compute compare value.
-	compare_value = ((TIM2 -> CNT) + ((duration_ms * TIM2_ETRF_CLOCK_HZ) / (1000))) % TIM2_CNT_VALUE_MAX;
+	if (waiting_mode == TIM_WAITING_MODE_LOW_POWER_SLEEP) {
+		local_duration_ms -= TIM2_CLOCK_SWITCH_LATENCY_MS;
+	}
+	compare_value = ((TIM2 -> CNT) + ((local_duration_ms * TIM2_ETRF_CLOCK_HZ) / (1000))) % TIM2_CNT_VALUE_MAX;
 	TIM2 -> CCRx[channel] = compare_value;
 	// Update flag.
 	tim2_channel_running[channel] = 1;
@@ -279,10 +302,8 @@ TIM_status_t TIM2_wait_completion(TIM2_channel_t channel, TIM_waiting_mode_t wai
 		break;
 	case TIM_WAITING_MODE_LOW_POWER_SLEEP:
 		// Switch to MSI.
-		GPIO_write(&GPIO_TP2, 1);
 		rcc_status = RCC_switch_to_msi(RCC_MSI_RANGE_1_131KHZ);
 		RCC_check_status(TIM_ERROR_BASE_RCC);
-		GPIO_write(&GPIO_TP2, 0);
 		// Enter low power sleep mode.
 		while (tim2_channel_running[channel] != 0) {
 			PWR_enter_low_power_sleep_mode();
