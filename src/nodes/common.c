@@ -27,10 +27,7 @@
 
 /*** COMMON local functions ***/
 
-/* RESET COMMON ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _COMMON_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -41,10 +38,7 @@ static void _COMMON_reset_analog_data(void) {
 	NODE_stack_error();
 }
 
-/* MEASURE TRIGGER CALLBACK.
- * @param:			None.
- * @return status:	Function exexuction status.
- */
+/*******************************************************************/
 NODE_status_t _COMMON_mtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -96,10 +90,7 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 
 /*** COMMON functions ***/
 
-/* INIT COMMON REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void COMMON_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -145,10 +136,7 @@ void COMMON_init_registers(void) {
 	_COMMON_reset_analog_data();
 }
 
-/* UPDATE COMMON REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function exexuction status.
- */
+/*******************************************************************/
 NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -167,10 +155,7 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	return status;
 }
 
-/* CHECK COMMON NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function exexuction status.
- */
+/*******************************************************************/
 NODE_status_t COMMON_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;

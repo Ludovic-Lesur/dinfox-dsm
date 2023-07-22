@@ -14,8 +14,6 @@
 #include "bpsm_reg.h"
 #include "node.h"
 
-#ifdef BPSM
-
 /*** BPSM local structures ***/
 
 typedef union {
@@ -28,14 +26,14 @@ typedef union {
 
 /*** BPSM local global variables ***/
 
+#ifdef BPSM
 static BPSM_flags_t bpsm_flags;
+#endif
 
 /*** BPSM local functions ***/
 
-/* RESET BPSM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef BPSM
+/*******************************************************************/
 static void _BPSM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -47,13 +45,12 @@ static void _BPSM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP, DINFOX_VOLTAGE_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
 /*** BPSM functions ***/
 
-/* INIT BPSM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef BPSM
+/*******************************************************************/
 void BPSM_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -77,11 +74,10 @@ void BPSM_init_registers(void) {
 	// Load default values.
 	_BPSM_reset_analog_data();
 }
+#endif
 
-/* UPDATE BPSM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef BPSM
+/*******************************************************************/
 NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -114,11 +110,10 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* CHECK BPSM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef BPSM
+/*******************************************************************/
 NODE_status_t BPSM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -156,11 +151,10 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef BPSM
+/*******************************************************************/
 NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -202,5 +196,4 @@ NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status) {
 	}
 	return status;
 }
-
-#endif /* BPSM */
+#endif

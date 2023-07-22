@@ -23,8 +23,6 @@
 #include "sigfox_types.h"
 #endif
 
-#ifdef UHFM
-
 /*** UHFM local macros ***/
 
 #define UHFM_REG_SIGFOX_EP_CONFIGURATION_0_DEFAULT_VALUE	0x00000EC0
@@ -39,11 +37,6 @@
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ				830000000
 #define UHFM_ADC_MEASUREMENTS_TX_POWER_DBM					14
 
-#define UHFM_FEATURE_ADDON_RFP
-#define UHFM_FEATURE_CW
-#define UHFM_FEATURE_DL
-#define UHFM_FEATURE_RSSI
-
 /*** UHFM local structures ***/
 
 typedef union {
@@ -57,14 +50,14 @@ typedef union {
 
 /*** UHFM local global variables ***/
 
+#ifdef UHFM
 static UHFM_flags_t uhfm_flags;
+#endif
 
 /*** UHFM local functions ***/
 
-/* RESET UHFM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef UHFM
+/*******************************************************************/
 static void _UHFM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -74,11 +67,10 @@ static void _UHFM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_RX, DINFOX_VOLTAGE_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
-/* CHECK RADIO STATE.
- * @param expected_state:	Expected radio state.
- * @return status:			Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_check_radio_state(uint8_t expected_state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -90,11 +82,10 @@ static NODE_status_t _UHFM_check_radio_state(uint8_t expected_state) {
 errors:
 	return status;
 }
+#endif
 
-/* SEND SIGFOX MESSAGE.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_strg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -181,12 +172,10 @@ errors:
 	// Return status.
 	return status;
 }
+#endif
 
-#ifdef UHFM_FEATURE_ADDON_RFP
-/* PERFORM SIGFOX TEST MODE.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -230,11 +219,8 @@ errors:
 }
 #endif
 
-#ifdef UHFM_FEATURE_DL
-/* START DOWNLINK DECODER.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_dtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -301,11 +287,8 @@ errors:
 }
 #endif
 
-#ifdef UHFM_FEATURE_CW
-/* MANAGE CONTINUOUS WAVE MODE.
- * @param state:	Start (1) or stop (0) continuous wave generation.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -376,11 +359,8 @@ errors:
 }
 #endif
 
-#ifdef UHFM_FEATURE_RSSI
-/* MANAGE CONTINUOUS RSSI MODE.
- * @param state:	Start (1) or stop (0) continuous RSSI measurement.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -446,10 +426,8 @@ errors:
 
 /*** UHFM functions ***/
 
-/* INIT UHFM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef UHFM
+/*******************************************************************/
 void UHFM_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -489,11 +467,10 @@ void UHFM_init_registers(void) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE);
 	NODE_stack_error();
 }
+#endif
 
-/* UPDATE UHFM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -519,11 +496,10 @@ NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* CHECK UHFM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -542,7 +518,6 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_strg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
-#ifdef UHFM_FEATURE_ADDON_RFP
 		// Read TTRG bit.
 		bit = 0;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG, &bit);
@@ -553,8 +528,6 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_ttrg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
-#endif
-#ifdef UHFM_FEATURE_DL
 		// Read DTRG bit.
 		bit = 0;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG, &bit);
@@ -565,8 +538,6 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			status = _UHFM_dtrg_callback();
 			if (status != NODE_SUCCESS) goto errors;
 		}
-#endif
-#ifdef UHFM_FEATURE_CW
 		// Read CWEN bit.
 		bit = uhfm_flags.cwen;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN, &bit);
@@ -583,8 +554,6 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			// Update local flag.
 			uhfm_flags.cwen = bit;
 		}
-#endif
-#ifdef UHFM_FEATURE_RSSI
 		// Read RSSI bit.
 		bit = uhfm_flags.rsen;
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN, &bit);
@@ -601,7 +570,6 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 			// Update local flag.
 			uhfm_flags.rsen = bit;
 		}
-#endif
 		break;
 	default:
 		// Nothing to do for other registers.
@@ -610,11 +578,10 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 errors:
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef UHFM
+/*******************************************************************/
 NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -696,5 +663,4 @@ errors:
 	NODE_stack_error();
 	return status;
 }
-
-#endif /* UHFM */
+#endif

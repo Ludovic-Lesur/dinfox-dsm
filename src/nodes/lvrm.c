@@ -14,8 +14,6 @@
 #include "lvrm_reg.h"
 #include "node.h"
 
-#ifdef LVRM
-
 /*** LVRM local structures ***/
 
 typedef union {
@@ -27,14 +25,14 @@ typedef union {
 
 /*** LVRM local global variables ***/
 
+#ifdef LVRM
 static LVRM_flags_t lvrm_flags;
+#endif
 
 /*** LVRM local functions ***/
 
-/* RESET RRM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef LVRM
+/*******************************************************************/
 static void _LVRM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -46,13 +44,12 @@ static void _LVRM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
 /*** LVRM functions ***/
 
-/* INIT LVRM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef LVRM
+/*******************************************************************/
 void LVRM_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -69,11 +66,10 @@ void LVRM_init_registers(void) {
 	// Load defaults values.
 	_LVRM_reset_analog_data();
 }
+#endif
 
-/* UPDATE LVRM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef LVRM
+/*******************************************************************/
 NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -95,11 +91,10 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* CHECK LVRM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef LVRM
+/*******************************************************************/
 NODE_status_t LVRM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -127,11 +122,10 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef LVRM
+/*******************************************************************/
 NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -173,5 +167,4 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	}
 	return status;
 }
-
-#endif /* LVRM */
+#endif

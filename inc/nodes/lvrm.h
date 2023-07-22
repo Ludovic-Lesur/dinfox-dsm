@@ -14,31 +14,68 @@
 #include "lvrm_reg.h"
 #include "node.h"
 
-#ifdef LVRM
-
 /*** LVRM macros ***/
 
+#ifdef LVRM
 #define NODE_BOARD_ID		DINFOX_BOARD_ID_LVRM
 #define NODE_REG_ADDR_LAST	LVRM_REG_ADDR_LAST
+#endif
 
 /*** LVRM global variables ***/
 
+#ifdef LVRM
 static const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY
 };
+#endif
 
 /*** LVRM functions ***/
 
+#ifdef LVRM
+/*!******************************************************************
+ * \fn void LVRM_init_registers(void)
+ * \brief Init LVRM registers to their default value.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void LVRM_init_registers(void);
+#endif
 
+#ifdef LVRM
+/*!******************************************************************
+ * \fn NODE_status_t LVRM_update_register(uint8_t reg_addr)
+ * \brief Update LVRM register.
+ * \param[in]  	reg_addr: Address of the register to update.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t LVRM_update_register(uint8_t reg_addr);
+#endif
+
+#ifdef LVRM
+/*!******************************************************************
+ * \fn NODE_status_t LVRM_check_register(uint8_t reg_addr)
+ * \brief Check LVRM register.
+ * \param[in]  	reg_addr: Address of the register to check.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t LVRM_check_register(uint8_t reg_addr);
+#endif
 
+#ifdef LVRM
+/*!******************************************************************
+ * \fn NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status)
+ * \brief LVRM measurements callback.
+ * \param[in]  	none
+ * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status);
-
-#endif /* LVRM */
+#endif
 
 #endif /* __LVRM_H__ */

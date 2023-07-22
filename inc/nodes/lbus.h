@@ -62,7 +62,7 @@ void LBUS_set_rx_callback(LBUS_rx_irq_cb irq_callback);
  * \param[in]	data: Byte array to send.
  * \param[in]	data_size_bytes: Number of bytes to send.
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
 LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes);
 

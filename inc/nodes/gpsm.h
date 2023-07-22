@@ -14,15 +14,16 @@
 #include "gpsm_reg.h"
 #include "node.h"
 
-#ifdef GPSM
-
 /*** GPSM macros ***/
 
+#ifdef GPSM
 #define NODE_BOARD_ID		DINFOX_BOARD_ID_GPSM
 #define NODE_REG_ADDR_LAST	GPSM_REG_ADDR_LAST
+#endif
 
 /*** GPSM global variables ***/
 
+#ifdef GPSM
 static const DINFOX_register_access_t NODE_REG_ACCESS[GPSM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_WRITE,
@@ -38,16 +39,52 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[GPSM_REG_ADDR_LAST] = {
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_WRITE
 };
+#endif
 
 /*** GPSM functions ***/
 
+#ifdef GPSM
+/*!******************************************************************
+ * \fn void GPSM_init_registers(void)
+ * \brief Init GPSM registers to their default value.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void GPSM_init_registers(void);
+#endif
 
+#ifdef GPSM
+/*!******************************************************************
+ * \fn NODE_status_t GPSM_update_register(uint8_t reg_addr)
+ * \brief Update GPSM register.
+ * \param[in]  	reg_addr: Address of the register to update.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t GPSM_update_register(uint8_t reg_addr);
+#endif
+
+#ifdef GPSM
+/*!******************************************************************
+ * \fn NODE_status_t GPSM_check_register(uint8_t reg_addr)
+ * \brief Check GPSM register.
+ * \param[in]  	reg_addr: Address of the register to check.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t GPSM_check_register(uint8_t reg_addr);
+#endif
 
+#ifdef GPSM
+/*!******************************************************************
+ * \fn NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status)
+ * \brief GPSM measurements callback.
+ * \param[in]  	none
+ * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status);
-
-#endif /* GPSM */
+#endif
 
 #endif /* __GPSM_H__ */

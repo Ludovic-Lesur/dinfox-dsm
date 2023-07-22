@@ -16,8 +16,6 @@
 #include "node.h"
 #include "usart.h"
 
-#ifdef GPSM
-
 /*** GPSM local macros ***/
 
 #define GPSM_REG_TIMEOUT_DEFAULT_VALUE						0x00B40078
@@ -42,14 +40,14 @@ typedef union {
 
 /*** GPSM local global variables ***/
 
+#ifdef GPSM
 static GPSM_flags_t gpsm_flags;
+#endif
 
 /*** GPSM local functions ***/
 
-/* RESET RRM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 static void _GPSM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -59,11 +57,10 @@ static void _GPSM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, GPSM_REG_ANALOG_DATA_1_MASK_VANT, DINFOX_VOLTAGE_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
-/* CONTROL GPS POWER SUPPLY.
- * @param state:	0 to turn GPS on, 1 to turn GPS on.
- * @return:			None.
- */
+#ifdef GPSM
+/*******************************************************************/
 static void _GPSM_power_control(uint8_t state) {
 	// Local variables.
 	USART_status_t usart2_status = USART_SUCCESS;
@@ -81,11 +78,10 @@ static void _GPSM_power_control(uint8_t state) {
 	// Update local flag.
 	gpsm_flags.gps_power = (state == 0) ? 0 : 1;
 }
+#endif
 
-/* MANAGE GPS POWER SUPPLY.
- * @param state:	0 to turn GPS on, 1 to turn GPS on.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NODE_status_t _GPSM_power_request(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -117,11 +113,10 @@ static NODE_status_t _GPSM_power_request(uint8_t state) {
 errors:
 	return status;
 }
+#endif
 
-/* PERFORM GPS TIME FIX.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NODE_status_t _GPSM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -177,11 +172,10 @@ errors:
 	NODE_stack_error();
 	return status;
 }
+#endif
 
-/* PERFORM GPS GEOLOCATION FIX.
- * @param:			None.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NODE_status_t _GPSM_gtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -243,11 +237,10 @@ errors:
 	NODE_stack_error();
 	return status;
 }
+#endif
 
-/* MANAGE TIMEPULSE OUTPUT MODE.
- * @param state:	Start (1) or stop (0) timepulse output.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -279,13 +272,12 @@ errors:
 	NODE_stack_error();
 	return status;
 }
+#endif
 
 /*** GPSM functions ***/
 
-/* INIT GPSM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 void GPSM_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -300,11 +292,10 @@ void GPSM_init_registers(void) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_1_DEFAULT_VALUE);
 	NODE_stack_error();
 }
+#endif
 
-/* UPDATE GPSM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -322,11 +313,10 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* CHECK GPSM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NODE_status_t GPSM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -425,11 +415,10 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr) {
 errors:
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -471,5 +460,4 @@ errors:
 	NODE_stack_error();
 	return status;
 }
-
-#endif /* GPSM */
+#endif

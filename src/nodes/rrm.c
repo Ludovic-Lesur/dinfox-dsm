@@ -14,8 +14,6 @@
 #include "rrm_reg.h"
 #include "node.h"
 
-#ifdef RRM
-
 /*** RRM local structures ***/
 
 typedef union {
@@ -27,14 +25,14 @@ typedef union {
 
 /*** RRM local global variables ***/
 
+#ifdef RRM
 static RRM_flags_t rrm_flags;
+#endif
 
 /*** RRM local functions ***/
 
-/* RESET RRM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef RRM
+/*******************************************************************/
 static void _RRM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -46,13 +44,12 @@ static void _RRM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT, DINFOX_CURRENT_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
 /*** RRM functions ***/
 
-/* INIT RRM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef RRM
+/*******************************************************************/
 void RRM_init_registers(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -69,11 +66,10 @@ void RRM_init_registers(void) {
 	// Load default values.
 	_RRM_reset_analog_data();
 }
+#endif
 
-/* UPDATE RRM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef RRM
+/*******************************************************************/
 NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -95,11 +91,10 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* CHECK RRM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef RRM
+/*******************************************************************/
 NODE_status_t RRM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -127,11 +122,10 @@ NODE_status_t RRM_check_register(uint8_t reg_addr) {
 	}
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef RRM
+/*******************************************************************/
 NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -173,5 +167,4 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	}
 	return status;
 }
-
-#endif /* RRM */
+#endif

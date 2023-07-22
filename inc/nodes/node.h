@@ -22,6 +22,10 @@
 
 /*** NODE structures ***/
 
+/*!******************************************************************
+ * \enum NODE_status_t
+ * \brief NODE driver error codes.
+ *******************************************************************/
 typedef enum {
 	NODE_SUCCESS = 0,
 	NODE_ERROR_NULL_PARAMETER,
@@ -36,6 +40,10 @@ typedef enum {
 	NODE_ERROR_BASE_LAST = 0x0100
 } NODE_status_t;
 
+/*!******************************************************************
+ * \enum NODE_request_source_t
+ * \brief NODE request sources.
+ *******************************************************************/
 typedef enum {
 	NODE_REQUEST_SOURCE_INTERNAL = 0,
 	NODE_REQUEST_SOURCE_EXTERNAL,
@@ -44,18 +52,90 @@ typedef enum {
 
 /*** NODE functions ***/
 
+/*!******************************************************************
+ * \fn void NODE_init(void)
+ * \brief Init node registers to their default value.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void NODE_init(void);
 
+/*!******************************************************************
+ * \fn NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value)
+ * \brief Read node register.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr: Address of the register to read.
+ * \param[out] 	reg_value: Pointer to byte that will contain the register value.
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t* field_value)
+ * \brief Read node register field.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr: Address of the register to read.
+ * \param[in]	field_mask: Field mask.
+ * \param[out] 	field_value: Pointer to byte that will contain the field value.
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t* field_value);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
+ * \brief Read multiple registers in a byte array.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr_base: Address of the first register to read.
+ * \param[in]	data_size_byte: Number of bytes to read.
+ * \param[out]	data: Pointer to the registers value.
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
 
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value)
+ * \brief Write node register.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr: Address of the register to write.
+ * \param[in]	reg_mask: Writing operation mask.
+ * \param[in] 	reg_value: Value to write in register.
+ * \param[out]	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value)
+ * \brief Write node register field.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr: Address of the register to write.
+ * \param[in]	field_mask: Field mask.
+ * \param[in] 	field_value: Value to write in field.
+ * \param[out]	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
+ * \brief Write multiple registers.
+ * \param[in]  	request_source: Request source.
+ * \param[in]	reg_addr_base: Address of the first register to write.
+ * \param[in]	data: Pointer to the registers value.
+ * \param[in]	data_size_byte: Number of bytes to write.
+ * \param[out]	none
+ * \retval		Function execution status.
+ *******************************************************************/
 NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
 
-#define NODE_check_status(error_base) { if (node_status != NODE_SUCCESS) { status = error_base + node_status; goto errors; }}
+/*******************************************************************/
+#define NODE_check_status(error_base) { if (node_status != NODE_SUCCESS) { status = error_base + node_status; goto errors; } }
+
+/*******************************************************************/
 #define NODE_stack_error() { ERROR_stack_error(node_status, NODE_SUCCESS, ERROR_BASE_NODE); }
+
+/*******************************************************************/
 #define NODE_print_error() { ERROR_print_error(node_status, NODE_SUCCESS, ERROR_BASE_NODE); }
 
 #endif /* __NODE_H__ */

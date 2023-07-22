@@ -17,14 +17,10 @@
 #include "sht3x.h"
 #include "sm_reg.h"
 
-#ifdef SM
-
 /*** SM local functions ***/
 
-/* RESET SM ANALOG DATA.
- * @param:	None.
- * @return:	None.
- */
+#ifdef SM
+/*******************************************************************/
 static void _SM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -42,44 +38,40 @@ static void _SM_reset_analog_data(void) {
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_HAMB, DINFOX_HUMIDITY_ERROR_VALUE);
 	NODE_stack_error();
 }
+#endif
 
 /*** SM functions ***/
 
-/* INIT SM REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+#ifdef SM
+/*******************************************************************/
 void SM_init_registers(void) {
 	// Load default values.
 	_SM_reset_analog_data();
 }
+#endif
 
-/* UPDATE SM REGISTER.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 NODE_status_t SM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	// Nothing to do on SM registers.
 	return status;
 }
+#endif
 
-/* CHECK SM NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 NODE_status_t SM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	// None control bit in SM registers.
 	return status;
 }
+#endif
 
-/* MEASURE TRIGGER CALLBACK.
- * @param adc_status:	Pointer to the ADC measurements status.
- * @return status:		Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -201,5 +193,4 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 #endif
 	return status;
 }
-
-#endif /* SM */
+#endif

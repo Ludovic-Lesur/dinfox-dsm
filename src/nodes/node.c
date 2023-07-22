@@ -24,10 +24,7 @@ static volatile uint32_t NODE_REGISTERS[NODE_REG_ADDR_LAST];
 
 /*** NODE local functions ***/
 
-/* UPDATE NODE REGISTERS.
- * @param reg_addr:	Address of the register to update.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 static NODE_status_t _NODE_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -65,10 +62,7 @@ errors:
 	return status;
 }
 
-/* CHECK NODE ACTIONS.
- * @param reg_addr:	Address of the register to check.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 static NODE_status_t _NODE_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -103,10 +97,7 @@ errors:
 
 /*** NODE functions ***/
 
-/* INIT NODE REGISTERS.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void NODE_init(void) {
 	// Local variables.
 	uint8_t idx = 0;
@@ -140,12 +131,7 @@ void NODE_init(void) {
 #endif
 }
 
-/* READ NODE REGISTER.
- * @param request_source:	Function call source.
- * @param reg_addr:		Address of the register to read.
- * @param reg_value:	Pointer that will contain the register value.
- * @return status:		Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -170,13 +156,7 @@ errors:
 	return status;
 }
 
-/* READ SINGLE FIELD IN NODE REGISTER.
- * @param request_source:	Function call source.
- * @param reg_addr:		Address of the register to read.
- * @param field_mask:	Field mask.
- * @param field_value:	Pointer that will contain the field value.
- * @return status:		Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t* field_value) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -190,13 +170,7 @@ errors:
 	return status;
 }
 
-/* READ BYTE ARRAY IN NODE REGISTERS.
- * @param request_source:	Function call source.
- * @param reg_addr_base:	Register address where the array starts.
- * @param data:				Pointer that will contain the read data.
- * @param data_size_byte:	Number of bytes to read.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -223,13 +197,7 @@ errors:
 	return status;
 }
 
-/* WRITE NODE REG.
- * @param request_source:	Function call source.
- * @param reg_addr:			Address of the register to read.
- * @param reg_mask:			Write operation mask.
- * @param reg_value:		Value to write in register.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -261,13 +229,7 @@ errors:
 	return status;
 }
 
-/* WRITE SINGLE FIELD IN NODE REG.
- * @param request_source:	Function call source.
- * @param reg_addr:			Address of the register to read.
- * @param field_mask:		Field mask.
- * @param field_value:		Field value to write in register.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
@@ -276,13 +238,7 @@ NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg
 	return status;
 }
 
-/* WRITE BYTE ARRAY IN NODE REGISTERS.
- * @param request_source:	Function call source.
- * @param reg_addr_base:	Register address where the array starts.
- * @param data:				Byte array to write.
- * @param data_size_byte:	Number of bytes to write.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
