@@ -15,10 +15,7 @@
 /*** LED functions ***/
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
-/* INIT LED.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void LED_init(void) {
 	// Configure pins as output high.
 	GPIO_write(&GPIO_LED_RED, 1);
@@ -31,11 +28,7 @@ void LED_init(void) {
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* START A SINGLE LED BLINK.
- * @param blink_period_ms:	Blink duration in ms.
- * @param led_color:		Color to set.
- * @return status:			Function execution status.
- */
+/*******************************************************************/
 LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
 	// Local variables.
 	LED_status_t status = LED_SUCCESS;
@@ -57,20 +50,14 @@ errors:
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* CHECK LED BLINK STATUS.
- * @param:	None.
- * @return:	'1' if the blink is done, '0' otherwise.
- */
+/*******************************************************************/
 uint8_t LED_is_single_blink_done(void) {
 	return TIM21_is_single_blink_done();
 }
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* STOP LED BLINK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void LED_stop_blink(void) {
 	// Stop timers.
 	TIM2_stop();
@@ -81,6 +68,7 @@ void LED_stop_blink(void) {
 #endif
 
 #ifdef GPSM
+/*******************************************************************/
 LED_status_t LED_set(LED_color_t color) {
 	// Local variables.
 	LED_status_t status = LED_SUCCESS;
@@ -135,6 +123,7 @@ LED_status_t LED_set(LED_color_t color) {
 #endif
 
 #ifdef GPSM
+/*******************************************************************/
 LED_status_t LED_toggle(LED_color_t color) {
 	// Local variables.
 	LED_status_t status = LED_SUCCESS;

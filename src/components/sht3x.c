@@ -11,14 +11,13 @@
 #include "lptim.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** SHT3x local macros ***/
 
 #define SHT3X_FULL_SCALE	65535 // Data are 16-bits length (2^(16)-1).
 
 /*** SHT3x local structures ***/
 
+/*******************************************************************/
 typedef struct {
 	int8_t temperature_degrees;
 	uint8_t humidity_percent;
@@ -26,14 +25,14 @@ typedef struct {
 
 /*** SHT3x local global variables ***/
 
+#ifdef SM
 static SHT3X_context_t sht3x_ctx;
+#endif
 
 /*** SHT3x functions ***/
 
-/* PERFORM TEMPERATURE AND HUMIDITY MEASUREMENTS.
- * @param i2c_address:	Sensor address.
- * @return status:		Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 SHT3X_status_t SHT3X_perform_measurements(uint8_t i2c_address) {
 	// Local variables.
 	SHT3X_status_t status = SHT3X_SUCCESS;
@@ -63,11 +62,10 @@ SHT3X_status_t SHT3X_perform_measurements(uint8_t i2c_address) {
 errors:
 	return status;
 }
+#endif
 
-/* READ TEMPERATURE FROM SHT3X SENSOR.
- * @param temperature_degrees:	Pointer to 8-bits value that will contain temperature result (2-complement).
- * @return status:				Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees) {
 	// Local variables.
 	SHT3X_status_t status = SHT3X_SUCCESS;
@@ -81,11 +79,10 @@ SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees) {
 errors:
 	return status;
 }
+#endif
 
-/* READ HUMIDTY FROM SHT3X SENSOR.
- * @param humidity_percent:		Pointer to 8-bits value that will contain humidity result (%).
- * @return status:				Function execution status.
- */
+#ifdef SM
+/*******************************************************************/
 SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent) {
 	// Local variables.
 	SHT3X_status_t status = SHT3X_SUCCESS;
@@ -99,5 +96,4 @@ SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent) {
 errors:
 	return status;
 }
-
-#endif /* SM */
+#endif

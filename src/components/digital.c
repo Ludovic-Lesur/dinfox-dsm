@@ -1,8 +1,8 @@
 /*
  * digital.c
  *
- *  Created on: Feb 17, 2023
- *      Author: ludo
+ *  Created on: 17 feb. 2023
+ *      Author: Ludo
  */
 
 #include "digital.h"
@@ -12,8 +12,6 @@
 #include "mapping.h"
 #include "types.h"
 
-#ifdef SM
-
 /*** DIGITAL local structures ***/
 
 typedef struct {
@@ -22,15 +20,15 @@ typedef struct {
 
 /*** DIGITAL local global variables ***/
 
+#ifdef SM
 static const GPIO_pin_t* DIGITAL_INPUTS[DIGITAL_DATA_INDEX_LAST] = {&GPIO_DIO0, &GPIO_DIO1, &GPIO_DIO2, &GPIO_DIO3};
 static DIGITAL_context_t digital_ctx;
+#endif
 
 /*** DIGITAL functions ***/
 
-/* INIT DIGITAL INTERFACE.
- * @param:	None.
- * @return:	None.
- */
+#ifdef SM
+/*******************************************************************/
 void DIGITAL_init(void) {
 	// Local variables.
 	uint8_t idx = 0;
@@ -41,11 +39,10 @@ void DIGITAL_init(void) {
 		GPIO_configure(DIGITAL_INPUTS[idx], GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	}
 }
+#endif
 
-/* PERFORM DIGITAL MEASUREMENTS.
- * @param:			None.
- * @return status:	Function excecution status.
- */
+#ifdef SM
+/*******************************************************************/
 DIGITAL_status_t DIGITAL_perform_measurements(void) {
 	// Local variables.
 	DIGITAL_status_t status = DIGITAL_SUCCESS;
@@ -65,12 +62,10 @@ errors:
 	GPIO_write(&GPIO_DIG_POWER_ENABLE, 0);
 	return status;
 }
+#endif
 
-/* READ DIGITAL INPUT.
- * @param data_idx:	Data index to read.
- * @param state:	Pointer to byte hat will contain digital input state.
- * @return status:	Function excecution status.
- */
+#ifdef SM
+/*******************************************************************/
 DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state) {
 	// Local variables.
 	DIGITAL_status_t status = DIGITAL_SUCCESS;
@@ -84,5 +79,4 @@ DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state) {
 errors:
 	return status;
 }
-
-#endif /* SM */
+#endif

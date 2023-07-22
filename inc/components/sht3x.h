@@ -18,6 +18,10 @@
 
 /*** SHT3x structures ***/
 
+/*!******************************************************************
+ * \enum SHT3X_status_t
+ * \brief SHT3X driver error codes.
+ *******************************************************************/
 typedef enum {
 	SHT3X_SUCCESS = 0,
 	SHT3X_ERROR_NULL_PARAMETER,
@@ -26,18 +30,48 @@ typedef enum {
 	SHT3X_ERROR_BASE_LAST = (SHT3X_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } SHT3X_status_t;
 
-#ifdef SM
-
 /*** SHT3x functions ***/
 
+#ifdef SM
+/*!******************************************************************
+ * \fn SHT3X_status_t SHT3X_perform_measurements(uint8_t i2c_address)
+ * \brief Perform temperature and humidity measurements.
+ * \param[in]  	i2c_address: I2C address of the sensor.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
 SHT3X_status_t SHT3X_perform_measurements(uint8_t i2c_address);
+#endif
+
+#ifdef SM
+/*!******************************************************************
+ * \fn SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees)
+ * \brief Read temperature.
+ * \param[in]  	none
+ * \param[out] 	temperature_degrees: Pointer to signed byte that will contain the temperature in degrees.
+ * \retval		Function execution status.
+ *******************************************************************/
 SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees);
+#endif
+
+#ifdef SM
+/*!******************************************************************
+ * \fn SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent)
+ * \brief Read humidy.
+ * \param[in]  	none
+ * \param[out] 	humidity_percent: Pointer to byte that will contain the humidity in percent.
+ * \retval		Function execution status.
+ *******************************************************************/
 SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent);
+#endif
 
-#define SHT3X_check_status(error_base) { if (sht3x_status != SHT3X_SUCCESS) { status = error_base + sht3x_status; goto errors; }}
+/*******************************************************************/
+#define SHT3X_check_status(error_base) { if (sht3x_status != SHT3X_SUCCESS) { status = error_base + sht3x_status; goto errors; } }
+
+/*******************************************************************/
 #define SHT3X_stack_error() { ERROR_stack_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
-#define SHT3X_print_error() { ERROR_print_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
 
-#endif /* SM */
+/*******************************************************************/
+#define SHT3X_print_error() { ERROR_print_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X); }
 
 #endif /* __SHT3X_H__ */

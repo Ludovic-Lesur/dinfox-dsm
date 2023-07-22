@@ -23,8 +23,6 @@
 #include "types.h"
 #include "usart.h"
 
-#ifdef GPSM
-
 /*** NEOM8N local macros ***/
 
 #define NEOM8N_MSG_OVERHEAD_LENGTH			8 // 6 bytes header + 2 bytes checksum.
@@ -55,6 +53,7 @@
 
 /*** NEOM8N local structures ***/
 
+/*******************************************************************/
 typedef enum {
 	NMEA_ZDA_FIELD_INDEX_MESSAGE = 0,
 	NMEA_ZDA_FIELD_INDEX_TIME,
@@ -65,6 +64,7 @@ typedef enum {
 	NMEA_ZDA_FIELD_INDEX_LTZN,
 } NMEA_zda_field_index_t;
 
+/*******************************************************************/
 typedef enum {
 	NMEA_ZDA_FIELD_LENGTH_MESSAGE = 5,
 	NMEA_ZDA_FIELD_LENGTH_TIME = 9,
@@ -75,6 +75,7 @@ typedef enum {
 	NMEA_ZDA_FIELD_LENGTH_LTZN = 2
 } NMEA_zda_field_length_t;
 
+/*******************************************************************/
 typedef enum {
 	NMEA_GGA_FIELD_INDEX_MESSAGE = 0,
 	NMEA_GGA_FIELD_INDEX_TIME,
@@ -93,6 +94,7 @@ typedef enum {
 	NMEA_GGA_FIELD_INDEX_DIFF_STATION
 } NMEA_gga_field_index_t;
 
+/*******************************************************************/
 typedef enum {
 	NMEA_GGA_FIELD_LENGTH_MESSAGE = 5,
 	NMEA_GGA_FIELD_LENGTH_TIME = 9,
@@ -111,6 +113,7 @@ typedef enum {
 	NMEA_GGA_FIELD_LENGTH_DIFF_STATION = 0
 } NMEA_gga_field_length_t;
 
+/*******************************************************************/
 typedef struct {
 	// Buffers.
 	char_t rx_buf1[NMEA_RX_BUFFER_SIZE]; // NMEA input messages buffer 1.
@@ -128,21 +131,17 @@ typedef struct {
 
 /*** NEOM8N local global variables ***/
 
+#ifdef GPSM
 static NEOM8N_context_t neom8n_ctx;
+#endif
 
 /*** NEOM8N local functions ***/
 
-/* MACRO TO CHECK FIELD LENGTH IN PARSING FUNCTIONS.
- * @param field_length:	Expected field length.
- * @return:				None.
- */
+/*******************************************************************/
 #define _NEOM8N_check_field_length(field_length) { if ((char_idx - separator_idx) != (field_length + 1)) {status = NEOM8N_ERROR_NMEA_FIELD_LENGTH; goto errors;} }
 
-/* COMPUTE AND APPEND CHECKSUM TO AN NEOM8N MESSAGE.
- * @param neom8n_command:	Complete NEOM8N message for which checksum must be computed.
- * @param payload_length:	Length of the payload (in bytes) for this message.
- * @return status:			Function executions status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_compute_ubx_checksum(uint8_t* neom8n_command, uint8_t payload_length) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -165,12 +164,10 @@ static NEOM8N_status_t _NEOM8N_compute_ubx_checksum(uint8_t* neom8n_command, uin
 errors:
 	return status;
 }
+#endif
 
-/* GET THE CHECKSUM OF A GIVEN NMEA MESSAGE.
- * @param nmea_rx_buf:	NMEA RX buffer.
- * @param ck:			Pointer to the read checksum.
- * @return status:		Function executions status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_get_nmea_checksum(char_t* nmea_rx_buf, uint8_t* ck) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -198,12 +195,10 @@ static NEOM8N_status_t _NEOM8N_get_nmea_checksum(char_t* nmea_rx_buf, uint8_t* c
 errors:
 	return status;
 }
+#endif
 
-/* COMPUTE THE CHECKSUM OF A GIVEN NMEA MESSAGE.
- * @param nmea_rx_buf:	NMEA RX buffer.
- * @param ck:			Pointer to the computed checksum.
- * @return status:		Function executions status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_compute_nmea_checksum(char_t* nmea_rx_buf, uint8_t* ck) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -236,11 +231,10 @@ static NEOM8N_status_t _NEOM8N_compute_nmea_checksum(char_t* nmea_rx_buf, uint8_
 errors:
 	return status;
 }
+#endif
 
-/* INDICATE IF A GPS TIMESTAMP IS VALID.
- * @param gps_time:	Time structure to analyse.
- * @return status	Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_time_is_valid(RTC_time_t* gps_time) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -262,12 +256,10 @@ static NEOM8N_status_t _NEOM8N_time_is_valid(RTC_time_t* gps_time) {
 errors:
 	return status;
 }
+#endif
 
-/* NMEA ZDA MESSAGE DECODING FUNCTION.
- * @param nmea_rx_buf:	NMEA message to decode.
- * @param gps_time:		Pointer to time structure.
- * @return status:		Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, RTC_time_t* gps_time) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -373,11 +365,10 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, RTC_time_t* g
 errors:
 	return status;
 }
+#endif
 
-/* INDICATE IF A GPS POSITION IS VALID.
- * @param gps_position:	GPS position structure to analyse.
- * @return status:		Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_position_is_valid(NEOM8N_position_t* gps_position) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -399,12 +390,10 @@ static NEOM8N_status_t _NEOM8N_position_is_valid(NEOM8N_position_t* gps_position
 errors:
 	return status;
 }
+#endif
 
-/* NMEA GGA MESSAGE DECODING FUNCTION.
- * @param nmea_rx_buf:	NMEA message to decode.
- * @param gps_position:	Pointer to position structure.
- * @return status:		Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_position_t* gps_position) {
 	// Local variables
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -575,12 +564,10 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 errors:
 	return status;
 }
+#endif
 
-/* SEND NEOM8N COMMANDS TO SELECT NMEA MESSAGES TO OUTPUT.
- * @param nmea_message_id_mask:	Binary mask to enable or disable each NMEA standard message, coded as follow:
- * 								0b <ZDA> <VTG> <VLW> <TXT> <RMC> <GSV> <GST> <GSA> <GRS> <GPQ> <GND> <GNQ> <GLQ> <GLL> <GGA> <GBS> <GBQ> <DTM>.
- * @return status:				Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mask) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -613,11 +600,10 @@ static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mas
 errors:
 	return status;
 }
+#endif
 
-/* START NMEA FRAME RECEPTION.
- * @param timeout_seconds:	Timeout in seconds.
- * @return status:			Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 static NEOM8N_status_t _NEOM8N_start(uint32_t timeout_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -637,11 +623,10 @@ static NEOM8N_status_t _NEOM8N_start(uint32_t timeout_seconds) {
 errors:
 	return status;
 }
+#endif
 
-/* STOP NMEA FRAME RECEPTION.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 static void _NEOM8N_stop(void) {
 	// Reset chip.
 	GPIO_write(&GPIO_GPS_RESET, 0);
@@ -654,11 +639,10 @@ static void _NEOM8N_stop(void) {
 	RTC_clear_wakeup_timer_flag();
 	// Note: RTC status is not used here since the data could be valid.
 }
+#endif
 
-/* SWITCH DMA DESTINATION BUFFER (CALLED BY USART CM INTERRUPT).
- * @param line_end_flag:	Indicates if characters match interrupt occured (USART).
- * @return:					None.
- */
+#ifdef GPSM
+/*******************************************************************/
 static void _NEOM8N_switch_dma_buffer(uint8_t line_end_flag) {
 	// Stop and start DMA transfer to switch buffer.
 	DMA1_CH6_stop();
@@ -676,13 +660,12 @@ static void _NEOM8N_switch_dma_buffer(uint8_t line_end_flag) {
 	// Restart DMA transfer.
 	DMA1_CH6_start();
 }
+#endif
 
 /*** NEOM8N functions ***/
 
-/* INIT NEO-M8N MODULE.
- * @param:	None.
- * @return:	None.
- */
+#ifdef GPSM
+/*******************************************************************/
 void NEOM8N_init(void) {
 	// Local variables.
 	uint32_t idx = 0;
@@ -702,20 +685,18 @@ void NEOM8N_init(void) {
 	neom8n_ctx.gga_previous_altitude = 0;
 #endif
 }
+#endif
 
-/* CONTROL BACKUP PIN.
- * @param vbckp_on:	Turn on (1) or off (0) GPS backup pin.
- * @return:			None.
- */
-void NEOM8N_set_backup(uint8_t vbckp_on) {
+#ifdef GPSM
+/*******************************************************************/
+void NEOM8N_set_backup(uint8_t state) {
 	// Set backup pin.
-	GPIO_write(&GPIO_GPS_VBCKP, vbckp_on);
+	GPIO_write(&GPIO_GPS_VBCKP, state);
 }
+#endif
 
-/* GET BACKUP PIN STATE.
- * @param:	None.
- * @return:	1 if the backup is active, 0 otherwise.
- */
+#ifdef GPSM
+/*******************************************************************/
 uint8_t NEOM8N_get_backup(void) {
 	// Local variables.
 	uint8_t backup = 0;
@@ -723,13 +704,10 @@ uint8_t NEOM8N_get_backup(void) {
 	backup = GPIO_read(&GPIO_GPS_VBCKP);
 	return backup;
 }
+#endif
 
-/* GET GPS TIMESTAMP.
- * @param gps_time:				Pointer to time structure that will contain the data.
- * @param timeout_seconds:		Timeout in seconds.
- * @param fix_duration_seconds:	Pointer that will contain effective fix duration.
- * @return status:				Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -787,13 +765,10 @@ errors:
 	LED_set(LED_COLOR_OFF);
 	return status;
 }
+#endif
 
-/* GET GPS POSITION.
- * @param gps_position:			Pointer to GPS position structure that will contain the data.
- * @param timeout_seconds:		Timeout in seconds.
- * @param fix_duration_seconds:	Pointer that will contain effective fix duration.
- * @return status:				Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NEOM8N_status_t NEOM8N_get_position(NEOM8N_position_t* gps_position, uint32_t timeout_seconds, uint32_t* fix_duration_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -903,11 +878,10 @@ errors:
 	LED_set(LED_COLOR_OFF);
 	return status;
 }
+#endif
 
-/* SET TIMEPULSE OUTPUT FREQUENCY.
- * @param frequency_hz:	Output signal frequency in Hz.
- * @return status:		Function execution status.
- */
+#ifdef GPSM
+/*******************************************************************/
 NEOM8N_status_t NEOM8N_configure_timepulse(NEOM8N_timepulse_config_t* timepulse_config){
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
@@ -961,5 +935,4 @@ NEOM8N_status_t NEOM8N_configure_timepulse(NEOM8N_timepulse_config_t* timepulse_
 errors:
 	return status;
 }
-
-#endif /* GPSM */
+#endif
