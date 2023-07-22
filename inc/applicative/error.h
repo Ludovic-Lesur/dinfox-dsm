@@ -1,7 +1,7 @@
 /*
  * error.h
  *
- *  Created on: Mar 12, 2022
+ *  Created on: 12 mar. 2022
  *      Author: Ludo
  */
 
@@ -35,9 +35,12 @@
 #include "lbus.h"
 #include "node.h"
 
+/*!******************************************************************
+ * \enum ERROR_t
+ * \brief Board error codes.
+ *******************************************************************/
 typedef enum {
 	SUCCESS = 0,
-	ERROR_DL_PAYLOAD_UNAVAILABLE,
 	// Peripherals.
 	ERROR_BASE_ADC1 = 0x0100,
 	ERROR_BASE_I2C1 = (ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
@@ -72,17 +75,50 @@ typedef enum {
 
 /*** ERROR functions ***/
 
+/*!******************************************************************
+ * \fn void ERROR_stack_init(void)
+ * \brief Init error stack.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void ERROR_stack_init(void);
+
+/*!******************************************************************
+ * \fn void ERROR_stack_add(ERROR_t code)
+ * \brief Add error to stack.
+ * \param[in]  	code: Error to stack.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void ERROR_stack_add(ERROR_t code);
+
+/*!******************************************************************
+ * \fn ERROR_t ERROR_stack_read(void)
+ * \brief Read error stack.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		Last error code stored.
+ *******************************************************************/
 ERROR_t ERROR_stack_read(void);
+
+/*!******************************************************************
+ * \fn uint8_t ERROR_stack_is_empty(void)
+ * \brief Check if error stack is empty.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		1 if the error stack is empty, 0 otherwise.
+ *******************************************************************/
 uint8_t ERROR_stack_is_empty(void);
 
+/*******************************************************************/
 #define ERROR_stack_error(status, success, error_base) { \
 	if (status != success) { \
 		ERROR_stack_add(error_base + status); \
 	} \
 }
 
+/*******************************************************************/
 #define ERROR_print_error(status, success, error_base) { \
 	if (status != success) { \
 		_AT_BUS_print_error(error_base + status); \

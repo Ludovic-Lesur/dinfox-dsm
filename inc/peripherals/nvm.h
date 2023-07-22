@@ -74,17 +74,6 @@ NVM_status_t NVM_read_byte(NVM_address_t address, uint8_t* data);
  *******************************************************************/
 NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data);
 
-#ifdef UHFM
-/*!******************************************************************
- * \fn NVM_status_t NVM_reset_default(void)
- * \brief Reset Sigfox EP library data.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-NVM_status_t NVM_reset_default(void);
-#endif
-
 /*******************************************************************/
 #define NVM_check_status(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; } }
 

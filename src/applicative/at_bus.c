@@ -47,7 +47,7 @@
 #ifdef UHFM
 #define AT_BUS_COMMAND_NVM
 //#define AT_BUS_COMMAND_SIGFOX_EP_LIB
-#define AT_BUS_COMMAND_SIGFOX_ADDON_RFP
+//#define AT_BUS_COMMAND_SIGFOX_ADDON_RFP
 //#define AT_BUS_COMMAND_CW
 //#define AT_BUS_COMMAND_DL
 //#define AT_BUS_COMMAND_RSSI
@@ -56,51 +56,71 @@
 
 /*** AT callbacks declaration ***/
 
-static void _AT_BUS_print_ok(void);
+/*******************************************************************/
+static void _AT_BUS_read_callback(void);
+static void _AT_BUS_write_callback(void);
+
 #ifdef ATM
+/*******************************************************************/
+static void _AT_BUS_print_ok(void);
 static void _AT_BUS_print_command_list(void);
 static void _AT_BUS_print_sw_version(void);
 static void _AT_BUS_print_error_stack(void);
 static void _AT_BUS_adc_callback(void);
 #endif
-static void _AT_BUS_read_callback(void);
-static void _AT_BUS_write_callback(void);
-#if (defined UHFM) && (defined ATM)
-#ifdef AT_BUS_COMMAND_NVM
-static void _AT_BUS_nvmr_callback(void);
-static void _AT_BUS_nvm_callback(void);
+
+#if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
+static void _AT_BUS_nvm_read_callback(void);
+static void _AT_BUS_nvm_write_callback(void);
+#endif
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
 static void _AT_BUS_get_id_callback(void);
 static void _AT_BUS_set_id_callback(void);
 static void _AT_BUS_get_key_callback(void);
 static void _AT_BUS_set_key_callback(void);
 #endif
-#ifdef AT_BUS_COMMAND_SIGFOX_EP_LIB
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
+/*******************************************************************/
+static void _AT_BUS_print_dl_payload(void);
 static void _AT_BUS_so_callback(void);
 static void _AT_BUS_sb_callback(void);
 static void _AT_BUS_sf_callback(void);
-static void _AT_BUS_print_dl_payload(void);
 #endif
-#ifdef AT_BUS_COMMAND_SIGFOX_ADDON_RFP
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_ADDON_RFP)
+/*******************************************************************/
 static void _AT_BUS_tm_callback(void);
 #endif
-#ifdef AT_BUS_COMMAND_CW
+
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_CW)
+/*******************************************************************/
 static void _AT_BUS_cw_callback(void);
 #endif
-#ifdef AT_BUS_COMMAND_DL
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_DL)
+/*******************************************************************/
 static void _AT_BUS_dl_callback(void);
 #endif
-#ifdef AT_BUS_COMMAND_RSSI
+
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_RSSI)
+/*******************************************************************/
 static void _AT_BUS_rssi_callback(void);
 #endif
-#endif /* UHFM */
-#if (defined GPSM) && (defined ATM)
+
+#if (defined ATM) && (defined GPSM)
+/*******************************************************************/
 static void _AT_BUS_time_callback(void);
 static void _AT_BUS_gps_callback(void);
 static void _AT_BUS_pulse_callback(void);
-#endif /* GPSM */
+#endif
 
 /*** AT local structures ***/
 
+/*******************************************************************/
 typedef struct {
 	PARSER_mode_t mode;
 	char_t* syntax;
@@ -109,6 +129,7 @@ typedef struct {
 	void (*callback)(void);
 } AT_BUS_command_t;
 
+/*******************************************************************/
 typedef struct {
 	// Command.
 	volatile char_t command[AT_BUS_COMMAND_BUFFER_SIZE];
@@ -123,6 +144,8 @@ typedef struct {
 /*** AT local global variables ***/
 
 static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
+	{PARSER_MODE_HEADER,  "AT$R=", "reg_addr[hex]", "Read register", _AT_BUS_read_callback},
+	{PARSER_MODE_HEADER,  "AT$W=", "reg_addr[hex],reg_value[hex],(reg_mask[hex])", "Write register",_AT_BUS_write_callback},
 #ifdef ATM
 	{PARSER_MODE_COMMAND, "AT", STRING_NULL, "Ping command", _AT_BUS_print_ok},
 	{PARSER_MODE_COMMAND, "AT?", STRING_NULL, "List all available commands", _AT_BUS_print_command_list},
@@ -131,51 +154,45 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "AT$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
 	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC measurements", _AT_BUS_adc_callback},
 #endif
-	{PARSER_MODE_HEADER,  "AT$R=", "reg_addr[hex]", "Read register", _AT_BUS_read_callback},
-	{PARSER_MODE_HEADER,  "AT$W=", "reg_addr[hex],reg_value[hex],(reg_mask[hex])", "Write register",_AT_BUS_write_callback},
-#if (defined UHFM) && (defined ATM)
-#ifdef AT_BUS_COMMAND_NVM
-	{PARSER_MODE_COMMAND, "AT$NVMR", STRING_NULL, "Reset NVM data", _AT_BUS_nvmr_callback},
-	{PARSER_MODE_HEADER,  "AT$NVM=", "address[dec]", "Get NVM data", _AT_BUS_nvm_callback},
+#if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
+	{PARSER_MODE_HEADER,  "AT$NVMR=", "address[dec]", "Read NVM byte", _AT_BUS_nvm_read_callback},
+	{PARSER_MODE_HEADER, "AT$NVMW=", "address[hex],value[hex]", "Write NVM byte", _AT_BUS_nvm_write_callback},
+#endif
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
 	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox device ID", _AT_BUS_get_id_callback},
 	{PARSER_MODE_HEADER,  "AT$ID=", "id[hex]", "Set Sigfox device ID", _AT_BUS_set_id_callback},
 	{PARSER_MODE_COMMAND, "AT$KEY?", STRING_NULL, "Get Sigfox device key", _AT_BUS_get_key_callback},
 	{PARSER_MODE_HEADER,  "AT$KEY=", "key[hex]", "Set Sigfox device key", _AT_BUS_set_key_callback},
 #endif
-#ifdef AT_BUS_COMMAND_SIGFOX_EP_LIB
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
 	{PARSER_MODE_COMMAND, "AT$SO", STRING_NULL, "Sigfox send control message", _AT_BUS_so_callback},
 	{PARSER_MODE_HEADER,  "AT$SB=", "data[bit],(bidir_flag[bit])", "Sigfox send bit", _AT_BUS_sb_callback},
 	{PARSER_MODE_HEADER,  "AT$SF=", "data[hex],(bidir_flag[bit])", "Sigfox send frame", _AT_BUS_sf_callback},
 	{PARSER_MODE_COMMAND, "AT$DL?", STRING_NULL, "Read last DL payload", _AT_BUS_print_dl_payload},
 #endif
-#ifdef AT_BUS_COMMAND_SIGFOX_ADDON_RFP
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_ADDON_RFP)
 	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Execute Sigfox test mode", _AT_BUS_tm_callback},
 #endif
-#ifdef AT_BUS_COMMAND_CW
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_CW)
 	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Start or stop continuous radio transmission", _AT_BUS_cw_callback},
 #endif
-#ifdef AT_BUS_COMMAND_DL
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_DL)
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_BUS_dl_callback},
 #endif
-#ifdef AT_BUS_COMMAND_RSSI
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_RSSI)
 	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_BUS_rssi_callback},
 #endif
-#endif /* UHFM */
-#if (defined GPSM) && (defined ATM)
+#if (defined ATM) && (defined GPSM)
 	{PARSER_MODE_HEADER,  "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
 	{PARSER_MODE_HEADER,  "AT$GPS=", "timeout[s]", "Get GPS position", _AT_BUS_gps_callback},
 	{PARSER_MODE_HEADER,  "AT$PULSE=", "enable[bit],frequency[hz],duty_cycle[percent]", "Start or stop GPS timepulse signal", _AT_BUS_pulse_callback},
 #endif
 };
-
 static AT_BUS_context_t at_bus_ctx;
 
 /*** AT local functions ***/
 
-/* FILL AT COMMAND BUFFER WITH A NEW BYTE (CALLED BY LPUART INTERRUPT).
- * @param rx_byte:	Incoming byte.
- * @return:			None.
- */
+/*******************************************************************/
 void _AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
 	// Append byte if line end flag is not allready set.
 	if (at_bus_ctx.line_end_flag == 0) {
@@ -193,19 +210,13 @@ void _AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
 	}
 }
 
-/* GENERIC MACRO TO ADD A CHARACTER TO THE REPLY BUFFER.
- * @param character:	Character to add.
- * @return:				None.
- */
+/*******************************************************************/
 #define _AT_BUS_reply_add_char(character) { \
 	at_bus_ctx.reply[at_bus_ctx.reply_size] = character; \
 	at_bus_ctx.reply_size = (at_bus_ctx.reply_size + 1) % AT_BUS_REPLY_BUFFER_SIZE; \
 }
 
-/* APPEND A STRING TO THE REPONSE BUFFER.
- * @param tx_string:	String to add.
- * @return:				None.
- */
+/*******************************************************************/
 static void _AT_BUS_reply_add_string(char_t* tx_string) {
 	// Fill reply buffer with new bytes.
 	while (*tx_string) {
@@ -213,12 +224,7 @@ static void _AT_BUS_reply_add_string(char_t* tx_string) {
 	}
 }
 
-/* APPEND A VALUE TO THE REPLY BUFFER.
- * @param tx_value:		Value to add.
- * @param format:       Printing format.
- * @param print_prefix: Print base prefix is non zero.
- * @return:				None.
- */
+/*******************************************************************/
 static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, uint8_t print_prefix) {
 	// Local variables.
 	STRING_status_t string_status = STRING_SUCCESS;
@@ -233,10 +239,7 @@ static void _AT_BUS_reply_add_value(int32_t tx_value, STRING_format_t format, ui
 	_AT_BUS_reply_add_string(str_value);
 }
 
-/* APPEND A REGISTER VALUE TO THE REPLY BUFFER.
- * @param reg_value:	Register value to add.
- * @return:				None.
- */
+/*******************************************************************/
 static void _AT_BUS_reply_add_register(uint32_t reg_value) {
 	// Local variables.
 	STRING_status_t string_status = STRING_SUCCESS;
@@ -248,10 +251,7 @@ static void _AT_BUS_reply_add_register(uint32_t reg_value) {
 	_AT_BUS_reply_add_string(str_value);
 }
 
-/* SEND AT REPONSE OVER AT INTERFACE.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_reply_send(void) {
 	// Local variables.
 	LBUS_status_t lbus_status = LBUS_SUCCESS;
@@ -264,19 +264,13 @@ static void _AT_BUS_reply_send(void) {
 	at_bus_ctx.reply_size = 0;
 }
 
-/* PRINT OK THROUGH AT INTERFACE.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_print_ok(void) {
 	_AT_BUS_reply_add_string("OK");
 	_AT_BUS_reply_send();
 }
 
-/* PRINT ERROR THROUGH AT INTERFACE.
- * @param error:	Error to print.
- * @return:			None.
- */
+/*******************************************************************/
 static void _AT_BUS_print_error(ERROR_t error) {
 	// Add error to stack.
 	ERROR_stack_add(error);
@@ -292,10 +286,7 @@ static void _AT_BUS_print_error(ERROR_t error) {
 	_AT_BUS_reply_send();
 }
 
-/* AT$R EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_read_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
@@ -315,10 +306,7 @@ errors:
 	return;
 }
 
-/* AT$W EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_write_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_SUCCESS;
@@ -353,10 +341,7 @@ errors:
 }
 
 #ifdef ATM
-/* PRINT ALL SUPPORTED AT COMMANDS.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_print_command_list(void) {
 	// Local variables.
 	uint32_t idx = 0;
@@ -377,10 +362,7 @@ static void _AT_BUS_print_command_list(void) {
 #endif
 
 #ifdef ATM
-/* PRINT SW VERSION.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_print_sw_version(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -420,10 +402,7 @@ errors:
 #endif
 
 #ifdef ATM
-/* PRINT ERROR STACK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_print_error_stack(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -475,10 +454,7 @@ errors:
 #endif
 
 #ifdef ATM
-/* AT$ADC? EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_adc_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -646,39 +622,19 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$NVMR EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
-static void _AT_BUS_nvmr_callback(void) {
-	// Local variables.
-	NVM_status_t nvm_status = NVM_SUCCESS;
-	// Reset all NVM field to default value.
-	nvm_status = NVM_reset_default();
-	NVM_print_error();
-	_AT_BUS_print_ok();
-errors:
-	return;
-}
-#endif
-
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$NVM EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
-static void _AT_BUS_nvm_callback(void) {
+#if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
+//*******************************************************************/
+static void _AT_BUS_nvm_read_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	int32_t address = 0;
 	uint8_t nvm_data = 0;
 	// Read address parameters.
-	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &address);
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &address);
 	PARSER_print_error();
 	// Read byte at requested address.
-	nvm_status = NVM_read_byte((uint16_t) address, &nvm_data);
+	nvm_status = NVM_read_byte((NVM_address_t) address, &nvm_data);
 	NVM_print_error();
 	// Print data.
 	_AT_BUS_reply_add_value(nvm_data, STRING_FORMAT_HEXADECIMAL, 1);
@@ -689,11 +645,31 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$ID? EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
+static void _AT_BUS_nvm_write_callback(void) {
+	// Local variables.
+	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	int32_t address = 0;
+	int32_t value = 0;
+	// Read address parameters.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &address);
+	PARSER_print_error();
+	// Read value.
+	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &value);
+	PARSER_print_error();
+	// Read byte at requested address.
+	nvm_status = NVM_write_byte((NVM_address_t) address, (uint8_t) value);
+	NVM_print_error();
+	_AT_BUS_print_ok();
+errors:
+	return;
+}
+#endif
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
 static void _AT_BUS_get_id_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -713,11 +689,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$ID EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
 static void _AT_BUS_set_id_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -743,11 +716,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$KEY? EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
 static void _AT_BUS_get_key_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -767,11 +737,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-/* AT$KEY EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
+/*******************************************************************/
 static void _AT_BUS_set_key_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -797,11 +764,29 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
-/* AT$SO EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
+/*******************************************************************/
+static void _AT_BUS_print_dl_payload(void) {
+	// Local variables.
+	NODE_status_t node_status = NODE_SUCCESS;
+	uint8_t dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
+	uint8_t idx = 0;
+	// Read registers.
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
+	NODE_print_error();
+	// Print DL payload.
+	_AT_BUS_reply_add_string("+RX=");
+	for (idx=0 ; idx<SIGFOX_DL_PAYLOAD_SIZE_BYTES ; idx++) {
+		_AT_BUS_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
+	}
+	_AT_BUS_reply_send();
+errors:
+	return;
+}
+#endif
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
+/*******************************************************************/
 static void _AT_BUS_so_callback(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
@@ -825,11 +810,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
-/* AT$SB EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
+/*******************************************************************/
 static void _AT_BUS_sb_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -882,11 +864,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
-/* AT$SF EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
+/*******************************************************************/
 static void _AT_BUS_sf_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -942,55 +921,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
-/* AT$DL? EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
-static void _AT_BUS_print_dl_payload(void) {
-	// Local variables.
-	NODE_status_t node_status = NODE_SUCCESS;
-	uint8_t dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
-	uint8_t idx = 0;
-	// Read registers.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
-	NODE_print_error();
-	// Print DL payload.
-	_AT_BUS_reply_add_string("+RX=");
-	for (idx=0 ; idx<SIGFOX_DL_PAYLOAD_SIZE_BYTES ; idx++) {
-		_AT_BUS_reply_add_value(dl_payload[idx], STRING_FORMAT_HEXADECIMAL, 0);
-	}
-	_AT_BUS_reply_send();
-errors:
-	return;
-}
-#endif
-
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_DL)
-/* PRINT SIGFOX DOWNLINK FRAME ON AT INTERFACE.
- * @param dl_payload:	Downlink data to print.
- * @return:				None.
- */
-static void _AT_BUS_print_dl_phy_content(uint8_t* dl_phy_content, int32_t rssi_dbm) {
-	// Local variables.
-	uint8_t idx = 0;
-	// Print DL-PHY content.
-	_AT_BUS_reply_add_string("+DL_PHY=");
-	for (idx=0 ; idx<SIGFOX_DL_PHY_CONTENT_SIZE_BYTES ; idx++) {
-		_AT_BUS_reply_add_value(dl_phy_content[idx], STRING_FORMAT_HEXADECIMAL, 0);
-	}
-	_AT_BUS_reply_add_string(" RSSI=");
-	_AT_BUS_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
-	_AT_BUS_reply_add_string("dBm");
-	_AT_BUS_reply_send();
-}
-#endif
-
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_SIGFOX_ADDON_RFP)
-/* AT$TM EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_ADDON_RFP)
+/*******************************************************************/
 static void _AT_BUS_tm_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1017,11 +949,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_CW)
-/* AT$CW EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_CW)
+/*******************************************************************/
 static void _AT_BUS_cw_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1062,11 +991,25 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_DL)
-/* AT$DL EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_DL)
+/*******************************************************************/
+static void _AT_BUS_print_dl_phy_content(uint8_t* dl_phy_content, int32_t rssi_dbm) {
+	// Local variables.
+	uint8_t idx = 0;
+	// Print DL-PHY content.
+	_AT_BUS_reply_add_string("+DL_PHY=");
+	for (idx=0 ; idx<SIGFOX_DL_PHY_CONTENT_SIZE_BYTES ; idx++) {
+		_AT_BUS_reply_add_value(dl_phy_content[idx], STRING_FORMAT_HEXADECIMAL, 0);
+	}
+	_AT_BUS_reply_add_string(" RSSI=");
+	_AT_BUS_reply_add_value(rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+	_AT_BUS_reply_add_string("dBm");
+	_AT_BUS_reply_send();
+}
+#endif
+
+#if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_DL)
+/*******************************************************************/
 static void _AT_BUS_dl_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1109,11 +1052,8 @@ errors:
 }
 #endif
 
-#if (defined UHFM) && (defined ATM) && (defined AT_BUS_COMMAND_RSSI)
-/* AT$RSSI EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_RSSI)
+/*******************************************************************/
 static void _AT_BUS_rssi_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1160,11 +1100,8 @@ errors:
 }
 #endif
 
-#if (defined GPSM) && (defined ATM)
-/* AT$TIME EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined GPSM)
+/*******************************************************************/
 static void _AT_BUS_time_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1248,11 +1185,8 @@ errors:
 }
 #endif
 
-#if (defined GPSM) && (defined ATM)
-/* AT$GPS EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined GPSM)
+/*******************************************************************/
 static void _AT_BUS_gps_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1338,11 +1272,8 @@ errors:
 }
 #endif
 
-#if (defined GPSM) && (defined ATM)
-/* AT$PULSE EXECUTION CALLBACK.
- * @param:	None.
- * @return:	None.
- */
+#if (defined ATM) && (defined GPSM)
+/*******************************************************************/
 static void _AT_BUS_pulse_callback(void) {
 	// Local variables.
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
@@ -1371,10 +1302,7 @@ errors:
 }
 #endif
 
-/* RESET AT PARSER.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_reset_parser(void) {
 	// Flush buffers.
 	at_bus_ctx.command_size = 0;
@@ -1388,10 +1316,7 @@ static void _AT_BUS_reset_parser(void) {
 	at_bus_ctx.parser.start_idx = 0;
 }
 
-/* PARSE THE CURRENT AT COMMAND BUFFER.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _AT_BUS_decode(void) {
 	// Local variables.
 	uint8_t idx = 0;
@@ -1419,10 +1344,7 @@ errors:
 
 /*** AT functions ***/
 
-/* INIT AT MANAGER.
- * @param self_address:	Self bus address.
- * @return:				None.
- */
+/*******************************************************************/
 void AT_BUS_init(NODE_address_t self_address) {
 	// Init context.
 	_AT_BUS_reset_parser();
@@ -1432,10 +1354,7 @@ void AT_BUS_init(NODE_address_t self_address) {
 	LPUART1_enable_rx();
 }
 
-/* MAIN TASK OF AT COMMAND MANAGER.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 void AT_BUS_task(void) {
 	// Trigger decoding function if line end found.
 	if (at_bus_ctx.line_end_flag != 0) {
@@ -1446,13 +1365,8 @@ void AT_BUS_task(void) {
 	}
 }
 
-#if (defined UHFM) && (defined ATM)
-/* PRINT SIGFOX DL PAYLOAD.
- * @param dl_payload:		Downlink payload to print.
- * @param dl_payload_size:	Number of bytes to print.
- * @param rssi_dbm:			RSSI of the received downlink frame (16-bits signed value).
- * @return:					None.
- */
+#if (defined ATM) && (defined UHFM)
+/*******************************************************************/
 void AT_BUS_print_dl_payload(sfx_u8 *dl_payload, sfx_u8 dl_payload_size, sfx_s16 rssi_dbm) {
 	// Local variables.
 	uint8_t idx = 0;

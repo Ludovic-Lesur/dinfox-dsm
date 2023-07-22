@@ -122,19 +122,3 @@ NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data) {
 errors:
 	return status;
 }
-
-#ifdef UHFM
-/*******************************************************************/
-NVM_status_t NVM_reset_default(void) {
-	// Local variables.
-	NVM_status_t status = NVM_SUCCESS;
-	uint8_t idx = 0;
-	// Sigfox EP LIB data.
-	for (idx=0 ; idx<SIGFOX_NVM_DATA_SIZE_BYTES ; idx++) {
-		status = NVM_write_byte((NVM_ADDRESS_SIGFOX_EP_LIB_DATA + idx), 0x00);
-		if (status != NVM_SUCCESS) goto errors;
-	}
-errors:
-	return status;
-}
-#endif
