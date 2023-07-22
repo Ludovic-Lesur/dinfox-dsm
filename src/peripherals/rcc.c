@@ -15,11 +15,11 @@
 
 /*** RCC local macros ***/
 
-#define RCC_TIMEOUT_COUNT				1000000
-#define RCC_MSI_RESET_FREQUENCY_KHZ		2100
+#define RCC_TIMEOUT_COUNT	1000000
 
 /*** RCC local global variables ***/
 
+static const uint32_t msi_range_frequency_khz[RCC_ERROR_MSI_RANGE] = {65, 131, 262, 524, 1048, 2097, 4194};
 static uint32_t rcc_sysclk_khz;
 
 /*** RCC local functions ***/
@@ -40,7 +40,7 @@ void RCC_init(void) {
 	// PCLK2 = HCLK = 16MHz (PPRE2='000').
 	// All peripherals clocked via the corresponding APBx line.
 	// Reset clock is MSI 2.1MHz.
-	rcc_sysclk_khz = RCC_MSI_RESET_FREQUENCY_KHZ;
+	rcc_sysclk_khz = msi_range_frequency_khz[RCC_MSI_RANGE_5_2MHZ];
 }
 
 /*******************************************************************/
@@ -52,7 +52,7 @@ RCC_status_t RCC_switch_to_hsi(void) {
 	// Set flash latency.
 	flash_status = FLASH_set_latency(1);
 	FLASH_check_status(RCC_ERROR_BASE_FLASH);
-	// Init HSI.
+	// Enable HSI.
 	RCC -> CR |= (0b1 << 0); // Enable HSI (HSI16ON='1').
 	// Wait for HSI to be stable.
 	while (((RCC -> CR) & (0b1 << 2)) == 0) {
@@ -77,9 +77,56 @@ RCC_status_t RCC_switch_to_hsi(void) {
 		}
 	}
 	// Disable MSI.
-	RCC -> CR &= ~(0b1 << 8); // Disable MSI (MSION='0').
-	// Update flag and frequency.
+	RCC -> CR &= ~(0b1 << 8); // MSION='0'.
+	// Update frequency.
 	rcc_sysclk_khz = RCC_HSI_FREQUENCY_KHZ;
+errors:
+	return status;
+}
+
+/*******************************************************************/
+RCC_status_t RCC_switch_to_msi(RCC_msi_range_t msi_range) {
+	// Local variables.
+	RCC_status_t status = RCC_SUCCESS;
+	FLASH_status_t flash_status = FLASH_SUCCESS;
+	uint32_t loop_count = 0;
+	// Check parameter.
+	if (msi_range >= RCC_MSI_RANGE_LAST) {
+		status = RCC_ERROR_MSI_RANGE;
+		goto errors;
+	}
+	// Set frequency.
+	RCC -> ICSCR &= ~(0b111 << 13);
+	RCC -> ICSCR |= (msi_range << 13);
+	// Enable MSI.
+	RCC -> CR |= (0b1 << 8); // MSION='1'.
+	// Wait for MSI to be stable.
+	while (((RCC -> CR) & (0b1 << 9)) == 0) {
+		// Wait for MSIRDYF='1' or timeout.
+		loop_count++;
+		if (loop_count > RCC_TIMEOUT_COUNT) {
+			status = RCC_ERROR_MSI_READY;
+			goto errors;
+		}
+	}
+	// Switch SYSCLK.
+	RCC -> CFGR &= ~(0b11 << 0); // Use MSI as system clock (SW='00').
+	// Wait for clock switch.
+	while (((RCC -> CFGR) & (0b11 << 2)) != (0b00 << 2)) {
+		// Wait for SWS='00' or timeout.
+		loop_count++;
+		if (loop_count > RCC_TIMEOUT_COUNT) {
+			status = RCC_ERROR_MSI_SWITCH;
+			goto errors;
+		}
+	}
+	// Set flash latency.
+	flash_status = FLASH_set_latency(0);
+	FLASH_check_status(RCC_ERROR_BASE_FLASH);
+	// Disable HSI.
+	RCC -> CR &= ~(0b1 << 0); // HSI16ON='0'.
+	// Update frequency.
+	rcc_sysclk_khz = msi_range_frequency_khz[msi_range];
 errors:
 	return status;
 }

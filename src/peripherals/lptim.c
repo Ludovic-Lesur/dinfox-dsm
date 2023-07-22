@@ -92,30 +92,36 @@ LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t d
 	// Perform delay with the selected waiting mode.
 	switch (delay_mode) {
 	case LPTIM_DELAY_MODE_ACTIVE:
-		// Wait for flag.
-		while (((LPTIM1 -> ISR) & (0b1 << 1)) == 0);
+		// Active loop.
+		while (((LPTIM1 -> ISR) & (0b1 << 1)) == 0) {
+			IWDG_reload();
+		}
 		break;
 	case LPTIM_DELAY_MODE_SLEEP:
 		// Enable interrupt.
 		NVIC_enable_interrupt(NVIC_INTERRUPT_LPTIM1, NVIC_PRIORITY_LPTIM1);
-		// Wait for interrupt.
+		// Enter sleep mode.
 		while (lptim_wake_up == 0) {
 			PWR_enter_sleep_mode();
+			IWDG_reload();
 		}
+		// Disable interrupt.
 		NVIC_disable_interrupt(NVIC_INTERRUPT_LPTIM1);
 		break;
 	case LPTIM_DELAY_MODE_STOP:
 		// Enable interrupt.
 		NVIC_enable_interrupt(NVIC_INTERRUPT_LPTIM1, NVIC_PRIORITY_LPTIM1);
-		// Wait for interrupt.
+		// Enter stop mode.
 		while (lptim_wake_up == 0) {
 			PWR_enter_stop_mode();
+			IWDG_reload();
 		}
+		// Disable interrupt.
 		NVIC_disable_interrupt(NVIC_INTERRUPT_LPTIM1);
 		break;
 	default:
 		status = LPTIM_ERROR_DELAY_MODE;
-		break;
+		goto errors;
 	}
 errors:
 	// Clear flag.

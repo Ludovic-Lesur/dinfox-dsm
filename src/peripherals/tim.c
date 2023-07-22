@@ -7,6 +7,7 @@
 
 #include "tim.h"
 
+#include "iwdg.h"
 #include "mapping.h"
 #include "nvic.h"
 #include "pwr.h"
@@ -252,17 +253,48 @@ errors:
 
 #ifdef UHFM
 /*******************************************************************/
-TIM_status_t TIM2_wait_completion(TIM2_channel_t channel) {
+TIM_status_t TIM2_wait_completion(TIM2_channel_t channel, TIM_waiting_mode_t waiting_mode) {
 	// Local variables.
 	TIM_status_t status = TIM_SUCCESS;
+	RCC_status_t rcc_status = RCC_SUCCESS;
 	// Check parameters.
 	if (channel >= TIM2_CHANNEL_LAST) {
 		status = TIM_ERROR_CHANNEL;
 		goto errors;
 	}
 	// Sleep until channel is not running.
-	while (tim2_channel_running[channel] != 0) {
-		PWR_enter_sleep_mode();
+	switch (waiting_mode) {
+	case TIM_WAITING_MODE_ACTIVE:
+		// Active loop.
+		while (tim2_channel_running[channel] != 0) {
+			IWDG_reload();
+		}
+		break;
+	case TIM_WAITING_MODE_SLEEP:
+		// Enter sleep mode.
+		while (tim2_channel_running[channel] != 0) {
+			PWR_enter_sleep_mode();
+			IWDG_reload();
+		}
+		break;
+	case TIM_WAITING_MODE_LOW_POWER_SLEEP:
+		// Switch to MSI.
+		GPIO_write(&GPIO_TP2, 1);
+		rcc_status = RCC_switch_to_msi(RCC_MSI_RANGE_1_131KHZ);
+		RCC_check_status(TIM_ERROR_BASE_RCC);
+		GPIO_write(&GPIO_TP2, 0);
+		// Enter low power sleep mode.
+		while (tim2_channel_running[channel] != 0) {
+			PWR_enter_low_power_sleep_mode();
+			IWDG_reload();
+		}
+		// Go back to HSI.
+		rcc_status = RCC_switch_to_hsi();
+		RCC_check_status(TIM_ERROR_BASE_RCC);
+		break;
+	default:
+		status = TIM_ERROR_WAITING_MODE;
+		goto errors;
 	}
 errors:
 	return status;

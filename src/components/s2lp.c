@@ -431,10 +431,8 @@ errors:
 S2LP_status_t S2LP_wait_for_oscillator(void) {
 	// Local variables.
 	S2LP_status_t status = S2LP_SUCCESS;
-	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint8_t xo_on = 0;
 	uint8_t reg_value = 0;
-	uint32_t delay_ms = 0;
 	// Poll MC_STATE until XO bit is set.
 	do {
 		status = _S2LP_read_register(S2LP_REG_MC_STATE0, &reg_value);

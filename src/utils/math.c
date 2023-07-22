@@ -12,7 +12,7 @@
 
 #define MATH_MEDIAN_FILTER_LENGTH_MAX	0xFF
 
-static const uint32_t MATH_POW10[MATH_DECIMAL_MAX_DIGITS] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+static const uint32_t MATH_POW10[MATH_DECIMAL_DIGIT_MAX_NUMBER] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
 
 /*** MATH local functions ***/
 
@@ -304,7 +304,7 @@ MATH_status_t MATH_pow_10(uint8_t power, uint32_t* result) {
 	MATH_status_t status = MATH_SUCCESS;
 	// Check parameters.
 	_MATH_check_pointer(result);
-	if (power >= MATH_DECIMAL_MAX_DIGITS) {
+	if (power >= MATH_DECIMAL_DIGIT_MAX_NUMBER) {
 		status = MATH_ERROR_OVERFLOW;
 		goto errors;
 	}
@@ -400,7 +400,7 @@ MATH_status_t MATH_two_complement_to_int32(uint32_t value, uint8_t sign_bit_posi
 	uint32_t not_value = 0;
 	uint32_t absolute_value = 0;
 	// Check parameters.
-	if (sign_bit_position > (MATH_BINARY_MAX_DIGITS - 1)) {
+	if (sign_bit_position > (MATH_BINARY_DIGIT_MAX_NUMBER - 1)) {
 		status = MATH_ERROR_SIGN_BIT;
 		goto errors;
 	}
@@ -431,7 +431,7 @@ MATH_status_t MATH_int32_to_signed_magnitude(int32_t value, uint8_t sign_bit_pos
 	uint32_t absolute_value = 0;
 	uint32_t absolute_mask = ((0b1 << sign_bit_position) - 1);
 	// Check parameters.
-	if (sign_bit_position > (MATH_BINARY_MAX_DIGITS - 1)) {
+	if (sign_bit_position > (MATH_BINARY_DIGIT_MAX_NUMBER - 1)) {
 		status = MATH_ERROR_SIGN_BIT;
 		goto errors;
 	}

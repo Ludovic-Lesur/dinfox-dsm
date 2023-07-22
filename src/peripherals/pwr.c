@@ -45,6 +45,15 @@ void PWR_enter_sleep_mode(void) {
 }
 
 /*******************************************************************/
+void PWR_enter_low_power_sleep_mode(void) {
+	// Regulator in low power mode.
+	PWR -> CR |= (0b1 << 0); // LPSDSR='1'.
+	// Enter low power sleep mode.
+	SCB -> SCR &= ~(0b1 << 2); // SLEEPDEEP='0'.
+	__asm volatile ("wfi"); // Wait For Interrupt core instruction.
+}
+
+/*******************************************************************/
 void PWR_enter_stop_mode(void) {
 	// Regulator in low power mode.
 	PWR -> CR |= (0b1 << 0); // LPSDSR='1'.
