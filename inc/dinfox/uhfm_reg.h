@@ -13,6 +13,10 @@
 
 /*** UHFM registers address ***/
 
+/*!******************************************************************
+ * \enum UHFM_register_address_t
+ * \brief UHFM registers map.
+ *******************************************************************/
 typedef enum {
 	UHFM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	UHFM_REG_ADDR_ANALOG_DATA_1,

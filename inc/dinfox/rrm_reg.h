@@ -13,6 +13,10 @@
 
 /*** RRM registers address ***/
 
+/*!******************************************************************
+ * \enum RRM_register_address_t
+ * \brief RRM registers map.
+ *******************************************************************/
 typedef enum {
 	RRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	RRM_REG_ADDR_ANALOG_DATA_1,

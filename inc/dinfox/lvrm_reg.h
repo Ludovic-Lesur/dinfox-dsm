@@ -13,6 +13,10 @@
 
 /*** LVRM registers address ***/
 
+/*!******************************************************************
+ * \enum LVRM_register_address_t
+ * \brief LVRM registers map.
+ *******************************************************************/
 typedef enum {
 	LVRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	LVRM_REG_ADDR_ANALOG_DATA_1,

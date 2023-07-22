@@ -13,6 +13,10 @@
 
 /*** DMM registers address ***/
 
+/*!******************************************************************
+ * \enum DMM_register_address_t
+ * \brief DMM registers map.
+ *******************************************************************/
 typedef enum {
 	DMM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	DMM_REG_ADDR_ANALOG_DATA_1,
@@ -23,7 +27,7 @@ typedef enum {
 
 /*** DMM number of specific registers ***/
 
-#define DMM_NUMBER_OF_SPECIFIC_REG			(DMM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+#define DMM_NUMBER_OF_SPECIFIC_REG					(DMM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
 
 /*** DMM registers mask ***/
 

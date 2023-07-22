@@ -12,6 +12,10 @@
 
 /*** GPSM registers address ***/
 
+/*!******************************************************************
+ * \enum GPSM_register_address_t
+ * \brief GPSM registers map.
+ *******************************************************************/
 typedef enum {
 	GPSM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	GPSM_REG_ADDR_ANALOG_DATA_1,

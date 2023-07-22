@@ -12,26 +12,101 @@
 #include "string.h"
 #include "types.h"
 
-/*** DINFOX TYPES local macros ***/
+/*** DINFOX local macros ***/
 
-#define DINFOX_SECONDS_PER_MINUTE	60
-#define DINFOX_MINUTES_PER_HOUR		60
-#define DINFOX_HOURS_PER_DAY		24
+#define DINFOX_TIME_UNIT_SIZE_BITS			2
+#define DINFOX_TIME_VALUE_SIZE_BITS			6
 
-#define DINFOX_MV_PER_DV			100
+#define DINFOX_TEMPERATURE_SIGN_SIZE_BITS	1
+#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS	7
 
-#define DINFOX_UA_PER_DMA			100
-#define DINFOX_DMA_PER_MA			10
-#define DINFOX_MA_PER_DA			100
+#define DINFOX_VOLTAGE_UNIT_SIZE_BITS		1
+#define DINFOX_VOLTAGE_VALUE_SIZE_BITS		15
 
-#define DINFOX_RF_POWER_OFFSET		174
+#define DINFOX_CURRENT_UNIT_SIZE_BITS		2
+#define DINFOX_CURRENT_VALUE_SIZE_BITS		14
 
-/*** DINFOX TYPES functions ***/
+#define DINFOX_SECONDS_PER_MINUTE			60
+#define DINFOX_MINUTES_PER_HOUR				60
+#define DINFOX_HOURS_PER_DAY				24
 
-/* RETURN THE OFFSET OF A FIELD MASK.
- * @param reg_mask:	Register mask.
- * @return shift:	Position of the first bit 1.
- */
+#define DINFOX_MV_PER_DV					100
+
+#define DINFOX_UA_PER_DMA					100
+#define DINFOX_DMA_PER_MA					10
+#define DINFOX_MA_PER_DA					100
+
+#define DINFOX_RF_POWER_OFFSET				174
+
+/*** DINFOX local structures ***/
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_TIME_UNIT_SECOND = 0,
+	DINFOX_TIME_UNIT_MINUTE,
+	DINFOX_TIME_UNIT_HOUR,
+	DINFOX_TIME_UNIT_DAY
+} DINFOX_time_unit_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_time_representation_t representation;
+	struct {
+		unsigned value : DINFOX_TIME_VALUE_SIZE_BITS;
+		DINFOX_time_unit_t unit : DINFOX_TIME_UNIT_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_time_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_TEMPERATURE_SIGN_POSITIVE = 0,
+	DINFOX_TEMPERATURE_SIGN_NEGATIVE
+} DINFOX_temperature_sign_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_temperature_representation_t representation;
+	struct {
+		unsigned value : DINFOX_TEMPERATURE_VALUE_SIZE_BITS;
+		DINFOX_temperature_sign_t sign : DINFOX_TEMPERATURE_SIGN_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_temperature_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_VOLTAGE_UNIT_MV = 0,
+	DINFOX_VOLTAGE_UNIT_DV
+} DINFOX_voltage_unit_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_voltage_representation_t representation;
+	struct {
+		unsigned value : DINFOX_VOLTAGE_VALUE_SIZE_BITS;
+		DINFOX_voltage_unit_t unit : DINFOX_VOLTAGE_UNIT_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_voltage_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_CURRENT_UNIT_UA = 0,
+	DINFOX_CURRENT_UNIT_DMA,
+	DINFOX_CURRENT_UNIT_MA,
+	DINFOX_CURRENT_UNIT_DA
+} DINFOX_current_unit_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_current_representation_t representation;
+	struct {
+		unsigned value : DINFOX_CURRENT_VALUE_SIZE_BITS;
+		DINFOX_current_unit_t unit : DINFOX_CURRENT_UNIT_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_current_t;
+
+/*** DINFOX functions ***/
+
+/*******************************************************************/
 uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
 	// Local variables.
 	uint8_t offset = 0;
@@ -44,12 +119,7 @@ uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
 	return offset;
 }
 
-/* WRITE FIELD IN REGISTER.
- * @param reg_value:	Pointer to the register value.
- * @param field_value:	Field value.
- * @param field_mask:	Field mask.
- * @return:				None.
- */
+/*******************************************************************/
 void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask) {
 	// Reset bits.
 	(*reg_value) &= ~(field_mask);
@@ -57,22 +127,13 @@ void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t fiel
 	(*reg_value) |= ((field_value << DINFOX_get_field_offset(field_mask)) & field_mask);
 }
 
-/* GET FIELD VALUE FROM REGISTER.
- * @param reg_value:	Register value.
- * @param field_mask:	Field mask.
- * @return field_value:	Field value.
- */
+/*******************************************************************/
 uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask) {
 	// Isolate field.
 	return ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
 }
 
-/* CONVERT A BYTE ARRAY TO 32 BITS INTEGER.
- * @param parser_ctx:	Pointer to the parser context.
- * @param separator:	Separator of the register.
- * @param reg_value:	Pointer to the register value.
- * @return status:		Function execution status.
- */
+/*******************************************************************/
 PARSER_status_t DINFOX_parse_register(PARSER_context_t* parser_ctx, char_t separator, uint32_t* reg_value) {
 	// Local variables.
 	PARSER_status_t status = PARSER_SUCCESS;
@@ -91,11 +152,7 @@ errors:
 	return status;
 }
 
-/* CONVERT A REGISTER VALUE INTO THE SHORTEST HEXADECIMAL STRING.
- * @param regvalue:	Register value to convert.
- * @param str:		Destination string.
- * @return status:	Function execution status.
- */
+/*******************************************************************/
 STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str) {
 	// Local variables.
 	STRING_status_t status = STRING_SUCCESS;
@@ -124,11 +181,8 @@ STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str) {
 	return status;
 }
 
-/* CONVERT SECONDS TO DINFOX TIME REPRESENTATION.
- * @param time_seconds:	Time in seconds.
- * @return dinfox_time:	DINFox duration representation.
- */
-uint8_t DINFOX_convert_seconds(uint32_t time_seconds) {
+/*******************************************************************/
+DINFOX_time_representation_t DINFOX_convert_seconds(uint32_t time_seconds) {
 	// Local variables.
 	DINFOX_time_t dinfox_time;
 	uint32_t value = time_seconds;
@@ -156,11 +210,8 @@ uint8_t DINFOX_convert_seconds(uint32_t time_seconds) {
 	return (dinfox_time.representation);
 }
 
-/* CONVERT DINFOX TIME REPRESENTATION TO SECONDS.
- * @param dinfox_time:		DINFox duration representation.
- * @return time_seconds:	Time in seconds.
- */
-uint32_t DINFOX_get_seconds(uint8_t dinfox_time) {
+/*******************************************************************/
+uint32_t DINFOX_get_seconds(DINFOX_time_representation_t dinfox_time) {
 	// Local variables.
 	uint32_t time_seconds = 0;
 	uint8_t local_dinfox_time = dinfox_time;
@@ -187,11 +238,8 @@ uint32_t DINFOX_get_seconds(uint8_t dinfox_time) {
 	return time_seconds;
 }
 
-/* CONVERT DEGREES TO DINFOX TEMPERATURE REPRESENTATION.
- * @param temperature_degrees:	Temperature in degreees.
- * @return dinfox_temperature:	DINFox temperature representation.
- */
-uint8_t DINFOX_convert_degrees(int8_t temperature_degrees) {
+/*******************************************************************/
+DINFOX_temperature_representation_t DINFOX_convert_degrees(int8_t temperature_degrees) {
 	// Local variables.
 	uint32_t dinfox_temperature = 0;
 	int32_t temp_degrees = (int32_t) temperature_degrees;
@@ -200,11 +248,8 @@ uint8_t DINFOX_convert_degrees(int8_t temperature_degrees) {
 	return ((uint8_t) dinfox_temperature);
 }
 
-/* CONVERT DINFOX TEMPERATURE REPRESENTATION TO DEGREES.
- * @param dinfox_temperature:	DINFox temperature representation.
- * @return temperature_degrees:	Temperature in degreees.
- */
-int8_t DINFOX_get_degrees(uint8_t dinfox_temperature) {
+/*******************************************************************/
+int8_t DINFOX_get_degrees(DINFOX_temperature_representation_t dinfox_temperature) {
 	// Local variables.
 	int8_t temperature_degrees = 0;
 	uint8_t local_dinfox_temperature = dinfox_temperature;
@@ -218,11 +263,8 @@ int8_t DINFOX_get_degrees(uint8_t dinfox_temperature) {
 	return temperature_degrees;
 }
 
-/* CONVERT MV TO DINFOX VOLTAGE REPRESENTATION.
- * @param voltage_mv:		Votage in mV.
- * @return dinfox_voltage:	DINFox voltage representation.
- */
-uint16_t DINFOX_convert_mv(uint32_t voltage_mv) {
+/*******************************************************************/
+DINFOX_voltage_representation_t DINFOX_convert_mv(uint32_t voltage_mv) {
 	// Local variables.
 	DINFOX_voltage_t dinfox_voltage;
 	// Select format.
@@ -237,11 +279,8 @@ uint16_t DINFOX_convert_mv(uint32_t voltage_mv) {
 	return (dinfox_voltage.representation);
 }
 
-/* CONVERT DINFOX VOLTAGE REPRESENTATION TO MV.
- * @param dinfox_voltage:	DINFox voltage representation.
- * @return voltage_mv:		Votage in mV.
- */
-uint32_t DINFOX_get_mv(uint16_t dinfox_voltage) {
+/*******************************************************************/
+uint32_t DINFOX_get_mv(DINFOX_voltage_representation_t dinfox_voltage) {
 	// Local variables.
 	uint32_t voltage_mv = 0;
 	uint16_t local_dinfox_voltage = dinfox_voltage;
@@ -255,11 +294,8 @@ uint32_t DINFOX_get_mv(uint16_t dinfox_voltage) {
 	return voltage_mv;
 }
 
-/* CONVERT UA TO DINFOX CURRENT REPRESENTATION.
- * @param current_ua:		Current in uA.
- * @return dinfox_current:	DINFox current representation.
- */
-uint16_t DINFOX_convert_ua(uint32_t current_ua) {
+/*******************************************************************/
+DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua) {
 	// Local variables.
 	DINFOX_current_t dinfox_current;
 	uint32_t value = current_ua;
@@ -287,11 +323,8 @@ uint16_t DINFOX_convert_ua(uint32_t current_ua) {
 	return (dinfox_current.representation);
 }
 
-/* CONVERT DINFOX CURRENT REPRESENTATION TO UA.
- * @param dinfox_current:	DINFox current representation.
- * @return current_ua:		Current in uA.
- */
-uint32_t DINFOX_get_ua(uint16_t dinfox_current) {
+/*******************************************************************/
+uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current) {
 	// Local variables.
 	uint32_t current_ua = 0;
 	uint8_t local_dinfox_current = dinfox_current;
@@ -318,18 +351,12 @@ uint32_t DINFOX_get_ua(uint16_t dinfox_current) {
 	return current_ua;
 }
 
-/* CONVERT DBM TO DINFOX RF POWER REPRESENTATION.
- * @param rf_power_dbm:		RF power in dBm.
- * @return dinfox_rf_power:	DINFox RF power representation.
- */
-uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
+/*******************************************************************/
+DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
 	return ((uint8_t) (rf_power_dbm + DINFOX_RF_POWER_OFFSET));
 }
 
-/* CONVERT DINFOX RF POWER REPRESENTATION TO DBM.
- * @param dinfox_rf_power:	DINFox RF power representation.
- * @return rf_power_dbm:	RF power in dBm.
- */
-int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power) {
+/*******************************************************************/
+int16_t DINFOX_get_dbm(DINFOX_rf_power_representation_t dinfox_rf_power) {
 	return ((uint16_t) (dinfox_rf_power - DINFOX_RF_POWER_OFFSET));
 }

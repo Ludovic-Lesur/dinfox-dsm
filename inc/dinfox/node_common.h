@@ -12,8 +12,16 @@
 
 /*** NODES common structures ***/
 
+/*!******************************************************************
+ * \type NODE_address_t
+ * \brief Node address type.
+ *******************************************************************/
 typedef uint8_t	NODE_address_t;
 
+/*!******************************************************************
+ * \enum NODE_protocol_t
+ * \brief Node protocols list.
+ *******************************************************************/
 typedef enum {
 	NODE_PROTOCOL_NONE = 0,
 	NODE_PROTOCOL_AT_BUS,
@@ -21,6 +29,10 @@ typedef enum {
 	NODE_PROTOCOL_LAST
 } NODE_protocol_t;
 
+/*!******************************************************************
+ * \enum NODE_reply_type_t
+ * \brief Node reply type.
+ *******************************************************************/
 typedef enum {
 	NODE_REPLY_TYPE_NONE = 0,
 	NODE_REPLY_TYPE_OK,
@@ -28,22 +40,38 @@ typedef enum {
 	NODE_REPLY_TYPE_LAST
 } NODE_reply_type_t;
 
+/*!******************************************************************
+ * \enum NODE_reply_parameters_t
+ * \brief Node reply parameters.
+ *******************************************************************/
 typedef struct {
 	NODE_reply_type_t type;
 	uint32_t timeout_ms;
 } NODE_reply_parameters_t;
 
+/*!******************************************************************
+ * \enum NODE_command_parameters_t
+ * \brief Node command parameters.
+ *******************************************************************/
 typedef struct {
 	NODE_address_t node_addr;
 	char_t* command;
 } NODE_command_parameters_t;
 
+/*!******************************************************************
+ * \enum NODE_access_parameters_t
+ * \brief Node access parameters.
+ *******************************************************************/
 typedef struct {
 	NODE_address_t node_addr;
 	uint8_t reg_addr;
 	NODE_reply_parameters_t reply_params;
 } NODE_access_parameters_t;
 
+/*!******************************************************************
+ * \enum NODE_access_status_t
+ * \brief Node access status.
+ *******************************************************************/
 typedef union {
 	struct {
 		unsigned error_received : 1;

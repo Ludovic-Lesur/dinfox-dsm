@@ -12,6 +12,10 @@
 
 /*** COMMON registers address ***/
 
+/*!******************************************************************
+ * \enum COMMON_register_address_t
+ * \brief Common registers map.
+ *******************************************************************/
 typedef enum {
 	COMMON_REG_ADDR_NODE_ID = 0,
 	COMMON_REG_ADDR_HW_VERSION,

@@ -14,32 +14,24 @@
 
 /*** DINFOX macros ***/
 
-#define DINFOX_NODE_ADDRESS_RANGE_R4S8CR	15
-
 #define DINFOX_REG_SIZE_BYTES				4
 #define DINFOX_REG_MASK_ALL					0xFFFFFFFF
 #define DINFOX_REG_MASK_NONE				0x00000000
 
-#define DINFOX_TIME_UNIT_SIZE_BITS			2
-#define DINFOX_TIME_VALUE_SIZE_BITS			6
 #define DINFOX_TIME_ERROR_VALUE				0xFF
-
-#define DINFOX_TEMPERATURE_SIGN_SIZE_BITS	1
-#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS	7
 #define DINFOX_TEMPERATURE_ERROR_VALUE		0x7F
-
 #define DINFOX_HUMIDITY_ERROR_VALUE			0xFF
-
-#define DINFOX_VOLTAGE_UNIT_SIZE_BITS		1
-#define DINFOX_VOLTAGE_VALUE_SIZE_BITS		15
 #define DINFOX_VOLTAGE_ERROR_VALUE			0xFFFF
-
-#define DINFOX_CURRENT_UNIT_SIZE_BITS		2
-#define DINFOX_CURRENT_VALUE_SIZE_BITS		14
 #define DINFOX_CURRENT_ERROR_VALUE			0xFFFF
+
+#define DINFOX_NODE_ADDRESS_RANGE_R4S8CR	15
 
 /*** DINFOX structures ***/
 
+/*!******************************************************************
+ * \enum DINFOX_board_id_t
+ * \brief DINFox board identifiers list.
+ *******************************************************************/
 typedef enum {
 	DINFOX_BOARD_ID_LVRM = 0,
 	DINFOX_BOARD_ID_BPSM,
@@ -56,6 +48,10 @@ typedef enum {
 	DINFOX_BOARD_ID_ERROR
 } DINFOX_board_id_t;
 
+/*!******************************************************************
+ * \enum DINFOX_address_t
+ * \brief DINFox boards address range.
+ *******************************************************************/
 typedef enum {
 	DINFOX_NODE_ADDRESS_DMM = 0x00,
 	DINFOX_NODE_ADDRESS_DIM = 0x01,
@@ -72,91 +68,185 @@ typedef enum {
 	DINFOX_NODE_ADDRESS_BROADCAST = (DINFOX_NODE_ADDRESS_R4S8CR_START + DINFOX_NODE_ADDRESS_RANGE_R4S8CR)
 } DINFOX_address_t;
 
+/*!******************************************************************
+ * \enum DINFOX_register_access_t
+ * \brief DINFox register accesses.
+ *******************************************************************/
 typedef enum {
 	DINFOX_REG_ACCESS_READ_ONLY = 0,
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_LAST
 } DINFOX_register_access_t;
 
-typedef enum {
-	DINFOX_TIME_UNIT_SECOND = 0,
-	DINFOX_TIME_UNIT_MINUTE,
-	DINFOX_TIME_UNIT_HOUR,
-	DINFOX_TIME_UNIT_DAY
-} DINFOX_time_unit_t;
+/*!******************************************************************
+ * \type DINFOX_time_representation_t
+ * \brief DINFox time representation type.
+ *******************************************************************/
+typedef uint8_t DINFOX_time_representation_t;
 
-typedef union {
-	uint8_t representation;
-	struct {
-		unsigned value : DINFOX_TIME_VALUE_SIZE_BITS;
-		DINFOX_time_unit_t unit : DINFOX_TIME_UNIT_SIZE_BITS;
-	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
-} DINFOX_time_t;
+/*!******************************************************************
+ * \type DINFOX_temperature_representation_t
+ * \brief DINFox temperature representation type.
+ *******************************************************************/
+typedef uint8_t DINFOX_temperature_representation_t;
 
-typedef enum {
-	DINFOX_TEMPERATURE_SIGN_POSITIVE = 0,
-	DINFOX_TEMPERATURE_SIGN_NEGATIVE
-} DINFOX_temperature_sign_t;
+/*!******************************************************************
+ * \type DINFOX_voltage_representation_t
+ * \brief DINFox voltage representation type.
+ *******************************************************************/
+typedef uint16_t DINFOX_voltage_representation_t;
 
-typedef union {
-	uint8_t representation;
-	struct {
-		unsigned value : DINFOX_TEMPERATURE_VALUE_SIZE_BITS;
-		DINFOX_temperature_sign_t sign : DINFOX_TEMPERATURE_SIGN_SIZE_BITS;
-	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
-} DINFOX_temperature_t;
+/*!******************************************************************
+ * \type DINFOX_current_representation_t
+ * \brief DINFox current representation type.
+ *******************************************************************/
+typedef uint16_t DINFOX_current_representation_t;
 
-typedef enum {
-	DINFOX_VOLTAGE_UNIT_MV = 0,
-	DINFOX_VOLTAGE_UNIT_DV
-} DINFOX_voltage_unit_t;
-
-typedef union {
-	uint16_t representation;
-	struct {
-		unsigned value : DINFOX_VOLTAGE_VALUE_SIZE_BITS;
-		DINFOX_voltage_unit_t unit : DINFOX_VOLTAGE_UNIT_SIZE_BITS;
-	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
-} DINFOX_voltage_t;
-
-typedef enum {
-	DINFOX_CURRENT_UNIT_UA = 0,
-	DINFOX_CURRENT_UNIT_DMA,
-	DINFOX_CURRENT_UNIT_MA,
-	DINFOX_CURRENT_UNIT_DA
-} DINFOX_current_unit_t;
-
-typedef union {
-	uint16_t representation;
-	struct {
-		unsigned value : DINFOX_CURRENT_VALUE_SIZE_BITS;
-		DINFOX_current_unit_t unit : DINFOX_CURRENT_UNIT_SIZE_BITS;
-	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
-} DINFOX_current_t;
+/*!******************************************************************
+ * \type DINFOX_rf_power_representation_t
+ * \brief DINFox RF power representation type.
+ *******************************************************************/
+typedef uint8_t DINFOX_rf_power_representation_t;
 
 /*** DINFOX functions ***/
 
+/*!******************************************************************
+ * \fn uint8_t DINFOX_get_field_offset(uint32_t field_mask)
+ * \brief Get the field offset of a bit mask.
+ * \param[in]  	field_mask: Register field mask.
+ * \param[out] 	none
+ * \retval		Field offset expressed in bit index.
+ *******************************************************************/
 uint8_t DINFOX_get_field_offset(uint32_t field_mask);
 
+/*!******************************************************************
+ * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask)
+ * \brief Write a field in register.
+ * \param[in]  	reg_value: Pointer to the register value.
+ * \param[in]	field_value: Field value to write.
+ * \param[in]	field_mask: Field mask.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
 void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask);
+
+/*!******************************************************************
+ * \fn uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask)
+ * \brief Read a field in register.
+ * \param[in]  	reg_value: Register value.
+ * \param[in]	field_mask: Field mask.
+ * \param[out] 	none
+ * \retval		Field value.
+ *******************************************************************/
 uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask);
 
+/*!******************************************************************
+ * \fn PARSER_status_t DINFOX_parse_register(PARSER_context_t* parser_ctx, char_t separator, uint32_t* reg_value)
+ * \brief Parse a node register within a character buffer.
+ * \param[in]  	parser_ctx: Parser context.
+ * \param[in]	separator: Field separator.
+ * \param[out] 	reg_value: Pointer to integer that will contain the extracted register value.
+ * \retval		Function execution status.
+ *******************************************************************/
 PARSER_status_t DINFOX_parse_register(PARSER_context_t* parser_ctx, char_t separator, uint32_t* reg_value);
+
+/*!******************************************************************
+ * \fn STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str)
+ * \brief Convert a register value to the corresponding string.
+ * \param[in]  	reg_value: Register value to convert.
+ * \param[out] 	str: Pointer to the destination string.
+ * \retval		Function execution status.
+ *******************************************************************/
 STRING_status_t DINFOX_register_to_string(uint32_t reg_value, char_t* str);
 
-uint8_t DINFOX_convert_seconds(uint32_t time_seconds);
-uint32_t DINFOX_get_seconds(uint8_t dinfox_time);
+/*!******************************************************************
+ * \fn DINFOX_time_representation_t DINFOX_convert_seconds(uint32_t time_seconds)
+ * \brief Convert a time to DINFox representation.
+ * \param[in]  	time_seconds: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_time_representation_t DINFOX_convert_seconds(uint32_t time_seconds);
 
-uint8_t DINFOX_convert_degrees(int8_t temperature_degrees);
-int8_t DINFOX_get_degrees(uint8_t dinfox_temperature);
+/*!******************************************************************
+ * \fn uint32_t DINFOX_get_seconds(DINFOX_time_representation_t dinfox_time)
+ * \brief Convert a DINFox representation to time.
+ * \param[in]  	dinfox_time: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted time value in seconds.
+ *******************************************************************/
+uint32_t DINFOX_get_seconds(DINFOX_time_representation_t dinfox_time);
 
-uint16_t DINFOX_convert_mv(uint32_t voltage_mv);
-uint32_t DINFOX_get_mv(uint16_t dinfox_voltage);
+/*!******************************************************************
+ * \fn DINFOX_temperature_representation_t DINFOX_convert_degrees(int8_t temperature_degrees)
+ * \brief Convert a temperature to DINFox representation.
+ * \param[in]  	temperature_degrees: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_temperature_representation_t DINFOX_convert_degrees(int8_t temperature_degrees);
 
-uint16_t DINFOX_convert_ua(uint32_t current_ua);
-uint32_t DINFOX_get_ua(uint16_t dinfox_current);
+/*!******************************************************************
+ * \fn int8_t DINFOX_get_degrees(DINFOX_temperature_representation_t dinfox_temperature)
+ * \brief Convert a DINFox representation to temperature.
+ * \param[in]  	dinfox_temperature: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted temperature value in degrees.
+ *******************************************************************/
+int8_t DINFOX_get_degrees(DINFOX_temperature_representation_t dinfox_temperature);
 
-uint8_t DINFOX_convert_dbm(int16_t rf_power_dbm);
-int16_t DINFOX_get_dbm(uint8_t dinfox_rf_power);
+/*!******************************************************************
+ * \fn DINFOX_voltage_representation_t DINFOX_convert_mv(uint32_t voltage_mv)
+ * \brief Convert a voltage to DINFox representation.
+ * \param[in]  	voltage_mv: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_voltage_representation_t DINFOX_convert_mv(uint32_t voltage_mv);
+
+/*!******************************************************************
+ * \fn uint32_t DINFOX_get_mv(DINFOX_voltage_representation_t dinfox_voltage)
+ * \brief Convert a DINFox representation to voltage.
+ * \param[in]  	dinfox_voltage: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted voltage value in mV.
+ *******************************************************************/
+uint32_t DINFOX_get_mv(DINFOX_voltage_representation_t dinfox_voltage);
+
+/*!******************************************************************
+ * \fn DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua)
+ * \brief Convert a current to DINFox representation.
+ * \param[in]  	voltage_mv: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua);
+
+/*!******************************************************************
+ * \fn uint32_t uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current)
+ * \brief Convert a DINFox representation to current.
+ * \param[in]  	dinfox_current: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted current value in uA.
+ *******************************************************************/
+uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current);
+
+/*!******************************************************************
+ * \fn DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm)
+ * \brief Convert an RF oower to DINFox representation.
+ * \param[in]  	rf_power_dbm: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm);
+
+/*!******************************************************************
+ * \fn int16_t DINFOX_get_dbm(DINFOX_rf_power_representation_t dinfox_rf_power)
+ * \brief Convert a DINFox representation to current.
+ * \param[in]  	dinfox_rf_power: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted RF power value in dBm.
+ *******************************************************************/
+int16_t DINFOX_get_dbm(DINFOX_rf_power_representation_t dinfox_rf_power);
 
 #endif /* __DINFOX_H__ */

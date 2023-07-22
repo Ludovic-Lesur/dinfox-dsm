@@ -13,6 +13,10 @@
 
 /*** BPSM registers address ***/
 
+/*!******************************************************************
+ * \enum BPSM_register_address_t
+ * \brief BPSM registers map.
+ *******************************************************************/
 typedef enum {
 	BPSM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	BPSM_REG_ADDR_ANALOG_DATA_1,

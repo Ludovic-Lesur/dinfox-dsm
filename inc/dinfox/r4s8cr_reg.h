@@ -12,6 +12,10 @@
 
 /*** R4S8CR registers address ***/
 
+/*!******************************************************************
+ * \enum R4S8CR_register_address_t
+ * \brief R4S8CR registers map.
+ *******************************************************************/
 typedef enum {
 	R4S8CR_REG_ADDR_STATUS_CONTROL = 0,
 	R4S8CR_REG_ADDR_LAST,

@@ -13,6 +13,10 @@
 
 /*** SM registers mapping ***/
 
+/*!******************************************************************
+ * \enum SM_register_address_t
+ * \brief SM registers map.
+ *******************************************************************/
 typedef enum {
 	SM_REG_ADDR_ANALOG_DATA_1 = COMMON_REG_ADDR_LAST,
 	SM_REG_ADDR_ANALOG_DATA_2,

@@ -13,6 +13,10 @@
 
 /*** DDRM registers address ***/
 
+/*!******************************************************************
+ * \enum DDRM_register_address_t
+ * \brief DDRM registers map.
+ *******************************************************************/
 typedef enum {
 	DDRM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
 	DDRM_REG_ADDR_ANALOG_DATA_1,
