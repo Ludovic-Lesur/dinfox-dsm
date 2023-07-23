@@ -29,6 +29,14 @@ void AES_init(void) {
 
 #ifdef UHFM
 /*******************************************************************/
+void AES_de_init(void) {
+	// disble peripheral clock.
+	RCC -> AHBENR &= ~(0b1 << 24); // CRYPTOEN='1'.
+}
+#endif
+
+#ifdef UHFM
+/*******************************************************************/
 AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* init_vector, uint8_t* key) {
 	// Local variables.
 	AES_status_t status = AES_SUCCESS;

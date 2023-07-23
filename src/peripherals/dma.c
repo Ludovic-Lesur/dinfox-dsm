@@ -81,6 +81,16 @@ void DMA1_CH3_init(void) {
 
 #ifdef UHFM
 /*******************************************************************/
+void DMA1_CH3_de_init(void) {
+	// Disable channel.
+	DMA1 -> CCR3 &= ~(0b1 << 0); // EN='0'.
+	// Disable peripheral clock.
+	RCC -> AHBENR &= ~(0b1 << 0); // DMAEN='0'.
+}
+#endif
+
+#ifdef UHFM
+/*******************************************************************/
 void DMA1_CH3_start(void) {
 	// Clear all flags.
 	dma1_ch3_tcif = 0;

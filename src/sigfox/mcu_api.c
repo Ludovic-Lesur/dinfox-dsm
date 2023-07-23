@@ -196,9 +196,13 @@ MCU_API_status_t MCU_API_aes_128_cbc_encrypt(MCU_API_encryption_data_t *aes_data
 #endif
 	// Use null initialization vector.
 	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) init_vector[idx] = 0;
+	// Init peripheral.
+	AES_init();
 	// Perform AES.
 	aes_status = AES_encrypt((aes_data -> data), (aes_data -> data), init_vector, local_key);
 	AES_check_status(MCU_API_ERROR_BASE_AES);
+	// Release peripheral.
+	AES_de_init();
 errors:
 	RETURN();
 }

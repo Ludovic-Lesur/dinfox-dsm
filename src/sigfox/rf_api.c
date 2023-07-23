@@ -42,14 +42,11 @@
 #include "sigfox_types.h"
 #include "sigfox_error.h"
 
-#include "exti.h"
 #include "iwdg.h"
 #include "manuf/mcu_api.h"
-#include "mapping.h"
-#include "nvic.h"
+#include "power.h"
 #include "pwr.h"
 #include "s2lp.h"
-#include "spi.h"
 
 /*** RF API local macros ***/
 
@@ -96,8 +93,8 @@ typedef enum {
 	RF_API_ERROR_MODE,
 	RF_API_ERROR_DRIVER_MCU_API,
 	RF_API_ERROR_LATENCY_TYPE,
-	RF_API_ERROR_BASE_SPI = 0x0100,
-	RF_API_ERROR_BASE_S2LP = (RF_API_ERROR_BASE_SPI + SPI_ERROR_BASE_LAST),
+	RF_API_ERROR_BASE_POWER = 0x0100,
+	RF_API_ERROR_BASE_S2LP = (RF_API_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
 	RF_API_ERROR_BASE_LAST = (RF_API_ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST)
 } RF_API_custom_status_t;
 
@@ -148,16 +145,15 @@ typedef struct {
 /*** RF API local global variables ***/
 
 #if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION)
-// Latency values (for SPI interface clocked at 8MHz).
 static sfx_u32 RF_API_LATENCY_MS[RF_API_LATENCY_LAST] = {
 	0, // Wake-up.
-	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 1), // TX init (power on delay + 1.75ms - margin).
+	(POWER_ON_DELAY_MS_RADIO + S2LP_SHUTDOWN_DELAY_MS + 1), // TX init (power on delay + 1.75ms - margin).
 	0, // Send start (depends on bit rate and will be computed during init function).
 	0, // Send stop (depends on bit rate and will be computed during init function).
 	0, // TX de init (70µs).
 	0, // Sleep.
 #ifdef BIDIRECTIONAL
-	(SPI_POWER_ON_DELAY_MS + S2LP_TCXO_DELAY_MS + S2LP_SHUTDOWN_DELAY_MS + 6), // RX init (power on delay + 5.97ms - margin).
+	(POWER_ON_DELAY_MS_RADIO + S2LP_SHUTDOWN_DELAY_MS + 6), // RX init (power on delay + 5.97ms - margin).
 	0, // Receive start (margin + 300µs).
 	7, // Receive stop (margin + 6.7ms).
 	0, // RX de init (70µs).
@@ -407,7 +403,7 @@ RF_API_status_t RF_API_process(void) {
 /*******************************************************************/
 RF_API_status_t RF_API_wake_up(void) {
 	// Local variables.
-	RF_API_status_t status = RF_API_SUCCESS;
+	RF_API_status_t status = RF_API_SUCCESS;;
 	RETURN();
 }
 
@@ -422,19 +418,16 @@ RF_API_status_t RF_API_sleep(void) {
 RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 	// Local variables.
 	RF_API_status_t status = RF_API_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
-	SPI_status_t spi1_status = SPI_SUCCESS;
 	S2LP_modulation_t modulation = S2LP_MODULATION_NONE;
 	sfx_u32 datarate_bps = 0;
 	sfx_u32 deviation_hz = 0;
 	// Clear watchdog.
 	IWDG_reload();
-	// Turn TCXO on.
-	s2lp_status = S2LP_tcxo(1);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	// Turn transceiver on.
-	spi1_status = SPI1_power_on();
-	SPI1_check_status(RF_API_ERROR_BASE_SPI);
+	// Turn radio on.
+	power_status = POWER_enable(POWER_DOMAIN_RADIO, LPTIM_DELAY_MODE_SLEEP);
+	POWER_check_status(RF_API_ERROR_BASE_POWER);
 	// Exit shutdown.
 	s2lp_status = S2LP_shutdown(0);
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
@@ -483,19 +476,16 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 	s2lp_status = S2LP_set_fsk_deviation(deviation_hz);
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	// GPIO.
+	// Disable all interrupts by default.
 	s2lp_status = S2LP_disable_all_irq();
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	EXTI_configure_gpio(&GPIO_S2LP_GPIO0, EXTI_TRIGGER_FALLING_EDGE, _RF_API_s2lp_gpio_irq_callback);
 	// Configure specific registers.
 	switch (radio_parameters -> rf_mode) {
 	case RF_API_MODE_TX:
 		// Switch to TX.
-		GPIO_write(&GPIO_RF_RX_ENABLE, 0);
-		GPIO_write(&GPIO_RF_TX_ENABLE, 1);
-		// GPIO interrupt.
-		s2lp_status = S2LP_configure_gpio(S2LP_GPIO0, S2LP_GPIO_MODE_OUT_LOW_POWER, S2LP_GPIO_OUTPUT_FUNCTION_NIRQ, S2LP_FIFO_FLAG_DIRECTION_TX);
+		s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_TX);
 		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		// Enable FIFO interrupt.
 		s2lp_status = S2LP_configure_irq(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, 1);
 		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 		// SMPS switching frequency.
@@ -518,11 +508,9 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 #ifdef BIDIRECTIONAL
 	case RF_API_MODE_RX:
 		// Switch to RX.
-		GPIO_write(&GPIO_RF_TX_ENABLE, 0);
-		GPIO_write(&GPIO_RF_RX_ENABLE, 1);
-		// GPIO interrupt.
-		s2lp_status = S2LP_configure_gpio(S2LP_GPIO0, S2LP_GPIO_MODE_OUT_LOW_POWER, S2LP_GPIO_OUTPUT_FUNCTION_NIRQ, S2LP_FIFO_FLAG_DIRECTION_RX);
+		s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_RX);
 		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		// Enable RX data ready interrupt.
 		s2lp_status = S2LP_configure_irq(S2LP_IRQ_INDEX_RX_DATA_READY, 1);
 		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 		// SMPS switching frequency.
@@ -566,17 +554,18 @@ errors:
 RF_API_status_t RF_API_de_init(void) {
 	// Local variables.
 	RF_API_status_t status = RF_API_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
+	// Disable front-end.
+	s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_NONE);
+	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
 	// Turn transceiver and TCXO off.
 	s2lp_status = S2LP_shutdown(1);
 	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	// Turn TCXO off.
-	s2lp_status = S2LP_tcxo(0);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	// Turn radio off.
+	power_status = POWER_disable(POWER_DOMAIN_RADIO);
+	POWER_check_status(RF_API_ERROR_BASE_POWER);
 errors:
-	SPI1_power_off();
-	GPIO_write(&GPIO_RF_RX_ENABLE, 0);
-	GPIO_write(&GPIO_RF_TX_ENABLE, 0);
 	RETURN();
 }
 
@@ -591,8 +580,7 @@ RF_API_status_t RF_API_send(RF_API_tx_data_t *tx_data) {
 		rf_api_ctx.tx_bitstream[idx] = (tx_data -> bitstream)[idx];
 	}
 	// Enable GPIO interrupt.
-	EXTI_clear_all_flags();
-	NVIC_enable_interrupt(NVIC_INTERRUPT_EXTI_4_15, NVIC_PRIORITY_EXTI_4_15);
+	S2LP_enable_nirq(S2LP_FIFO_FLAG_DIRECTION_TX, _RF_API_s2lp_gpio_irq_callback);
 	// Init state.
 	rf_api_ctx.state = RF_API_STATE_TX_RAMP_UP;
 	rf_api_ctx.flags.all = 0;
@@ -613,7 +601,7 @@ RF_API_status_t RF_API_send(RF_API_tx_data_t *tx_data) {
 	}
 errors:
 	// Disable GPIO interrupt.
-	NVIC_disable_interrupt(NVIC_INTERRUPT_EXTI_4_15);
+	S2LP_disable_nirq();
 	RETURN();
 }
 
@@ -626,8 +614,7 @@ RF_API_status_t RF_API_receive(RF_API_rx_data_t *rx_data) {
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	sfx_bool dl_timeout = SFX_FALSE;
 	// Enable GPIO interrupt.
-	EXTI_clear_all_flags();
-	NVIC_enable_interrupt(NVIC_INTERRUPT_EXTI_4_15, NVIC_PRIORITY_EXTI_4_15);
+	S2LP_enable_nirq(S2LP_FIFO_FLAG_DIRECTION_RX, _RF_API_s2lp_gpio_irq_callback);
 	// Reset flag.
 	(rx_data -> data_received) = SFX_FALSE;
 	// Init state.
@@ -663,7 +650,7 @@ RF_API_status_t RF_API_receive(RF_API_rx_data_t *rx_data) {
 	(rx_data -> data_received) = SFX_TRUE;
 errors:
 	// Disable GPIO interrupt.
-	NVIC_disable_interrupt(NVIC_INTERRUPT_EXTI_4_15);
+	S2LP_disable_nirq();
 	RETURN();
 }
 #endif
@@ -734,7 +721,9 @@ RF_API_status_t RF_API_get_version(sfx_u8 **version, sfx_u8 *version_size_char) 
 #ifdef ERROR_CODES
 /*******************************************************************/
 void RF_API_error(void) {
-	// Turn all front-end off.
-	RF_API_de_init();
+	// Force all front-end off.
+	S2LP_set_radio_path(S2LP_RADIO_PATH_NONE);
+	S2LP_shutdown(1);
+	POWER_disable(POWER_DOMAIN_RADIO);
 }
 #endif

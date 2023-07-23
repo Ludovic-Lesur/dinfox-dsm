@@ -8,6 +8,7 @@
 #ifndef __S2LP_H__
 #define __S2LP_H__
 
+#include "exti.h"
 #include "lptim.h"
 #include "s2lp_reg.h"
 #include "spi.h"
@@ -17,7 +18,6 @@
 
 #define S2LP_FIFO_SIZE_BYTES	128
 #define S2LP_SHUTDOWN_DELAY_MS	50
-#define S2LP_TCXO_DELAY_MS		100
 
 /*** S2LP structures ***/
 
@@ -30,6 +30,7 @@ typedef enum {
 	S2LP_ERROR_NULL_PARAMETER,
 	S2LP_ERROR_COMMAND,
 	S2LP_ERROR_STATE_TIMEOUT,
+	S2LP_ERROR_RADIO_PATH,
 	S2LP_ERROR_OSCILLATOR_TIMEOUT,
 	S2LP_ERROR_OSCILLATOR,
 	S2LP_ERROR_MODULATION,
@@ -100,6 +101,17 @@ typedef enum {
 	S2LP_STATE_TX = 0x5C,
 	S2LP_STATE_LAST
 } S2LP_state_t;
+
+/*!******************************************************************
+ * \enum S2LP_radio_path_t
+ * \brief S2LP external front-end path selection.
+ *******************************************************************/
+typedef enum {
+	S2LP_RADIO_PATH_NONE = 0,
+	S2LP_RADIO_PATH_TX,
+	S2LP_RADIO_PATH_RX,
+	S2LP_RADIO_PATH_LAST
+} S2LP_radio_path_t;
 
 /*!******************************************************************
  * \enum S2LP_oscillator_t
@@ -303,7 +315,7 @@ typedef enum {
 
 /*!******************************************************************
  * \fn void S2LP_init(void)
- * \brief Init S2LP driver.
+ * \brief Init S2LP interface.
  * \param[in]  	none
  * \param[out] 	none
  * \retval		none
@@ -311,13 +323,22 @@ typedef enum {
 void S2LP_init(void);
 
 /*!******************************************************************
- * \fn S2LP_status_t S2LP_tcxo(uint8_t tcxo_enable)
- * \brief Control TCXO power supply.
- * \param[in]  	tcxo_enable: 0 to turn off, any other value to turn on.
+ * \fn void S2LP_de_init(void)
+ * \brief Release S2LP interface.
+ * \param[in]  	none
  * \param[out] 	none
- * \retval		Function execution status.
+ * \retval		none
  *******************************************************************/
-S2LP_status_t S2LP_tcxo(uint8_t tcxo_enable);
+void S2LP_de_init(void);
+
+/*!******************************************************************
+ * \fn S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path)
+ * \brief Set external front end direction.
+ * \param[in]  	path: Radio path to enable.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path);
 
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable)
@@ -519,6 +540,25 @@ S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8_t function, S2LP_fifo_flag_direction_t fifo_flag_direction);
+
+/*!******************************************************************
+ * \fn S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb irq_callback)
+ * \brief Configure and enable the NIRQ GPIO link between S2LP and MCU.
+ * \param[in]  	fifo_flag_direction: FIFO flag direction.
+ * \param[in]	irq_callback: Function to call on NIRQ event.
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
+S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb irq_callback);
+
+/*!******************************************************************
+ * \fn void S2LP_disable_nirq(void)
+ * \brief Disable the NIRQ GPIO link between S2LP and MCU.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void S2LP_disable_nirq(void);
 
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable)

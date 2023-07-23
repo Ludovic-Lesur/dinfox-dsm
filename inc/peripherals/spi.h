@@ -8,7 +8,6 @@
 #ifndef __SPI_H__
 #define __SPI_H__
 
-#include "lptim.h"
 #include "types.h"
 
 /*** SPI macros ***/
@@ -26,8 +25,7 @@ typedef enum {
 	SPI_ERROR_NULL_PARAMETER,
 	SPI_ERROR_TX_BUFFER_EMPTY,
 	SPI_ERROR_RX_TIMEOUT,
-	SPI_ERROR_BASE_LPTIM = 0x0100,
-	SPI_ERROR_BASE_LAST = (SPI_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
+	SPI_ERROR_BASE_LAST = 0x0100
 } SPI_status_t;
 
 /*** SPI functions ***/
@@ -45,46 +43,36 @@ void SPI1_init(void);
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn SPI_status_t SPI1_power_on(void)
- * \brief Power on all slaves connected to the SPI1 bus.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-SPI_status_t SPI1_power_on(void);
-#endif
-
-#ifdef UHFM
-/*!******************************************************************
- * \fn void SPI1_power_off(void)
- * \brief Power off all slaves connected to the SPI1 bus.
+ * \fn void SPI1_de_init(void)
+ * \brief Release SPI1 peripheral.
  * \param[in]  	none
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void SPI1_power_off(void);
+void SPI1_de_init(void);
 #endif
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn SPI_status_t SPI1_write_byte(uint8_t tx_data)
- * \brief Write byte on SPI1 bus.
- * \param[in]	tx_data: Byte to send.
+ * \fn void SPI1_power_control(uint8_t state)
+ * \brief Control SPI pins according to power state.
+ * \param[in]  	state: State to set.
  * \param[out] 	none
- * \retval		Function execution status.
+ * \retval		none
  *******************************************************************/
-SPI_status_t SPI1_write_byte(uint8_t tx_data);
+void SPI1_power_control(uint8_t state);
 #endif
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn SPI_status_t SPI1_read_byte(uint8_t tx_data, uint8_t* rx_data)
- * \brief Write byte on SPI1 bus.
- * \param[in]	tx_data: Byte to send.
- * \param[out] 	rx_data: Pointer to byte that will contain the read data.
+ * \fn SPI_status_t SPI1_write_read(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfer_size)
+ * \brief SPI1 transfer function.
+ * \param[in]	tx_data: Byte array to send.
+ * \param[in]	transfer_size: Number of bytes to send and receive.
+ * \param[out] 	rx_data: Pointer to the received bytes.
  * \retval		Function execution status.
  *******************************************************************/
-SPI_status_t SPI1_read_byte(uint8_t tx_data, uint8_t* rx_data);
+SPI_status_t SPI1_write_read(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfer_size);
 #endif
 
 /*******************************************************************/

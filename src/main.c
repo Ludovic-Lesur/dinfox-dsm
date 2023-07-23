@@ -153,16 +153,12 @@ static void _XM_init_hw(void) {
 #ifdef SM
 	I2C1_init();
 #endif
-#ifdef UHFM
-	AES_init();
-	DMA1_CH3_init();
-	SPI1_init();
-#endif
 #ifdef GPSM
 	USART2_init();
 	DMA1_CH6_init();
 #endif
 	// Init components.
+	POWER_init();
 #ifdef SM
 	DIGITAL_init();
 #endif
@@ -171,9 +167,6 @@ static void _XM_init_hw(void) {
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 	LED_init();
-#endif
-#ifdef UHFM
-	S2LP_init();
 #endif
 #ifdef GPSM
 	NEOM8N_init();

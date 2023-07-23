@@ -33,6 +33,17 @@ void DMA1_CH3_init(void);
 
 #ifdef UHFM
 /*!******************************************************************
+ * \fn void DMA1_CH3_de_init(void)
+ * \brief Release channel 3 of DMA1.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void DMA1_CH3_de_init(void);
+#endif
+
+#ifdef UHFM
+/*!******************************************************************
  * \fn void DMA1_CH3_start(void)
  * \brief Start DMA1 channel 3.
  * \param[in]  	none

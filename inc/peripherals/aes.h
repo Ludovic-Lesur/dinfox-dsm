@@ -28,12 +28,23 @@ typedef enum {
 #ifdef UHFM
 /*!******************************************************************
  * \fn void AES_init(void)
- * \brief Init aes peripheral.
+ * \brief Init AES peripheral.
  * \param[in]  	none
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
 void AES_init(void);
+#endif
+
+#ifdef UHFM
+/*!******************************************************************
+ * \fn void AES_de_init(void)
+ * \brief Release AES peripheral.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void AES_de_init(void);
 #endif
 
 #ifdef UHFM
