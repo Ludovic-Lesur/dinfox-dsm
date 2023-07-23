@@ -243,9 +243,9 @@ uint8_t TIM21_is_single_blink_done(void);
 #define TIM2_check_status(error_base) { if (tim2_status != TIM_SUCCESS) { status = error_base + tim2_status; goto errors; } }
 
 /*******************************************************************/
-#define TIM2_stack_error() { ERROR_stack_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
+#define TIM2_stack_error(void) { ERROR_stack_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
 
 /*******************************************************************/
-#define TIM2_print_error() { ERROR_print_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
+#define TIM2_print_error(void) { ERROR_print_error(tim2_status, TIM_SUCCESS, ERROR_BASE_TIM2); }
 
 #endif /* __TIM_H__ */

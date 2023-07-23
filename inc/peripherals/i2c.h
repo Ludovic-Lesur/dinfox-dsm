@@ -47,24 +47,13 @@ void I2C1_init(void);
 
 #ifdef SM
 /*!******************************************************************
- * \fn I2C_status_t I2C1_power_on(void)
- * \brief Power on all slaves connected to the I2C1 bus.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-I2C_status_t I2C1_power_on(void);
-#endif
-
-#ifdef SM
-/*!******************************************************************
- * \fn void I2C1_power_off(void)
- * \brief Power off all slaves connected to the I2C1 bus.
+ * \fn void I2C1_init(void)
+ * \brief Release I2C1 peripheral.
  * \param[in]  	none
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void I2C1_power_off(void);
+void I2C1_de_init(void);
 #endif
 
 #ifdef SM
@@ -98,9 +87,9 @@ I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* data, uint8_t data_size_b
 #define I2C1_check_status(error_base) { if (i2c1_status != I2C_SUCCESS) { status = error_base + i2c1_status; goto errors; } }
 
 /*******************************************************************/
-#define I2C1_stack_error() { ERROR_stack_error(i2c1_status, I2C_SUCCESS, ERROR_BASE_I2C1); }
+#define I2C1_stack_error(void) { ERROR_stack_error(i2c1_status, I2C_SUCCESS, ERROR_BASE_I2C1); }
 
 /*******************************************************************/
-#define I2C1_print_error() { ERROR_print_error(i2c1_status, I2C_SUCCESS, ERROR_BASE_I2C1); }
+#define I2C1_print_error(void) { ERROR_print_error(i2c1_status, I2C_SUCCESS, ERROR_BASE_I2C1); }
 
 #endif /* __I2C_H__ */

@@ -79,9 +79,9 @@ SPI_status_t SPI1_write_read(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfe
 #define SPI1_check_status(error_base) { if (spi1_status != SPI_SUCCESS) { status = error_base + spi1_status; goto errors; } }
 
 /*******************************************************************/
-#define SPI1_stack_error() { ERROR_stack_error(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
+#define SPI1_stack_error(void) { ERROR_stack_error(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
 
 /*******************************************************************/
-#define SPI1_print_error() { ERROR_print_error(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
+#define SPI1_print_error(void) { ERROR_print_error(spi1_status, SPI_SUCCESS, ERROR_BASE_SPI1); }
 
 #endif /* __SPI_H__ */

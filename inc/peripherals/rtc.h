@@ -91,9 +91,9 @@ void RTC_clear_wakeup_timer_flag(void);
 #define RTC_check_status(error_base) { if (rtc_status != RTC_SUCCESS) { status = error_base + rtc_status; goto errors; } }
 
 /*******************************************************************/
-#define RTC_stack_error() { ERROR_stack_error(rtc_status, RTC_SUCCESS, ERROR_BASE_RTC); }
+#define RTC_stack_error(void) { ERROR_stack_error(rtc_status, RTC_SUCCESS, ERROR_BASE_RTC); }
 
 /*******************************************************************/
-#define RTC_print_error() { ERROR_stack_error(rtc_status, RTC_SUCCESS, ERROR_BASE_RTC); }
+#define RTC_print_error(void) { ERROR_stack_error(rtc_status, RTC_SUCCESS, ERROR_BASE_RTC); }
 
 #endif /* __RTC_H__ */

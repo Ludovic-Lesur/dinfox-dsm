@@ -880,7 +880,7 @@ errors:
 }
 
 /*******************************************************************/
-S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb irq_callback) {
+S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback) {
 	// Local variables.
 	S2LP_status_t status = S2LP_SUCCESS;
 	// Configure interrupt on S2LP side.

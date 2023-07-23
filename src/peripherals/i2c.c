@@ -46,57 +46,39 @@ errors:
 void I2C1_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 21); // I2C1EN='1'.
-	// Configure power enable pin.
-	GPIO_configure(&GPIO_SEN_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	I2C1_power_off();
-	// Configure peripheral.
 	// I2CCLK = PCLK1/(PRESC+1) = SYSCLK/(PRESC+1) = 2MHz (HSI) (PRESC='1000').
 	// SCL frequency to 10kHz. See p.641 of RM0377 datasheet.
 	I2C1 -> TIMINGR |= (7 << 28) | (99 << 8) | (99 << 0);
 	// Enable peripheral.
 	I2C1 -> CR1 |= (0b1 << 0); // PE='1'.
-}
-#endif
-
-#ifdef SM
-/*******************************************************************/
-I2C_status_t I2C1_power_on(void) {
-	// Local variables.
-	I2C_status_t status = I2C_SUCCESS;
-	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
-	// Enable GPIOs.
+	// Configure GPIOs.
 	GPIO_configure(&GPIO_I2C1_SCL, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_I2C1_SDA, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	// Turn sensors and pull-up resistors on.
-	GPIO_write(&GPIO_SEN_POWER_ENABLE, 1);
-	// Warm-up delay.
-	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_check_status(I2C_ERROR_BASE_LPTIM);
-errors:
-	return status;
 }
 #endif
 
 #ifdef SM
 /*******************************************************************/
-void I2C1_power_off(void) {
-	// Turn sensors and pull-up resistors off.
-	GPIO_write(&GPIO_SEN_POWER_ENABLE, 0);
+void I2C1_de_init(void) {
 	// Disable I2C alternate function.
 	GPIO_configure(&GPIO_I2C1_SCL, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_I2C1_SDA, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	// Disable peripheral.
+	I2C1 -> CR1 &= ~(0b1 << 0); // PE='0'.
+	// Disable peripheral clock.
+	RCC -> APB1ENR &= ~(0b1 << 21); // I2C1EN='0'.
 }
 #endif
 
 #ifdef SM
 /*******************************************************************/
-I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* tx_buf, uint8_t tx_buf_length, uint8_t stop_flag) {
+I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* data, uint8_t data_size_bytes, uint8_t stop_flag) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
 	uint32_t loop_count = 0;
 	uint8_t idx = 0;
 	// Check parameters.
-	if (tx_buf == NULL) {
+	if (data == NULL) {
 		status = I2C_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
@@ -113,7 +95,7 @@ I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* tx_buf, uint8_t tx_buf_l
 	}
 	// Configure number of bytes to send.
 	I2C1 -> CR2 &= 0xFF00FFFF; // Reset bits 16-23.
-	I2C1 -> CR2 |= (tx_buf_length << 16); // NBYTES = tx_buf_length.
+	I2C1 -> CR2 |= (data_size_bytes << 16); // NBYTES.
 	// Send 7-bits slave address with write request.
 	I2C1 -> CR2 &= ~(0b1 << 10); // Write request (RD_WRN='0').
 	I2C1 -> CR2 &= 0xFFFFFC00; // Reset bits 0-9.
@@ -131,11 +113,11 @@ I2C_status_t I2C1_write(uint8_t slave_address, uint8_t* tx_buf, uint8_t tx_buf_l
 	}
 	// Send bytes.
 	loop_count = 0;
-	while ((idx < tx_buf_length) && (((I2C1 -> ISR) & (0b1 << 4)) == 0)) {
+	while ((idx < data_size_bytes) && (((I2C1 -> ISR) & (0b1 << 4)) == 0)) {
 		// Wait for transmit buffer to be empty (TXIS='1').
 		if (((I2C1 -> ISR) & (0b1 << 1)) != 0) {
 			// Send next byte.
-			I2C1 -> TXDR = tx_buf[idx];
+			I2C1 -> TXDR = data[idx];
 			idx++;
 		}
 		// Exit if timeout.
@@ -177,13 +159,13 @@ errors:
 
 #ifdef SM
 /*******************************************************************/
-I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* rx_buf, uint8_t rx_buf_length) {
+I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* data, uint8_t data_size_bytes) {
 	// Local variables.
 	I2C_status_t status = I2C_SUCCESS;
 	uint32_t loop_count = 0;
 	uint8_t idx = 0;
 	// Check parameters.
-	if (rx_buf == NULL) {
+	if (data == NULL) {
 		status = I2C_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
@@ -200,7 +182,7 @@ I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* rx_buf, uint8_t rx_buf_le
 	}
 	// Configure number of bytes to send.
 	I2C1 -> CR2 &= 0xFF00FFFF; // Reset bits 16-23.
-	I2C1 -> CR2 |= (rx_buf_length << 16); // NBYTES = rx_buf_length.
+	I2C1 -> CR2 |= (data_size_bytes << 16); // NBYTES.
 	// Send 7-bits slave address with write request.
 	I2C1 -> CR2 |= (0b1 << 10); // Read request (RD_WRN='1').
 	I2C1 -> CR2 |= (0b1 << 12); // 7-bits mode.
@@ -219,11 +201,11 @@ I2C_status_t I2C1_read(uint8_t slave_address, uint8_t* rx_buf, uint8_t rx_buf_le
 	}
 	// Get bytes.
 	loop_count = 0;
-	while (idx < rx_buf_length) {
+	while (idx < data_size_bytes) {
 		// Wait for incoming data (RXNE='1').
 		if (((I2C1 -> ISR) & (0b1 << 2)) != 0) {
 			// Fill RX buffer with new byte */
-			rx_buf[idx] = (I2C1 -> RXDR);
+			data[idx] = (I2C1 -> RXDR);
 			idx++;
 		}
 		// Exit if timeout.

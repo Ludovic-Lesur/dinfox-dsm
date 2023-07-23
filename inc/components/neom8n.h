@@ -173,9 +173,9 @@ NEOM8N_status_t NEOM8N_configure_timepulse(NEOM8N_timepulse_config_t* timepulse_
 #define NEOM8N_check_status(error_base) { if (neom8n_status != NEOM8N_SUCCESS) { status = error_base + neom8n_status; goto errors; } }
 
 /*******************************************************************/
-#define NEOM8N_stack_error() { ERROR_stack_error(neom8n_status, NEOM8N_SUCCESS, ERROR_BASE_NEOM8N); }
+#define NEOM8N_stack_error(void) { ERROR_stack_error(neom8n_status, NEOM8N_SUCCESS, ERROR_BASE_NEOM8N); }
 
 /*******************************************************************/
-#define NEOM8N_print_error() { ERROR_print_error(neom8n_status, NEOM8N_SUCCESS, ERROR_BASE_NEOM8N); }
+#define NEOM8N_print_error(void) { ERROR_print_error(neom8n_status, NEOM8N_SUCCESS, ERROR_BASE_NEOM8N); }
 
 #endif /* __NEOM8N_H__ */

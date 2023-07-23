@@ -20,7 +20,7 @@
 static volatile uint8_t dma1_ch3_tcif = 0;
 #endif
 #ifdef GPSM
-static DMA_transfer_complete_irq_cb dma1_ch6_tc_irq_callback = NULL;
+static DMA_transfer_complete_irq_cb_t dma1_ch6_tc_irq_callback = NULL;
 #endif
 
 /*** DMA local functions ***/
@@ -129,7 +129,7 @@ uint8_t DMA1_CH3_get_transfer_status(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void DMA1_CH6_init(DMA_transfer_complete_irq_cb irq_callback) {
+void DMA1_CH6_init(DMA_transfer_complete_irq_cb_t irq_callback) {
 	// Enable peripheral clock.
 	RCC -> AHBENR |= (0b1 << 0); // DMAEN='1'.
 	// Memory and peripheral data size are 8 bits (MSIZE='00' and PSIZE='00').

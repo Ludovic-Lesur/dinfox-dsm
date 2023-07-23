@@ -86,7 +86,6 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	uint8_t state = 0;
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
-	I2C_status_t i2c1_status = I2C_SUCCESS;
 	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 	int8_t tamb_degrees = 0;
 	uint8_t hamb_percent = 0;
@@ -174,11 +173,12 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
 	// Perform temperature / humidity measurements.
-	i2c1_status = I2C1_power_on();
-	I2C1_stack_error();
+	power_status = POWER_enable(POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
+	POWER_stack_error();
 	sht3x_status = SHT3X_perform_measurements(SHT3X_I2C_ADDRESS);
 	SHT3X_stack_error();
-	I2C1_power_off();
+	power_status = POWER_disable(POWER_DOMAIN_SENSORS);
+	POWER_stack_error();
 	if (sht3x_status == SHT3X_SUCCESS) {
 		// Tamb.
 		sht3x_status = SHT3X_get_temperature(&tamb_degrees);

@@ -9,7 +9,6 @@
 
 #include "exti.h"
 #include "gpio.h"
-#include "lbus.h"
 #include "lpuart_reg.h"
 #include "mapping.h"
 #include "node_common.h"
@@ -25,7 +24,7 @@
 
 /*** LPUART local global variables ***/
 
-static LPUART_rx_irq_cb lpuart1_rx_irq_callback = NULL;
+static LPUART_rx_irq_cb_t lpuart1_rx_irq_callback = NULL;
 
 /*** LPUART local functions ***/
 
@@ -75,31 +74,13 @@ errors:
 /*** LPUART functions ***/
 
 /*******************************************************************/
-LPUART_status_t LPUART1_init(NODE_address_t self_address) {
+void LPUART1_init(NODE_address_t self_address, LPUART_rx_irq_cb_t irq_callback) {
 	// Local variables.
-	LPUART_status_t status = LPUART_SUCCESS;
 	uint32_t brr = 0;
-	// Check address.
-	if (self_address > LBUS_ADDRESS_LAST) {
-		// Do not exit, just store error and apply mask.
-		status = LPUART_ERROR_LBUS_ADDRESS;
-	}
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 18); // LPUARTEN='1'.
-	// Configure TX and RX GPIOs.
-	GPIO_configure(&GPIO_LPUART1_TX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	GPIO_configure(&GPIO_LPUART1_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	GPIO_configure(&GPIO_LPUART1_DE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
-#ifdef LPUART_USE_NRE
-	// Disable receiver by default.
-	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
-	GPIO_write(&GPIO_LPUART1_NRE, 1);
-#else
-	// Put NRE pin in high impedance since it is directly connected to the DE pin.
-	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-#endif
 	// Configure peripheral.
 	LPUART1 -> CR1 |= 0x00002822;
 	LPUART1 -> CR2 |= (self_address << 24) | (0b1 << 4);
@@ -114,11 +95,18 @@ LPUART_status_t LPUART1_init(NODE_address_t self_address) {
 	LPUART1 -> CR1 |= (0b1 << 3); // TE='1'.
 	// Enable peripheral.
 	LPUART1 -> CR1 |= (0b1 << 0); // UE='1'.
-	return status;
-}
-
-/*******************************************************************/
-void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback) {
+	// Configure TX and RX GPIOs.
+	GPIO_configure(&GPIO_LPUART1_TX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_LPUART1_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_LPUART1_DE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
+#ifdef LPUART_USE_NRE
+	// Disable receiver by default.
+	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE); // External pull-down resistor present.
+	GPIO_write(&GPIO_LPUART1_NRE, 1);
+#else
+	// Put NRE pin in high impedance since it is directly connected to the DE pin.
+	GPIO_configure(&GPIO_LPUART1_NRE, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 	// Register callback.
 	lpuart1_rx_irq_callback = irq_callback;
 }
@@ -149,7 +137,7 @@ void LPUART1_disable_rx(void) {
 }
 
 /*******************************************************************/
-LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes) {
+LPUART_status_t LPUART1_write(uint8_t* data, uint32_t data_size_bytes) {
 	// Local variables.
 	LPUART_status_t status = LPUART_SUCCESS;
 	uint32_t idx = 0;

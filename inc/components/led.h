@@ -133,9 +133,9 @@ LED_status_t LED_toggle(LED_color_t color);
 #define LED_check_status(error_base) { if (led_status != LED_SUCCESS) { status = error_base + led_status; goto errors; } }
 
 /*******************************************************************/
-#define LED_stack_error() { ERROR_stack_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
+#define LED_stack_error(void) { ERROR_stack_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
 
 /*******************************************************************/
-#define LED_print_error() { ERROR_print_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
+#define LED_print_error(void) { ERROR_print_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
 
 #endif /* LED_H */

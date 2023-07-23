@@ -14,8 +14,9 @@
 /*** POWER macros ***/
 
 #define POWER_ON_DELAY_MS_ANALOG	100
-#define POWER_ON_DELAY_MS_RADIO		200
 #define POWER_ON_DELAY_MS_GPS		1000
+#define POWER_ON_DELAY_MS_SENSORS	100
+#define POWER_ON_DELAY_MS_RADIO		200
 
 /*** POWER structures ***/
 
@@ -36,6 +37,9 @@ typedef enum {
  *******************************************************************/
 typedef enum {
 	POWER_DOMAIN_ANALOG = 0,
+#ifdef SM
+	POWER_DOMAIN_SENSORS,
+#endif
 #ifdef GPSM
 	POWER_DOMAIN_GPS,
 #endif
@@ -79,9 +83,9 @@ POWER_status_t POWER_disable(POWER_domain_t domain);
 #define POWER_check_status(error_base) { if (power_status != POWER_SUCCESS) { status = error_base + power_status; goto errors; } }
 
 /*******************************************************************/
-#define POWER_stack_error() { ERROR_stack_error(power_status, POWER_SUCCESS, ERROR_BASE_POWER); }
+#define POWER_stack_error(void) { ERROR_stack_error(power_status, POWER_SUCCESS, ERROR_BASE_POWER); }
 
 /*******************************************************************/
-#define POWER_print_error() { ERROR_print_error(power_status, POWER_SUCCESS, ERROR_BASE_POWER); }
+#define POWER_print_error(void) { ERROR_print_error(power_status, POWER_SUCCESS, ERROR_BASE_POWER); }
 
 #endif /* __POWER_H__ */

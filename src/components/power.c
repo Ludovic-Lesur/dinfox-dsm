@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "gpio.h"
+#include "i2c.h"
 #include "lptim.h"
 #include "mapping.h"
 #include "neom8n.h"
@@ -33,6 +34,7 @@ void POWER_init(void) {
 #endif
 #ifdef SM
 	GPIO_configure(&GPIO_ANA_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_SEN_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef UHFM
 	// Radio domain.
@@ -73,6 +75,16 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 		// Init peripherals.
 		ADC1_init();
 		break;
+#ifdef SM
+	case POWER_DOMAIN_SENSORS:
+		// Turn digital sensors on.
+		GPIO_write(&GPIO_SEN_POWER_ENABLE, 1);
+		// Init peripherals.
+		I2C1_init();
+		// Set delay value.
+		delay_ms = POWER_ON_DELAY_MS_SENSORS;
+		break;
+#endif
 #ifdef GPSM
 	case POWER_DOMAIN_GPS:
 		// Turn GPS on.
@@ -133,6 +145,14 @@ POWER_status_t POWER_disable(POWER_domain_t domain) {
 		GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
 		break;
+#ifdef SM
+	case POWER_DOMAIN_SENSORS:
+		// Release peripherals.
+		I2C1_de_init();
+		// Turn digital sensors off.
+		GPIO_write(&GPIO_SEN_POWER_ENABLE, 0);
+		break;
+#endif
 #ifdef GPSM
 	case POWER_DOMAIN_GPS:
 		// Release components.

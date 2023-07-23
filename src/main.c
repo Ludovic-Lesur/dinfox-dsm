@@ -100,10 +100,6 @@ static void _XM_init_hw(void) {
 	// Local variables.
 	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
-	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
-	LBUS_status_t lbus_status = LBUS_SUCCESS;
-	NVM_status_t nvm_status = NVM_SUCCESS;
-	NODE_address_t self_address;
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
@@ -133,9 +129,6 @@ static void _XM_init_hw(void) {
 	RCC_enable_lse();
 	rtc_status = RTC_init();
 	RTC_stack_error();
-	// Read self address in NVM.
-	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
-	NVM_stack_error();
 	// Init peripherals.
 	LPTIM1_init();
 #ifdef UHFM
@@ -144,14 +137,6 @@ static void _XM_init_hw(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	TIM2_init();
 	TIM21_init();
-#endif
-	lpuart1_status = LPUART1_init(self_address);
-	LPUART1_stack_error();
-#ifdef SM
-	I2C1_init();
-#endif
-#ifdef GPSM
-	USART2_init();
 #endif
 	// Init components.
 	POWER_init();
@@ -164,16 +149,10 @@ static void _XM_init_hw(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 	LED_init();
 #endif
-#ifdef GPSM
-	NEOM8N_init();
-#endif
 	// Init registers.
 	NODE_init();
-	// Init LBUS layer.
-	lbus_status = LBUS_init(self_address);
-	LBUS_stack_error();
 	// Init ATBUS layer.
-	AT_BUS_init(self_address);
+	AT_BUS_init();
 }
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

@@ -93,10 +93,10 @@ PARSER_status_t PARSER_get_byte_array(PARSER_context_t* parser_ctx, char_t separ
 #define PARSER_check_status(error_base) { if (parser_status != PARSER_SUCCESS) { status = error_base + parser_status; goto errors; } }
 
 /*******************************************************************/
-#define PARSER_stack_error() { ERROR_stack_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
+#define PARSER_stack_error(void) { ERROR_stack_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
 
 /*******************************************************************/
-#define PARSER_print_error() { ERROR_print_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
+#define PARSER_print_error(void) { ERROR_print_error(parser_status, PARSER_SUCCESS, ERROR_BASE_PARSER); }
 
 #endif	/* __PARSER_H__ */
 

@@ -16,7 +16,7 @@
  * \fn DMA_transfer_complete_irq_cb
  * \brief DMA transfer complete interrupt callback.
  *******************************************************************/
-typedef void (*DMA_transfer_complete_irq_cb)(void);
+typedef void (*DMA_transfer_complete_irq_cb_t)(void);
 
 /*** DMA functions ***/
 
@@ -89,13 +89,13 @@ uint8_t DMA1_CH3_get_transfer_status(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void DMA1_CH6_init(DMA_transfer_complete_irq_cb irq_callback)
+ * \fn void DMA1_CH6_init(DMA_transfer_complete_irq_cb_t irq_callback)
  * \brief Init channel 6 of DMA1 channel peripheral for NEOM8N NMEA frames transfer.
  * \param[in]  	irq_callback: Function to call on transfer complete interrupt.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void DMA1_CH6_init(DMA_transfer_complete_irq_cb irq_callback);
+void DMA1_CH6_init(DMA_transfer_complete_irq_cb_t irq_callback);
 #endif
 
 #ifdef GPSM

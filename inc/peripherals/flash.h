@@ -38,9 +38,9 @@ FLASH_status_t FLASH_set_latency(uint8_t wait_states);
 #define FLASH_check_status(error_base) { if (flash_status != FLASH_SUCCESS) { status = error_base + flash_status; goto errors; } }
 
 /*******************************************************************/
-#define FLASH_stack_error() { ERROR_stack_error(flash_status, FLASH_SUCCESS, ERROR_BASE_FLASH); }
+#define FLASH_stack_error(void) { ERROR_stack_error(flash_status, FLASH_SUCCESS, ERROR_BASE_FLASH); }
 
 /*******************************************************************/
-#define FLASH_print_error() { ERROR_print_error(flash_status, FLASH_SUCCESS, ERROR_BASE_FLASH); }
+#define FLASH_print_error(void) { ERROR_print_error(flash_status, FLASH_SUCCESS, ERROR_BASE_FLASH); }
 
 #endif /* __FLASH_H__ */

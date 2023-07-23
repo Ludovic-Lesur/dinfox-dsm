@@ -21,7 +21,6 @@ typedef enum {
 	LPUART_SUCCESS = 0,
 	LPUART_ERROR_NULL_PARAMETER,
 	LPUART_ERROR_MODE,
-	LPUART_ERROR_LBUS_ADDRESS,
 	LPUART_ERROR_TX_TIMEOUT,
 	LPUART_ERROR_TC_TIMEOUT,
 	LPUART_ERROR_STRING_SIZE,
@@ -29,30 +28,22 @@ typedef enum {
 } LPUART_status_t;
 
 /*!******************************************************************
- * \fn LPUART_rx_irq_cb
+ * \fn LPUART_rx_irq_cb_t
  * \brief LPUART RX interrupt callback.
  *******************************************************************/
-typedef void (*LPUART_rx_irq_cb)(uint8_t data);
+typedef void (*LPUART_rx_irq_cb_t)(uint8_t data);
 
 /*** LPUART functions ***/
 
 /*!******************************************************************
- * \fn LPUART_status_t LPUART1_init(NODE_address_t self_address)
+ * \fn void LPUART1_init(NODE_address_t self_address, LPUART_rx_irq_cb_t irq_callback)
  * \brief Init LPUART1 peripheral.
  * \param[in]  	self_address: RS485 address of the node.
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-LPUART_status_t LPUART1_init(NODE_address_t self_address);
-
-/*!******************************************************************
- * \fn void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback)
- * \brief Set LPUART1 RX callback.
- * \param[in]  	irq_callback: Function to call on interrupt.
+ * \param[in]  	irq_callback: Function to call on RX interrupt.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void LPUART1_set_rx_callback(LPUART_rx_irq_cb irq_callback);
+void LPUART1_init(NODE_address_t self_address, LPUART_rx_irq_cb_t irq_callback);
 
 /*!******************************************************************
  * \fn void LPUART1_enable_rx(void)
@@ -73,22 +64,22 @@ void LPUART1_enable_rx(void);
 void LPUART1_disable_rx(void);
 
 /*!******************************************************************
- * \fn LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes)
+ * \fn LPUART_status_t LPUART1_write(uint8_t* data, uint32_t data_size_bytes)
  * \brief Send data over LPUART1.
  * \param[in]	data: Byte array to send.
  * \param[in]	data_size_bytes: Number of bytes to send.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-LPUART_status_t LPUART1_send(uint8_t* data, uint32_t data_size_bytes);
+LPUART_status_t LPUART1_write(uint8_t* data, uint32_t data_size_bytes);
 
 /*******************************************************************/
 #define LPUART1_check_status(error_base) { if (lpuart1_status != LPUART_SUCCESS) { status = error_base + lpuart1_status; goto errors; } }
 
 /*******************************************************************/
-#define LPUART1_stack_error() { ERROR_stack_error(lpuart1_status, LPUART_SUCCESS, ERROR_BASE_LPUART1); }
+#define LPUART1_stack_error(void) { ERROR_stack_error(lpuart1_status, LPUART_SUCCESS, ERROR_BASE_LPUART1); }
 
 /*******************************************************************/
-#define LPUART1_print_error() { ERROR_print_error(lpuart1_status, LPUART_SUCCESS, ERROR_BASE_LPUART1); }
+#define LPUART1_print_error(void) { ERROR_print_error(lpuart1_status, LPUART_SUCCESS, ERROR_BASE_LPUART1); }
 
 #endif /* __LPUART_H__ */

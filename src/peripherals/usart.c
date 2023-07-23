@@ -27,7 +27,7 @@
 /*** USART local global variables ***/
 
 #ifdef GPSM
-static USART_character_match_irq_cb usart2_cm_irq_callback = NULL;
+static USART_character_match_irq_cb_t usart2_cm_irq_callback = NULL;
 #endif
 
 /*** USART local functions ***/
@@ -75,7 +75,7 @@ void USART2_init(void) {
 	USART2 -> CR1 |= (0b11 << 2); // TE='1' and RE='1'.
 	// Enable peripheral.
 	USART2 -> CR1 |= (0b1 << 0); // UE='1'.
-	// Enable GPIOs.
+	// Configure GPIOs.
 	GPIO_configure(&GPIO_USART2_TX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_USART2_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
@@ -96,7 +96,7 @@ void USART2_de_init(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback) {
+void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_callback) {
 	// Register callback.
 	usart2_cm_irq_callback = irq_callback;
 }

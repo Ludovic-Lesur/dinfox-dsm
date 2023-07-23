@@ -215,9 +215,9 @@ MATH_status_t MATH_int32_to_signed_magnitude(int32_t value, uint8_t sign_bit_pos
 #define MATH_check_status(error_base) { if (math_status != MATH_SUCCESS) { status = error_base + math_status; goto errors; } }
 
 /*******************************************************************/
-#define MATH_stack_error() { ERROR_stack_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
+#define MATH_stack_error(void) { ERROR_stack_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
 
 /*******************************************************************/
-#define MATH_print_error() { ERROR_print_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
+#define MATH_print_error(void) { ERROR_print_error(math_status, MATH_SUCCESS, ERROR_BASE_MATH); }
 
 #endif /* __MATH_H__ */

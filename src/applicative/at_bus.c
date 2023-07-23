@@ -7,7 +7,6 @@
 
 #include "at_bus.h"
 
-#include "aes.h"
 #include "bpsm_reg.h"
 #include "ddrm_reg.h"
 #include "common_reg.h"
@@ -19,14 +18,12 @@
 #include "mode.h"
 #include "node.h"
 #include "node_common.h"
-#include "nvic.h"
 #include "parser.h"
 #include "pwr.h"
 #include "rrm_reg.h"
 #include "sm_reg.h"
 #include "string.h"
 #include "types.h"
-#include "uhfm.h"
 #include "uhfm_reg.h"
 #ifdef UHFM
 #include "sigfox_ep_api.h"
@@ -1345,13 +1342,21 @@ errors:
 /*** AT functions ***/
 
 /*******************************************************************/
-void AT_BUS_init(NODE_address_t self_address) {
+void AT_BUS_init(void) {
+	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	LBUS_status_t lbus_status = LBUS_SUCCESS;
+	NODE_address_t self_address = 0;
+	// Read self address in NVM.
+	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
+	NVM_stack_error();
+	// Init LBUS layer.
+	lbus_status = LBUS_init(self_address, &_AT_BUS_fill_rx_buffer);
+	LBUS_stack_error();
 	// Init context.
 	_AT_BUS_reset_parser();
-	// Init LBUS callback.
-	LBUS_set_rx_callback(&_AT_BUS_fill_rx_buffer);
-	// Enable LPUART.
-	LPUART1_enable_rx();
+	// Enable receiver.
+	LBUS_enable_rx();
 }
 
 /*******************************************************************/
@@ -1359,9 +1364,9 @@ void AT_BUS_task(void) {
 	// Trigger decoding function if line end found.
 	if (at_bus_ctx.line_end_flag != 0) {
 		// Decode and execute command.
-		LPUART1_disable_rx();
+		LBUS_disable_rx();
 		_AT_BUS_decode();
-		LPUART1_enable_rx();
+		LBUS_enable_rx();
 	}
 }
 

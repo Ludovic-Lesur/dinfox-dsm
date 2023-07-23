@@ -96,9 +96,9 @@ uint8_t LOAD_get_charge_status(void);
 #define LOAD_check_status(error_base) { if (load_status != LOAD_SUCCESS) { status = error_base + load_status; goto errors; } }
 
 /*******************************************************************/
-#define LOAD_stack_error() { ERROR_stack_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
+#define LOAD_stack_error(void) { ERROR_stack_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
 
 /*******************************************************************/
-#define LOAD_print_error() { ERROR_print_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
+#define LOAD_print_error(void) { ERROR_print_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
 
 #endif /* __LOAD_H__ */

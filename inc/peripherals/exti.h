@@ -60,10 +60,10 @@ typedef enum {
 } EXTI_trigger_t;
 
 /*!******************************************************************
- * \fn EXTI_gpio_irq_cb
+ * \fn EXTI_gpio_irq_cb_t
  * \brief EXTI GPIO callback.
  *******************************************************************/
-typedef void (*EXTI_gpio_irq_cb)(void);
+typedef void (*EXTI_gpio_irq_cb_t)(void);
 
 /*** EXTI functions ***/
 
@@ -77,7 +77,7 @@ typedef void (*EXTI_gpio_irq_cb)(void);
 void EXTI_init(void);
 
 /*!******************************************************************
- * \fn void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb irq_callback)
+ * \fn void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb_t irq_callback)
  * \brief Configure EXTI GPIO interrupt.
  * \param[in]  	gpio: GPIO to configure as interrupt input.
  * \param[in]	trigger: GPIO edge trigger.
@@ -85,7 +85,7 @@ void EXTI_init(void);
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb irq_callback);
+void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb_t irq_callback);
 
 /*!******************************************************************
  * \fn void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t trigger)

@@ -48,9 +48,9 @@ void IWDG_reload(void);
 #define IWDG_check_status(error_base) { if (iwdg_status != IWDG_SUCCESS) { status = error_base + iwdg_status; goto errors; } }
 
 /*******************************************************************/
-#define IWDG_stack_error() { ERROR_stack_error(iwdg_status, IWDG_SUCCESS, ERROR_BASE_IWDG); }
+#define IWDG_stack_error(void) { ERROR_stack_error(iwdg_status, IWDG_SUCCESS, ERROR_BASE_IWDG); }
 
 /*******************************************************************/
-#define IWDG_print_error() { ERROR_print_error(iwdg_status, IWDG_SUCCESS, ERROR_BASE_IWDG); }
+#define IWDG_print_error(void) { ERROR_print_error(iwdg_status, IWDG_SUCCESS, ERROR_BASE_IWDG); }
 
 #endif /* __IWDG_H__ */

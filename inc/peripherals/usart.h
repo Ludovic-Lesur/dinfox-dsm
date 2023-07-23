@@ -24,10 +24,10 @@ typedef enum {
 } USART_status_t;
 
 /*!******************************************************************
- * \fn USART_character_match_irq_cb
+ * \fn USART_character_match_irq_cb_t
  * \brief USART character match interrupt callback.
  *******************************************************************/
-typedef void (*USART_character_match_irq_cb)(void);
+typedef void (*USART_character_match_irq_cb_t)(void);
 
 /*** USART functions ***/
 
@@ -55,13 +55,13 @@ void USART2_de_init(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback
+ * \fn void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_callback
  * \brief Set USART character match interrupt callback.
  * \param[in]  	irq_callback: Function to call on interrupt.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void USART2_set_character_match_callback(USART_character_match_irq_cb irq_callback);
+void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_callback);
 #endif
 
 #ifdef GPSM
@@ -80,9 +80,9 @@ USART_status_t USART2_write(uint8_t* data, uint8_t data_size_bytes);
 #define USART2_check_status(error_base) { if (usart2_status != USART_SUCCESS) { status = error_base + usart2_status; goto errors; } }
 
 /*******************************************************************/
-#define USART2_stack_error() { ERROR_stack_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
+#define USART2_stack_error(void) { ERROR_stack_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
 
 /*******************************************************************/
-#define USART2_print_error() { ERROR_print_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
+#define USART2_print_error(void) { ERROR_print_error(usart2_status, USART_SUCCESS, ERROR_BASE_USART2); }
 
 #endif /* __USART_H__ */

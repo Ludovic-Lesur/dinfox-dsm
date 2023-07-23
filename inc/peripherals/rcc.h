@@ -110,9 +110,9 @@ void RCC_enable_lse(void);
 #define RCC_check_status(error_base) { if (rcc_status != RCC_SUCCESS) { status = error_base + rcc_status; goto errors; } }
 
 /*******************************************************************/
-#define RCC_stack_error() { ERROR_stack_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
+#define RCC_stack_error(void) { ERROR_stack_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
 
 /*******************************************************************/
-#define RCC_print_error() { ERROR_print_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
+#define RCC_print_error(void) { ERROR_print_error(rcc_status, RCC_SUCCESS, ERROR_BASE_RCC); }
 
 #endif /* __RCC_H__ */

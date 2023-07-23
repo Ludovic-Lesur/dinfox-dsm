@@ -78,9 +78,9 @@ NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data);
 #define NVM_check_status(error_base) { if (nvm_status != NVM_SUCCESS) { status = error_base + nvm_status; goto errors; } }
 
 /*******************************************************************/
-#define NVM_stack_error() { ERROR_stack_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
+#define NVM_stack_error(void) { ERROR_stack_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
 
 /*******************************************************************/
-#define NVM_print_error() { ERROR_print_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
+#define NVM_print_error(void) { ERROR_print_error(nvm_status, NVM_SUCCESS, ERROR_BASE_NVM); }
 
 #endif /* __NVM_H__ */

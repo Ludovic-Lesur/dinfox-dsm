@@ -42,19 +42,29 @@ typedef void (*LBUS_rx_irq_cb)(uint8_t data);
  * \fn LBUS_status_t LBUS_init(NODE_address_t self_address)
  * \brief Init LBUS layer.
  * \param[in]  	self_address: RS485 address of the node.
+ * \param[in]  	irq_callback: Function to call on frame reception interrupt.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-LBUS_status_t LBUS_init(NODE_address_t self_address);
+LBUS_status_t LBUS_init(NODE_address_t self_address, LBUS_rx_irq_cb irq_callback);
 
 /*!******************************************************************
- * \fn void LBUS_set_rx_callback(LBUS_rx_irq_cb irq_callback)
- * \brief Set LBUS RX callback.
- * \param[in]  	irq_callback: Function to call on interrupt.
+ * \fn void LBUS_enable_rx(void)
+ * \brief Enable LBUS receiver.
+ * \param[in]  	none
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void LBUS_set_rx_callback(LBUS_rx_irq_cb irq_callback);
+void LBUS_enable_rx(void);
+
+/*!******************************************************************
+ * \fn void LBUS_disable_rx(void)
+ * \brief Disable LBUS receiver.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void LBUS_disable_rx(void);
 
 /*!******************************************************************
  * \fn LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes)
@@ -70,9 +80,9 @@ LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes);
 #define LBUS_check_status(error_base) { if (lbus_status != LBUS_SUCCESS) { status = error_base + lbus_status; goto errors; } }
 
 /*******************************************************************/
-#define LBUS_stack_error() { ERROR_stack_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
+#define LBUS_stack_error(void) { ERROR_stack_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
 
 /*******************************************************************/
-#define LBUS_print_error() { ERROR_print_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
+#define LBUS_print_error(void) { ERROR_print_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
 
 #endif /* __LBUS_H__ */

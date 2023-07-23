@@ -21,7 +21,7 @@
 
 /*** EXTI local global variables ***/
 
-static EXTI_gpio_irq_cb exti_gpio_irq_callbacks[GPIO_PINS_PER_PORT];
+static EXTI_gpio_irq_cb_t exti_gpio_irq_callbacks[GPIO_PINS_PER_PORT];
 
 /*** EXTI local functions ***/
 
@@ -87,7 +87,7 @@ void EXTI_init(void) {
 }
 
 /*******************************************************************/
-void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb irq_callback) {
+void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb_t irq_callback) {
 	// Select GPIO port.
 	SYSCFG -> EXTICR[((gpio -> pin) / 4)] &= ~(0b1111 << (4 * ((gpio -> pin) % 4)));
 	SYSCFG -> EXTICR[((gpio -> pin) / 4)] |= ((gpio -> port_index) << (4 * ((gpio -> pin) % 4)));

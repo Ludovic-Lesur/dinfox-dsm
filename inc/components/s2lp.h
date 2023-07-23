@@ -542,14 +542,14 @@ S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm);
 S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8_t function, S2LP_fifo_flag_direction_t fifo_flag_direction);
 
 /*!******************************************************************
- * \fn S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb irq_callback)
+ * \fn S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback)
  * \brief Configure and enable the NIRQ GPIO link between S2LP and MCU.
  * \param[in]  	fifo_flag_direction: FIFO flag direction.
  * \param[in]	irq_callback: Function to call on NIRQ event.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb irq_callback);
+S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback);
 
 /*!******************************************************************
  * \fn void S2LP_disable_nirq(void)
@@ -666,7 +666,7 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes);
 S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes);
 
 #define S2LP_check_status(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; }}
-#define S2LP_stack_error() { ERROR_stack_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
-#define S2LP_print_error() { ERROR_print_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
+#define S2LP_stack_error(void) { ERROR_stack_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
+#define S2LP_print_error(void) { ERROR_print_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
 
 #endif /* __S2LP_H__ */

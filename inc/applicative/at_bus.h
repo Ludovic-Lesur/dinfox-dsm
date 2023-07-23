@@ -18,13 +18,13 @@
 /*** AT functions ***/
 
 /*!******************************************************************
- * \fn void AT_BUS_init(NODE_address_t self_address)
+ * \fn void AT_BUS_init(void)
  * \brief Init AT BUS interface.
- * \param[in]  	self_address: RS485 address of the node.
+ * \param[in]  	none
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void AT_BUS_init(NODE_address_t self_address);
+void AT_BUS_init(void);
 
 /*!******************************************************************
  * \fn void AT_BUS_task(void)

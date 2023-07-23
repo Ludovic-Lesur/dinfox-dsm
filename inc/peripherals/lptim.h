@@ -61,9 +61,9 @@ LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t d
 #define LPTIM1_check_status(error_base) { if (lptim1_status != LPTIM_SUCCESS) { status = error_base + lptim1_status; goto errors; } }
 
 /*******************************************************************/
-#define LPTIM1_stack_error() { ERROR_stack_error(lptim1_status, LPTIM_SUCCESS, ERROR_BASE_LPTIM1); }
+#define LPTIM1_stack_error(void) { ERROR_stack_error(lptim1_status, LPTIM_SUCCESS, ERROR_BASE_LPTIM1); }
 
 /*******************************************************************/
-#define LPTIM1_print_error() { ERROR_print_error(lptim1_status, LPTIM_SUCCESS, ERROR_BASE_LPTIM1); }
+#define LPTIM1_print_error(void) { ERROR_print_error(lptim1_status, LPTIM_SUCCESS, ERROR_BASE_LPTIM1); }
 
 #endif /* __LPTIM_H__ */
