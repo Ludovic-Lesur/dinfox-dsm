@@ -13,6 +13,7 @@
 
 /*** POWER macros ***/
 
+#define POWER_ON_DELAY_MS_ANALOG	100
 #define POWER_ON_DELAY_MS_RADIO		200
 
 /*** POWER structures ***/
@@ -33,8 +34,9 @@ typedef enum {
  * \brief Board external power domains list.
  *******************************************************************/
 typedef enum {
+	POWER_DOMAIN_ANALOG = 0,
 #ifdef UHFM
-	POWER_DOMAIN_RADIO = 0,
+	POWER_DOMAIN_RADIO,
 #endif
 	POWER_DOMAIN_LAST
 } POWER_domain_t;

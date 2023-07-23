@@ -98,7 +98,6 @@ static void _XM_init_context(void) {
  */
 static void _XM_init_hw(void) {
 	// Local variables.
-	ADC_status_t adc1_status = ADC_SUCCESS;
 	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
 	LPUART_status_t lpuart1_status = LPUART_SUCCESS;
@@ -139,8 +138,6 @@ static void _XM_init_hw(void) {
 	NVM_stack_error();
 	// Init peripherals.
 	LPTIM1_init();
-	adc1_status = ADC1_init();
-	ADC1_stack_error();
 #ifdef UHFM
 	TIM2_init();
 #endif
@@ -187,11 +184,16 @@ static void _XM_init_hw(void) {
  */
 static void _XM_static_measurements(void) {
 	// Local variables.
+	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t input_voltage_mv = 0;
-	// Perform static analog measurements.
+	// Perform analog measurements.
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
+	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+	POWER_stack_error();
 	// Check input voltage.
 #ifdef LVRM
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &input_voltage_mv);

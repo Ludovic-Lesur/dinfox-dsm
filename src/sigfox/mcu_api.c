@@ -47,6 +47,7 @@
 #include "error.h"
 #include "mode.h"
 #include "nvm.h"
+#include "power.h"
 #include "tim.h"
 
 /*** MCU API local structures ***/
@@ -58,7 +59,8 @@ typedef enum {
 	MCU_API_ERROR_BASE_NVM = (MCU_API_ERROR_BASE_TIM2 + TIM_ERROR_BASE_LAST),
 	MCU_API_ERROR_BASE_AES = (MCU_API_ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
 	MCU_API_ERROR_BASE_ADC = (MCU_API_ERROR_BASE_AES + AES_ERROR_BASE_LAST),
-	MCU_API_ERROR_BASE_LAST = (MCU_API_ERROR_BASE_ADC + ADC_ERROR_BASE_LAST),
+	MCU_API_ERROR_BASE_POWER = (MCU_API_ERROR_BASE_ADC + ADC_ERROR_BASE_LAST),
+	MCU_API_ERROR_BASE_LAST = (MCU_API_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
 } MCU_API_custom_status_t;
 
 /*** MCU API functions ***/
@@ -275,12 +277,17 @@ errors:
 MCU_API_status_t MCU_API_get_voltage_temperature(sfx_u16 *voltage_idle_mv, sfx_u16 *voltage_tx_mv, sfx_s16 *temperature_tenth_degrees) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t mcu_supply_voltage_mv = 0;
 	int8_t mcu_temperature_degrees = 0;
-	// Perform measurements.
+	// Perform analog measurements.
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	POWER_check_status(MCU_API_ERROR_BASE_POWER);
 	adc1_status = ADC1_perform_measurements();
-	ADC1_check_status(MCU_API_ERROR_BASE_ADC);
+	ADC1_stack_error();
+	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+	POWER_check_status(MCU_API_ERROR_BASE_POWER);
 	// Get MCU supply voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &mcu_supply_voltage_mv);
 	ADC1_check_status(MCU_API_ERROR_BASE_ADC);

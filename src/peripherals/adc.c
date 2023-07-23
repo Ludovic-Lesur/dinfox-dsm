@@ -297,9 +297,6 @@ ADC_status_t ADC1_init(void) {
 	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
 	adc_ctx.tmcu_degrees = 0;
 	// Init GPIOs.
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-	GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-#endif
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined GPSM)
 	GPIO_configure(&GPIO_ADC1_IN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
@@ -316,7 +313,6 @@ ADC_status_t ADC1_init(void) {
 	GPIO_configure(&GPIO_ADC1_IN7, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef SM
-	GPIO_configure(&GPIO_ANA_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_AIN0, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_AIN1, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_AIN2, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -334,7 +330,7 @@ ADC_status_t ADC1_init(void) {
 	}
 	// Enable ADC voltage regulator.
 	ADC1 -> CR |= (0b1 << 28);
-	lptim1_status = LPTIM1_delay_milliseconds(5, LPTIM_DELAY_MODE_ACTIVE);
+	lptim1_status = LPTIM1_delay_milliseconds(ADC_INIT_DELAY_MS_REGULATOR, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_check_status(ADC_ERROR_BASE_LPTIM);
 	// ADC configuration.
 	ADC1 -> CFGR2 |= (0b01 << 30); // Use (PCLK2/2) as ADCCLK = SYSCLK/2 (see RCC_init() function).
@@ -349,16 +345,6 @@ ADC_status_t ADC1_init(void) {
 			break;
 		}
 	}
-errors:
-	return status;
-}
-
-/*******************************************************************/
-ADC_status_t ADC1_perform_measurements(void) {
-	// Local variables.
-	ADC_status_t status = ADC_SUCCESS;
-	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
-	uint32_t loop_count = 0;
 	// Enable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 0); // ADEN='1'.
 	while (((ADC1 -> ISR) & (0b1 << 0)) == 0) {
@@ -369,37 +355,35 @@ ADC_status_t ADC1_perform_measurements(void) {
 			goto errors;
 		}
 	}
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-	// Enable voltage dividers.
-	GPIO_write(&GPIO_MNTR_EN, 1);
-#endif
-#if (defined SM) && (defined SM_AIN_ENABLE)
-	// Turn analog front-end on.
-	GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
-#endif
 	// Wake-up VREFINT and temperature sensor.
 	ADC1 -> CCR |= (0b11 << 22); // TSEN='1' and VREFEN='1'.
-	// Wait for internal reference and voltage dividers stabilization.
-	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_ACTIVE);
+	// Wait for startup.
+	lptim1_status = LPTIM1_delay_milliseconds(ADC_INIT_DELAY_MS_VREF_TS, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_check_status(ADC_ERROR_BASE_LPTIM);
+errors:
+	return status;
+}
+
+/*******************************************************************/
+void ADC1_de_init(void) {
+	// Switch internal voltage reference off.
+	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
+	// Disable ADC peripheral.
+	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
+	// Disable peripheral clock.
+	RCC -> APB2ENR &= ~(0b1 << 9); // ADCEN='0'.
+}
+
+/*******************************************************************/
+ADC_status_t ADC1_perform_measurements(void) {
+	// Local variables.
+	ADC_status_t status = ADC_SUCCESS;
 	// Perform conversions.
 	status = _ADC1_compute_all_channels();
 	if (status != ADC_SUCCESS) goto errors;
 	status = _ADC1_compute_tmcu();
 	if (status != ADC_SUCCESS) goto errors;
 errors:
-	// Switch internal voltage reference off.
-	ADC1 -> CCR &= ~(0b11 << 22); // TSEN='0' and VREFEF='0'.
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-	// Disable voltage dividers.
-	GPIO_write(&GPIO_MNTR_EN, 0);
-#endif
-#if (defined SM) && (defined SM_AIN_ENABLE)
-	// Turn analog front-end off.
-	GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
-#endif
-	// Disable ADC peripheral.
-	ADC1 -> CR |= (0b1 << 1); // ADDIS='1'.
 	return status;
 }
 

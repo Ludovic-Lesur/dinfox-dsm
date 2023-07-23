@@ -423,6 +423,7 @@ NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
 	// Reset results.
@@ -430,9 +431,13 @@ NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
-	// Perform measurements.
+	// Perform analog measurements.
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
+	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+	POWER_stack_error();
 	// Update parameter.
 	if (adc_status != NULL) {
 		(*adc_status) = adc1_status;

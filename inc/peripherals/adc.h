@@ -13,6 +13,13 @@
 #include "mode.h"
 #include "types.h"
 
+/*** ADC macros ***/
+
+#define ADC_INIT_DELAY_MS_REGULATOR	5
+#define ADC_INIT_DELAY_MS_VREF_TS	10
+
+#define ADC_INIT_DELAY_MS			(ADC_DELAY_MS_REGULATOR + ADC_DELAY_MS_VREF_TS)
+
 /*** ADC structures ***/
 
 /*!******************************************************************
@@ -79,6 +86,15 @@ typedef enum {
  * \retval		Function execution status.
  *******************************************************************/
 ADC_status_t ADC1_init(void);
+
+/*!******************************************************************
+ * \fn void ADC1_de_init(void)
+ * \brief Release ADC peripheral.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void ADC1_de_init(void);
 
 /*!******************************************************************
  * \fn ADC_status_t ADC1_perform_measurements(void)

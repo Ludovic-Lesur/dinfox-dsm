@@ -586,6 +586,7 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t vrf_mv = 0;
 	uint32_t radio_test_0 = 0;
@@ -605,19 +606,17 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	NODE_stack_error();
 	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, UHFM_REG_RADIO_TEST_1_MASK_TX_POWER, (uint32_t) DINFOX_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM));
 	NODE_stack_error();
-#ifdef UHFM_FEATURE_CW
 	// Start CW.
 	node_status = _UHFM_cwen_callback(1);
 	NODE_stack_error();
-#endif
-	// Perform measurements in TX state.
+	// Perform analog measurements.
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
-#ifdef UHFM_FEATURE_CW
 	// Stop CW.
 	node_status = _UHFM_cwen_callback(0);
 	NODE_stack_error();
-#endif
 	// Check status.
 	if (adc1_status == ADC_SUCCESS) {
 		// VRF_TX.
@@ -628,19 +627,17 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 			NODE_stack_error();
 		}
 	}
-#ifdef UHFM_FEATURE_RSSI
 	// Start RX.
 	node_status = _UHFM_rsen_callback(1);
 	NODE_stack_error();
-#endif
 	// Perform measurements in RX state.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
-#ifdef UHFM_FEATURE_RSSI
+	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+	POWER_stack_error();
 	// Stop RX.
 	node_status = _UHFM_rsen_callback(0);
 	NODE_stack_error();
-#endif
 	// Update parameter.
 	if (adc_status != NULL) {
 		(*adc_status) = adc1_status;
