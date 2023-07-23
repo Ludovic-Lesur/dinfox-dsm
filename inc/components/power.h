@@ -15,6 +15,7 @@
 
 #define POWER_ON_DELAY_MS_ANALOG	100
 #define POWER_ON_DELAY_MS_RADIO		200
+#define POWER_ON_DELAY_MS_GPS		1000
 
 /*** POWER structures ***/
 
@@ -35,6 +36,9 @@ typedef enum {
  *******************************************************************/
 typedef enum {
 	POWER_DOMAIN_ANALOG = 0,
+#ifdef GPSM
+	POWER_DOMAIN_GPS,
+#endif
 #ifdef UHFM
 	POWER_DOMAIN_RADIO,
 #endif

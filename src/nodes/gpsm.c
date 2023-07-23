@@ -10,11 +10,11 @@
 #include "adc.h"
 #include "dinfox.h"
 #include "error.h"
+#include "gpsm_reg.h"
 #include "load.h"
 #include "neom8n.h"
-#include "gpsm_reg.h"
+#include "power.h"
 #include "node.h"
-#include "usart.h"
 
 /*** GPSM local macros ***/
 
@@ -63,17 +63,18 @@ static void _GPSM_reset_analog_data(void) {
 /*******************************************************************/
 static void _GPSM_power_control(uint8_t state) {
 	// Local variables.
-	USART_status_t usart2_status = USART_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	// Check on transition.
 	if ((state != 0) && (gpsm_flags.gps_power == 0)) {
 		// Turn GPS on.
-		usart2_status = USART2_power_on();
-		USART2_stack_error();
+		power_status = POWER_enable(POWER_DOMAIN_GPS, LPTIM_DELAY_MODE_STOP);
+		POWER_stack_error();
 	}
 	// Check on transition.
 	if ((state == 0) && (gpsm_flags.gps_power != 0)) {
 		// Turn GPS off.
-		USART2_power_off();
+		power_status = POWER_disable(POWER_DOMAIN_GPS);
+		POWER_stack_error();
 	}
 	// Update local flag.
 	gpsm_flags.gps_power = (state == 0) ? 0 : 1;
@@ -122,8 +123,8 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
+	NEOM8N_time_t gps_time;
 	uint32_t timeout_seconds = 0;
-	RTC_time_t gps_time;
 	uint32_t time_fix_duration = 0;
 	// Turn GPS on.
 	status = _GPSM_power_request(1);

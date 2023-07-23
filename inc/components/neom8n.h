@@ -10,7 +10,6 @@
 
 #include "lptim.h"
 #include "math.h"
-#include "rtc.h"
 #include "string.h"
 #include "types.h"
 #include "usart.h"
@@ -24,10 +23,11 @@
 typedef enum {
 	NEOM8N_SUCCESS = 0,
 	NEOM8N_ERROR_NULL_PARAMETER,
+	NEOM8N_ERROR_NMEA_FRAME_RECEPTION,
 	NEOM8N_ERROR_TIMEOUT,
 	NEOM8N_ERROR_CHECKSUM_INDEX,
 	NEOM8N_ERROR_CHECKSUM,
-	NEOM8N_ERROR_NMEA_FIELD_LENGTH,
+	NEOM8N_ERROR_NMEA_FIELD_SIZE,
 	NEOM8N_ERROR_NMEA_MESSAGE,
 	NEOM8N_ERROR_NMEA_NORTH_FLAG,
 	NEOM8N_ERROR_NMEA_EAST_FLAG,
@@ -40,10 +40,24 @@ typedef enum {
 	NEOM8N_ERROR_TIMEPULSE_DUTY_CYCLE,
 	NEOM8N_ERROR_BASE_USART = 0x0100,
 	NEOM8N_ERROR_BASE_LPTIM = (NEOM8N_ERROR_BASE_USART + USART_ERROR_BASE_LAST),
-	NEOM8N_ERROR_BASE_RTC = (NEOM8N_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST),
-	NEOM8N_ERROR_BASE_STRING = (NEOM8N_ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
+	NEOM8N_ERROR_BASE_STRING = (NEOM8N_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST),
 	NEOM8N_ERROR_BASE_LAST = (NEOM8N_ERROR_BASE_STRING + STRING_ERROR_BASE_LAST)
 } NEOM8N_status_t;
+
+/*!******************************************************************
+ * \enum NEOM8N_time_t
+ * \brief GPS time data.
+ *******************************************************************/
+typedef struct {
+	// Date.
+	uint16_t year;
+	uint8_t month;
+	uint8_t date;
+	// Time.
+	uint8_t hours;
+	uint8_t minutes;
+	uint8_t seconds;
+} NEOM8N_time_t;
 
 /*!******************************************************************
  * \enum NEOM8N_position_t
@@ -89,6 +103,17 @@ void NEOM8N_init(void);
 
 #ifdef GPSM
 /*!******************************************************************
+ * \fn void NEOM8N_de_init(void)
+ * \brief Release NEOM8N interface.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void NEOM8N_de_init(void);
+#endif
+
+#ifdef GPSM
+/*!******************************************************************
  * \fn void NEOM8N_set_backup(uint8_t state)
  * \brief Set NEOM8N backup voltage state.
  * \param[in]  	state: Backup voltage state.
@@ -118,7 +143,7 @@ uint8_t NEOM8N_get_backup(void);
  * \param[out]	fix_duration_seconds: Pointer to integer that will contain GPS fix duration in seconds.
  * \retval		Function execution status.
  *******************************************************************/
-NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds);
+NEOM8N_status_t NEOM8N_get_time(NEOM8N_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds);
 #endif
 
 #ifdef GPSM

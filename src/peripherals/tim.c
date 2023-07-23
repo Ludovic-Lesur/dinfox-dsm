@@ -156,7 +156,7 @@ void TIM2_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
 	RCC -> APB1SMENR |= (0b1 << 0); // TIM2SMEN='1'.
-	// Use LSE/32 = 1024Hz as trigger (external clock mode 2).
+	// Use LSE/16 = 2048Hz as trigger (external clock mode 2).
 	TIM2 -> PSC = (TIM2_ETRF_PRESCALER - 1);
 	TIM2 -> SMCR |= (0b1 << 14) | (0b111 << 4);
 	TIM2 -> OR |= (0b101 << 0);

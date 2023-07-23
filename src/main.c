@@ -152,7 +152,6 @@ static void _XM_init_hw(void) {
 #endif
 #ifdef GPSM
 	USART2_init();
-	DMA1_CH6_init();
 #endif
 	// Init components.
 	POWER_init();

@@ -47,7 +47,7 @@ void __attribute__((optimize("-O0"))) DMA1_Channel4_5_6_7_IRQHandler(void) {
 	if (((DMA1 -> ISR) & (0b1 << 21)) != 0) {
 		// Switch DMA buffer without decoding.
 		if ((((DMA1 -> CCR6) & (0b1 << 1)) != 0) && (dma1_ch6_tc_irq_callback != NULL)) {
-			dma1_ch6_tc_irq_callback(0);
+			dma1_ch6_tc_irq_callback();
 		}
 		// Clear flag.
 		DMA1 -> IFCR |= (0b1 << 21); // CTCIF6='1'.
@@ -129,7 +129,7 @@ uint8_t DMA1_CH3_get_transfer_status(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void DMA1_CH6_init(void) {
+void DMA1_CH6_init(DMA_transfer_complete_irq_cb irq_callback) {
 	// Enable peripheral clock.
 	RCC -> AHBENR |= (0b1 << 0); // DMAEN='1'.
 	// Memory and peripheral data size are 8 bits (MSIZE='00' and PSIZE='00').
@@ -142,17 +142,21 @@ void DMA1_CH6_init(void) {
 	// Enable transfer complete interrupt (TCIE='1').
 	DMA1 -> CCR6 |= (0b11 << 12) | (0b1 << 7) | (0b1 << 1);
 	// Configure peripheral address.
-	DMA1 -> CPAR6 = (uint32_t) &(USART2 -> RDR); // Peripheral address = LPUART RX register.
+	DMA1 -> CPAR6 = (uint32_t) &(USART2 -> RDR); // Peripheral address = USART2 RX register.
 	// Configure channel 3 for USART2 RX (request number 4).
 	DMA1 -> CSELR |= (0b0100 << 20); // DMA channel mapped on USART2_RX (C6S='0100').
+	// Register callback.
+	dma1_ch6_tc_irq_callback = irq_callback;
 }
 #endif
 
 #ifdef GPSM
 /*******************************************************************/
-void DMA1_CH6_set_transfer_complete_callback(DMA_transfer_complete_irq_cb irq_callback) {
-	// Register callback.
-	dma1_ch6_tc_irq_callback = irq_callback;
+void DMA1_CH6_de_init(void) {
+	// Disable channel.
+	DMA1 -> CCR6 &= ~(0b1 << 0); // EN='0'.
+	// Disable peripheral clock.
+	RCC -> AHBENR &= ~(0b1 << 0); // DMAEN='0'.
 }
 #endif
 

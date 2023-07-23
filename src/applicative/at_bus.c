@@ -1174,7 +1174,7 @@ static void _AT_BUS_time_callback(void) {
 		// Fix duration.
 		node_status = NODE_read_field(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIME_DATA_2, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION, &generic_u32);
 		NODE_print_error();
-		_AT_BUS_reply_add_string(" (fix ");
+		_AT_BUS_reply_add_string(" UTC (fix ");
 		_AT_BUS_reply_add_value((int32_t) generic_u32, STRING_FORMAT_DECIMAL, 0);
 		_AT_BUS_reply_add_string("s)");
 	}
