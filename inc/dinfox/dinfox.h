@@ -108,16 +108,22 @@ typedef uint16_t DINFOX_current_representation_t;
  *******************************************************************/
 typedef uint8_t DINFOX_rf_power_representation_t;
 
+/*!******************************************************************
+ * \type DINFOX_year_representation_t
+ * \brief DINFox year representation type.
+ *******************************************************************/
+typedef uint8_t DINFOX_year_representation_t;
+
 /*** DINFOX functions ***/
 
 /*!******************************************************************
- * \fn uint8_t DINFOX_get_field_offset(uint32_t field_mask)
+ * \fn uint8_t DINFOX_get_shift(uint32_t field_mask)
  * \brief Get the field offset of a bit mask.
  * \param[in]  	field_mask: Register field mask.
  * \param[out] 	none
  * \retval		Field offset expressed in bit index.
  *******************************************************************/
-uint8_t DINFOX_get_field_offset(uint32_t field_mask);
+uint8_t DINFOX_get_shift(uint32_t field_mask);
 
 /*!******************************************************************
  * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask)
@@ -125,10 +131,10 @@ uint8_t DINFOX_get_field_offset(uint32_t field_mask);
  * \param[in]  	reg_value: Pointer to the register value.
  * \param[in]	field_value: Field value to write.
  * \param[in]	field_mask: Field mask.
- * \param[out] 	none
+ * \param[out] 	reg_mask: Pointer to the new register mask.
  * \retval		none
  *******************************************************************/
-void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask);
+void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask);
 
 /*!******************************************************************
  * \fn uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask)
@@ -233,7 +239,7 @@ uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current);
 
 /*!******************************************************************
  * \fn DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm)
- * \brief Convert an RF oower to DINFox representation.
+ * \brief Convert an RF power to DINFox representation.
  * \param[in]  	rf_power_dbm: Value to convert
  * \param[out] 	none
  * \retval		DINFox representation.
@@ -248,5 +254,23 @@ DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm);
  * \retval		Converted RF power value in dBm.
  *******************************************************************/
 int16_t DINFOX_get_dbm(DINFOX_rf_power_representation_t dinfox_rf_power);
+
+/*!******************************************************************
+ * \fn DINFOX_year_representation_t DINFOX_convert_year(uint16_t year)
+ * \brief Convert a year to DINFox representation.
+ * \param[in]  	year: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_year_representation_t DINFOX_convert_year(uint16_t year);
+
+/*!******************************************************************
+ * \fn uint16_t DINFOX_get_year(DINFOX_year_representation_t dinfox_year)
+ * \brief Convert a DINFox representation to year.
+ * \param[in]  	dinfox_year: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted year value.
+ *******************************************************************/
+uint16_t DINFOX_get_year(DINFOX_year_representation_t dinfox_year);
 
 #endif /* __DINFOX_H__ */

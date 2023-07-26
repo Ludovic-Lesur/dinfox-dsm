@@ -29,9 +29,6 @@
 #include "led.h"
 #include "load.h"
 #include "neom8n.h"
-// Nodes.
-#include "lbus.h"
-#include "node.h"
 // Applicative.
 #include "at_bus.h"
 #include "error.h"
@@ -149,8 +146,6 @@ static void _XM_init_hw(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 	LED_init();
 #endif
-	// Init registers.
-	NODE_init();
 	// Init ATBUS layer.
 	AT_BUS_init();
 }

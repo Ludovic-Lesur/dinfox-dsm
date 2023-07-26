@@ -16,11 +16,11 @@
 /*!******************************************************************
  * \fn void COMMON_init_registers(void)
  * \brief Init common registers to their default value.
- * \param[in]  	none
+ * \param[in]  	self_address: RS485 address of the node.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void COMMON_init_registers(void);
+void COMMON_init_registers(NODE_address_t self_address);
 
 /*!******************************************************************
  * \fn NODE_status_t COMMON_update_register(uint8_t reg_addr)

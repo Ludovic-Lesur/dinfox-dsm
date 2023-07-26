@@ -5,7 +5,7 @@
  *      Author: Ludo
  */
 
-#include "bpsm.h"
+#include "sm.h"
 
 #include "adc.h"
 #include "i2c.h"
@@ -24,18 +24,27 @@
 static void _SM_reset_analog_data(void) {
 	// Local variables.
 	NODE_status_t node_status = NODE_SUCCESS;
+	uint32_t analog_data_1 = 0;
+	uint32_t analog_data_1_mask = 0;
+	uint32_t analog_data_2 = 0;
+	uint32_t analog_data_2_mask = 0;
+	uint32_t analog_data_3 = 0;
+	uint32_t analog_data_3_mask = 0;
 	// Reset fields to error value.
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, DINFOX_VOLTAGE_ERROR_VALUE);
+	// AIN0 / AIN1.
+	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, SM_REG_ANALOG_DATA_1_MASK_VAIN0);
+	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, SM_REG_ANALOG_DATA_1_MASK_VAIN1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
 	NODE_stack_error();
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, DINFOX_VOLTAGE_ERROR_VALUE);
+	// AIN2 / AIN3.
+	DINFOX_write_field(&analog_data_2, &analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, SM_REG_ANALOG_DATA_2_MASK_VAIN2);
+	DINFOX_write_field(&analog_data_2, &analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, SM_REG_ANALOG_DATA_2_MASK_VAIN3);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
 	NODE_stack_error();
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, DINFOX_VOLTAGE_ERROR_VALUE);
-	NODE_stack_error();
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, DINFOX_VOLTAGE_ERROR_VALUE);
-	NODE_stack_error();
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_TAMB, DINFOX_TEMPERATURE_ERROR_VALUE);
-	NODE_stack_error();
-	node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_HAMB, DINFOX_HUMIDITY_ERROR_VALUE);
+	// TAMB / HAMB.
+	DINFOX_write_field(&analog_data_3, &analog_data_3_mask, DINFOX_TEMPERATURE_ERROR_VALUE, SM_REG_ANALOG_DATA_3_MASK_TAMB);
+	DINFOX_write_field(&analog_data_3, &analog_data_3_mask, DINFOX_HUMIDITY_ERROR_VALUE, SM_REG_ANALOG_DATA_3_MASK_HAMB);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, analog_data_3_mask, analog_data_3);
 	NODE_stack_error();
 }
 #endif
@@ -80,15 +89,23 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	uint32_t analog_data_1 = 0;
+	uint32_t analog_data_1_mask = 0;
+	uint32_t analog_data_2 = 0;
+	uint32_t analog_data_2_mask = 0;
 #endif
 #ifdef SM_DIO_ENABLE
 	DIGITAL_status_t digital_status = DIGITAL_SUCCESS;
 	uint8_t state = 0;
+	uint32_t digital_data = 0;
+	uint32_t digital_data_mask = 0;
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
 	SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 	int8_t tamb_degrees = 0;
 	uint8_t hamb_percent = 0;
+	uint32_t analog_data_3 = 0;
+	uint32_t analog_data_3_mask = 0;
 #endif
 	// Reset results.
 	_SM_reset_analog_data();
@@ -110,30 +127,31 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN0_MV, &adc_data);
 		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), SM_REG_ANALOG_DATA_1_MASK_VAIN0);
 		}
 		// AIN0.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN1_MV, &adc_data);
 		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, SM_REG_ANALOG_DATA_1_MASK_VAIN1, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), SM_REG_ANALOG_DATA_1_MASK_VAIN1);
 		}
+		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
+		NODE_stack_error();
 		// AIN2.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN2_MV, &adc_data);
 		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_2, &analog_data_2_mask, (uint32_t) DINFOX_convert_mv(adc_data), SM_REG_ANALOG_DATA_2_MASK_VAIN2);
 		}
 		// AIN3.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_AIN3_MV, &adc_data);
 		ADC1_stack_error();
 		if (adc1_status == ADC_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, SM_REG_ANALOG_DATA_2_MASK_VAIN3, (uint32_t) DINFOX_convert_mv(adc_data));
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_2, &analog_data_2_mask, (uint32_t) DINFOX_convert_mv(adc_data), SM_REG_ANALOG_DATA_2_MASK_VAIN3);
 		}
+		// Write register.
+		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
+		NODE_stack_error();
 	}
 #endif
 #ifdef SM_DIO_ENABLE
@@ -145,30 +163,29 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 		digital_status = DIGITAL_read(DIGITAL_DATA_INDEX_DIO0, &state);
 		DIGITAL_stack_error();
 		if (digital_status == DIGITAL_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, SM_REG_DIGITAL_DATA_MASK_DIO0, (uint32_t) state);
-			NODE_stack_error();
+			DINFOX_write_field(&digital_data, &digital_data_mask, (uint32_t) state, SM_REG_DIGITAL_DATA_MASK_DIO0);
 		}
 		// DIO1.
 		digital_status = DIGITAL_read(DIGITAL_DATA_INDEX_DIO1, &state);
 		DIGITAL_stack_error();
 		if (digital_status == DIGITAL_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, SM_REG_DIGITAL_DATA_MASK_DIO1, (uint32_t) state);
-			NODE_stack_error();
+			DINFOX_write_field(&digital_data, &digital_data_mask, (uint32_t) state, SM_REG_DIGITAL_DATA_MASK_DIO1);
 		}
 		// DIO2.
 		digital_status = DIGITAL_read(DIGITAL_DATA_INDEX_DIO2, &state);
 		DIGITAL_stack_error();
 		if (digital_status == DIGITAL_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, SM_REG_DIGITAL_DATA_MASK_DIO2, (uint32_t) state);
-			NODE_stack_error();
+			DINFOX_write_field(&digital_data, &digital_data_mask, (uint32_t) state, SM_REG_DIGITAL_DATA_MASK_DIO2);
 		}
 		// DIO3.
 		digital_status = DIGITAL_read(DIGITAL_DATA_INDEX_DIO3, &state);
 		DIGITAL_stack_error();
 		if (digital_status == DIGITAL_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, SM_REG_DIGITAL_DATA_MASK_DIO3, (uint32_t) state);
-			NODE_stack_error();
+			DINFOX_write_field(&digital_data, &digital_data_mask, (uint32_t) state, SM_REG_DIGITAL_DATA_MASK_DIO3);
 		}
+		// Write register.
+		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, digital_data_mask, digital_data);
+		NODE_stack_error();
 	}
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
@@ -184,16 +201,17 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 		sht3x_status = SHT3X_get_temperature(&tamb_degrees);
 		SHT3X_stack_error();
 		if (sht3x_status == SHT3X_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_TAMB, (uint32_t) DINFOX_convert_degrees(tamb_degrees));
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_3, &analog_data_3_mask, (uint32_t) DINFOX_convert_degrees(tamb_degrees), SM_REG_ANALOG_DATA_3_MASK_TAMB);
 		}
 		// Tamb.
 		sht3x_status = SHT3X_get_humidity(&hamb_percent);
 		SHT3X_stack_error();
 		if (sht3x_status == SHT3X_SUCCESS) {
-			node_status = NODE_write_field(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, SM_REG_ANALOG_DATA_3_MASK_HAMB, (uint32_t) hamb_percent);
-			NODE_stack_error();
+			DINFOX_write_field(&analog_data_3, &analog_data_3_mask, (uint32_t) hamb_percent, SM_REG_ANALOG_DATA_3_MASK_HAMB);
 		}
+		// Write register.
+		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_3, analog_data_3_mask, analog_data_3);
+		NODE_stack_error();
 	}
 #endif
 	return status;

@@ -38,6 +38,8 @@
 
 #define DINFOX_RF_POWER_OFFSET				174
 
+#define DINFOX_YEAR_OFFSET					2000
+
 /*** DINFOX local structures ***/
 
 /*******************************************************************/
@@ -107,12 +109,12 @@ typedef union {
 /*** DINFOX functions ***/
 
 /*******************************************************************/
-uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
+uint8_t DINFOX_get_shift(uint32_t field_mask) {
 	// Local variables.
 	uint8_t offset = 0;
 	// Compute shift according to mask.
 	for (offset=0 ; offset<(8 * DINFOX_REG_SIZE_BYTES) ; offset++) {
-		if ((field_mask & (0b1 << offset)) != 0) {
+		if (((field_mask >> offset) & 0x01) != 0) {
 			break;
 		}
 	}
@@ -120,17 +122,19 @@ uint8_t DINFOX_get_field_offset(uint32_t field_mask) {
 }
 
 /*******************************************************************/
-void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask) {
+void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask) {
 	// Reset bits.
 	(*reg_value) &= ~(field_mask);
 	// Set field.
-	(*reg_value) |= ((field_value << DINFOX_get_field_offset(field_mask)) & field_mask);
+	(*reg_value) |= ((field_value << DINFOX_get_shift(field_mask)) & field_mask);
+	// Update mask.
+	(*reg_mask) |= field_mask;
 }
 
 /*******************************************************************/
 uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask) {
 	// Isolate field.
-	return ((reg_value & field_mask) >> DINFOX_get_field_offset(field_mask));
+	return ((reg_value & field_mask) >> DINFOX_get_shift(field_mask));
 }
 
 /*******************************************************************/
@@ -245,7 +249,7 @@ DINFOX_temperature_representation_t DINFOX_convert_degrees(int8_t temperature_de
 	int32_t temp_degrees = (int32_t) temperature_degrees;
 	// DINFox representation is equivalent to signed magnitude
 	MATH_int32_to_signed_magnitude(temp_degrees, DINFOX_TEMPERATURE_VALUE_SIZE_BITS, &dinfox_temperature);
-	return ((uint8_t) dinfox_temperature);
+	return ((DINFOX_temperature_representation_t) dinfox_temperature);
 }
 
 /*******************************************************************/
@@ -359,4 +363,14 @@ DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm) {
 /*******************************************************************/
 int16_t DINFOX_get_dbm(DINFOX_rf_power_representation_t dinfox_rf_power) {
 	return ((uint16_t) (dinfox_rf_power - DINFOX_RF_POWER_OFFSET));
+}
+
+/*******************************************************************/
+DINFOX_year_representation_t DINFOX_convert_year(uint16_t year) {
+	return ((uint8_t) (year - DINFOX_YEAR_OFFSET));
+}
+
+/*******************************************************************/
+uint16_t DINFOX_get_year(DINFOX_year_representation_t dinfox_year) {
+	return ((uint16_t) (dinfox_year + DINFOX_YEAR_OFFSET));
 }

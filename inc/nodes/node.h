@@ -55,11 +55,11 @@ typedef enum {
 /*!******************************************************************
  * \fn void NODE_init(void)
  * \brief Init node registers to their default value.
- * \param[in]  	none
+ * \param[in]  	self_address: RS485 address of the node.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void NODE_init(void);
+void NODE_init(NODE_address_t self_address);
 
 /*!******************************************************************
  * \fn NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value)
@@ -70,17 +70,6 @@ void NODE_init(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value);
-
-/*!******************************************************************
- * \fn NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t* field_value)
- * \brief Read node register field.
- * \param[in]  	request_source: Request source.
- * \param[in]	reg_addr: Address of the register to read.
- * \param[in]	field_mask: Field mask.
- * \param[out] 	field_value: Pointer to byte that will contain the field value.
- * \retval		Function execution status.
- *******************************************************************/
-NODE_status_t NODE_read_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t* field_value);
 
 /*!******************************************************************
  * \fn NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
@@ -104,18 +93,6 @@ NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value);
-
-/*!******************************************************************
- * \fn NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value)
- * \brief Write node register field.
- * \param[in]  	request_source: Request source.
- * \param[in]	reg_addr: Address of the register to write.
- * \param[in]	field_mask: Field mask.
- * \param[in] 	field_value: Value to write in field.
- * \param[out]	none
- * \retval		Function execution status.
- *******************************************************************/
-NODE_status_t NODE_write_field(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t field_mask, uint32_t field_value);
 
 /*!******************************************************************
  * \fn NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
