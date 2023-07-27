@@ -64,12 +64,6 @@ errors:
 /*** NVM functions ***/
 
 /*******************************************************************/
-void NVM_init(void) {
-	// Enable NVM peripheral.
-	RCC -> AHBENR |= (0b1 << 8); // MIFEN='1'.
-}
-
-/*******************************************************************/
 NVM_status_t NVM_read_byte(NVM_address_t address, uint8_t* data) {
 	// Local variables.
 	NVM_status_t status = NVM_SUCCESS;
@@ -82,6 +76,8 @@ NVM_status_t NVM_read_byte(NVM_address_t address, uint8_t* data) {
 		status = NVM_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
+	// Enable peripheral.
+	RCC -> AHBENR |= (0b1 << 8); // MIFEN='1'.
 	// Unlock NVM.
 	status = _NVM_unlock();
 	if (status != NVM_SUCCESS) goto errors;
@@ -90,6 +86,8 @@ NVM_status_t NVM_read_byte(NVM_address_t address, uint8_t* data) {
 	// Lock NVM.
 	status = _NVM_lock();
 errors:
+	// Disable peripheral.
+	RCC -> AHBENR &= ~(0b1 << 8); // MIFEN='0'.
 	return status;
 }
 
@@ -103,6 +101,8 @@ NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data) {
 		status = NVM_ERROR_ADDRESS;
 		goto errors;
 	}
+	// Enable peripheral.
+	RCC -> AHBENR |= (0b1 << 8); // MIFEN='1'.
 	// Unlock NVM.
 	status = _NVM_unlock();
 	if (status != NVM_SUCCESS) goto errors;
@@ -120,5 +120,7 @@ NVM_status_t NVM_write_byte(NVM_address_t address, uint8_t data) {
 	// Lock NVM.
 	status = _NVM_lock();
 errors:
+	// Disable peripheral.
+	RCC -> AHBENR &= ~(0b1 << 8); // MIFEN='0'.
 	return status;
 }

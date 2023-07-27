@@ -27,10 +27,8 @@ void PWR_init(void) {
 	FLASH -> ACR |= (0b1 << 3); // SLEEP_PD='1'.
 	// Use HSI clock when waking-up from stop mode.
 	RCC -> CFGR |= (0b1 << 15);
-	// Switch internal voltage reference off in low power mode.
-	PWR -> CR |= (0b1 << 9); // ULP='1'.
-	// Ignore internal voltage reference startup time on wake-up.
-	PWR -> CR |= (0b1 << 10); // FWU='1'.
+	// Switch internal voltage reference off in low power mode and ignore startup time.
+	PWR -> CR |= (0b11 << 9); // ULP='1' and FWU='1'.
 	// Never return in low power sleep mode after wake-up.
 	SCB -> SCR &= ~(0b1 << 1); // SLEEPONEXIT='0'.
 }

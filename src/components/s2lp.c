@@ -899,6 +899,8 @@ errors:
 void S2LP_disable_nirq(void) {
 	// Disable interrupt.
 	NVIC_disable_interrupt(NVIC_INTERRUPT_EXTI_4_15);
+	// Release GPIO.
+	EXTI_release_gpio(&GPIO_S2LP_GPIO0);
 }
 
 /*******************************************************************/

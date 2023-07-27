@@ -45,6 +45,7 @@
 /*** MAIN local structures ***/
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+/*******************************************************************/
 typedef struct {
 	uint32_t threshold_ua;
 	LED_color_t led_color;
@@ -52,6 +53,7 @@ typedef struct {
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+/*******************************************************************/
 typedef struct {
 	uint32_t static_measurements_seconds_count;
 	uint32_t iout_indicator_seconds_count;
@@ -77,10 +79,7 @@ static XM_context_t xm_ctx;
 /*** MAIN local functions ***/
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* COMMON INIT FUNCTION FOR MAIN CONTEXT.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _XM_init_context(void) {
 	// Init context.
 	xm_ctx.static_measurements_seconds_count = 0;
@@ -89,10 +88,7 @@ static void _XM_init_context(void) {
 }
 #endif
 
-/* COMMON INIT FUNCTION FOR PERIPHERALS AND COMPONENTS.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _XM_init_hw(void) {
 	// Local variables.
 	RCC_status_t rcc_status = RCC_SUCCESS;
@@ -100,41 +96,29 @@ static void _XM_init_hw(void) {
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
-	// Init error stack
-	ERROR_stack_init();
 	// Init memory.
 	NVIC_init();
-	NVM_init();
+	// Init power module and clock tree.
+	PWR_init();
+	RCC_init();
 	// Init GPIOs.
 	GPIO_init();
 	EXTI_init();
-	// Init power and clock modules.
-	PWR_init();
-	RCC_init();
-	RCC_enable_lsi();
 	// Init watchdog.
 #ifndef DEBUG
 	iwdg_status = IWDG_init();
 	IWDG_stack_error();
 #endif
+	// Init error stack
+	ERROR_stack_init();
 	// High speed oscillator.
-	IWDG_reload();
 	rcc_status = RCC_switch_to_hsi();
 	RCC_stack_error();
 	// Init RTC.
-	RTC_reset();
-	RCC_enable_lse();
 	rtc_status = RTC_init();
 	RTC_stack_error();
-	// Init peripherals.
+	// Init delay timer.
 	LPTIM1_init();
-#ifdef UHFM
-	TIM2_init();
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	TIM2_init();
-	TIM21_init();
-#endif
 	// Init components.
 	POWER_init();
 #ifdef SM
@@ -146,15 +130,12 @@ static void _XM_init_hw(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 	LED_init();
 #endif
-	// Init ATBUS layer.
+	// Init AT BUS layer.
 	AT_BUS_init();
 }
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* UPDATE MEASUREMENTS PERIOD ACCORDING TO INPUT VOLTAGE.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _XM_static_measurements(void) {
 	// Local variables.
 	POWER_status_t power_status = POWER_SUCCESS;
@@ -184,10 +165,7 @@ static void _XM_static_measurements(void) {
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
-/* MAKE IOUT INDICATOR BLINK.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 static void _XM_iout_indicator(void) {
 	// Local variables.
 	ADC_status_t adc1_status = ADC_SUCCESS;
@@ -214,24 +192,16 @@ static void _XM_iout_indicator(void) {
 
 /*** MAIN function ***/
 
-/* MAIN FUNCTION.
- * @param:	None.
- * @return:	None.
- */
+/*******************************************************************/
 int main(void) {
 	// Init board.
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	_XM_init_context();
 #endif
 	_XM_init_hw();
-	// Local variables.
-	RTC_status_t rtc_status = RTC_SUCCESS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 	_XM_static_measurements();
 #endif
-	// Start periodic wakeup timer.
-	rtc_status = RTC_start_wakeup_timer(RTC_WAKEUP_PERIOD_SECONDS);
-	RTC_stack_error();
 	// Main loop.
 	while (1) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

@@ -88,6 +88,15 @@ void EXTI_init(void);
 void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb_t irq_callback);
 
 /*!******************************************************************
+ * \fn void EXTI_release_gpio(const GPIO_pin_t* gpio)
+ * \brief Release GPIO external interrupt.
+ * \param[in]  	gpio: GPIO to release.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void EXTI_release_gpio(const GPIO_pin_t* gpio);
+
+/*!******************************************************************
  * \fn void EXTI_configure_line(EXTI_line_t line, EXTI_trigger_t trigger)
  * \brief Configure EXTI line interrupt.
  * \param[in]  	line: Line to configure as interrupt input.

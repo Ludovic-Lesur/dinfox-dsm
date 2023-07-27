@@ -233,8 +233,10 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 	ADC_status_t status = ADC_SUCCESS;
 	uint8_t idx = 0;
 	uint32_t voltage_12bits = 0;
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 	uint64_t num = 0;
 	uint64_t den = 0;
+#endif
 	// Channels loop.
 	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) {
 		// Get raw result.
@@ -253,9 +255,12 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 		case ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION:
 			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits * ADC_INPUTS[idx].gain) / (adc_ctx.vrefint_12bits);
 			break;
+#ifdef SM
 		case ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION:
 			adc_ctx.data[idx] = (ADC_VREFINT_VOLTAGE_MV * voltage_12bits) / (adc_ctx.vrefint_12bits * ADC_INPUTS[idx].gain);
 			break;
+#endif
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 		case ADC_CONVERSION_TYPE_LT6106:
 			// Current conversion.
 			num = voltage_12bits;
@@ -273,6 +278,7 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 				adc_ctx.data[idx] -= ADC_LT6106_OFFSET_CURRENT_UA;
 			}
 			break;
+#endif
 		default:
 			status = ADC_ERROR_CONVERSION_TYPE;
 			goto errors;

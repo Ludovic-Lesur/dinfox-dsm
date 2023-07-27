@@ -74,8 +74,6 @@ LBUS_status_t LBUS_init(NODE_address_t self_address, LBUS_rx_irq_cb irq_callback
 		status = LBUS_ERROR_ADDRESS;
 		goto errors;
 	}
-	// Init LPUART.
-	LPUART1_init(self_address, &_LBUS_fill_rx_buffer);
 	// Init context.
 	lbus_ctx.self_address = self_address;
 	lbus_ctx.master_address = (DINFOX_NODE_ADDRESS_DMM | LBUS_DESTINATION_ADDRESS_MARKER);
@@ -83,6 +81,8 @@ LBUS_status_t LBUS_init(NODE_address_t self_address, LBUS_rx_irq_cb irq_callback
 	lbus_ctx.rx_irq_callback = NULL;
 	// Register callback.
 	lbus_ctx.rx_irq_callback = irq_callback;
+	// Init LPUART.
+	LPUART1_init(self_address, &_LBUS_fill_rx_buffer);
 errors:
 	return status;
 }

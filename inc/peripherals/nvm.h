@@ -48,15 +48,6 @@ typedef enum {
 /*** NVM functions ***/
 
 /*!******************************************************************
- * \fn void NVM_init(void)
- * \brief Init NVM interface.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void NVM_init(void);
-
-/*!******************************************************************
  * \fn NVM_status_t NVM_read_byte(NVM_address_t address_offset, uint8_t* data)
  * \brief Read byte in NVM.
  * \param[in]  	address: Address to read.

@@ -20,27 +20,57 @@
 /*** RCC local global variables ***/
 
 static const uint32_t msi_range_frequency_khz[RCC_MSI_RANGE_LAST] = {65, 131, 262, 524, 1048, 2097, 4194};
-static uint32_t rcc_sysclk_khz;
+static uint32_t rcc_sysclk_khz = msi_range_frequency_khz[RCC_MSI_RANGE_5_2MHZ];
 
 /*** RCC local functions ***/
 
 /*******************************************************************/
-void RCC_IRQHandler(void) {
+void __attribute__((optimize("-O0"))) RCC_IRQHandler(void) {
 	// Clear all flags.
 	RCC -> CICR |= (0b11 << 0);
+}
+
+/*******************************************************************/
+void _RCC_enable_lsi(void) {
+	// Enable LSI.
+	RCC -> CSR |= (0b1 << 0); // LSION='1'.
+	// Enable interrupt.
+	RCC -> CIER |= (0b1 << 0);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS, NVIC_PRIORTY_RCC_CRS);
+	// Wait for LSI to be stable.
+	while (((RCC -> CSR) & (0b1 << 1)) == 0) {
+		PWR_enter_sleep_mode();
+	}
+	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
+}
+
+/*******************************************************************/
+void _RCC_enable_lse(void) {
+	// Enable LSE (32.768kHz crystal).
+	RCC -> CSR |= (0b1 << 8); // LSEON='1'.
+	// Enable interrupt.
+	RCC -> CIER |= (0b1 << 1);
+	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS, NVIC_PRIORTY_RCC_CRS);
+	// Wait for LSE to be stable.
+	while (((RCC -> CSR) & (0b1 << 9)) == 0) {
+		PWR_enter_sleep_mode();
+	}
+	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 }
 
 /*** RCC functions ***/
 
 /*******************************************************************/
-void RCC_init(void) {
-	// Default prescalers (HCLK, PCLK1 and PCLK2 must not exceed 32MHz).
-	// HCLK = SYSCLK = 16MHz (HPRE='0000').
-	// PCLK1 = HCLK = 16MHz (PPRE1='000').
-	// PCLK2 = HCLK = 16MHz (PPRE2='000').
-	// All peripherals clocked via the corresponding APBx line.
-	// Reset clock is MSI 2.1MHz.
-	rcc_sysclk_khz = msi_range_frequency_khz[RCC_MSI_RANGE_5_2MHZ];
+void __attribute__((optimize("-O0"))) RCC_init(void) {
+	// Local variables.
+	uint8_t i = 0;
+	// Reset backup domain.
+	RCC -> CSR |= (0b1 << 19); // RTCRST='1'.
+	for (i=0 ; i<100 ; i++);
+	RCC -> CSR &= ~(0b1 << 19); // RTCRST='0'.
+	// Enable low speed oscillators.
+	_RCC_enable_lsi();
+	_RCC_enable_lse();
 }
 
 /*******************************************************************/
@@ -134,32 +164,4 @@ errors:
 /*******************************************************************/
 uint32_t RCC_get_sysclk_khz(void) {
 	return rcc_sysclk_khz;
-}
-
-/*******************************************************************/
-void RCC_enable_lsi(void) {
-	// Enable LSI.
-	RCC -> CSR |= (0b1 << 0); // LSION='1'.
-	// Enable interrupt.
-	RCC -> CIER |= (0b1 << 0);
-	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS, NVIC_PRIORTY_RCC_CRS);
-	// Wait for LSI to be stable.
-	while (((RCC -> CSR) & (0b1 << 1)) == 0) {
-		PWR_enter_sleep_mode();
-	}
-	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
-}
-
-/*******************************************************************/
-void RCC_enable_lse(void) {
-	// Enable LSE (32.768kHz crystal).
-	RCC -> CSR |= (0b1 << 8); // LSEON='1'.
-	// Enable interrupt.
-	RCC -> CIER |= (0b1 << 1);
-	NVIC_enable_interrupt(NVIC_INTERRUPT_RCC_CRS, NVIC_PRIORTY_RCC_CRS);
-	// Wait for LSE to be stable.
-	while (((RCC -> CSR) & (0b1 << 9)) == 0) {
-		PWR_enter_sleep_mode();
-	}
-	NVIC_disable_interrupt(NVIC_INTERRUPT_RCC_CRS);
 }

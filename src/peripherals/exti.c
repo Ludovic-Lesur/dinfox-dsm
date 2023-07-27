@@ -89,14 +89,20 @@ void EXTI_init(void) {
 /*******************************************************************/
 void EXTI_configure_gpio(const GPIO_pin_t* gpio, EXTI_trigger_t trigger, EXTI_gpio_irq_cb_t irq_callback) {
 	// Select GPIO port.
-	SYSCFG -> EXTICR[((gpio -> pin) / 4)] &= ~(0b1111 << (4 * ((gpio -> pin) % 4)));
-	SYSCFG -> EXTICR[((gpio -> pin) / 4)] |= ((gpio -> port_index) << (4 * ((gpio -> pin) % 4)));
+	SYSCFG -> EXTICR[((gpio -> pin) >> 2)] &= ~(0b1111 << (((gpio -> pin) % 4) << 2));
+	SYSCFG -> EXTICR[((gpio -> pin) >> 2)] |= ((gpio -> port_index) << (((gpio -> pin) % 4) << 2));
 	// Set mask.
 	EXTI -> IMR |= (0b1 << ((gpio -> pin))); // IMx='1'.
 	// Select triggers.
 	_EXTI_set_trigger(trigger, (gpio -> pin));
 	// Register callback.
 	exti_gpio_irq_callbacks[gpio -> pin] = irq_callback;
+}
+
+/*******************************************************************/
+void EXTI_release_gpio(const GPIO_pin_t* gpio) {
+	// Set mask.
+	EXTI -> IMR &= ~(0b1 << ((gpio -> pin))); // IMx='0'.
 }
 
 /*******************************************************************/

@@ -26,21 +26,11 @@ typedef enum {
 	RTC_SUCCESS = 0,
 	RTC_ERROR_NULL_PARAMETER,
 	RTC_ERROR_INITIALIZATION_MODE,
-	RTC_ERROR_WAKEUP_TIMER_RUNNING,
 	RTC_ERROR_WAKEUP_TIMER_REGISTER_ACCESS,
 	RTC_ERROR_BASE_LAST = 0x0100
 } RTC_status_t;
 
 /*** RTC functions ***/
-
-/*!******************************************************************
- * \fn void RTC_reset(void)
- * \brief Reset RTC peripheral.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void RTC_reset(void);
 
 /*!******************************************************************
  * \fn RTC_status_t RTC_init(void)

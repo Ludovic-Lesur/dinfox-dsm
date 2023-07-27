@@ -26,20 +26,20 @@ static void _GPIO_set_mode(const GPIO_pin_t* gpio, GPIO_mode_t mode) {
 	// Read register.
 	reg_value = ((gpio -> port) -> MODER);
 	// Analog mode by defalt.
-	reg_value |= (0b11 << (2 * (gpio -> pin))); // MODERy = '11'.
+	reg_value |= (0b11 << ((gpio -> pin) << 1)); // MODERy = '11'.
 	// Set required bits.
 	switch(mode) {
 	case GPIO_MODE_INPUT:
 		// MODERy = '00'.
-		reg_value &= ~(0b11 << (2 * (gpio -> pin)));
+		reg_value &= ~(0b11 << ((gpio -> pin) << 1));
 		break;
 	case GPIO_MODE_OUTPUT:
 		// MODERy = '01'.
-		reg_value &= ~(0b1 << (2 * (gpio -> pin) + 1));
+		reg_value &= ~(0b1 << (((gpio -> pin) << 1) + 1));
 		break;
 	case GPIO_MODE_ALTERNATE_FUNCTION:
 		// MODERy = '10'.
-		reg_value &= ~(0b1 << (2 * (gpio -> pin)));
+		reg_value &= ~(0b1 << ((gpio -> pin) << 1));
 		break;
 	case GPIO_MODE_ANALOG:
 		// Nothing to do.
@@ -54,7 +54,7 @@ static void _GPIO_set_mode(const GPIO_pin_t* gpio, GPIO_mode_t mode) {
 /*******************************************************************/
 static GPIO_mode_t _GPIO_get_mode(const GPIO_pin_t* gpio) {
 	// Get mode.
-	GPIO_mode_t gpio_mode = (((gpio -> port) -> MODER) & (0b11 << (2 * (gpio -> pin)))) >> (2 * (gpio -> pin));
+	GPIO_mode_t gpio_mode = (((gpio -> port) -> MODER) & (0b11 << ((gpio -> pin) << 1))) >> ((gpio -> pin) << 1);
 	return gpio_mode;
 }
 
@@ -82,7 +82,7 @@ static void _GPIO_set_output_speed(const GPIO_pin_t* gpio, GPIO_output_speed_t o
 	// Read register.
 	reg_value = ((gpio -> port) -> OSPEEDR);
 	// Low speed by default.
-	reg_value &= ~(0b11 << (2 * (gpio -> pin)));
+	reg_value &= ~(0b11 << ((gpio -> pin) << 1));
 	// Set required bits.
 	switch(output_speed) {
 	case GPIO_SPEED_LOW:
@@ -90,11 +90,11 @@ static void _GPIO_set_output_speed(const GPIO_pin_t* gpio, GPIO_output_speed_t o
 		break;
 	case GPIO_SPEED_MEDIUM:
 		// OSPEEDRy = '01'.
-		reg_value |= (0b1 << (2 * (gpio -> pin)));
+		reg_value |= (0b1 << ((gpio -> pin) << 1));
 		break;
 	case GPIO_SPEED_HIGH:
 		// OSPEEDRy = '10'.
-		reg_value |= (0b1 << (2 * (gpio -> pin) + 1));
+		reg_value |= (0b1 << (((gpio -> pin) << 1) + 1));
 		break;
 	case GPIO_SPEED_VERY_HIGH:
 		// OSPEEDRy = '11'.
@@ -114,7 +114,7 @@ static void _GPIO_set_pull_resistor(const GPIO_pin_t* gpio, GPIO_pull_resistor_t
 	// Read registers.
 	reg_value = ((gpio -> port) -> PUPDR);
 	// Disable resistors by default.
-	reg_value &= ~(0b11 << (2 * (gpio -> pin)));
+	reg_value &= ~(0b11 << ((gpio -> pin) << 1));
 	// Set required bits.
 	switch(pull_resistor) {
 	case GPIO_PULL_NONE:
@@ -122,11 +122,11 @@ static void _GPIO_set_pull_resistor(const GPIO_pin_t* gpio, GPIO_pull_resistor_t
 		break;
 	case GPIO_PULL_UP:
 		// PUPDRy = '01'.
-		reg_value |= (0b1 << (2 * (gpio -> pin)));
+		reg_value |= (0b1 << ((gpio -> pin) << 1));
 		break;
 	case GPIO_PULL_DOWN:
 		// PUPDRy = '10'.
-		reg_value |= (0b1 << (2 * (gpio -> pin) + 1));
+		reg_value |= (0b1 << (((gpio -> pin) + 1) << 1));
 		break;
 	default:
 		break;
@@ -146,8 +146,8 @@ static void _GPIO_set_alternate_function(const GPIO_pin_t* gpio, uint32_t altern
 		// Read register.
 		reg_value = ((gpio -> port) -> AFRL);
 		// Set AFRL register: AFRy = 'alternate_function'.
-		reg_value &= ~(0b1111 << (4 * (gpio -> pin)));
-		reg_value |= (alternate_function << (4 * (gpio -> pin)));
+		reg_value &= ~(0b1111 << ((gpio -> pin) << 2));
+		reg_value |= (alternate_function << ((gpio -> pin) << 2));
 		// Write register.
 		(gpio -> port) -> AFRL = reg_value;
 	}
@@ -155,8 +155,8 @@ static void _GPIO_set_alternate_function(const GPIO_pin_t* gpio, uint32_t altern
 		// Read register.
 		reg_value = ((gpio -> port) -> AFRH);
 		// Set AFRH register: AFRy = 'alternate_function'.
-		reg_value &= ~(0b1111 << (4 * ((gpio -> pin) - GPIO_AFRH_OFFSET)));
-		reg_value |= (alternate_function << (4 * ((gpio -> pin) - GPIO_AFRH_OFFSET)));
+		reg_value &= ~(0b1111 << (((gpio -> pin) - GPIO_AFRH_OFFSET) << 2));
+		reg_value |= (alternate_function << (((gpio -> pin) - GPIO_AFRH_OFFSET) << 2));
 		// Write register.
 		(gpio -> port) -> AFRH = reg_value;
 	}

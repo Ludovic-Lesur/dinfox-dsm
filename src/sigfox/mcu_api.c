@@ -70,6 +70,9 @@ typedef enum {
 MCU_API_status_t MCU_API_open(MCU_API_config_t *mcu_api_config) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
+	// Init timer.
+	TIM2_init();
+	// Return.
 	RETURN();
 }
 #endif
@@ -79,6 +82,9 @@ MCU_API_status_t MCU_API_open(MCU_API_config_t *mcu_api_config) {
 MCU_API_status_t MCU_API_close(void) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
+	// Release timer.
+	TIM2_de_init();
+	// Return.
 	RETURN();
 }
 #endif
@@ -168,7 +174,6 @@ MCU_API_status_t MCU_API_aes_128_cbc_encrypt(MCU_API_encryption_data_t *aes_data
 	AES_status_t aes_status = AES_SUCCESS;
 	uint8_t idx = 0;
 	uint8_t local_key[SIGFOX_EP_KEY_SIZE_BYTES];
-	uint8_t init_vector[SIGFOX_EP_KEY_SIZE_BYTES];
 	// Get right key.
 #ifdef PUBLIC_KEY_CAPABLE
 	switch (aes_data -> key) {
@@ -196,12 +201,10 @@ MCU_API_status_t MCU_API_aes_128_cbc_encrypt(MCU_API_encryption_data_t *aes_data
 		NVM_check_status(MCU_API_ERROR_BASE_NVM);
 	}
 #endif
-	// Use null initialization vector.
-	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) init_vector[idx] = 0;
 	// Init peripheral.
 	AES_init();
 	// Perform AES.
-	aes_status = AES_encrypt((aes_data -> data), (aes_data -> data), init_vector, local_key);
+	aes_status = AES_encrypt((aes_data -> data), (aes_data -> data), local_key);
 	AES_check_status(MCU_API_ERROR_BASE_AES);
 	// Release peripheral.
 	AES_de_init();

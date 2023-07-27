@@ -12,11 +12,11 @@
 #include "tim.h"
 #include "types.h"
 
-/*** LED functions ***/
+/*** LED local functions ***/
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 /*******************************************************************/
-void LED_init(void) {
+static void _LED_off(void) {
 	// Configure pins as output high.
 	GPIO_write(&GPIO_LED_RED, 1);
 	GPIO_write(&GPIO_LED_GREEN, 1);
@@ -24,6 +24,21 @@ void LED_init(void) {
 	GPIO_configure(&GPIO_LED_RED, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+}
+#endif
+
+/*** LED functions ***/
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
+/*******************************************************************/
+void LED_init(void) {
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	// Init timers.
+	TIM2_init();
+	TIM21_init();
+#endif
+	// Turn LED off.
+	_LED_off();
 }
 #endif
 
@@ -63,7 +78,7 @@ void LED_stop_blink(void) {
 	TIM2_stop();
 	TIM21_stop();
 	// Turn LED off.
-	LED_init();
+	_LED_off();
 }
 #endif
 

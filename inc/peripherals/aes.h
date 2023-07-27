@@ -49,15 +49,14 @@ void AES_de_init(void);
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* init_vector, uint8_t* key
+ * \fn AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* key
  * \brief Compute AES-128.
  * \param[in]  	data_in: Input data.
- * \param[in]	init_vector: Initialization vector.
  * \param[in]	key: AES key.
  * \param[out] 	data_out: Output data.
  * \retval		Function execution status.
  *******************************************************************/
-AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* init_vector, uint8_t* key);
+AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* key);
 #endif
 
 /*******************************************************************/

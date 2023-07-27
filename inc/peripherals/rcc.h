@@ -52,6 +52,7 @@ typedef enum {
 
 /*** RCC functions ***/
 
+
 /*!******************************************************************
  * \fn void RCC_init(void)
  * \brief Init MCU default clock tree.
@@ -87,24 +88,6 @@ RCC_status_t RCC_switch_to_msi(RCC_msi_range_t msi_range);
  * \retval		System clock frequency in kHz.
  *******************************************************************/
 uint32_t RCC_get_sysclk_khz(void);
-
-/*!******************************************************************
- * \fn void RCC_enable_lsi(void)
- * \brief Start LSI oscillator.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void RCC_enable_lsi(void);
-
-/*!******************************************************************
- * \fn void RCC_enable_lse(void)
- * \brief Start LSE oscillator.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void RCC_enable_lse(void);
 
 /*******************************************************************/
 #define RCC_check_status(error_base) { if (rcc_status != RCC_SUCCESS) { status = error_base + rcc_status; goto errors; } }

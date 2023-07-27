@@ -173,6 +173,16 @@ void TIM2_init(void) {
 
 #ifdef UHFM
 /*******************************************************************/
+void TIM2_de_init(void) {
+	// Disable interrupt.
+	NVIC_disable_interrupt(NVIC_INTERRUPT_TIM2);
+	// Disable peripheral clock.
+	RCC -> APB1ENR &= ~(0b1 << 0); // TIM2EN='0'.
+}
+#endif
+
+#ifdef UHFM
+/*******************************************************************/
 TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms, TIM_waiting_mode_t waiting_mode) {
 	// Local variables.
 	TIM_status_t status = TIM_SUCCESS;

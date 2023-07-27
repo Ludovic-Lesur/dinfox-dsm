@@ -117,6 +117,17 @@ void TIM2_init(void);
 
 #ifdef UHFM
 /*!******************************************************************
+ * \fn void TIM2_de_init(void)
+ * \brief Release TIM2 peripheral.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void TIM2_de_init(void);
+#endif
+
+#ifdef UHFM
+/*!******************************************************************
  * \fn TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms)
  * \brief Start a timer channel.
  * \param[in]  	channel: Channel to start.
