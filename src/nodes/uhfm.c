@@ -103,6 +103,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	uint32_t ep_config_0 = 0;
 	uint32_t ep_config_2 = 0;
 	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
+	sfx_u8 ul_payload_size = 0;
 	sfx_u8 dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
 	sfx_s16 dl_rssi_dbm = 0;
 	// Reset status.
@@ -112,20 +113,22 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	NODE_stack_error();
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, &ep_config_2);
 	NODE_stack_error();
-	// Read UL payload.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, application_message.ul_payload_size_bytes);
-	NODE_stack_error();
 	// Check radio state.
 	status = _UHFM_check_radio_state(0);
 	if (status != NODE_SUCCESS) goto errors;
 	// Open library.
 	lib_config.rc = &SIGFOX_RC1;
 	sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
-	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_RF_API);
+	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_LIB);
 	// Update radio state.
 	uhfm_flags.radio_state = 1;
 	// Check control message flag.
 	if (DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG) == 0) {
+		// Get payload size.
+		ul_payload_size = (sfx_u8) DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
+		// Read UL payload.
+		node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
+		NODE_stack_error();
 		// Build message structure.
 		application_message.common_parameters.number_of_frames = (sfx_u8) DINFOX_read_field(ep_config_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_NFR);
 		application_message.common_parameters.ul_bit_rate = (SIGFOX_ul_bit_rate_t) DINFOX_read_field(ep_config_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_BR);
@@ -133,17 +136,17 @@ static NODE_status_t _UHFM_strg_callback(void) {
 		application_message.type = (SIGFOX_application_message_type_t) DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
 		application_message.bidirectional_flag = (sfx_u8) DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
 		application_message.ul_payload = (sfx_u8*) ul_payload;
-		application_message.ul_payload_size_bytes = (sfx_u8) DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
+		application_message.ul_payload_size_bytes = ul_payload_size;
 		// Send message.
 		sigfox_ep_api_status = SIGFOX_EP_API_send_application_message(&application_message);
-		SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_RF_API);
+		SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_LIB);
 		// Read message status.
 		message_status = SIGFOX_EP_API_get_message_status();
 		// Check bidirectional flag.
 		if ((application_message.bidirectional_flag != 0) && (message_status.field.dl_frame != 0)) {
 			// Read downlink data.
 			sigfox_ep_api_status = SIGFOX_EP_API_get_dl_payload(dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES, &dl_rssi_dbm);
-			SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_RF_API);
+			SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_LIB);
 			// Write DL payload registers.
 			node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
 			NODE_stack_error();
@@ -158,7 +161,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 		control_message.type = SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE;
 		// Send message.
 		sigfox_ep_api_status = SIGFOX_EP_API_send_control_message(&control_message);
-		SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_RF_API);
+		SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_LIB);
 		// Read message status.
 		message_status = SIGFOX_EP_API_get_message_status();
 	}
