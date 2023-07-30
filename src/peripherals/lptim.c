@@ -68,7 +68,7 @@ LPTIM_status_t LPTIM1_delay_milliseconds(uint32_t delay_ms, LPTIM_delay_mode_t d
 	LPTIM_status_t status = LPTIM_SUCCESS;
 	uint32_t arr = 0;
 	// Check delay.
-	if ((delay_ms > LPTIM_DELAY_MS_MAX) || (delay_ms > (IWDG_REFRESH_PERIOD_SECONDS * 1000))) {
+	if (delay_ms > LPTIM_DELAY_MS_MAX) {
 		status = LPTIM_ERROR_DELAY_OVERFLOW;
 		goto errors;
 	}

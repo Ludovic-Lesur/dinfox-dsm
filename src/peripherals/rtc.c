@@ -16,7 +16,8 @@
 
 /*** RTC local macros ***/
 
-#define RTC_INIT_TIMEOUT_COUNT		1000
+#define RTC_INIT_TIMEOUT_COUNT				1000000
+#define RTC_WAKEUP_TIMER_PERIOD_SECONDS		IWDG_REFRESH_PERIOD_SECONDS
 
 /*** RTC local global variables ***/
 
@@ -97,7 +98,7 @@ RTC_status_t RTC_init(void) {
 	// Compute prescaler for 32.768kHz quartz.
 	RTC -> PRER = (127 << 16) | (255 << 0);
 	// Configure wake-up timer.
-	RTC -> WUTR = (IWDG_REFRESH_PERIOD_SECONDS - 1);
+	RTC -> WUTR = (RTC_WAKEUP_TIMER_PERIOD_SECONDS - 1);
 	// Configure interrupt.
 	EXTI_configure_line(EXTI_LINE_RTC_WAKEUP_TIMER, EXTI_TRIGGER_RISING_EDGE);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_RTC, NVIC_PRIORITY_RTC);

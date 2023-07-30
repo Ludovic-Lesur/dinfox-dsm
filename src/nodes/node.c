@@ -218,6 +218,7 @@ NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	uint8_t idx = 0;
+	uint8_t shift = 0;
 	uint32_t reg_addr = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
@@ -234,8 +235,9 @@ NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_
 	for (idx=0 ; idx<data_size_byte ; idx++) {
 		// Compute address, mask and value.
 		reg_addr = (reg_addr_base + (idx / 4));
-		reg_mask = (0xFF << (8 * (idx % 4)));
-		reg_value = (data[idx] << DINFOX_get_shift(reg_mask));
+		shift = (8 * (idx % 4));
+		reg_mask = (0xFF << shift);
+		reg_value = (data[idx] << shift);
 		// Write register.
 		status = NODE_write_register(request_source, reg_addr, reg_mask, reg_value);
 		if (status != NODE_SUCCESS) goto errors;

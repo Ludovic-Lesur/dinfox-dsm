@@ -26,6 +26,7 @@
  *******************************************************************/
 typedef enum {
 	POWER_SUCCESS,
+	POWER_ERROR_NULL_PARAMETER,
 	POWER_ERROR_DOMAIN,
 	POWER_ERROR_BASE_LPTIM = 0x0100,
 	POWER_ERROR_BASE_LAST = (POWER_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
@@ -78,6 +79,15 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
  * \retval		Function execution status.
  *******************************************************************/
 POWER_status_t POWER_disable(POWER_domain_t domain);
+
+/*!******************************************************************
+ * \fn POWER_status_t POWER_get_state(POWER_domain_t domain, uint8_t* state
+ * \brief Return the current state of a power domain.
+ * \param[in]  	domain: Power domain to check.
+ * \param[out] 	state: Pointer to the state.
+ * \retval		Function execution status.
+ *******************************************************************/
+POWER_status_t POWER_get_state(POWER_domain_t domain, uint8_t* state);
 
 /*******************************************************************/
 #define POWER_check_status(error_base) { if (power_status != POWER_SUCCESS) { status = error_base + power_status; goto errors; } }

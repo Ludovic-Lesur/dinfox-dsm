@@ -665,8 +665,13 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes);
  *******************************************************************/
 S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes);
 
-#define S2LP_check_status(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; }}
+/*******************************************************************/
+#define S2LP_check_status(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; } }
+
+/*******************************************************************/
 #define S2LP_stack_error(void) { ERROR_stack_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
+
+/*******************************************************************/
 #define S2LP_print_error(void) { ERROR_print_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP); }
 
 #endif /* __S2LP_H__ */

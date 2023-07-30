@@ -117,15 +117,6 @@ typedef uint8_t DINFOX_year_representation_t;
 /*** DINFOX functions ***/
 
 /*!******************************************************************
- * \fn uint8_t DINFOX_get_shift(uint32_t field_mask)
- * \brief Get the field offset of a bit mask.
- * \param[in]  	field_mask: Register field mask.
- * \param[out] 	none
- * \retval		Field offset expressed in bit index.
- *******************************************************************/
-uint8_t DINFOX_get_shift(uint32_t field_mask);
-
-/*!******************************************************************
  * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask)
  * \brief Write a field in register.
  * \param[in]  	reg_value: Pointer to the register value.

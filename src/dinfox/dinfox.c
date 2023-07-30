@@ -106,10 +106,10 @@ typedef union {
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_current_t;
 
-/*** DINFOX functions ***/
+/*** DINFOX local functions ***/
 
 /*******************************************************************/
-uint8_t DINFOX_get_shift(uint32_t field_mask) {
+static uint8_t _DINFOX_get_shift(uint32_t field_mask) {
 	// Local variables.
 	uint8_t offset = 0;
 	// Compute shift according to mask.
@@ -121,12 +121,14 @@ uint8_t DINFOX_get_shift(uint32_t field_mask) {
 	return offset;
 }
 
+/*** DINFOX functions ***/
+
 /*******************************************************************/
 void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask) {
 	// Reset bits.
 	(*reg_value) &= ~(field_mask);
 	// Set field.
-	(*reg_value) |= ((field_value << DINFOX_get_shift(field_mask)) & field_mask);
+	(*reg_value) |= ((field_value << _DINFOX_get_shift(field_mask)) & field_mask);
 	// Update mask.
 	(*reg_mask) |= field_mask;
 }
@@ -134,7 +136,7 @@ void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_
 /*******************************************************************/
 uint32_t DINFOX_read_field(uint32_t reg_value, uint32_t field_mask) {
 	// Isolate field.
-	return ((reg_value & field_mask) >> DINFOX_get_shift(field_mask));
+	return ((reg_value & field_mask) >> _DINFOX_get_shift(field_mask));
 }
 
 /*******************************************************************/
@@ -264,6 +266,7 @@ int8_t DINFOX_get_degrees(DINFOX_temperature_representation_t dinfox_temperature
 	value = (uint32_t) (((DINFOX_temperature_t*) &local_dinfox_temperature) -> value);
 	// Check sign.
 	temperature_degrees = (sign == DINFOX_TEMPERATURE_SIGN_POSITIVE) ? (value) : ((-1) * value);
+
 	return temperature_degrees;
 }
 

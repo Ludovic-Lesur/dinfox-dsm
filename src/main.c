@@ -204,6 +204,8 @@ int main(void) {
 #endif
 	// Main loop.
 	while (1) {
+		// Reload watchdog.
+		IWDG_reload();
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 		// Enter sleep or stop mode depending on LED state.
 		if (TIM21_is_single_blink_done() != 0) {
@@ -217,6 +219,8 @@ int main(void) {
 		// Enter stop mode.
 		PWR_enter_stop_mode();
 #endif
+		// Reload watchdog.
+		IWDG_reload();
 		// Check RTC flag.
 		if (RTC_get_wakeup_timer_flag() != 0) {
 			// Clear flag.
@@ -243,9 +247,9 @@ int main(void) {
 			}
 #endif
 		}
-		// Perform command task.
-		AT_BUS_task();
 		// Reload watchdog.
 		IWDG_reload();
+		// Perform command task.
+		AT_BUS_task();
 	}
 }

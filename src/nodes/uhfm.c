@@ -36,13 +36,13 @@
 
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ				830000000
 #define UHFM_ADC_MEASUREMENTS_TX_POWER_DBM					14
+#define UHFM_ADC_RADIO_STABILIZATION_DELAY_MS				100
 
 /*** UHFM local structures ***/
 
 /*******************************************************************/
 typedef union {
 	struct {
-		unsigned radio_state : 1;
 		unsigned cwen : 1;
 		unsigned rsen : 1;
 	};
@@ -74,11 +74,16 @@ static void _UHFM_reset_analog_data(void) {
 
 #ifdef UHFM
 /*******************************************************************/
-static NODE_status_t _UHFM_check_radio_state(uint8_t expected_state) {
+static NODE_status_t _UHFM_is_radio_free(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
+	uint8_t power_state = 0;
+	// Get current power state.
+	power_status = POWER_get_state(POWER_DOMAIN_RADIO, &power_state);
+	POWER_stack_error();
 	// Compare state.
-	if (expected_state != uhfm_flags.radio_state) {
+	if (power_state != 0) {
 		status = NODE_ERROR_RADIO_STATE;
 		goto errors;
 	}
@@ -114,14 +119,12 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, &ep_config_2);
 	NODE_stack_error();
 	// Check radio state.
-	status = _UHFM_check_radio_state(0);
+	status = _UHFM_is_radio_free();
 	if (status != NODE_SUCCESS) goto errors;
 	// Open library.
 	lib_config.rc = &SIGFOX_RC1;
 	sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
 	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_LIB);
-	// Update radio state.
-	uhfm_flags.radio_state = 1;
 	// Check control message flag.
 	if (DINFOX_read_field(ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG) == 0) {
 		// Get payload size.
@@ -168,8 +171,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
 errors:
 	// Close library.
 	SIGFOX_EP_API_close();
-	// Update radio state.
-	uhfm_flags.radio_state = 0;
 	// Update message status and clear flag.
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0, UHFM_REG_STATUS_CONTROL_1_MASK_STRG);
@@ -197,10 +198,8 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, &ep_config_0);
 	NODE_stack_error();
 	// Check radio state.
-	status = _UHFM_check_radio_state(0);
+	status = _UHFM_is_radio_free();
 	if (status != NODE_SUCCESS) goto errors;
-	// Update radio state.
-	uhfm_flags.radio_state = 1;
 	// Open addon.
 	addon_config.rc = &SIGFOX_RC1;
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_open(&addon_config);
@@ -219,8 +218,6 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 errors:
 	// Close addon.
 	SIGFOX_EP_ADDON_RFP_API_close();
-	// Update radio state.
-	uhfm_flags.radio_state = 0;
 	// Clear flag.
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG);
 	// Write register.
@@ -258,10 +255,8 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	radio_params.tx_power_dbm_eirp = TX_POWER_DBM_EIRP;
 	radio_params.deviation_hz = SIGFOX_DL_GFSK_DEVIATION_HZ;
 	// Check radio state.
-	status = _UHFM_check_radio_state(0);
+	status = _UHFM_is_radio_free();
 	if (status != NODE_SUCCESS) goto errors;
-	// Update radio state.
-	uhfm_flags.radio_state = 1;
 	// Wake-up radio.
 	rf_api_status = RF_API_wake_up();
 	RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
@@ -287,8 +282,6 @@ errors:
 		RF_API_de_init();
 		RF_API_sleep();
 	}
-	// Update radio state.
-	uhfm_flags.radio_state = 0;
 	// Update message status and clear flag.
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_DTRG);
@@ -326,23 +319,16 @@ static NODE_status_t _UHFM_cwen_callback(uint8_t state) {
 	radio_params.deviation_hz = 0;
 	// Check state.
 	if (state == 0) {
-		// Check radio state.
-		status = _UHFM_check_radio_state(1);
-		if (status != NODE_SUCCESS) goto errors;
 		// Stop CW.
 		rf_api_status = RF_API_de_init();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
 		rf_api_status = RF_API_sleep();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
-		// Update radio state.
-		uhfm_flags.radio_state = 0;
 	}
 	else {
 		// Check radio state.
-		status = _UHFM_check_radio_state(0);
+		status = _UHFM_is_radio_free();
 		if (status != NODE_SUCCESS) goto errors;
-		// Update radio state.
-		uhfm_flags.radio_state = 1;
 		// Wake-up radio.
 		rf_api_status = RF_API_wake_up();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
@@ -363,8 +349,6 @@ errors:
 		// Stop radio.
 		RF_API_de_init();
 		RF_API_sleep();
-		// Update radio state.
-		uhfm_flags.radio_state = 0;
 	}
 	return status;
 }
@@ -392,23 +376,16 @@ static NODE_status_t _UHFM_rsen_callback(uint8_t state) {
 	radio_params.deviation_hz = 0;
 	// Check state.
 	if (state == 0) {
-		// Check radio state.
-		status = _UHFM_check_radio_state(1);
-		if (status != NODE_SUCCESS) goto errors;
 		// Stop continuous listening.
 		rf_api_status = RF_API_de_init();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
 		rf_api_status = RF_API_sleep();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
-		// Update radio state.
-		uhfm_flags.radio_state = 0;
 	}
 	else {
 		// Check radio state.
-		status = _UHFM_check_radio_state(0);
+		status = _UHFM_is_radio_free();
 		if (status != NODE_SUCCESS) goto errors;
-		// Update radio state.
-		uhfm_flags.radio_state = 1;
 		// Wake-up radio.
 		rf_api_status = RF_API_wake_up();
 		RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
@@ -478,6 +455,8 @@ void UHFM_init_registers(void) {
 	NODE_stack_error();
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE);
 	NODE_stack_error();
+	// Open library with null parameter to initialize error stack.
+	SIGFOX_EP_API_open(NULL);
 }
 #endif
 
@@ -488,14 +467,19 @@ NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 	NODE_status_t status = NODE_SUCCESS;
 	NODE_status_t node_status = NODE_SUCCESS;
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
 	int16_t rssi_dbm = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
+	uint8_t power_state = 0;
 	// Check address.
 	switch (reg_addr) {
 	case UHFM_REG_ADDR_RADIO_TEST_1:
+		// Check if S2LP is powered.
+		power_status = POWER_get_state(POWER_DOMAIN_RADIO, &power_state);
+		POWER_stack_error();
 		// Check radio state.
-		if ((uhfm_flags.radio_state != 0) && (uhfm_flags.rsen != 0)) {
+		if ((power_state != 0) && (uhfm_flags.rsen != 0)) {
 			// Read RSSI.
 			s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_RUN, &rssi_dbm);
 			S2LP_stack_error();
@@ -597,6 +581,7 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
+	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint32_t vrf_mv = 0;
 	uint32_t radio_test_0_initial = 0;
 	uint32_t radio_test_1_initial = 0;
@@ -608,9 +593,6 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	uint32_t analog_data_1_mask = 0;
 	// Reset results.
 	_UHFM_reset_analog_data();
-	// Check radio state.
-	status = _UHFM_check_radio_state(0);
-	if (status != NODE_SUCCESS) goto errors;
 	// Save radio test registers.
 	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, &radio_test_0_initial);
 	NODE_stack_error();
@@ -627,6 +609,8 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Start CW.
 	node_status = _UHFM_cwen_callback(1);
 	NODE_stack_error();
+	lptim1_status = LPTIM1_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
+	LPTIM1_stack_error();
 	// Perform analog measurements.
 	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
 	POWER_stack_error();
@@ -647,6 +631,8 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Start RX.
 	node_status = _UHFM_rsen_callback(1);
 	NODE_stack_error();
+	lptim1_status = LPTIM1_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
+	LPTIM1_stack_error();
 	// Perform measurements in RX state.
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
@@ -671,7 +657,6 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	// Write register.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask,analog_data_1);
 	NODE_stack_error();
-errors:
 	// Restore radio test registers.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, radio_test_0_initial);
 	NODE_stack_error();

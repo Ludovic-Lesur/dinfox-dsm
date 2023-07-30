@@ -444,13 +444,13 @@ STRING_status_t STRING_append_string(char_t* str, uint8_t str_size_max, char_t* 
 	STRING_status_t status = STRING_SUCCESS;
 	uint8_t idx = 0;
 	// Fill buffer.
-	while (str[idx] != STRING_CHAR_NULL) {
+	while (new_str[idx] != STRING_CHAR_NULL) {
 		// Check index.
 		if ((*str_size) >= str_size_max) {
 			status = STRING_ERROR_APPEND_OVERFLOW;
 			goto errors;
 		}
-		str[(*str_size)] = str[idx];
+		str[(*str_size)] = new_str[idx];
 		// Increment size and index..
 		(*str_size)++;
 		idx++;

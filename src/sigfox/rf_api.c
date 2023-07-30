@@ -42,6 +42,7 @@
 #include "sigfox_types.h"
 #include "sigfox_error.h"
 
+#include "error.h"
 #include "iwdg.h"
 #include "manuf/mcu_api.h"
 #include "power.h"
@@ -93,9 +94,9 @@ typedef enum {
 	RF_API_ERROR_MODE,
 	RF_API_ERROR_DRIVER_MCU_API,
 	RF_API_ERROR_LATENCY_TYPE,
-	RF_API_ERROR_BASE_POWER = 0x0100,
-	RF_API_ERROR_BASE_S2LP = (RF_API_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
-	RF_API_ERROR_BASE_LAST = (RF_API_ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST)
+	// Low level drivers errors.
+	RF_API_ERROR_DRIVER_POWER,
+	RF_API_ERROR_DRIVER_S2LP
 } RF_API_custom_status_t;
 
 /*******************************************************************/
@@ -165,6 +166,24 @@ static RF_API_context_t rf_api_ctx;
 /*** RF API local functions ***/
 
 /*******************************************************************/
+#define _RF_API_check_s2lp_status(void) { \
+	if (s2lp_status != S2LP_SUCCESS) { \
+		ERROR_stack_add(ERROR_BASE_S2LP + s2lp_status); \
+		status = RF_API_ERROR_DRIVER_S2LP; \
+		goto errors; \
+	} \
+}
+
+/*******************************************************************/
+#define _RF_API_check_power_status(void) { \
+	if (power_status != POWER_SUCCESS) { \
+		ERROR_stack_add(ERROR_BASE_POWER + power_status); \
+		status = RF_API_ERROR_DRIVER_POWER; \
+		goto errors; \
+	} \
+}
+
+/*******************************************************************/
 static void _RF_API_s2lp_gpio_irq_callback(void) {
 	// Set flag if IRQ is enabled.
 	if (rf_api_ctx.flags.field.irq_enable != 0) {
@@ -195,30 +214,30 @@ static RF_API_status_t _RF_API_internal_process(void) {
 		}
 		// Load ramp-up buffer into FIFO.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_FLUSHTXFIFO);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_write_fifo((sfx_u8*) rf_api_ctx.ramp_fifo_buffer, RF_API_RAMP_FIFO_BUFFER_SIZE_BYTES);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Enable external GPIO interrupt.
 		s2lp_status = S2LP_clear_all_irq();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		rf_api_ctx.flags.field.irq_enable = 1;
 		// Lock PLL.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_LOCKTX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		S2LP_wait_for_state(S2LP_STATE_LOCK);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Start radio.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_TX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		S2LP_wait_for_state(S2LP_STATE_TX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Update state.
 		rf_api_ctx.state = RF_API_STATE_TX_BITSTREAM;
 		break;
 	case RF_API_STATE_TX_BITSTREAM:
 		// Read FIFO flag.
 		s2lp_status = S2LP_get_irq_flag(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, &irq_flag);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Check flag.
 		if (irq_flag != 0) {
 			// Check bit.
@@ -239,7 +258,7 @@ static RF_API_status_t _RF_API_internal_process(void) {
 			}
 			// Load bit into FIFO.
 			s2lp_status = S2LP_write_fifo((sfx_u8*) rf_api_ctx.symbol_fifo_buffer, RF_API_RAMP_FIFO_BUFFER_SIZE_BYTES);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Increment bit index..
 			rf_api_ctx.tx_bit_idx++;
 			if (rf_api_ctx.tx_bit_idx >= 8) {
@@ -254,13 +273,13 @@ static RF_API_status_t _RF_API_internal_process(void) {
 			}
 			// Clear flag.
 			s2lp_status = S2LP_clear_all_irq();
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 		}
 		break;
 	case RF_API_STATE_TX_RAMP_DOWN:
 		// Read FIFO flag.
 		s2lp_status = S2LP_get_irq_flag(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, &irq_flag);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Check flag.
 		if (irq_flag != 0) {
 			// Fill ramp-down.
@@ -270,18 +289,18 @@ static RF_API_status_t _RF_API_internal_process(void) {
 			}
 			// Load ramp-down buffer into FIFO.
 			s2lp_status = S2LP_write_fifo((sfx_u8*) rf_api_ctx.ramp_fifo_buffer, RF_API_RAMP_FIFO_BUFFER_SIZE_BYTES);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Update state.
 			rf_api_ctx.state = RF_API_STATE_TX_PADDING_BIT;
 			// Clear flag.
 			s2lp_status = S2LP_clear_all_irq();
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 		}
 		break;
 	case RF_API_STATE_TX_PADDING_BIT:
 		// Read FIFO flag.
 		s2lp_status = S2LP_get_irq_flag(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, &irq_flag);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Check flag.
 		if (irq_flag != 0) {
 			// Padding bit to ensure last ramp down is completely transmitted.
@@ -290,27 +309,27 @@ static RF_API_status_t _RF_API_internal_process(void) {
 			}
 			// Load padding buffer into FIFO.
 			s2lp_status = S2LP_write_fifo((sfx_u8*) rf_api_ctx.symbol_fifo_buffer, RF_API_RAMP_FIFO_BUFFER_SIZE_BYTES);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Update state.
 			rf_api_ctx.state = RF_API_STATE_TX_END;
 			// Clear flag.
 			s2lp_status = S2LP_clear_all_irq();
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 		}
 		break;
 	case RF_API_STATE_TX_END:
 		// Read FIFO flag.
 		s2lp_status = S2LP_get_irq_flag(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, &irq_flag);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Check flag.
 		if (irq_flag != 0) {
 			// Stop radio.
 			s2lp_status = S2LP_send_command(S2LP_COMMAND_SABORT);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Disable interrupt.
 			rf_api_ctx.flags.field.irq_enable = 0;
 			s2lp_status = S2LP_clear_all_irq();
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Update state.
 			rf_api_ctx.state = RF_API_STATE_READY;
 		}
@@ -319,41 +338,41 @@ static RF_API_status_t _RF_API_internal_process(void) {
 	case RF_API_STATE_RX_START:
 		// Flush FIFO.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_FLUSHRXFIFO);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Enable external GPIO interrupt.
 		s2lp_status = S2LP_clear_all_irq();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		rf_api_ctx.flags.field.irq_enable = 1;
 		// Lock PLL.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_LOCKRX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		S2LP_wait_for_state(S2LP_STATE_LOCK);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Start radio.
 		s2lp_status = S2LP_send_command(S2LP_COMMAND_RX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		S2LP_wait_for_state(S2LP_STATE_RX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Update state.
 		rf_api_ctx.state = RF_API_STATE_RX;
 		break;
 	case RF_API_STATE_RX:
 		// Read FIFO flag.
 		s2lp_status = S2LP_get_irq_flag(S2LP_IRQ_INDEX_RX_DATA_READY, &irq_flag);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Check flag.
 		if (irq_flag != 0) {
 			// Read FIFO and RSSI.
 			s2lp_status = S2LP_read_fifo((sfx_u8*) rf_api_ctx.dl_phy_content, SIGFOX_DL_PHY_CONTENT_SIZE_BYTES);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			s2lp_status = S2LP_get_rssi(S2LP_RSSI_TYPE_SYNC_WORD, &rf_api_ctx.dl_rssi_dbm);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Stop radio.
 			s2lp_status = S2LP_send_command(S2LP_COMMAND_SABORT);
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Clear flag.
 			s2lp_status = S2LP_clear_all_irq();
-			S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+			_RF_API_check_s2lp_status();
 			// Disable interrupt.
 			rf_api_ctx.flags.field.irq_enable = 0;
 			// Update state.
@@ -423,28 +442,26 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 	S2LP_modulation_t modulation = S2LP_MODULATION_NONE;
 	sfx_u32 datarate_bps = 0;
 	sfx_u32 deviation_hz = 0;
-	// Clear watchdog.
-	IWDG_reload();
 	// Turn radio on.
 	power_status = POWER_enable(POWER_DOMAIN_RADIO, LPTIM_DELAY_MODE_SLEEP);
-	POWER_check_status(RF_API_ERROR_BASE_POWER);
+	_RF_API_check_power_status();
 	// Exit shutdown.
 	s2lp_status = S2LP_shutdown(0);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Reset chip state machine.
 	s2lp_status = S2LP_send_command(S2LP_COMMAND_SRES);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Oscillator.
 	s2lp_status = S2LP_set_oscillator(S2LP_OSCILLATOR_TCXO);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	s2lp_status = S2LP_wait_for_oscillator();
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Charge pump.
 	s2lp_status = S2LP_configure_charge_pump();
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Frequency.
 	s2lp_status = S2LP_set_rf_frequency(radio_parameters -> frequency_hz);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Modulation and bit rate.
 	switch (radio_parameters -> modulation) {
 	case RF_API_MODULATION_NONE:
@@ -470,34 +487,38 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 		EXIT_ERROR(RF_API_ERROR_MODULATION);
 		break;
 	}
+	// Set modulation scheme.
 	s2lp_status = S2LP_set_modulation(modulation);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	s2lp_status = S2LP_set_datarate(datarate_bps);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
-	s2lp_status = S2LP_set_fsk_deviation(deviation_hz);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
+	// Set modulation parameters if needed.
+	if ((radio_parameters -> modulation) != RF_API_MODULATION_NONE) {
+		s2lp_status = S2LP_set_datarate(datarate_bps);
+		_RF_API_check_s2lp_status();
+		s2lp_status = S2LP_set_fsk_deviation(deviation_hz);
+		_RF_API_check_s2lp_status();
+	}
 	// Disable all interrupts by default.
 	s2lp_status = S2LP_disable_all_irq();
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Configure specific registers.
 	switch (radio_parameters -> rf_mode) {
 	case RF_API_MODE_TX:
 		// Switch to TX.
 		s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_TX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Enable FIFO interrupt.
 		s2lp_status = S2LP_configure_irq(S2LP_IRQ_INDEX_TX_FIFO_ALMOST_EMPTY, 1);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// SMPS switching frequency.
 		s2lp_status = S2LP_set_smps_frequency(RF_API_SMPS_FREQUENCY_TX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// TX parameters.
 		s2lp_status = S2LP_configure_pa();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_tx_source(S2LP_TX_SOURCE_FIFO);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_fifo_threshold(S2LP_FIFO_THRESHOLD_TX_EMPTY, RF_API_FIFO_TX_ALMOST_EMPTY_THRESHOLD);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 #if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION)
 		// Start latency = ramp-up.
 		RF_API_LATENCY_MS[RF_API_LATENCY_SEND_START] = (1000 * RF_API_RAMP_PROFILE_SIZE_BYTES) / (datarate_bps * RF_API_POLAR_DATARATE_MULTIPLIER);
@@ -509,36 +530,36 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 	case RF_API_MODE_RX:
 		// Switch to RX.
 		s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_RX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Enable RX data ready interrupt.
 		s2lp_status = S2LP_configure_irq(S2LP_IRQ_INDEX_RX_DATA_READY, 1);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// SMPS switching frequency.
 		s2lp_status = S2LP_set_smps_frequency(RF_API_SMPS_FREQUENCY_RX);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// RX parameters.
 		s2lp_status = S2LP_set_rx_source(S2LP_RX_SOURCE_NORMAL);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_rx_bandwidth(RF_API_RX_BANDWIDTH_HZ);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_rssi_threshold(RF_API_DOWNLINK_RSSI_THRESHOLD_DBM);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_configure_clock_recovery();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Downlink packet structure.
 		s2lp_status = S2LP_set_preamble_detector((RF_API_DL_PR_SIZE_BITS / 2), S2LP_PREAMBLE_PATTERN_1010);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_sync_word((uint8_t*) RF_API_DL_FT, (SIGFOX_DL_FT_SIZE_BYTES * 8));
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_set_packet_length(SIGFOX_DL_PHY_CONTENT_SIZE_BYTES);
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_disable_crc();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		// Disable AFC, equalization, CS blanking and antenna switch.
 		s2lp_status = S2LP_disable_afc();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		s2lp_status = S2LP_disable_equa_cs_ant_switch();
-		S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+		_RF_API_check_s2lp_status();
 		break;
 #endif
 	default:
@@ -558,13 +579,13 @@ RF_API_status_t RF_API_de_init(void) {
 	S2LP_status_t s2lp_status = S2LP_SUCCESS;
 	// Disable front-end.
 	s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_NONE);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Turn transceiver and TCXO off.
 	s2lp_status = S2LP_shutdown(1);
-	S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+	_RF_API_check_s2lp_status();
 	// Turn radio off.
 	power_status = POWER_disable(POWER_DOMAIN_RADIO);
-	POWER_check_status(RF_API_ERROR_BASE_POWER);
+	_RF_API_check_power_status();
 errors:
 	RETURN();
 }
@@ -593,7 +614,6 @@ RF_API_status_t RF_API_send(RF_API_tx_data_t *tx_data) {
 		while (rf_api_ctx.flags.field.irq_process == 0) {
 			// Enter sleep mode.
 			PWR_enter_sleep_mode();
-			IWDG_reload();
 		}
 		// Call process function.
 		status = _RF_API_internal_process();
@@ -637,7 +657,7 @@ RF_API_status_t RF_API_receive(RF_API_rx_data_t *rx_data) {
 			if (dl_timeout == SFX_TRUE) {
 				// Stop radio.
 				s2lp_status = S2LP_send_command(S2LP_COMMAND_SABORT);
-				S2LP_check_status(RF_API_ERROR_BASE_S2LP);
+				_RF_API_check_s2lp_status();
 				// Exit loop.
 				goto errors;
 			}
