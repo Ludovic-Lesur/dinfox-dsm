@@ -164,10 +164,6 @@ NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t
 		status = NODE_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
-	if (data_size_byte == 0) {
-		status = NODE_ERROR_DATA_SIZE;
-		goto errors;
-	}
 	// Byte loop.
 	for (idx=0 ; idx<data_size_byte ; idx++) {
 		// Compute address and mask.
@@ -225,10 +221,6 @@ NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_
 	// Check parameters.
 	if (data == NULL) {
 		status = NODE_ERROR_NULL_PARAMETER;
-		goto errors;
-	}
-	if (data_size_byte == 0) {
-		status = NODE_ERROR_DATA_SIZE;
 		goto errors;
 	}
 	// Byte loop.

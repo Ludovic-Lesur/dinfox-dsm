@@ -8,7 +8,6 @@
 #include "rtc.h"
 
 #include "exti.h"
-#include "iwdg.h"
 #include "nvic.h"
 #include "rcc_reg.h"
 #include "rtc_reg.h"
@@ -16,21 +15,13 @@
 
 /*** RTC local macros ***/
 
-#define RTC_INIT_TIMEOUT_COUNT				1000000
-#define RTC_WAKEUP_TIMER_PERIOD_SECONDS		IWDG_REFRESH_PERIOD_SECONDS
+#define RTC_INIT_TIMEOUT_COUNT	1000000
 
 /*** RTC local global variables ***/
 
 static volatile uint8_t rtc_wakeup_timer_flag = 0;
 
 /*** RTC local functions ***/
-
-/*******************************************************************/
-static inline void _RTC_clear_wakeup_timer_flags(void) {
-	// Clear RTC and EXTI flags.
-	RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
-	EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
-}
 
 /*******************************************************************/
 void __attribute__((optimize("-O0"))) RTC_IRQHandler(void) {
@@ -40,8 +31,9 @@ void __attribute__((optimize("-O0"))) RTC_IRQHandler(void) {
 		if (((RTC -> CR) & (0b1 << 14)) != 0) {
 			rtc_wakeup_timer_flag = 1;
 		}
-		// Clear flags.
-		_RTC_clear_wakeup_timer_flags();
+		// Clear RTC and EXTI flags.
+		RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
+		EXTI_clear_flag(EXTI_LINE_RTC_WAKEUP_TIMER);
 	}
 }
 
@@ -98,14 +90,14 @@ RTC_status_t RTC_init(void) {
 	// Compute prescaler for 32.768kHz quartz.
 	RTC -> PRER = (127 << 16) | (255 << 0);
 	// Configure wake-up timer.
-	RTC -> WUTR = (RTC_WAKEUP_TIMER_PERIOD_SECONDS - 1);
+	RTC -> WUTR = (RTC_WAKEUP_PERIOD_SECONDS - 1);
+	// Clear flags.
+	RTC -> ISR &= 0xFFFF005F;
 	// Configure interrupt.
 	EXTI_configure_line(EXTI_LINE_RTC_WAKEUP_TIMER, EXTI_TRIGGER_RISING_EDGE);
 	NVIC_enable_interrupt(NVIC_INTERRUPT_RTC, NVIC_PRIORITY_RTC);
-	// Clear flags.
-	RTC -> ISR &= 0xFFFE0000;
 	// Enable wake-up timer clocked by RTC clock (1Hz).
-	RTC -> CR = 0x00004403;
+	RTC -> CR = 0x00004424;
 errors:
 	_RTC_exit_initialization_mode();
 	return status;

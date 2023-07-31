@@ -8,10 +8,6 @@
 #ifndef __IWDG_H__
 #define __IWDG_H__
 
-/*** IWDG macros ***/
-
-#define IWDG_REFRESH_PERIOD_SECONDS		10
-
 /*** IWDG structures ***/
 
 /*!******************************************************************
