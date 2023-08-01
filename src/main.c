@@ -6,29 +6,21 @@
  */
 
 // Peripherals.
-#include "adc.h"
-#include "aes.h"
-#include "dma.h"
 #include "exti.h"
 #include "gpio.h"
-#include "i2c.h"
 #include "iwdg.h"
-#include "lpuart.h"
 #include "lptim.h"
-#include "mapping.h"
 #include "mode.h"
 #include "nvic.h"
-#include "nvm.h"
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
-#include "spi.h"
-#include "tim.h"
-#include "usart.h"
 // Components.
+#include "digital.h"
 #include "led.h"
 #include "load.h"
 #include "neom8n.h"
+#include "power.h"
 // Applicative.
 #include "at_bus.h"
 #include "error.h"
@@ -208,7 +200,7 @@ int main(void) {
 		IWDG_reload();
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 		// Enter sleep or stop mode depending on LED state.
-		if (TIM21_is_single_blink_done() != 0) {
+		if (LED_is_single_blink_done() != 0) {
 			LED_stop_blink();
 			PWR_enter_stop_mode();
 		}

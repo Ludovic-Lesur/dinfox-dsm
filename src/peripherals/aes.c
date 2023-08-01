@@ -31,7 +31,7 @@ void AES_init(void) {
 /*******************************************************************/
 void AES_de_init(void) {
 	// disble peripheral clock.
-	RCC -> AHBENR &= ~(0b1 << 24); // CRYPTOEN='1'.
+	RCC -> AHBENR &= ~(0b1 << 24); // CRYPTOEN='0'.
 }
 #endif
 
