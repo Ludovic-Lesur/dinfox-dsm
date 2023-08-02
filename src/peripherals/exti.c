@@ -27,17 +27,25 @@ static EXTI_gpio_irq_cb_t exti_gpio_irq_callbacks[GPIO_PINS_PER_PORT];
 
 #ifdef UHFM
 /*******************************************************************/
+#define _EXTI_irq_handler(gpio) { \
+	/* Check flag */ \
+	if (((EXTI -> PR) & (0b1 << (gpio.pin))) != 0) { \
+		/* Check mask and callback */ \
+		if ((((EXTI -> IMR) & (0b1 << (gpio.pin))) != 0) && (exti_gpio_irq_callbacks[gpio.pin] != NULL)) { \
+			/* Execute callback */ \
+			exti_gpio_irq_callbacks[gpio.pin](); \
+		} \
+		/* Clear flag */ \
+		EXTI -> PR |= (0b1 << (gpio.pin)); \
+	} \
+}
+#endif
+
+#ifdef UHFM
+/*******************************************************************/
 void __attribute__((optimize("-O0"))) EXTI4_15_IRQHandler(void) {
 	// S2LP GPIO0 (PA11).
-	if (((EXTI -> PR) & (0b1 << (GPIO_S2LP_GPIO0.pin))) != 0) {
-		// Set applicative flag.
-		if ((((EXTI -> IMR) & (0b1 << (GPIO_S2LP_GPIO0.pin))) != 0) && (exti_gpio_irq_callbacks[GPIO_S2LP_GPIO0.pin] != NULL)) {
-			// Execute callback.
-			exti_gpio_irq_callbacks[GPIO_S2LP_GPIO0.pin]();
-		}
-		// Clear flag.
-		EXTI -> PR |= (0b1 << (GPIO_S2LP_GPIO0.pin));
-	}
+	_EXTI_irq_handler(GPIO_S2LP_GPIO0);
 }
 #endif
 

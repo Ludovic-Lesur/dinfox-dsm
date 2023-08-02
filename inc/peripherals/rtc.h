@@ -41,24 +41,6 @@ typedef enum {
 RTC_status_t RTC_init(void);
 
 /*!******************************************************************
- * \fn RTC_status_t RTC_start_wakeup_timer(uint32_t delay_seconds)
- * \brief Start RTC wakeup timer.
- * \param[in]  	period_seconds: Timer period in seconds.
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-RTC_status_t RTC_start_wakeup_timer(uint16_t period_seconds);
-
-/*!******************************************************************
- * \fn RTC_status_t RTC_stop_wakeup_timer(void)
- * \brief Stop RTC wakeup timer.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
- *******************************************************************/
-RTC_status_t RTC_stop_wakeup_timer(void);
-
-/*!******************************************************************
  * \fn volatile uint8_t RTC_get_wakeup_timer_flag(void)
  * \brief Read RTC wakeup timer interrupt flag.
  * \param[in]  	none

@@ -26,13 +26,6 @@
 #define ADC_VREFINT_VOLTAGE_MV			((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_FULL_SCALE_12BITS))
 #define ADC_VMCU_DEFAULT_MV				3000
 
-#define ADC_VOLTAGE_DIVIDER_RATIO_VIN	10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VSRC	10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VSTR	2
-#define ADC_VOLTAGE_DIVIDER_RATIO_VCOM	10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VOUT	10
-#define ADC_VOLTAGE_DIVIDER_RATIO_VBKP	10
-
 #define ADC_LT6106_VOLTAGE_GAIN			59
 #define ADC_LT6106_SHUNT_RESISTOR_MOHMS	10
 #define ADC_LT6106_OFFSET_CURRENT_UA	25000 // (250µV maximum) / (10mR) = 25mA.
@@ -339,7 +332,7 @@ ADC_status_t ADC1_init(void) {
 	lptim1_status = LPTIM1_delay_milliseconds(ADC_INIT_DELAY_MS_REGULATOR, LPTIM_DELAY_MODE_ACTIVE);
 	LPTIM1_check_status(ADC_ERROR_BASE_LPTIM);
 	// ADC configuration.
-	ADC1 -> CFGR2 |= (0b01 << 30); // Use (PCLK2/2) as ADCCLK = SYSCLK/2 (see RCC_init() function).
+	ADC1 -> CFGR2 |= (0b01 << 30); // Use (PCLK2/2) as ADCCLK = SYSCLK/2.
 	ADC1 -> SMPR |= (0b111 << 0); // Maximum sampling time.
 	// ADC calibration.
 	ADC1 -> CR |= (0b1 << 31); // ADCAL='1'.

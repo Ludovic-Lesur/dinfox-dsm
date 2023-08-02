@@ -9,12 +9,13 @@
 #define __RCC_H__
 
 #include "flash.h"
+#include "types.h"
 
 /*** RCC macros ***/
 
-#define RCC_LSI_FREQUENCY_HZ		38000
-#define RCC_LSE_FREQUENCY_HZ		32768
-#define RCC_HSI_FREQUENCY_KHZ		16000
+#define RCC_LSI_FREQUENCY_HZ	38000
+#define RCC_LSE_FREQUENCY_HZ	32768
+#define RCC_HSI_FREQUENCY_KHZ	16000
 
 /*** RCC structures ***/
 
@@ -30,7 +31,6 @@ typedef enum {
 	RCC_ERROR_MSI_RANGE,
 	RCC_ERROR_MSI_READY,
 	RCC_ERROR_MSI_SWITCH,
-	RCC_ERROR_LAST,
 	RCC_ERROR_BASE_FLASH = 0x0100,
 	RCC_ERROR_BASE_LAST = (RCC_ERROR_BASE_FLASH + FLASH_ERROR_BASE_LAST)
 } RCC_status_t;
@@ -51,7 +51,6 @@ typedef enum {
 } RCC_msi_range_t;
 
 /*** RCC functions ***/
-
 
 /*!******************************************************************
  * \fn void RCC_init(void)

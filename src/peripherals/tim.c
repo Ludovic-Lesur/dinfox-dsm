@@ -8,7 +8,6 @@
 #include "tim.h"
 
 #include "iwdg.h"
-#include "mapping.h"
 #include "nvic.h"
 #include "pwr.h"
 #include "rcc.h"
@@ -29,7 +28,7 @@
 #define TIM2_TIMER_DURATION_MS_MAX		((TIM2_CNT_VALUE_MAX * 1000) / (TIM2_ETRF_CLOCK_HZ))
 
 #define TIM2_NUMBER_OF_CHANNELS			4
-
+#define TIM2_NUMBER_OF_USED_CHANNELS	3
 #define TIM2_CCRX_MASK_OFF				0xFFFF
 #define TIM2_PWM_FREQUENCY_HZ			10000
 #define TIM2_ARR_VALUE					((RCC_HSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
@@ -54,6 +53,14 @@ typedef struct {
 static volatile uint8_t tim2_channel_running[TIM2_CHANNEL_LAST];
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+static const uint8_t TIM2_LED_CHANNELS[TIM2_NUMBER_OF_USED_CHANNELS] = {
+	TIM2_CHANNEL_LED_RED,
+	TIM2_CHANNEL_LED_GREEN,
+	TIM2_CHANNEL_LED_BLUE
+};
+static uint16_t tim2_ccrx_mask[TIM2_NUMBER_OF_CHANNELS];
+#endif
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 static const uint16_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
 	1601, 1601, 1601, 1601, 1601, 1601, 1600, 1600, 1600, 1600,
 	1600, 1600, 1600, 1599, 1599, 1599, 1599, 1598, 1598, 1598,
@@ -66,7 +73,6 @@ static const uint16_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
 	1213, 1183, 1151, 1116, 1078, 1038, 994, 947, 896, 842,
 	783, 720, 651, 578, 498, 413, 321, 222, 115, 0,
 };
-static uint16_t tim2_ccrx_mask[TIM2_NUMBER_OF_CHANNELS];
 static TIM21_context_t tim21_ctx;
 #endif
 
@@ -93,12 +99,14 @@ void __attribute__((optimize("-O0"))) TIM2_IRQHandler(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
+	// Local variables.
+	uint8_t idx = 0;
 	// Check update flag.
 	if (((TIM21 -> SR) & (0b1 << 0)) != 0) {
 		// Update duty cycles.
-		TIM2 -> CCR1 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[0]);
-		TIM2 -> CCR2 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[1]);
-		TIM2 -> CCR3 = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[2]);
+		for (idx=0 ; idx<TIM2_NUMBER_OF_USED_CHANNELS ; idx++) {
+			TIM2 -> CCRx[TIM2_LED_CHANNELS[idx]] = (TIM21_DIMMING_LUT[tim21_ctx.dimming_lut_idx] | tim2_ccrx_mask[TIM2_LED_CHANNELS[idx]]);
+		}
 		// Manage index and direction.
 		if (tim21_ctx.dimming_lut_direction == 0) {
 			// Increment index.
@@ -131,12 +139,13 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 void _TIM2_reset_channels(void) {
 	// Local variables.
 	uint8_t idx = 0;
-	// Reset masks.
-	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) tim2_ccrx_mask[idx] = TIM2_CCRX_MASK_OFF;
-	// Disable all channels.
-	TIM2 -> CCR1 = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCR2 = (TIM2_ARR_VALUE + 1);
-	TIM2 -> CCR3 = (TIM2_ARR_VALUE + 1);
+	// Channels loop.
+	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) {
+		// Reset mask.
+		tim2_ccrx_mask[idx] = TIM2_CCRX_MASK_OFF;
+		// Disable channel.
+		TIM2 -> CCRx[idx] = (TIM2_ARR_VALUE + 1);
+	}
 	// Reset counter.
 	TIM2 -> CNT = 0;
 }
@@ -335,6 +344,8 @@ errors:
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM2_init(void) {
+	// Local variables.
+	uint8_t idx = 0;
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
 	// Set PWM frequency.
@@ -343,7 +354,10 @@ void TIM2_init(void) {
 	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CR1 |= (0b1 << 7);
-	TIM2 -> CCER |= 0x00000111;
+	// Enable required channels.
+	for (idx=0 ; idx<TIM2_NUMBER_OF_USED_CHANNELS ; idx++) {
+		TIM2 -> CCER |= (0b1 << (TIM2_LED_CHANNELS[idx] << 2));
+	}
 	// Disable all channels by default.
 	_TIM2_reset_channels();
 	// Generate event to update registers.
@@ -358,10 +372,6 @@ void TIM2_start(TIM2_channel_mask_t led_color) {
 	uint8_t idx = 0;
 	// Disable all channels.
 	_TIM2_reset_channels();
-	// Link GPIOs to timer.
-	GPIO_configure(&GPIO_LED_RED, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Enable required channels.
 	for (idx=0 ; idx<TIM2_NUMBER_OF_CHANNELS ; idx++) {
 		if ((led_color & (0b1 << idx)) != 0) {
@@ -393,7 +403,7 @@ void TIM21_init(void) {
 	// Enable peripheral clock.
 	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
 	// Configure period.
-	TIM21 -> PSC = (TIM21_PRESCALER - 1); // Timer is clocked on (SYSCLK / 2) .
+	TIM21 -> PSC = (TIM21_PRESCALER - 1); // Timer is clocked on (SYSCLK / 8).
 	// Generate event to update registers.
 	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
 	// Enable interrupt.

@@ -42,8 +42,9 @@ typedef enum {
 } TIM2_channel_t;
 #endif
 
+#ifdef UHFM
 /*!******************************************************************
- * \enum LPTIM_delay_mode_t
+ * \enum TIM_waiting_mode_t
  * \brief Timer completion waiting modes.
  *******************************************************************/
 typedef enum {
@@ -52,53 +53,46 @@ typedef enum {
 	TIM_WAITING_MODE_LOW_POWER_SLEEP,
 	TIM_WAITING_MODE_LAST
 } TIM_waiting_mode_t;
-
-#if ((defined LVRM) && (defined HW1_0))
-/*!******************************************************************
- * \enum TIM2_channel_mask_t
- * \brief LED color bit mask defined as 0b<CH4><CH3><CH2><CH1>.
- *******************************************************************/
-typedef enum {
-	TIM2_CHANNEL_MASK_OFF = 0b0000,
-	TIM2_CHANNEL_MASK_RED = 0b0100,
-	TIM2_CHANNEL_MASK_GREEN = 0b0010,
-	TIM2_CHANNEL_MASK_YELLOW = 0b0110,
-	TIM2_CHANNEL_MASK_BLUE = 0b0001,
-	TIM2_CHANNEL_MASK_MAGENTA = 0b0101,
-	TIM2_CHANNEL_MASK_CYAN = 0b0011,
-	TIM2_CHANNEL_MASK_WHITE	= 0b0111
-} TIM2_channel_mask_t;
 #endif
-#ifdef DDRM
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \enum TIM2_channel_mask_t
- * \brief LED color bit mask defined as 0b<CH4><CH3><CH2><CH1>.
+ * \enum TIM2_channel_t
+ * \brief TIM channels mapping defined as (channel number - 1).
  *******************************************************************/
 typedef enum {
-	TIM2_CHANNEL_MASK_OFF = 0b0000,
-	TIM2_CHANNEL_MASK_RED = 0b0100,
-	TIM2_CHANNEL_MASK_GREEN = 0b0001,
-	TIM2_CHANNEL_MASK_YELLOW = 0b0101,
-	TIM2_CHANNEL_MASK_BLUE = 0b0010,
-	TIM2_CHANNEL_MASK_MAGENTA = 0b0110,
-	TIM2_CHANNEL_MASK_CYAN = 0b0011,
-	TIM2_CHANNEL_MASK_WHITE	= 0b0111
-} TIM2_channel_mask_t;
+#ifdef DDRM
+	TIM2_CHANNEL_LED_RED = 2,
+	TIM2_CHANNEL_LED_GREEN = 0,
+	TIM2_CHANNEL_LED_BLUE = 1,
+#endif
+#if ((defined LVRM) && (defined HW1_0))
+	TIM2_CHANNEL_LED_RED = 2,
+	TIM2_CHANNEL_LED_GREEN = 1,
+	TIM2_CHANNEL_LED_BLUE = 0,
 #endif
 #if ((defined LVRM) && (defined HW2_0)) || (defined RRM)
+	TIM2_CHANNEL_LED_RED = 1,
+	TIM2_CHANNEL_LED_GREEN = 2,
+	TIM2_CHANNEL_LED_BLUE = 0,
+#endif
+} TIM2_channel_t;
+#endif
+
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
  * \enum TIM2_channel_mask_t
  * \brief LED color bit mask defined as 0b<CH4><CH3><CH2><CH1>.
  *******************************************************************/
 typedef enum {
 	TIM2_CHANNEL_MASK_OFF = 0b0000,
-	TIM2_CHANNEL_MASK_RED = 0b010,
-	TIM2_CHANNEL_MASK_GREEN = 0b0100,
-	TIM2_CHANNEL_MASK_YELLOW = 0b0110,
-	TIM2_CHANNEL_MASK_BLUE = 0b0001,
-	TIM2_CHANNEL_MASK_MAGENTA = 0b0011,
-	TIM2_CHANNEL_MASK_CYAN = 0b0101,
-	TIM2_CHANNEL_MASK_WHITE	= 0b0111
+	TIM2_CHANNEL_MASK_RED = (0b1 << TIM2_CHANNEL_LED_RED),
+	TIM2_CHANNEL_MASK_GREEN = (0b1 << TIM2_CHANNEL_LED_GREEN),
+	TIM2_CHANNEL_MASK_YELLOW = (0b1 << TIM2_CHANNEL_LED_RED) | (0b1 << TIM2_CHANNEL_LED_GREEN),
+	TIM2_CHANNEL_MASK_BLUE = (0b1 << TIM2_CHANNEL_LED_BLUE),
+	TIM2_CHANNEL_MASK_MAGENTA = (0b1 << TIM2_CHANNEL_LED_RED) | (0b1 << TIM2_CHANNEL_LED_BLUE),
+	TIM2_CHANNEL_MASK_CYAN = (0b1 << TIM2_CHANNEL_LED_GREEN) | (0b1 << TIM2_CHANNEL_LED_BLUE),
+	TIM2_CHANNEL_MASK_WHITE	= (0b1 << TIM2_CHANNEL_LED_RED) | (0b1 << TIM2_CHANNEL_LED_GREEN) | (0b1 << TIM2_CHANNEL_LED_BLUE)
 } TIM2_channel_mask_t;
 #endif
 
@@ -107,7 +101,7 @@ typedef enum {
 #ifdef UHFM
 /*!******************************************************************
  * \fn void TIM2_init(void)
- * \brief Init TIM2 peripheral for Sigfox library MCU API timers.
+ * \brief Init TIM2 peripheral for general purpose timer operation.
  * \param[in]  	none
  * \param[out] 	none
  * \retval		none

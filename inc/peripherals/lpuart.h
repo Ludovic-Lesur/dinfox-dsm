@@ -20,10 +20,8 @@
 typedef enum {
 	LPUART_SUCCESS = 0,
 	LPUART_ERROR_NULL_PARAMETER,
-	LPUART_ERROR_MODE,
 	LPUART_ERROR_TX_TIMEOUT,
 	LPUART_ERROR_TC_TIMEOUT,
-	LPUART_ERROR_STRING_SIZE,
 	LPUART_ERROR_BASE_LAST = 0x0100
 } LPUART_status_t;
 
@@ -69,7 +67,7 @@ void LPUART1_disable_rx(void);
  * \param[in]	data: Byte array to send.
  * \param[in]	data_size_bytes: Number of bytes to send.
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
 LPUART_status_t LPUART1_write(uint8_t* data, uint32_t data_size_bytes);
 

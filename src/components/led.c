@@ -56,6 +56,10 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
 		status = LED_ERROR_COLOR;
 		goto errors;
 	}
+	// Link GPIOs to timer.
+	GPIO_configure(&GPIO_LED_RED, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_LED_GREEN, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Start blink.
 	TIM2_start(color);
 	TIM21_start(blink_duration_ms);
