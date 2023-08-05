@@ -8,15 +8,14 @@
 #include "power.h"
 
 #include "adc.h"
+#include "digital.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "lptim.h"
 #include "mapping.h"
 #include "neom8n.h"
 #include "s2lp.h"
-#include "spi.h"
 #include "types.h"
-#include "usart.h"
 
 /*** POWER local global variables ***/
 
@@ -40,6 +39,7 @@ void POWER_init(void) {
 #endif
 #ifdef SM
 	GPIO_configure(&GPIO_ANA_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_DIG_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_SEN_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef UHFM
@@ -57,62 +57,55 @@ void POWER_init(void) {
 POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode) {
 	// Local variables.
 	POWER_status_t status = POWER_SUCCESS;
+	ADC_status_t adc1_status = ADC_SUCCESS;
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint32_t delay_ms = 0;
 	// Check domain.
 	switch (domain) {
 	case POWER_DOMAIN_ANALOG:
+		// Turn analog front-end on and init ADC.
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-		// Enable voltage dividers.
 		GPIO_write(&GPIO_MNTR_EN, 1);
-		// Set delay value.
 		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
-		// Turn analog front-end on.
 		GPIO_write(&GPIO_ANA_POWER_ENABLE, 1);
-		// Set delay value.
 		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
-		// Init peripherals.
-		ADC1_init();
+		adc1_status = ADC1_init();
+		ADC1_check_status(POWER_ERROR_BASE_ADC);
 		break;
 #ifdef SM
+	case POWER_DOMAIN_DIGITAL:
+		// Turn digital front-end on.
+		GPIO_write(&GPIO_DIG_POWER_ENABLE, 1);
+		DIGITAL_init();
+		delay_ms = POWER_ON_DELAY_MS_DIGITAL;
+		break;
 	case POWER_DOMAIN_SENSORS:
-		// Turn digital sensors on.
+		// Turn digital sensors on and init common I2C interface.
 		GPIO_write(&GPIO_SEN_POWER_ENABLE, 1);
-		// Init peripherals.
 		I2C1_init();
-		// Set delay value.
 		delay_ms = POWER_ON_DELAY_MS_SENSORS;
 		break;
 #endif
 #ifdef GPSM
 	case POWER_DOMAIN_GPS:
-		// Turn GPS on.
+		// Turn GPS on and init NEOM8N driver.
 		GPIO_write(&GPIO_GPS_POWER_ENABLE, 1);
 #ifdef GPSM_ACTIVE_ANTENNA
-		// Turn active antenna on.
 		GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
 #endif
-		// Init peripherals.
-		USART2_init();
-		// Init components.
 		NEOM8N_init();
-		// Set delay value.
 		delay_ms = POWER_ON_DELAY_MS_GPS;
 		break;
 #endif
 #ifdef UHFM
 	case POWER_DOMAIN_RADIO:
-		// Turn radio on.
+		// Turn radio on and init S2LP driver.
 		GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
 		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 1);
-		// Init peripherals.
-		SPI1_init();
-		// Init components.
 		S2LP_init();
-		// Set delay value.
 		delay_ms = POWER_ON_DELAY_MS_RADIO;
 		break;
 #endif
@@ -138,46 +131,40 @@ POWER_status_t POWER_disable(POWER_domain_t domain) {
 	// Check domain.
 	switch (domain) {
 	case POWER_DOMAIN_ANALOG:
-		// Release peripherals.
+		// Turn analog front-end off and release ADC.
 		ADC1_de_init();
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
-		// Disable voltage dividers.
 		GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
-		// Turn analog front-end off.
 		GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
 		break;
 #ifdef SM
+	case POWER_DOMAIN_DIGITAL:
+		// Turn digital front-end off.
+		GPIO_write(&GPIO_DIG_POWER_ENABLE, 0);
+		break;
 	case POWER_DOMAIN_SENSORS:
-		// Release peripherals.
+		// Turn digital sensors off and release I2C interface.
 		I2C1_de_init();
-		// Turn digital sensors off.
 		GPIO_write(&GPIO_SEN_POWER_ENABLE, 0);
 		break;
 #endif
 #ifdef GPSM
 	case POWER_DOMAIN_GPS:
-		// Release components.
+		// Turn GPS off and release NEOM8N driver.
 		NEOM8N_de_init();
-		// Release peripherals.
-		USART2_de_init();
 #ifdef GPSM_ACTIVE_ANTENNA
-		// Turn active antenna off.
 		GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);
 #endif
-		// Turn GPS off.
 		GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
 		break;
 #endif
 #ifdef UHFM
 	case POWER_DOMAIN_RADIO:
-		// Release components.
+		// Turn radio off and release S2LP driver.
 		S2LP_de_init();
-		// Release peripherals.
-		SPI1_de_init();
-		// Turn radio off.
 		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 0);
 		GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
 		break;

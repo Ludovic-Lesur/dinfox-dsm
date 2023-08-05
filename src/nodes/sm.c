@@ -111,7 +111,7 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	_SM_reset_analog_data();
 #ifdef SM_AIN_ENABLE
 	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
@@ -156,8 +156,11 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 #endif
 #ifdef SM_DIO_ENABLE
 	// Perform digital measurements.
-	digital_status = DIGITAL_perform_measurements();
-	DIGITAL_stack_error();
+	power_status = POWER_enable(POWER_DOMAIN_DIGITAL, LPTIM_DELAY_MODE_SLEEP);
+	POWER_stack_error();
+	DIGITAL_perform_measurements();
+	power_status = POWER_disable(POWER_DOMAIN_DIGITAL);
+	POWER_stack_error();
 	if (digital_status == DIGITAL_SUCCESS) {
 		// DIO0.
 		digital_status = DIGITAL_read(DIGITAL_DATA_INDEX_DIO0, &state);

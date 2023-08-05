@@ -32,8 +32,6 @@ static DIGITAL_context_t digital_ctx;
 void DIGITAL_init(void) {
 	// Local variables.
 	uint8_t idx = 0;
-	// Power control.
-	GPIO_configure(&GPIO_DIG_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Configure digital inputs.
 	for (idx=0 ; idx<DIGITAL_DATA_INDEX_LAST ; idx++) {
 		GPIO_configure(DIGITAL_INPUTS[idx], GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -43,24 +41,13 @@ void DIGITAL_init(void) {
 
 #ifdef SM
 /*******************************************************************/
-DIGITAL_status_t DIGITAL_perform_measurements(void) {
+void DIGITAL_perform_measurements(void) {
 	// Local variables.
-	DIGITAL_status_t status = DIGITAL_SUCCESS;
-	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	uint8_t idx = 0;
-	// Turn digital front-end on.
-	GPIO_write(&GPIO_DIG_POWER_ENABLE, 1);
-	// Wait for stabilization.
-	lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_check_status(DIGITAL_ERROR_BASE_LPTIM);
 	// Channels loop.
 	for (idx=0 ; idx<DIGITAL_DATA_INDEX_LAST ; idx++) {
 		digital_ctx.data[idx] = GPIO_read(DIGITAL_INPUTS[idx]);
 	}
-errors:
-	// Turn digital front-end off.
-	GPIO_write(&GPIO_DIG_POWER_ENABLE, 0);
-	return status;
 }
 #endif
 

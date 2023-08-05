@@ -15,11 +15,11 @@
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
+// Utils.
+#include "types.h"
 // Components.
-#include "digital.h"
 #include "led.h"
 #include "load.h"
-#include "neom8n.h"
 #include "power.h"
 // Applicative.
 #include "at_bus.h"
@@ -88,6 +88,8 @@ static void _XM_init_hw(void) {
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
+	// Init error stack
+	ERROR_stack_init();
 	// Init memory.
 	NVIC_init();
 	// Init power module and clock tree.
@@ -96,13 +98,12 @@ static void _XM_init_hw(void) {
 	// Init GPIOs.
 	GPIO_init();
 	EXTI_init();
-	// Init watchdog.
 #ifndef DEBUG
+	// Start independent watchdog.
 	iwdg_status = IWDG_init();
 	IWDG_stack_error();
+	IWDG_reload();
 #endif
-	// Init error stack
-	ERROR_stack_init();
 	// High speed oscillator.
 	rcc_status = RCC_switch_to_hsi();
 	RCC_stack_error();
@@ -113,9 +114,6 @@ static void _XM_init_hw(void) {
 	LPTIM1_init();
 	// Init components.
 	POWER_init();
-#ifdef SM
-	DIGITAL_init();
-#endif
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 	LOAD_init();
 #endif

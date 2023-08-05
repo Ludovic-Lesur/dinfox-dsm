@@ -683,7 +683,8 @@ void NEOM8N_init(void) {
 	// Init backup and reset pins.
 	GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_GPS_RESET, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-	// Init DMA.
+	// Init USART and DMA.
+	USART2_init();
 	DMA1_CH6_init(&_NEOM8N_dma_tc_irq_callback);
 	// Init USART callback.
 	USART2_set_character_match_callback(&_NEOM8N_usart_cm_irq_callback);
@@ -700,8 +701,9 @@ void NEOM8N_init(void) {
 #ifdef GPSM
 /*******************************************************************/
 void NEOM8N_de_init(void) {
-	// Release DMA.
+	// Release USART and DMA.
 	DMA1_CH6_de_init();
+	USART2_de_init();
 	// Force pins to output low.
 	GPIO_write(&GPIO_GPS_VBCKP, 0);
 	GPIO_write(&GPIO_GPS_RESET, 0);

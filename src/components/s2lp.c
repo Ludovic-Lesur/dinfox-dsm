@@ -317,7 +317,8 @@ errors:
 
 /*******************************************************************/
 void S2LP_init(void) {
-	// Init DMA.
+	// Init SPI and DMA.
+	SPI1_init();
 	DMA1_CH3_init();
 	// Configure GPIOs as input
 	GPIO_configure(&GPIO_S2LP_SDN, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -337,8 +338,9 @@ void S2LP_de_init(void) {
 	GPIO_configure(&GPIO_S2LP_GPIO0, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Configure chip select pin.
 	GPIO_write(&GPIO_S2LP_CS, 0);
-	// Disable DMA.
+	// Release SPI and DMA.
 	DMA1_CH3_de_init();
+	SPI1_de_init();
 }
 
 /*******************************************************************/

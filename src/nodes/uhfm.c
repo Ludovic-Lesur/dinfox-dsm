@@ -612,10 +612,12 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	lptim1_status = LPTIM1_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
 	LPTIM1_stack_error();
 	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
+	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+	POWER_stack_error();
 	// Stop CW.
 	node_status = _UHFM_cwen_callback(0);
 	NODE_stack_error();
@@ -634,6 +636,8 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 	lptim1_status = LPTIM1_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
 	LPTIM1_stack_error();
 	// Perform measurements in RX state.
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
 	power_status = POWER_disable(POWER_DOMAIN_ANALOG);

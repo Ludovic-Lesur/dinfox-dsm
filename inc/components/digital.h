@@ -8,7 +8,6 @@
 #ifndef __DIGITAL_H__
 #define __DIGITAL_H__
 
-#include "lptim.h"
 #include "types.h"
 
 /*** DIGITAL structures ***/
@@ -20,8 +19,7 @@
 typedef enum {
 	DIGITAL_SUCCESS = 0,
 	DIGITAL_ERROR_DATA_INDEX,
-	DIGITAL_ERROR_BASE_LPTIM = 0x100,
-	DIGITAL_ERROR_BASE_LAST = (DIGITAL_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
+	DIGITAL_ERROR_BASE_LAST = 0x100,
 } DIGITAL_status_t;
 
 /*!******************************************************************
@@ -55,9 +53,9 @@ void DIGITAL_init(void);
  * \brief Perform all digital channels measurement.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		Function execution status.
+ * \retval		none
  *******************************************************************/
-DIGITAL_status_t DIGITAL_perform_measurements(void);
+void DIGITAL_perform_measurements(void);
 #endif
 
 #ifdef SM

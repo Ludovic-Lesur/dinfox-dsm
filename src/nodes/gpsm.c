@@ -448,7 +448,7 @@ NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();

@@ -14,7 +14,6 @@
 
 /*** LBUS local macros ***/
 
-// Addressing.
 #define LBUS_DESTINATION_ADDRESS_MARKER		0x80
 #define LBUS_ADDRESS_SIZE_BYTES				1
 
@@ -32,7 +31,7 @@ typedef struct {
 	NODE_address_t self_address;
 	NODE_address_t master_address;
 	uint8_t rx_byte_count;
-	LPUART_rx_irq_cb_t rx_irq_callback;
+	LBUS_rx_irq_cb rx_irq_callback;
 } LBUS_context_t;
 
 /*** LBUS local global variables ***/
@@ -49,7 +48,7 @@ void _LBUS_fill_rx_buffer(uint8_t rx_byte) {
 		// Nothing to do.
 		break;
 	case LBUS_FRAME_FIELD_INDEX_SOURCE_ADDRESS:
-		// Store source address for next response.
+		// Store source address for next reply.
 		lbus_ctx.master_address = (rx_byte & LBUS_ADDRESS_MASK);
 		break;
 	default:
@@ -78,8 +77,6 @@ LBUS_status_t LBUS_init(NODE_address_t self_address, LBUS_rx_irq_cb irq_callback
 	lbus_ctx.self_address = self_address;
 	lbus_ctx.master_address = (DINFOX_NODE_ADDRESS_DMM | LBUS_DESTINATION_ADDRESS_MARKER);
 	lbus_ctx.rx_byte_count = 0;
-	lbus_ctx.rx_irq_callback = NULL;
-	// Register callback.
 	lbus_ctx.rx_irq_callback = irq_callback;
 	// Init LPUART.
 	LPUART1_init(self_address, &_LBUS_fill_rx_buffer);

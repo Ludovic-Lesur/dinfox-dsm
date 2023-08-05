@@ -159,7 +159,7 @@ NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status) {
 	// Reset results.
 	_BPSM_reset_analog_data();
 	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
+	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	POWER_stack_error();
 	adc1_status = ADC1_perform_measurements();
 	ADC1_stack_error();
