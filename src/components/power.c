@@ -128,17 +128,19 @@ errors:
 POWER_status_t POWER_disable(POWER_domain_t domain) {
 	// Local variables.
 	POWER_status_t status = POWER_SUCCESS;
+	ADC_status_t adc1_status = ADC_SUCCESS;
 	// Check domain.
 	switch (domain) {
 	case POWER_DOMAIN_ANALOG:
 		// Turn analog front-end off and release ADC.
-		ADC1_de_init();
+		status = ADC1_de_init();
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 		GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
 		GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
+		ADC1_check_status(POWER_ERROR_BASE_ADC);
 		break;
 #ifdef SM
 	case POWER_DOMAIN_DIGITAL:
