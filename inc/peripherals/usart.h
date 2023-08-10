@@ -33,13 +33,13 @@ typedef void (*USART_character_match_irq_cb_t)(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void USART2_init(void)
+ * \fn void USART2_init(USART_character_match_irq_cb_t irq_callback)
  * \brief Init USART2 peripheral.
- * \param[in]  	none
+ * \param[in]  	irq_callback: Function to call on interrupt.
  * \param[out] 	none
  * \retval		none
  *******************************************************************/
-void USART2_init(void);
+void USART2_init(USART_character_match_irq_cb_t irq_callback);
 #endif
 
 #ifdef GPSM
@@ -55,17 +55,6 @@ void USART2_de_init(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_callback
- * \brief Set USART character match interrupt callback.
- * \param[in]  	irq_callback: Function to call on interrupt.
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_callback);
-#endif
-
-#ifdef GPSM
-/*!******************************************************************
  * \fn USART_status_t USART2_write(uint8_t* data, uint8_t data_size_bytes)
  * \brief Send data over USART2.
  * \param[in]	data: Byte array to send.
@@ -73,7 +62,7 @@ void USART2_set_character_match_callback(USART_character_match_irq_cb_t irq_call
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-USART_status_t USART2_write(uint8_t* data, uint8_t data_size_bytes);
+USART_status_t USART2_write(uint8_t* data, uint32_t data_size_bytes);
 #endif
 
 /*******************************************************************/

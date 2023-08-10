@@ -41,7 +41,7 @@ static LBUS_context_t lbus_ctx;
 /*** LBUS local functions ***/
 
 /*******************************************************************/
-void _LBUS_fill_rx_buffer(uint8_t rx_byte) {
+static void _LBUS_fill_rx_buffer(uint8_t rx_byte) {
 	// Check field index.
 	switch (lbus_ctx.rx_byte_count) {
 	case LBUS_FRAME_FIELD_INDEX_DESTINATION_ADDRESS:

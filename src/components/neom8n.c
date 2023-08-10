@@ -684,10 +684,8 @@ void NEOM8N_init(void) {
 	GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_GPS_RESET, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Init USART and DMA.
-	USART2_init();
+	USART2_init(&_NEOM8N_usart_cm_irq_callback);
 	DMA1_CH6_init(&_NEOM8N_dma_tc_irq_callback);
-	// Init USART callback.
-	USART2_set_character_match_callback(&_NEOM8N_usart_cm_irq_callback);
 	// Init context.
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buffer0[idx] = 0;
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buffer1[idx] = 0;
