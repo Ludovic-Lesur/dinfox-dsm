@@ -711,8 +711,6 @@ RF_API_status_t RF_API_carrier_sense(RF_API_carrier_sense_parameters_t *carrier_
 RF_API_status_t RF_API_get_latency(RF_API_latency_t latency_type, sfx_u32 *latency_ms) {
 	// Local variables.
 	RF_API_status_t status = RF_API_SUCCESS;
-	// Reset result.
-	(*latency_ms) = 0;
 	// Check parameter.
 	if (latency_type >= RF_API_LATENCY_LAST) {
 		EXIT_ERROR(RF_API_ERROR_LATENCY_TYPE);

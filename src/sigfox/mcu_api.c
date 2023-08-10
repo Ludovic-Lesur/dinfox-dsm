@@ -56,6 +56,7 @@
 typedef enum {
 	MCU_API_ERROR_NULL_PARAMETER = (MCU_API_SUCCESS + 1),
 	MCU_API_ERROR_EP_KEY,
+	MCU_API_ERROR_LATENCY_TYPE,
 	// Low level drivers errors.
 	MCU_API_ERROR_DRIVER_ADC1,
 	MCU_API_ERROR_DRIVER_AES,
@@ -63,6 +64,14 @@ typedef enum {
 	MCU_API_ERROR_DRIVER_POWER,
 	MCU_API_ERROR_DRIVER_TIM2,
 } MCU_API_custom_status_t;
+
+/*** MCU API local global variables ***/
+
+#if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION) && (defined BIDIRECTIONAL)
+static sfx_u32 MCU_API_LATENCY_MS[MCU_API_LATENCY_LAST] = {
+	POWER_ON_DELAY_MS_ANALOG // Get voltage and temperature function.
+};
+#endif
 
 /*** MCU API local functions ***/
 
@@ -372,6 +381,22 @@ MCU_API_status_t MCU_API_print_dl_payload(sfx_u8 *dl_payload, sfx_u8 dl_payload_
 MCU_API_status_t MCU_API_get_initial_pac(sfx_u8 *initial_pac, sfx_u8 initial_pac_size_bytes) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
+	RETURN();
+}
+#endif
+
+#if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION) && (defined BIDIRECTIONAL)
+/*******************************************************************/
+MCU_API_status_t MCU_API_get_latency(MCU_API_latency_t latency_type, sfx_u32 *latency_ms) {
+	// Local variables.
+	MCU_API_status_t status = MCU_API_SUCCESS;
+	// Check parameter.
+	if (latency_type >= MCU_API_LATENCY_LAST) {
+		EXIT_ERROR(MCU_API_ERROR_LATENCY_TYPE);
+	}
+	// Set latency.
+	(*latency_ms) = MCU_API_LATENCY_MS[latency_type];
+errors:
 	RETURN();
 }
 #endif
