@@ -10,10 +10,6 @@
 
 #include "types.h"
 
-/*** SPI macros ***/
-
-#define SPI_POWER_ON_DELAY_MS	50
-
 /*** SPI structures ***/
 
 /*!******************************************************************
@@ -50,17 +46,6 @@ void SPI1_init(void);
  * \retval		none
  *******************************************************************/
 void SPI1_de_init(void);
-#endif
-
-#ifdef UHFM
-/*!******************************************************************
- * \fn void SPI1_power_control(uint8_t state)
- * \brief Control SPI pins according to power state.
- * \param[in]  	state: State to set.
- * \param[out] 	none
- * \retval		none
- *******************************************************************/
-void SPI1_power_control(uint8_t state);
 #endif
 
 #ifdef UHFM

@@ -8,7 +8,7 @@
 #ifndef __S2LP_REG_H__
 #define __S2LP_REG_H__
 
-/*** S2LP REG macros ***/
+/*** S2LP registers definition ***/
 
 #define S2LP_REG_GPIO0_CONF			0x00
 #define S2LP_REG_GPIO1_CONF			0x01

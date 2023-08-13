@@ -51,12 +51,22 @@ void Reset_Handler(void);								/* Reset Handler */
   User Initial Stack & Heap
  *----------------------------------------------------------------------------*/
 #ifndef __STACK_SIZE
+#if (defined BPSM) || (defined DDRM) || (defined LVRM) || (defined RRM)
 #define	__STACK_SIZE	0x00000100
+#endif
+#if (defined UHFM) || (defined GPSM) || (defined SM)
+#define	__STACK_SIZE	0x00000400
+#endif
 #endif
 static uint8_t stack[__STACK_SIZE] __attribute__ ((aligned(8), used, section(".stack")));
 
 #ifndef __HEAP_SIZE
+#if (defined BPSM) || (defined DDRM) || (defined LVRM) || (defined RRM)
 #define	__HEAP_SIZE		0x00000300
+#endif
+#if (defined UHFM) || (defined GPSM) || (defined SM)
+#define	__HEAP_SIZE		0x00000C00
+#endif
 #endif
 #if __HEAP_SIZE > 0
 static uint8_t heap[__HEAP_SIZE]   __attribute__ ((aligned(8), used, section(".heap")));

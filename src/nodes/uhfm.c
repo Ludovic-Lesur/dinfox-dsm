@@ -236,7 +236,7 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	RF_API_status_t rf_api_status = RF_API_SUCCESS;
 	RF_API_radio_parameters_t radio_params;
 	RF_API_rx_data_t rx_data;
-	SIGFOX_EP_API_message_status_t  message_status;
+	SIGFOX_EP_API_message_status_t message_status;
 	sfx_u8 dl_phy_content[SIGFOX_DL_PHY_CONTENT_SIZE_BYTES];
 	sfx_s16 dl_rssi_dbm = 0;
 	uint32_t radio_test_0 = 0;
@@ -249,7 +249,7 @@ static NODE_status_t _UHFM_dtrg_callback(void) {
 	NODE_stack_error();
 	// Radio configuration.
 	radio_params.rf_mode = RF_API_MODE_RX;
-	radio_params.frequency_hz = (sfx_u32) DINFOX_read_field(radio_test_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY);;
+	radio_params.frequency_hz = (sfx_u32) DINFOX_read_field(radio_test_0, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY);
 	radio_params.modulation = RF_API_MODULATION_GFSK;
 	radio_params.bit_rate_bps = SIGFOX_DL_BIT_RATE_BPS;
 	radio_params.tx_power_dbm_eirp = TX_POWER_DBM_EIRP;

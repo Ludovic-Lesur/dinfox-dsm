@@ -43,11 +43,11 @@
 #define AT_BUS_REPLY_TAB					"     "
 #if (defined ATM) && (defined UHFM)
 #define AT_BUS_COMMAND_NVM
-#define AT_BUS_COMMAND_SIGFOX_EP_LIB
+//#define AT_BUS_COMMAND_SIGFOX_EP_LIB
 #define AT_BUS_COMMAND_SIGFOX_ADDON_RFP
-#define AT_BUS_COMMAND_CW
-#define AT_BUS_COMMAND_DL
-#define AT_BUS_COMMAND_RSSI
+//#define AT_BUS_COMMAND_CW
+//#define AT_BUS_COMMAND_DL
+//#define AT_BUS_COMMAND_RSSI
 #define AT_BUS_RSSI_REPORT_PERIOD_MS		500
 #endif
 
@@ -145,21 +145,21 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_HEADER,  "AT$W=", "reg_addr[hex],reg_value[hex],(reg_mask[hex])", "Write register",_AT_BUS_write_callback},
 #ifdef ATM
 	{PARSER_MODE_COMMAND, "AT", STRING_NULL, "Ping command", _AT_BUS_print_ok},
-	{PARSER_MODE_COMMAND, "AT?", STRING_NULL, "List all available commands", _AT_BUS_print_command_list},
+	{PARSER_MODE_COMMAND, "AT?", STRING_NULL, "AT commands list", _AT_BUS_print_command_list},
 	{PARSER_MODE_COMMAND, "AT$V?", STRING_NULL, "Get SW version", _AT_BUS_print_sw_version},
 	{PARSER_MODE_COMMAND, "AT$ERROR?", STRING_NULL, "Read error stack", _AT_BUS_print_error_stack},
 	{PARSER_MODE_COMMAND, "AT$RST", STRING_NULL, "Reset MCU", PWR_software_reset},
-	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC measurements", _AT_BUS_adc_callback},
+	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC data", _AT_BUS_adc_callback},
 #endif
 #if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
 	{PARSER_MODE_HEADER,  "AT$NVMR=", "address[dec]", "Read NVM byte", _AT_BUS_nvm_read_callback},
 	{PARSER_MODE_HEADER, "AT$NVMW=", "address[hex],value[hex]", "Write NVM byte", _AT_BUS_nvm_write_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
-	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox device ID", _AT_BUS_get_id_callback},
-	{PARSER_MODE_HEADER,  "AT$ID=", "id[hex]", "Set Sigfox device ID", _AT_BUS_set_id_callback},
-	{PARSER_MODE_COMMAND, "AT$KEY?", STRING_NULL, "Get Sigfox device key", _AT_BUS_get_key_callback},
-	{PARSER_MODE_HEADER,  "AT$KEY=", "key[hex]", "Set Sigfox device key", _AT_BUS_set_key_callback},
+	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox EP ID", _AT_BUS_get_id_callback},
+	{PARSER_MODE_HEADER,  "AT$ID=", "id[hex]", "Set Sigfox EP ID", _AT_BUS_set_id_callback},
+	{PARSER_MODE_COMMAND, "AT$KEY?", STRING_NULL, "Get Sigfox EP key", _AT_BUS_get_key_callback},
+	{PARSER_MODE_HEADER,  "AT$KEY=", "key[hex]", "Set Sigfox EP key", _AT_BUS_set_key_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_EP_LIB)
 	{PARSER_MODE_COMMAND, "AT$SO", STRING_NULL, "Sigfox send control message", _AT_BUS_so_callback},
@@ -168,16 +168,16 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "AT$DL?", STRING_NULL, "Read last DL payload", _AT_BUS_print_dl_payload},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_SIGFOX_ADDON_RFP)
-	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Execute Sigfox test mode", _AT_BUS_tm_callback},
+	{PARSER_MODE_HEADER,  "AT$TM=", "rc_index[dec],test_mode[dec]", "Sigfox RFP test mode", _AT_BUS_tm_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_CW)
-	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Start or stop continuous radio transmission", _AT_BUS_cw_callback},
+	{PARSER_MODE_HEADER,  "AT$CW=", "frequency[hz],enable[bit],(output_power[dbm])", "Continuous wave", _AT_BUS_cw_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_DL)
 	{PARSER_MODE_HEADER,  "AT$DL=", "frequency[hz]", "Continuous downlink frames decoding", _AT_BUS_dl_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined  AT_BUS_COMMAND_RSSI)
-	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Start or stop continuous RSSI measurement", _AT_BUS_rssi_callback},
+	{PARSER_MODE_HEADER,  "AT$RSSI=", "frequency[hz],duration[s]", "Continuous RSSI measurement", _AT_BUS_rssi_callback},
 #endif
 #if (defined ATM) && (defined GPSM)
 	{PARSER_MODE_HEADER,  "AT$TIME=", "timeout[s]", "Get GPS time", _AT_BUS_time_callback},
@@ -405,7 +405,7 @@ static void _AT_BUS_print_error_stack(void) {
 	SIGFOX_ERROR_t sigfox_error;
 #endif
 	// Unstack all errors.
-	_AT_BUS_reply_add_string("[ ");
+	_AT_BUS_reply_add_string("MCU [ ");
 	do {
 		// Read error stack.
 		node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ERROR_STACK, &reg_value);
@@ -426,7 +426,7 @@ static void _AT_BUS_print_error_stack(void) {
 	do {
 		// Read error stack.
 		sigfox_ep_api_status = SIGFOX_EP_API_unstack_error(&sigfox_error);
-		ERROR_print_error(sigfox_ep_api_status, SIGFOX_EP_API_SUCCESS, ERROR_BASE_SIGFOX);
+		ERROR_print_error(sigfox_ep_api_status, SIGFOX_EP_API_SUCCESS, ERROR_BASE_SIGFOX_EP_API);
 		// Check value.
 		if (sigfox_error.code != SIGFOX_EP_API_SUCCESS) {
 			_AT_BUS_reply_add_value((int32_t) sigfox_error.source, STRING_FORMAT_HEXADECIMAL, 1);

@@ -467,6 +467,8 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t *radio_parameters) {
 #ifdef BIDIRECTIONAL
 		deviation_hz = (radio_parameters -> deviation_hz);
 #endif
+		s2lp_status = S2LP_set_rf_output_power(radio_parameters -> tx_power_dbm_eirp);
+		_RF_API_check_s2lp_status();
 		break;
 	case RF_API_MODULATION_DBPSK:
 		modulation = S2LP_MODULATION_POLAR;

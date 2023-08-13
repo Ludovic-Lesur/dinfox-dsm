@@ -18,8 +18,6 @@
 #include "spi.h"
 #include "types.h"
 
-#ifdef UHFM
-
 /*** S2LP local macros ***/
 
 // SPI header bytes.
@@ -75,14 +73,17 @@
 
 /*** S2LP local structures ***/
 
+#ifdef UHFM
 /*******************************************************************/
 typedef struct {
 	uint16_t mantissa;
 	uint8_t exponent;
 } S2LP_mantissa_exponent_t;
+#endif
 
 /*** S2LP local global variables ***/
 
+#ifdef UHFM
 static const uint16_t S2LP_RX_BANDWIDTH_26M[S2LP_RX_BANDWIDTH_TABLE_SIZE] = {
 	8001, 7951, 7684, 7368, 7051, 6709, 6423, 5867, 5414,
 	4509, 4259, 4032, 3808, 3621, 3417, 3254, 2945, 2703,
@@ -97,12 +98,14 @@ static const uint16_t S2LP_RX_BANDWIDTH_26M[S2LP_RX_BANDWIDTH_TABLE_SIZE] = {
 };
 static uint8_t s2lp_tx_data[S2LP_FIFO_SIZE_BYTES];
 static uint8_t s2lp_rx_data[S2LP_FIFO_SIZE_BYTES];
+#endif
 
 /*** S2LP local functions ***/
 
 /*******************************************************************/
 #define S2LP_abs(a) ((a) > 0 ? (a) : -(a))
 
+#ifdef UHFM
 /*******************************************************************/
 static S2LP_status_t _S2LP_write_register(uint8_t addr, uint8_t value) {
 	// Local variables.
@@ -120,7 +123,9 @@ errors:
 	GPIO_write(&GPIO_S2LP_CS, 1); // Set CS pin.
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static S2LP_status_t _S2LP_read_register(uint8_t addr, uint8_t* value) {
 	// Local variables.
@@ -140,7 +145,9 @@ errors:
 	GPIO_write(&GPIO_S2LP_CS, 1); // Set CS pin.
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static uint32_t _S2LP_compute_datarate(S2LP_mantissa_exponent_t* datarate_setting) {
 	// Local variables.
@@ -157,7 +164,9 @@ static uint32_t _S2LP_compute_datarate(S2LP_mantissa_exponent_t* datarate_settin
 	}
 	return datarate_bps;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static S2LP_status_t _S2LP_compute_mantissa_exponent_datarate(uint32_t datarate_bps, S2LP_mantissa_exponent_t* datarate_setting) {
 	// Local variables.
@@ -203,7 +212,9 @@ static S2LP_status_t _S2LP_compute_mantissa_exponent_datarate(uint32_t datarate_
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static uint32_t _S2LP_compute_deviation(S2LP_mantissa_exponent_t* deviation_setting) {
 	// Local variables.
@@ -217,7 +228,9 @@ static uint32_t _S2LP_compute_deviation(S2LP_mantissa_exponent_t* deviation_sett
 	}
 	return deviation_hz;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static S2LP_status_t _S2LP_compute_mantissa_exponent_deviation(uint32_t deviation_hz, S2LP_mantissa_exponent_t* deviation_setting) {
 	// Local variables.
@@ -263,7 +276,9 @@ static S2LP_status_t _S2LP_compute_mantissa_exponent_deviation(uint32_t deviatio
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 static S2LP_status_t _S2LP_compute_mantissa_exponent_rx_bandwidth(uint32_t rx_bandwidth_hz, S2LP_mantissa_exponent_t* rx_bandwidth_setting) {
 	// Local variables.
@@ -312,9 +327,11 @@ static S2LP_status_t _S2LP_compute_mantissa_exponent_rx_bandwidth(uint32_t rx_ba
 errors:
 	return status;
 }
+#endif
 
 /*** S2LP functions ***/
 
+#ifdef UHFM
 /*******************************************************************/
 void S2LP_init(void) {
 	// Init SPI and DMA.
@@ -330,7 +347,9 @@ void S2LP_init(void) {
 	GPIO_configure(&GPIO_RF_TX_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_RF_RX_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 void S2LP_de_init(void) {
 	// Configure GPIOs as output low.
@@ -342,7 +361,9 @@ void S2LP_de_init(void) {
 	DMA1_CH3_de_init();
 	SPI1_de_init();
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path) {
 	// Local variables.
@@ -368,6 +389,9 @@ S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path) {
 errors:
 	return status;
 }
+#endif
+
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable) {
 	// Local variables.
@@ -388,7 +412,9 @@ S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_send_command(S2LP_command_t command) {
 	// Local variables.
@@ -410,7 +436,9 @@ errors:
 	GPIO_write(&GPIO_S2LP_CS, 1); // Set CS pin.
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state) {
 	// Local variables.
@@ -427,7 +455,9 @@ S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_oscillator(S2LP_oscillator_t oscillator) {
 	// Local variables.
@@ -452,7 +482,9 @@ S2LP_status_t S2LP_set_oscillator(S2LP_oscillator_t oscillator) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_wait_for_oscillator(void) {
 	// Local variables.
@@ -469,7 +501,9 @@ S2LP_status_t S2LP_wait_for_oscillator(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_configure_charge_pump(void) {
 	// Local variables.
@@ -492,7 +526,9 @@ S2LP_status_t S2LP_configure_charge_pump(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_smps_frequency(uint32_t frequency_hz) {
 	// Local variables.
@@ -513,7 +549,9 @@ S2LP_status_t S2LP_set_smps_frequency(uint32_t frequency_hz) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_modulation(S2LP_modulation_t modulation) {
 	// Local variables.
@@ -536,7 +574,9 @@ S2LP_status_t S2LP_set_modulation(S2LP_modulation_t modulation) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_rf_frequency(uint32_t frequency_hz) {
 	// Local variables.
@@ -581,7 +621,9 @@ S2LP_status_t S2LP_set_rf_frequency(uint32_t frequency_hz) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_fsk_deviation(uint32_t deviation_hz) {
 	// Local variables.
@@ -603,7 +645,9 @@ S2LP_status_t S2LP_set_fsk_deviation(uint32_t deviation_hz) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_datarate(uint32_t datarate_bps) {
 	// Local variables.
@@ -627,7 +671,9 @@ S2LP_status_t S2LP_set_datarate(uint32_t datarate_bps) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_configure_pa(void) {
 	// Local variables.
@@ -651,7 +697,9 @@ S2LP_status_t S2LP_configure_pa(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_rf_output_power(int8_t output_power_dbm) {
 	// Local variables.
@@ -679,7 +727,9 @@ S2LP_status_t S2LP_set_rf_output_power(int8_t output_power_dbm) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_tx_source(S2LP_tx_source_t tx_source) {
 	// Local variables.
@@ -702,7 +752,9 @@ S2LP_status_t S2LP_set_tx_source(S2LP_tx_source_t tx_source) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_rx_source(S2LP_rx_source_t rx_source) {
 	// Local variables.
@@ -725,7 +777,9 @@ S2LP_status_t S2LP_set_rx_source(S2LP_rx_source_t rx_source) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_rx_bandwidth(uint32_t rx_bandwidth_hz) {
 	// Local variables.
@@ -742,7 +796,9 @@ S2LP_status_t S2LP_set_rx_bandwidth(uint32_t rx_bandwidth_hz) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_disable_equa_cs_ant_switch(void) {
 	// Local variables.
@@ -759,7 +815,9 @@ S2LP_status_t S2LP_disable_equa_cs_ant_switch(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_disable_afc(void) {
 	// Local variables.
@@ -776,7 +834,9 @@ S2LP_status_t S2LP_disable_afc(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_configure_clock_recovery(void) {
 	// Local variables.
@@ -792,7 +852,9 @@ S2LP_status_t S2LP_configure_clock_recovery(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_rssi_threshold(int16_t rssi_threshold_dbm) {
 	// Local variables.
@@ -808,7 +870,9 @@ S2LP_status_t S2LP_set_rssi_threshold(int16_t rssi_threshold_dbm) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm) {
 	// Local variables.
@@ -837,7 +901,9 @@ S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8_t function, S2LP_fifo_flag_direction_t fifo_flag_direction) {
 	// Local variables.
@@ -880,7 +946,9 @@ S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback) {
 	// Local variables.
@@ -890,13 +958,15 @@ S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, E
 	if (status != S2LP_SUCCESS) goto errors;
 	// Configure interrupt on MCU side.
 	EXTI_configure_gpio(&GPIO_S2LP_GPIO0, EXTI_TRIGGER_FALLING_EDGE, irq_callback);
-	EXTI_clear_all_flags();
+	EXTI_clear_flag(GPIO_S2LP_GPIO0.pin);
 	// Enable interrupt.
 	NVIC_enable_interrupt(NVIC_INTERRUPT_EXTI_4_15, NVIC_PRIORITY_EXTI_4_15);
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 void S2LP_disable_nirq(void) {
 	// Disable interrupt.
@@ -904,7 +974,9 @@ void S2LP_disable_nirq(void) {
 	// Release GPIO.
 	EXTI_release_gpio(&GPIO_S2LP_GPIO0);
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable) {
 	// Local variables.
@@ -932,7 +1004,9 @@ S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable)
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_get_irq_flag(S2LP_irq_index_t irq_index, uint8_t* irq_flag) {
 	// Local variables.
@@ -956,7 +1030,9 @@ S2LP_status_t S2LP_get_irq_flag(S2LP_irq_index_t irq_index, uint8_t* irq_flag) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_disable_all_irq(void) {
 	// Local variables.
@@ -973,7 +1049,9 @@ S2LP_status_t S2LP_disable_all_irq(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_clear_all_irq(void) {
 	// Local variables.
@@ -991,7 +1069,9 @@ S2LP_status_t S2LP_clear_all_irq(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_packet_length(uint8_t packet_length_bytes) {
 	// Local variables.
@@ -1004,7 +1084,9 @@ S2LP_status_t S2LP_set_packet_length(uint8_t packet_length_bytes) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_preamble_detector(uint8_t preamble_length_2bits, S2LP_preamble_pattern_t preamble_pattern) {
 	// Local variables.
@@ -1033,7 +1115,9 @@ S2LP_status_t S2LP_set_preamble_detector(uint8_t preamble_length_2bits, S2LP_pre
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_sync_word(uint8_t* sync_word, uint8_t sync_word_length_bits) {
 	// Local variables.
@@ -1068,7 +1152,9 @@ S2LP_status_t S2LP_set_sync_word(uint8_t* sync_word, uint8_t sync_word_length_bi
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_disable_crc(void) {
 	// Local variables.
@@ -1085,7 +1171,9 @@ S2LP_status_t S2LP_disable_crc(void) {
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_set_fifo_threshold(S2LP_fifo_threshold_t fifo_threshold, uint8_t threshold_value) {
 	// Local variables.
@@ -1105,7 +1193,9 @@ S2LP_status_t S2LP_set_fifo_threshold(S2LP_fifo_threshold_t fifo_threshold, uint
 errors:
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes) {
 	// Local variables.
@@ -1139,7 +1229,9 @@ errors:
 	GPIO_write(&GPIO_S2LP_CS, 1); // Set CS pin.
 	return status;
 }
+#endif
 
+#ifdef UHFM
 /*******************************************************************/
 S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes) {
 	// Local variables.

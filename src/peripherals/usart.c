@@ -10,7 +10,6 @@
 #include "exti.h"
 #include "gpio.h"
 #include "mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "rcc.h"
 #include "rcc_reg.h"
@@ -59,11 +58,14 @@ void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 void USART2_init(USART_character_match_irq_cb_t irq_callback) {
 	// Local variables.
 	uint32_t brr = 0;
+	// Select HSI as peripheral clock.
+	RCC -> CCIPR &= ~(0b11 << 2); // Reset bits 2-3.
+	RCC -> CCIPR |= (0b10 << 2); // USART2SEL='10'.
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 17); // USART2EN='1'.
 	// Configure peripheral.
 	USART2 -> CR3 |= (0b1 << 12); // No overrun detection (OVRDIS='0').
-	brr = (RCC_get_sysclk_khz() * 1000);
+	brr = (RCC_HSI_FREQUENCY_KHZ * 1000);
 	brr /= USART_BAUD_RATE;
 	USART2 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate).
 	// Configure character match interrupt and DMA.

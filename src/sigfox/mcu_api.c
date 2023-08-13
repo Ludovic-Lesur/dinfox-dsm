@@ -69,7 +69,7 @@ typedef enum {
 
 #if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION) && (defined BIDIRECTIONAL)
 static sfx_u32 MCU_API_LATENCY_MS[MCU_API_LATENCY_LAST] = {
-	POWER_ON_DELAY_MS_ANALOG // Get voltage and temperature function.
+	ADC_INIT_DELAY_MS // Get voltage and temperature function.
 };
 #endif
 
@@ -254,7 +254,7 @@ MCU_API_status_t MCU_API_aes_128_cbc_encrypt(MCU_API_encryption_data_t *aes_data
 #else
 	// Retrieve private key from NVM.
 	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
-		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_DEVICE_KEY + idx), &(local_key[idx]));
+		nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), &(local_key[idx]));
 		_MCU_API_check_nvm_status();
 	}
 #endif

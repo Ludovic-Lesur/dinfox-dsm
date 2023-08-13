@@ -313,6 +313,7 @@ typedef enum {
 
 /*** S2LP functions ***/
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn void S2LP_init(void)
  * \brief Init S2LP interface.
@@ -321,7 +322,9 @@ typedef enum {
  * \retval		none
  *******************************************************************/
 void S2LP_init(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn void S2LP_de_init(void)
  * \brief Release S2LP interface.
@@ -330,7 +333,9 @@ void S2LP_init(void);
  * \retval		none
  *******************************************************************/
 void S2LP_de_init(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path)
  * \brief Set external front end direction.
@@ -339,7 +344,9 @@ void S2LP_de_init(void);
  * \retval		none
  *******************************************************************/
 S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable)
  * \brief Control S2LP shutdown pin.
@@ -348,7 +355,9 @@ S2LP_status_t S2LP_set_radio_path(S2LP_radio_path_t path);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_send_command(S2LP_command_t command)
  * \brief Send a command to S2LP.
@@ -357,7 +366,9 @@ S2LP_status_t S2LP_shutdown(uint8_t shutdown_enable);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_send_command(S2LP_command_t command);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state)
  * \brief Wait for S2LP to be in the given state.
@@ -366,7 +377,9 @@ S2LP_status_t S2LP_send_command(S2LP_command_t command);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_oscillator(S2LP_oscillator_t s2lp_oscillator)
  * \brief Set S2LP oscillator type.
@@ -375,7 +388,9 @@ S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_oscillator(S2LP_oscillator_t oscillator);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_wait_for_oscillator(void)
  * \brief Wait for S2LP oscillator to be ready.
@@ -384,7 +399,9 @@ S2LP_status_t S2LP_set_oscillator(S2LP_oscillator_t oscillator);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_wait_for_oscillator(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_charge_pump(void
  * \brief Configure S2LP internal charge pump.
@@ -393,7 +410,9 @@ S2LP_status_t S2LP_wait_for_oscillator(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_charge_pump(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_smps_frequency(uint32_t frequency_hz)
  * \brief Set S2LP internal DC-DC- switching frequency.
@@ -402,7 +421,9 @@ S2LP_status_t S2LP_configure_charge_pump(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_smps_frequency(uint32_t frequency_hz);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_modulation(S2LP_modulation_t modulation)
  * \brief Set S2LP modulation scheme.
@@ -411,7 +432,9 @@ S2LP_status_t S2LP_set_smps_frequency(uint32_t frequency_hz);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_modulation(S2LP_modulation_t modulation);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_rf_frequency(uint32_t frequency_hz)
  * \brief Set S2LP RF center frequency.
@@ -420,7 +443,9 @@ S2LP_status_t S2LP_set_modulation(S2LP_modulation_t modulation);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_rf_frequency(uint32_t frequency_hz);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_fsk_deviation(uint32_t deviation_hz)
  * \brief Set S2LP frequency deviation for frequency modulations.
@@ -429,7 +454,9 @@ S2LP_status_t S2LP_set_rf_frequency(uint32_t frequency_hz);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_fsk_deviation(uint32_t deviation_hz);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_datarate(uint32_t datarate_bps
  * \brief Set S2LP data rate.
@@ -438,7 +465,9 @@ S2LP_status_t S2LP_set_fsk_deviation(uint32_t deviation_hz);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_datarate(uint32_t datarate_bps);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_pa(void)
  * \brief Configure S2LP power amplifier.
@@ -447,7 +476,9 @@ S2LP_status_t S2LP_set_datarate(uint32_t datarate_bps);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_pa(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_rf_output_power(int8_t output_power_dbm)
  * \brief Set S2LP transmission output power.
@@ -456,7 +487,9 @@ S2LP_status_t S2LP_configure_pa(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_rf_output_power(int8_t output_power_dbm);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_tx_source(S2LP_tx_source_t tx_source)
  * \brief Set S2LP transmission data source.
@@ -465,7 +498,9 @@ S2LP_status_t S2LP_set_rf_output_power(int8_t output_power_dbm);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_tx_source(S2LP_tx_source_t tx_source);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_rx_source(S2LP_rx_source_t rx_source)
  * \brief Set S2LP reception data source.
@@ -474,7 +509,9 @@ S2LP_status_t S2LP_set_tx_source(S2LP_tx_source_t tx_source);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_rx_source(S2LP_rx_source_t rx_source);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_rx_bandwidth(uint32_t rx_bandwidth_hz)
  * \brief Set S2LP receiver bandwidth.
@@ -483,7 +520,9 @@ S2LP_status_t S2LP_set_rx_source(S2LP_rx_source_t rx_source);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_rx_bandwidth(uint32_t rx_bandwidth_hz);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_disable_equa_cs_ant_switch(void)
  * \brief Disable S2LP equializer, CS blancking and antenna switch.
@@ -492,7 +531,9 @@ S2LP_status_t S2LP_set_rx_bandwidth(uint32_t rx_bandwidth_hz);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_disable_equa_cs_ant_switch(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_disable_afc(void)
  * \brief Disable S2LP AFC.
@@ -501,7 +542,9 @@ S2LP_status_t S2LP_disable_equa_cs_ant_switch(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_disable_afc(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_clock_recovery(void)
  * \brief Configure S2LP clock recovery system.
@@ -510,7 +553,9 @@ S2LP_status_t S2LP_disable_afc(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_clock_recovery(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_rssi_threshold(int16_t rssi_threshold_dbm)
  * \brief Set S2LP RSSI detection threshold.
@@ -519,7 +564,9 @@ S2LP_status_t S2LP_configure_clock_recovery(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_rssi_threshold(int16_t rssi_threshold_dbm);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm)
  * \brief Read S2LP RSSI.
@@ -528,7 +575,9 @@ S2LP_status_t S2LP_set_rssi_threshold(int16_t rssi_threshold_dbm);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8_t function, S2LP_fifo_flag_direction_t fifo_flag_direction)
  * \brief Configure S2LP GPIO function.
@@ -540,7 +589,9 @@ S2LP_status_t S2LP_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8_t function, S2LP_fifo_flag_direction_t fifo_flag_direction);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback)
  * \brief Configure and enable the NIRQ GPIO link between S2LP and MCU.
@@ -550,7 +601,9 @@ S2LP_status_t S2LP_configure_gpio(S2LP_gpio_t gpio, S2LP_gpio_mode_t mode, uint8
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, EXTI_gpio_irq_cb_t irq_callback);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn void S2LP_disable_nirq(void)
  * \brief Disable the NIRQ GPIO link between S2LP and MCU.
@@ -559,7 +612,9 @@ S2LP_status_t S2LP_enable_nirq(S2LP_fifo_flag_direction_t fifo_flag_direction, E
  * \retval		none
  *******************************************************************/
 void S2LP_disable_nirq(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable)
  * \brief Configure S2LP internal interrupt.
@@ -569,7 +624,9 @@ void S2LP_disable_nirq(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_get_irq_flag(S2LP_irq_index_t irq_index, uint8_t* irq_flag)
  * \brief Read S2LP internal interrupt status.
@@ -578,7 +635,9 @@ S2LP_status_t S2LP_configure_irq(S2LP_irq_index_t irq_index, uint8_t irq_enable)
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_get_irq_flag(S2LP_irq_index_t irq_index, uint8_t* irq_flag);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_disable_all_irq(void)
  * \brief Disable all S2LP internal interrupts.
@@ -587,7 +646,9 @@ S2LP_status_t S2LP_get_irq_flag(S2LP_irq_index_t irq_index, uint8_t* irq_flag);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_disable_all_irq(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_clear_all_irq(void)
  * \brief Clear all S2LP internal interrupts flags.
@@ -596,7 +657,9 @@ S2LP_status_t S2LP_disable_all_irq(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_clear_all_irq(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_packet_length(uint8_t packet_length_bytes)
  * \brief Set S2LP decoder packet length.
@@ -605,7 +668,9 @@ S2LP_status_t S2LP_clear_all_irq(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_packet_length(uint8_t packet_length_bytes);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_preamble_detector(uint8_t length_2bits, S2LP_preamble_pattern_t pattern)
  * \brief Configure S2LP premable detector.
@@ -615,7 +680,9 @@ S2LP_status_t S2LP_set_packet_length(uint8_t packet_length_bytes);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_preamble_detector(uint8_t preamble_length_2bits, S2LP_preamble_pattern_t preamble_pattern);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_sync_word(uint8_t* sync_word, uint8_t sync_word_length_bits)
  * \brief Configure S2LP synchronization word detector.
@@ -625,7 +692,9 @@ S2LP_status_t S2LP_set_preamble_detector(uint8_t preamble_length_2bits, S2LP_pre
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_sync_word(uint8_t* sync_word, uint8_t sync_word_length_bits);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_disable_crc(void)
  * \brief Disable S2LP CRC computation.
@@ -634,7 +703,9 @@ S2LP_status_t S2LP_set_sync_word(uint8_t* sync_word, uint8_t sync_word_length_bi
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_disable_crc(void);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_set_fifo_threshold(S2LP_fifo_threshold_t fifo_threshold, uint8_t threshold_value)
  * \brief Set S2LP internal FIFO threshold.
@@ -644,7 +715,9 @@ S2LP_status_t S2LP_disable_crc(void);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_set_fifo_threshold(S2LP_fifo_threshold_t fifo_threshold, uint8_t threshold_value);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes)
  * \brief Write S2LP internal FIFO.
@@ -654,7 +727,9 @@ S2LP_status_t S2LP_set_fifo_threshold(S2LP_fifo_threshold_t fifo_threshold, uint
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes);
+#endif
 
+#ifdef UHFM
 /*!******************************************************************
  * \fn S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes)
  * \brief Read S2LP internal FIFO.
@@ -664,6 +739,7 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes);
  * \retval		Function execution status.
  *******************************************************************/
 S2LP_status_t S2LP_read_fifo(uint8_t* rx_data, uint8_t rx_data_length_bytes);
+#endif
 
 /*******************************************************************/
 #define S2LP_check_status(error_base) { if (s2lp_status != S2LP_SUCCESS) { status = error_base + s2lp_status; goto errors; } }

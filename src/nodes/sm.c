@@ -13,6 +13,7 @@
 #include "dinfox.h"
 #include "error.h"
 #include "load.h"
+#include "mode.h"
 #include "node.h"
 #include "sht3x.h"
 #include "sm_reg.h"
@@ -84,7 +85,9 @@ NODE_status_t SM_check_register(uint8_t reg_addr) {
 NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+#if (defined SM_AIN_ENABLE) || (defined SM_DIO_ENABLE) || (defined SM_DIGITAL_SENSORS_ENABLE)
 	NODE_status_t node_status = NODE_SUCCESS;
+#endif
 #ifdef SM_AIN_ENABLE
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;

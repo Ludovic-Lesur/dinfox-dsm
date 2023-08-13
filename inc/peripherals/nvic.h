@@ -55,22 +55,28 @@ typedef enum {
  * \brief NVIC interrupt priorities list.
  *******************************************************************/
 typedef enum {
+	// Common.
 	NVIC_PRIORTY_RCC_CRS = 0,
+	NVIC_PRIORITY_LPTIM1 = 2,
+	NVIC_PRIORITY_RTC = 3,
+	// RS485 interface.
 	NVIC_PRIORITY_LPUART1 = 0,
 #ifdef UHFM
+	// Sigfox.
 	NVIC_PRIORITY_EXTI_4_15 = 0,
 	NVIC_PRIORITY_DMA1_CH_2_3 = 1,
 	NVIC_PRIORITY_TIM2 = 2,
 #endif
 #ifdef GPSM
+	// GPS.
 	NVIC_PRIORITY_USART2 = 0,
 	NVIC_PRIORITY_DMA1_CH_4_7 = 1,
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+	// LED.
 	NVIC_PRIORITY_TIM21 = 1,
 #endif
-	NVIC_PRIORITY_LPTIM1 = 2,
-	NVIC_PRIORITY_RTC = 3
+
 } NVIC_priority_list_t;
 
 /*** NVIC functions ***/
