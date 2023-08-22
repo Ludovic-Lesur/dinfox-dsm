@@ -27,6 +27,7 @@
  * \brief NODE driver error codes.
  *******************************************************************/
 typedef enum {
+	// Driver errors.
 	NODE_SUCCESS = 0,
 	NODE_ERROR_NULL_PARAMETER,
 	NODE_ERROR_REGISTER_ADDRESS,
@@ -36,6 +37,7 @@ typedef enum {
 	NODE_ERROR_SIGFOX_RF_API,
 	NODE_ERROR_SIGFOX_EP_LIB,
 	NODE_ERROR_SIGFOX_EP_ADDON_RFP,
+	// Last base value.
 	NODE_ERROR_BASE_LAST = 0x0100
 } NODE_status_t;
 
@@ -106,12 +108,9 @@ NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t 
 NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
 
 /*******************************************************************/
-#define NODE_check_status(error_base) { if (node_status != NODE_SUCCESS) { status = error_base + node_status; goto errors; } }
+#define NODE_exit_error(error_base) { if (node_status != NODE_SUCCESS) { status = (error_base + node_status); goto errors; } }
 
 /*******************************************************************/
-#define NODE_stack_error(void) { ERROR_stack_error(node_status, NODE_SUCCESS, ERROR_BASE_NODE); }
-
-/*******************************************************************/
-#define NODE_print_error(void) { ERROR_print_error(node_status, NODE_SUCCESS, ERROR_BASE_NODE); }
+#define NODE_stack_error(void) { if (node_status != NODE_SUCCESS) { ERROR_stack_add(ERROR_BASE_NODE + node_status); } }
 
 #endif /* __NODE_H__ */

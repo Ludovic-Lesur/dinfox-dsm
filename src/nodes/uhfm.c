@@ -659,7 +659,7 @@ NODE_status_t UHFM_mtrg_callback(ADC_status_t* adc_status) {
 		}
 	}
 	// Write register.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask,analog_data_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
 	NODE_stack_error();
 	// Restore radio test registers.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, radio_test_0_initial);

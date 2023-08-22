@@ -18,9 +18,12 @@
  * \brief LOAD driver error codes.
  *******************************************************************/
 typedef enum {
+	// Driver errors.
 	LOAD_SUCCESS = 0,
 	LOAD_ERROR_STATE_UNKNOWN,
+	// Low level drivers errors.
 	LOAD_ERROR_BASE_LPTIM = 0x0100,
+	// Last base value.
 	LOAD_ERROR_BASE_LAST = (LOAD_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } LOAD_status_t;
 
@@ -93,12 +96,9 @@ uint8_t LOAD_get_charge_status(void);
 #endif
 
 /*******************************************************************/
-#define LOAD_check_status(error_base) { if (load_status != LOAD_SUCCESS) { status = error_base + load_status; goto errors; } }
+#define LOAD_exit_error(error_base) { if (load_status != LOAD_SUCCESS) { status = (error_base + load_status); goto errors; } }
 
 /*******************************************************************/
-#define LOAD_stack_error(void) { ERROR_stack_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
-
-/*******************************************************************/
-#define LOAD_print_error(void) { ERROR_print_error(load_status, LOAD_SUCCESS, ERROR_BASE_LOAD); }
+#define LOAD_stack_error(void) { if (load_status != LOAD_SUCCESS) { ERROR_stack_add(ERROR_BASE_LOAD + load_status); } }
 
 #endif /* __LOAD_H__ */

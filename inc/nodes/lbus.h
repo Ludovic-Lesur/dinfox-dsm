@@ -24,9 +24,12 @@
  * \brief LBUS driver error codes.
  *******************************************************************/
 typedef enum {
+	// Driver errors.
 	LBUS_SUCCESS = 0,
 	LBUS_ERROR_ADDRESS,
+	// Low level drivers errors.
 	LBUS_ERROR_BASE_LPUART = 0x0100,
+	// Last base value.
 	LBUS_ERROR_BASE_LAST = (LBUS_ERROR_BASE_LPUART + LPUART_ERROR_BASE_LAST),
 } LBUS_status_t;
 
@@ -77,12 +80,9 @@ void LBUS_disable_rx(void);
 LBUS_status_t LBUS_send(uint8_t* data, uint32_t data_size_bytes);
 
 /*******************************************************************/
-#define LBUS_check_status(error_base) { if (lbus_status != LBUS_SUCCESS) { status = error_base + lbus_status; goto errors; } }
+#define LBUS_exit_error(error_base) { if (lbus_status != LBUS_SUCCESS) { status = (error_base + lbus_status); goto errors; } }
 
 /*******************************************************************/
-#define LBUS_stack_error(void) { ERROR_stack_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
-
-/*******************************************************************/
-#define LBUS_print_error(void) { ERROR_print_error(lbus_status, LBUS_SUCCESS, ERROR_BASE_LBUS); }
+#define LBUS_stack_error(void) { if (lbus_status != LBUS_SUCCESS) { ERROR_stack_add(ERROR_BASE_LBUS + lbus_status); } }
 
 #endif /* __LBUS_H__ */

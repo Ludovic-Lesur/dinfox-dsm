@@ -10,7 +10,7 @@
 
 #include "types.h"
 
-/*** NVIC structure ***/
+/*** NVIC structures ***/
 
 /*!******************************************************************
  * \enum NVIC_interrupt_t
@@ -76,7 +76,6 @@ typedef enum {
 	// LED.
 	NVIC_PRIORITY_TIM21 = 1,
 #endif
-
 } NVIC_priority_list_t;
 
 /*** NVIC functions ***/
@@ -91,7 +90,7 @@ typedef enum {
 void NVIC_init(void);
 
 /*!******************************************************************
- * \fn void NVIC_enable_interrupt(NVIC_interrupt_t irq_index)
+ * \fn void NVIC_enable_interrupt(NVIC_interrupt_t irq_index, uint8_t priority)
  * \brief Enable interrupt.
  * \param[in]  	irq_index: Interrupt to enable.
  * \param[in]	priority: Interrupt priority to set.

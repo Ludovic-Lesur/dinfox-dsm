@@ -73,7 +73,7 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
 		adc1_status = ADC1_init();
-		ADC1_check_status(POWER_ERROR_BASE_ADC);
+		ADC1_exit_error(POWER_ERROR_BASE_ADC);
 		break;
 #ifdef SM
 	case POWER_DOMAIN_DIGITAL:
@@ -118,7 +118,7 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 	// Power on delay.
 	if (delay_ms != 0) {
 		lptim1_status = LPTIM1_delay_milliseconds(delay_ms, delay_mode);
-		LPTIM1_check_status(POWER_ERROR_BASE_LPTIM);
+		LPTIM1_exit_error(POWER_ERROR_BASE_LPTIM);
 	}
 errors:
 	return status;
@@ -140,7 +140,7 @@ POWER_status_t POWER_disable(POWER_domain_t domain) {
 #if (defined SM) && (defined SM_AIN_ENABLE)
 		GPIO_write(&GPIO_ANA_POWER_ENABLE, 0);
 #endif
-		ADC1_check_status(POWER_ERROR_BASE_ADC);
+		ADC1_exit_error(POWER_ERROR_BASE_ADC);
 		break;
 #ifdef SM
 	case POWER_DOMAIN_DIGITAL:

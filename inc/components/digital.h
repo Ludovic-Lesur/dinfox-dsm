@@ -17,8 +17,10 @@
  * \brief DIGITAL driver error codes.
  *******************************************************************/
 typedef enum {
+	// Driver errors.
 	DIGITAL_SUCCESS = 0,
 	DIGITAL_ERROR_DATA_INDEX,
+	// Last base value.
 	DIGITAL_ERROR_BASE_LAST = 0x100,
 } DIGITAL_status_t;
 
@@ -70,12 +72,9 @@ DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state);
 #endif
 
 /*******************************************************************/
-#define DIGITAL_check_status(error_base) { if (digital_status != DIGITAL_SUCCESS) { status = error_base + digital_status; goto errors; } }
+#define DIGITAL_exit_error(error_base) { if (digital_status != DIGITAL_SUCCESS) { status = (error_base + digital_status); goto errors; } }
 
 /*******************************************************************/
-#define DIGITAL_stack_error(void) { ERROR_stack_error(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
-
-/*******************************************************************/
-#define DIGITAL_print_error(void) { ERROR_print_error(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL); }
+#define DIGITAL_stack_error(void) { if (digital_status != DIGITAL_SUCCESS) { ERROR_stack_add(ERROR_BASE_DIGITAL + digital_status); } }
 
 #endif /* __DIGITAL_H__ */

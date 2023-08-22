@@ -18,9 +18,11 @@
  * \brief LED driver error codes.
  *******************************************************************/
 typedef enum {
+	// Driver errors.
 	LED_SUCCESS,
 	LED_ERROR_NULL_DURATION,
 	LED_ERROR_COLOR,
+	// Last base value.
 	LED_ERROR_BASE_LAST = 0x0100
 } LED_status_t;
 
@@ -130,12 +132,9 @@ LED_status_t LED_toggle(LED_color_t color);
 #endif
 
 /*******************************************************************/
-#define LED_check_status(error_base) { if (led_status != LED_SUCCESS) { status = error_base + led_status; goto errors; } }
+#define LED_exit_error(error_base) { if (led_status != LED_SUCCESS) { status = (error_base + led_status); goto errors; } }
 
 /*******************************************************************/
-#define LED_stack_error(void) { ERROR_stack_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
-
-/*******************************************************************/
-#define LED_print_error(void) { ERROR_print_error(led_status, LED_SUCCESS, ERROR_BASE_LED); }
+#define LED_stack_error(void) { if (led_status != LED_SUCCESS) { ERROR_stack_add(ERROR_BASE_LED + led_status); } }
 
 #endif /* LED_H */
