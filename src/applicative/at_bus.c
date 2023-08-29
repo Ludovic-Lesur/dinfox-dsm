@@ -190,6 +190,21 @@ static AT_BUS_context_t at_bus_ctx;
 /*** AT local functions ***/
 
 /*******************************************************************/
+#define _AT_BUS_check_status(status, success, base) { \
+	if (status != success) { \
+		_AT_BUS_print_error(base + status); \
+		ERROR_stack_add(base + status); \
+		goto errors; \
+	} \
+}
+
+/*******************************************************************/
+#define _AT_BUS_reply_add_char(character) { \
+	at_bus_ctx.reply[at_bus_ctx.reply_size] = character; \
+	at_bus_ctx.reply_size = (at_bus_ctx.reply_size + 1) % AT_BUS_REPLY_BUFFER_SIZE; \
+}
+
+/*******************************************************************/
 static void _AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
 	// Append byte if line end flag is not allready set.
 	if (at_bus_ctx.line_end_flag == 0) {
@@ -205,20 +220,6 @@ static void _AT_BUS_fill_rx_buffer(uint8_t rx_byte) {
 			at_bus_ctx.command_size = (at_bus_ctx.command_size + 1) % AT_BUS_COMMAND_BUFFER_SIZE;
 		}
 	}
-}
-
-/*******************************************************************/
-#define _AT_BUS_check_status(status, success, base) { \
-	if (status != success) { \
-		_AT_BUS_print_error(base + status); \
-		goto errors; \
-	} \
-}
-
-/*******************************************************************/
-#define _AT_BUS_reply_add_char(character) { \
-	at_bus_ctx.reply[at_bus_ctx.reply_size] = character; \
-	at_bus_ctx.reply_size = (at_bus_ctx.reply_size + 1) % AT_BUS_REPLY_BUFFER_SIZE; \
 }
 
 /*******************************************************************/

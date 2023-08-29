@@ -21,6 +21,10 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
+// Utils.
+#include "math.h"
+#include "parser.h"
+#include "string.h"
 // Components.
 #include "digital.h"
 #include "led.h"
@@ -29,10 +33,6 @@
 #include "power.h"
 #include "s2lp.h"
 #include "sht3x.h"
-// Utils.
-#include "math.h"
-#include "parser.h"
-#include "string.h"
 // Nodes.
 #include "lbus.h"
 #include "node.h"

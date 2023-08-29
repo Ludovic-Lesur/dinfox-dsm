@@ -74,11 +74,12 @@ typedef struct {
  *******************************************************************/
 typedef union {
 	struct {
-		unsigned error_received : 1;
-		unsigned parser_error : 1;
-		unsigned reply_timeout : 1;
+		unsigned unused : 4;
 		unsigned sequence_timeout : 1;
-	};
+		unsigned reply_timeout : 1;
+		unsigned parser_error : 1;
+		unsigned error_received : 1;
+	} __attribute__((scalar_storage_order("big-endian"))) __attribute__((packed));
 	uint8_t all;
 } NODE_access_status_t;
 
