@@ -137,4 +137,7 @@ LED_status_t LED_toggle(LED_color_t color);
 /*******************************************************************/
 #define LED_stack_error(void) { if (led_status != LED_SUCCESS) { ERROR_stack_add(ERROR_BASE_LED + led_status); } }
 
+/*******************************************************************/
+#define LED_stack_exit_error(error_code) { if (led_status != LED_SUCCESS) { ERROR_stack_add(ERROR_BASE_LED + led_status); status = error_code; goto errors; } }
+
 #endif /* LED_H */

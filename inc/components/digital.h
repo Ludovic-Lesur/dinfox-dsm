@@ -77,4 +77,7 @@ DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state);
 /*******************************************************************/
 #define DIGITAL_stack_error(void) { if (digital_status != DIGITAL_SUCCESS) { ERROR_stack_add(ERROR_BASE_DIGITAL + digital_status); } }
 
+/*******************************************************************/
+#define DIGITAL_stack_exit_error(error_code) { if (digital_status != DIGITAL_SUCCESS) { ERROR_stack_add(ERROR_BASE_DIGITAL + digital_status); status = error_code; goto errors; } }
+
 #endif /* __DIGITAL_H__ */

@@ -11,6 +11,7 @@
 // Peripherals.
 #include "adc.h"
 #include "aes.h"
+#include "flash.h"
 #include "i2c.h"
 #include "iwdg.h"
 #include "lptim.h"
@@ -36,6 +37,12 @@
 // Nodes.
 #include "lbus.h"
 #include "node.h"
+// Sigfox.
+#ifdef UHFM
+#include "sigfox_error.h"
+#endif
+
+/*** ERROR structures ***/
 
 /*!******************************************************************
  * \enum ERROR_base_t
@@ -46,7 +53,8 @@ typedef enum {
 	// Peripherals.
 	ERROR_BASE_ADC1 = 0x0100,
 	ERROR_BASE_AES = (ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
-	ERROR_BASE_I2C1 = (ERROR_BASE_AES + AES_ERROR_BASE_LAST),
+	ERROR_BASE_FLASH = (ERROR_BASE_AES + AES_ERROR_BASE_LAST),
+	ERROR_BASE_I2C1 = (ERROR_BASE_FLASH + FLASH_ERROR_BASE_LAST),
 	ERROR_BASE_IWDG = (ERROR_BASE_I2C1 + I2C_ERROR_BASE_LAST),
 	ERROR_BASE_LPTIM1 = (ERROR_BASE_IWDG + IWDG_ERROR_BASE_LAST),
 	ERROR_BASE_LPUART1 = (ERROR_BASE_LPTIM1 + LPTIM_ERROR_BASE_LAST),
@@ -56,23 +64,31 @@ typedef enum {
 	ERROR_BASE_SPI1 = (ERROR_BASE_RTC + RTC_ERROR_BASE_LAST),
 	ERROR_BASE_TIM2 = (ERROR_BASE_SPI1 + SPI_ERROR_BASE_LAST),
 	ERROR_BASE_USART2 = (ERROR_BASE_TIM2 + TIM_ERROR_BASE_LAST),
+	// Utils.
+	ERROR_BASE_MATH = (ERROR_BASE_USART2 + USART_ERROR_BASE_LAST),
+	ERROR_BASE_PARSER = (ERROR_BASE_MATH + MATH_ERROR_BASE_LAST),
+	ERROR_BASE_STRING = (ERROR_BASE_PARSER + PARSER_ERROR_BASE_LAST),
 	// Components.
-	ERROR_BASE_DIGITAL = (ERROR_BASE_USART2 + USART_ERROR_BASE_LAST),
+	ERROR_BASE_DIGITAL = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
 	ERROR_BASE_LED = (ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
 	ERROR_BASE_LOAD = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
 	ERROR_BASE_NEOM8N = (ERROR_BASE_LOAD + LOAD_ERROR_BASE_LAST),
 	ERROR_BASE_POWER = (ERROR_BASE_NEOM8N + NEOM8N_ERROR_BASE_LAST),
 	ERROR_BASE_S2LP = (ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
 	ERROR_BASE_SHT3X = (ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST),
-	// Utils.
-	ERROR_BASE_MATH = (ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
-	ERROR_BASE_PARSER = (ERROR_BASE_MATH + MATH_ERROR_BASE_LAST),
-	ERROR_BASE_STRING = (ERROR_BASE_PARSER + PARSER_ERROR_BASE_LAST),
 	// Nodes.
-	ERROR_BASE_LBUS = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
+	ERROR_BASE_LBUS = (ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
 	ERROR_BASE_NODE = (ERROR_BASE_LBUS + LBUS_ERROR_BASE_LAST),
+#ifdef UHFM
 	// Sigfox.
-	ERROR_BASE_SIGFOX_EP_API = (ERROR_BASE_NODE + NODE_ERROR_BASE_LAST),
+	ERROR_BASE_SIGFOX_EP_LIB = (ERROR_BASE_NODE + NODE_ERROR_BASE_LAST),
+	ERROR_BASE_SIGFOX_EP_ADDON_RFP = (ERROR_BASE_SIGFOX_EP_LIB + (SIGFOX_ERROR_SOURCE_LAST * 0x0100)),
+	// Last base value.
+	ERROR_BASE_LAST = (ERROR_BASE_SIGFOX_EP_ADDON_RFP + 0x0100)
+#else
+	// Last base value.
+	ERROR_BASE_LAST = (ERROR_BASE_NODE + NODE_ERROR_BASE_LAST)
+#endif
 } ERROR_base_t;
 
 /*!******************************************************************
@@ -118,5 +134,16 @@ ERROR_code_t ERROR_stack_read(void);
  * \retval		1 if the error stack is empty, 0 otherwise.
  *******************************************************************/
 uint8_t ERROR_stack_is_empty(void);
+
+#ifdef UHFM
+/*!******************************************************************
+ * \fn void ERROR_import_sigfox_stack(void)
+ * \brief Import the Sigfox EP lib error stack in the MCU stack.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void ERROR_import_sigfox_stack(void);
+#endif
 
 #endif /* __ERROR_H__ */

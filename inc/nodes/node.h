@@ -11,10 +11,12 @@
 #include "adc.h"
 #include "digital.h"
 #include "i2c.h"
+#include "lptim.h"
 #include "load.h"
 #include "neom8n.h"
 #include "node_common.h"
 #include "nvm.h"
+#include "power.h"
 #include "s2lp.h"
 #include "sht3x.h"
 #include "types.h"
@@ -35,10 +37,20 @@ typedef enum {
 	NODE_ERROR_RADIO_STATE,
 	NODE_ERROR_RADIO_POWER,
 	NODE_ERROR_SIGFOX_RF_API,
-	NODE_ERROR_SIGFOX_EP_LIB,
-	NODE_ERROR_SIGFOX_EP_ADDON_RFP,
+	NODE_ERROR_SIGFOX_EP_API,
+	// Low level drivers errors.
+	NODE_ERROR_BASE_ADC1 = 0x0100,
+	NODE_ERROR_BASE_LPTIM1 = (NODE_ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_NVM = (NODE_ERROR_BASE_LPTIM1 + LPTIM_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_DIGITAL = (NODE_ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_LOAD = (NODE_ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_NEOM8N = (NODE_ERROR_BASE_LOAD + LOAD_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_POWER = (NODE_ERROR_BASE_NEOM8N + NEOM8N_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_S2LP = (NODE_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_SHT3X = (NODE_ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API = (NODE_ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
 	// Last base value.
-	NODE_ERROR_BASE_LAST = 0x0100
+	NODE_ERROR_BASE_LAST = (NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API + 0x0100)
 } NODE_status_t;
 
 /*!******************************************************************
@@ -112,5 +124,8 @@ NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_
 
 /*******************************************************************/
 #define NODE_stack_error(void) { if (node_status != NODE_SUCCESS) { ERROR_stack_add(ERROR_BASE_NODE + node_status); } }
+
+/*******************************************************************/
+#define NODE_stack_exit_error(error_code) { if (node_status != NODE_SUCCESS) { ERROR_stack_add(ERROR_BASE_NODE + node_status); status = error_code; goto errors; } }
 
 #endif /* __NODE_H__ */

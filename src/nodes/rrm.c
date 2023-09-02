@@ -35,7 +35,6 @@ static RRM_flags_t rrm_flags;
 /*******************************************************************/
 static void _RRM_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t analog_data_1 = 0;
 	uint32_t analog_data_1_mask = 0;
 	uint32_t analog_data_2 = 0;
@@ -43,12 +42,10 @@ static void _RRM_reset_analog_data(void) {
 	// Vin / Vout.
 	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VIN);
 	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VOUT);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
 	// Iout.
 	DINFOX_write_field(&analog_data_2, &analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_2_MASK_IOUT);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
 }
 #endif
 
@@ -57,11 +54,8 @@ static void _RRM_reset_analog_data(void) {
 #ifdef RRM
 /*******************************************************************/
 void RRM_init_registers(void) {
-	// Local variables.
-	NODE_status_t node_status = NODE_SUCCESS;
 	// Status and control register 1.
-	node_status = RRM_update_register(RRM_REG_ADDR_STATUS_CONTROL_1);
-	NODE_stack_error();
+	RRM_update_register(RRM_REG_ADDR_STATUS_CONTROL_1);
 	// Load default values.
 	_RRM_reset_analog_data();
 }
@@ -72,7 +66,6 @@ void RRM_init_registers(void) {
 NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint8_t state = 0;
 	uint32_t reg_value = 0;
@@ -82,7 +75,7 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	case RRM_REG_ADDR_STATUS_CONTROL_1:
 		// Relay state.
 		load_status = LOAD_get_output_state(&state);
-		LOAD_stack_error();
+		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		rrm_flags.ren = (state == 0) ? 0b0 : 0b1;
 		DINFOX_write_field(&reg_value, &reg_mask, rrm_flags.ren, RRM_REG_STATUS_CONTROL_1_MASK_REN);
 		break;
@@ -91,8 +84,8 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 		break;
 	}
 	// Write register.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
+errors:
 	return status;
 }
 #endif
@@ -102,12 +95,10 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 NODE_status_t RRM_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint32_t reg_value = 0;
 	// Read register.
-	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
-	NODE_stack_error();
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	// Check address.
 	switch (reg_addr) {
 	case RRM_REG_ADDR_STATUS_CONTROL_1:
@@ -117,13 +108,14 @@ NODE_status_t RRM_check_register(uint8_t reg_addr) {
 			rrm_flags.ren = DINFOX_read_field(reg_value, RRM_REG_STATUS_CONTROL_1_MASK_REN);
 			// Set DC-DC state.
 			load_status = LOAD_set_output_state((uint8_t) rrm_flags.ren);
-			LOAD_stack_error();
+			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		}
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
+errors:
 	return status;
 }
 #endif
@@ -133,7 +125,6 @@ NODE_status_t RRM_check_register(uint8_t reg_addr) {
 NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
@@ -145,40 +136,45 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	_RRM_reset_analog_data();
 	// Perform analog measurements.
 	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
-	POWER_stack_error();
+	POWER_exit_error(NODE_ERROR_BASE_POWER);
 	adc1_status = ADC1_perform_measurements();
-	ADC1_stack_error();
+	ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
-	POWER_stack_error();
-	// Update parameter.
-	if (adc_status != NULL) {
-		(*adc_status) = adc1_status;
-	}
+	POWER_exit_error(NODE_ERROR_BASE_POWER);
 	// Check status.
 	if (adc1_status == ADC_SUCCESS) {
 		// Relay common voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &adc_data);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VIN);
 		}
 		// Relay output voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VOUT);
 		}
 		// Relay output current.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&analog_data_2, &analog_data_2_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_2_MASK_IOUT);
 		}
 		// Write registers.
-		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
-		NODE_stack_error();
-		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
-		NODE_stack_error();
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
+	}
+	// Update ADC status.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
+	}
+	return status;
+errors:
+	POWER_disable(POWER_DOMAIN_ANALOG);
+	// Update ADC status.
+	if (adc_status != NULL) {
+		(*adc_status) = adc1_status;
 	}
 	return status;
 }

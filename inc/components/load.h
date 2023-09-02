@@ -101,4 +101,7 @@ uint8_t LOAD_get_charge_status(void);
 /*******************************************************************/
 #define LOAD_stack_error(void) { if (load_status != LOAD_SUCCESS) { ERROR_stack_add(ERROR_BASE_LOAD + load_status); } }
 
+/*******************************************************************/
+#define LOAD_stack_exit_error(error_code) { if (load_status != LOAD_SUCCESS) { ERROR_stack_add(ERROR_BASE_LOAD + load_status); status = error_code; goto errors; } }
+
 #endif /* __LOAD_H__ */

@@ -30,21 +30,18 @@
 /*******************************************************************/
 static void _COMMON_reset_analog_data(void) {
 	// Local variables.
-	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t analog_data_0 = 0;
 	uint32_t analog_data_0_mask = 0;
 	// Vsrc / Vstr.
 	DINFOX_write_field(&analog_data_0, &analog_data_0_mask, DINFOX_VOLTAGE_ERROR_VALUE, COMMON_REG_ANALOG_DATA_0_MASK_VMCU);
 	DINFOX_write_field(&analog_data_0, &analog_data_0_mask, DINFOX_TEMPERATURE_ERROR_VALUE, COMMON_REG_ANALOG_DATA_0_MASK_TMCU);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);
 }
 
 /*******************************************************************/
 NODE_status_t _COMMON_mtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t vmcu_mv = 0;
 	int8_t tmcu_degrees = 0;
@@ -73,27 +70,26 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 #ifdef RRM
 	status = RRM_mtrg_callback(&adc1_status);
 #endif
-	// Note: status is not checked here in order to try reading VMCU and TMCU, but will be returned anyway at the end.
+	if (status != NODE_SUCCESS) goto errors;
+	// Try reading VMCU and TMCU, but will be returned anyway at the end.
 	if (adc1_status == ADC_SUCCESS) {
 		// MCU voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &vmcu_mv);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&analog_data_0, &analog_data_0_mask, (uint32_t) DINFOX_convert_mv(vmcu_mv), COMMON_REG_ANALOG_DATA_0_MASK_VMCU);
 		}
 		// MCU temperature.
 		adc1_status = ADC1_get_tmcu(&tmcu_degrees);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&analog_data_0, &analog_data_0_mask, (uint32_t) DINFOX_convert_degrees(tmcu_degrees), COMMON_REG_ANALOG_DATA_0_MASK_TMCU);
 		}
 		// Write register.
-		node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);
-		NODE_stack_error();
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);
 	}
-	// Clear flag.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG, 0);
-	NODE_stack_error();
+errors:
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG, 0);
 	return status;
 }
 
@@ -102,7 +98,6 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 /*******************************************************************/
 void COMMON_init_registers(NODE_address_t self_address) {
 	// Local variables.
-	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t node_id = 0;
 	uint32_t node_id_mask = 0;
 	uint32_t hw_version = 0;
@@ -135,16 +130,11 @@ void COMMON_init_registers(NODE_address_t self_address) {
 	// Reset flags registers.
 	DINFOX_write_field(&reset_flags, &reset_flags_mask, (uint32_t) (((RCC -> CSR) >> 24) & 0xFF), COMMON_REG_RESET_FLAGS_MASK_ALL);
 	// Write registers.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_NODE_ID, node_id_mask, node_id);
-	NODE_stack_error();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_HW_VERSION, hw_version_mask, hw_version);
-	NODE_stack_error();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_0, sw_version_0_mask, sw_version_0);
-	NODE_stack_error();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_1, sw_version_1_mask, sw_version_1);
-	NODE_stack_error();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, reset_flags_mask, reset_flags);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_NODE_ID, node_id_mask, node_id);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_HW_VERSION, hw_version_mask, hw_version);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_0, sw_version_0_mask, sw_version_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_1, sw_version_1_mask, sw_version_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, reset_flags_mask, reset_flags);
 	// Load default values.
 	_COMMON_reset_analog_data();
 }
@@ -153,12 +143,15 @@ void COMMON_init_registers(NODE_address_t self_address) {
 NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_ERROR_STACK:
+#ifdef UHFM
+		// Import Sigfox errors into MCU stack.
+	ERROR_import_sigfox_stack();
+#endif
 		// Unstack error.
 		DINFOX_write_field(&reg_value, &reg_mask, (uint32_t) ERROR_stack_read(), COMMON_REG_ERROR_STACK_MASK_ERROR);
 		break;
@@ -167,8 +160,7 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 		break;
 	}
 	// Write register.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
-	NODE_stack_error();
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
 
@@ -176,11 +168,9 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 NODE_status_t COMMON_check_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	NODE_status_t node_status = NODE_SUCCESS;
 	uint32_t reg_value = 0;
 	// Read register.
-	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, &reg_value);
-	NODE_stack_error();
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, &reg_value);
 	// Check address.
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_STATUS_CONTROL_0:
