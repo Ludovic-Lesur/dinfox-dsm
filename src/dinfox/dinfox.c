@@ -14,33 +14,49 @@
 
 /*** DINFOX local macros ***/
 
-#define DINFOX_TIME_UNIT_SIZE_BITS			2
-#define DINFOX_TIME_VALUE_SIZE_BITS			6
+#define DINFOX_SIGN_SIZE_BITS					1
 
-#define DINFOX_TEMPERATURE_SIGN_SIZE_BITS	1
-#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS	7
+#define DINFOX_TIME_UNIT_SIZE_BITS				2
+#define DINFOX_TIME_VALUE_SIZE_BITS				6
 
-#define DINFOX_VOLTAGE_UNIT_SIZE_BITS		1
-#define DINFOX_VOLTAGE_VALUE_SIZE_BITS		15
+#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS		7
 
-#define DINFOX_CURRENT_UNIT_SIZE_BITS		2
-#define DINFOX_CURRENT_VALUE_SIZE_BITS		14
+#define DINFOX_VOLTAGE_UNIT_SIZE_BITS			1
+#define DINFOX_VOLTAGE_VALUE_SIZE_BITS			15
 
-#define DINFOX_SECONDS_PER_MINUTE			60
-#define DINFOX_MINUTES_PER_HOUR				60
-#define DINFOX_HOURS_PER_DAY				24
+#define DINFOX_CURRENT_UNIT_SIZE_BITS			2
+#define DINFOX_CURRENT_VALUE_SIZE_BITS			14
 
-#define DINFOX_MV_PER_DV					100
+#define DINFOX_ELECTRICAL_POWER_UNIT_SIZE_BITS	2
+#define DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS	13
 
-#define DINFOX_UA_PER_DMA					100
-#define DINFOX_DMA_PER_MA					10
-#define DINFOX_MA_PER_DA					100
+#define DINFOX_POWER_FACTOR_VALUE_SIZE_BITS		15
 
-#define DINFOX_RF_POWER_OFFSET				174
+#define DINFOX_SECONDS_PER_MINUTE				60
+#define DINFOX_MINUTES_PER_HOUR					60
+#define DINFOX_HOURS_PER_DAY					24
 
-#define DINFOX_YEAR_OFFSET					2000
+#define DINFOX_MV_PER_DV						100
+
+#define DINFOX_UA_PER_DMA						100
+#define DINFOX_DMA_PER_MA						10
+#define DINFOX_MA_PER_DA						100
+
+#define DINFOX_MW_PER_DW						100
+#define DINFOX_DW_PER_W							10
+#define DINFOX_W_PER_DAW						10
+
+#define DINFOX_RF_POWER_OFFSET					174
+
+#define DINFOX_YEAR_OFFSET						2000
 
 /*** DINFOX local structures ***/
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_SIGN_POSITIVE = 0,
+	DINFOX_SIGN_NEGATIVE
+} DINFOX_sign_t;
 
 /*******************************************************************/
 typedef enum {
@@ -49,6 +65,28 @@ typedef enum {
 	DINFOX_TIME_UNIT_HOUR,
 	DINFOX_TIME_UNIT_DAY
 } DINFOX_time_unit_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_VOLTAGE_UNIT_MV = 0,
+	DINFOX_VOLTAGE_UNIT_DV
+} DINFOX_voltage_unit_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_CURRENT_UNIT_UA = 0,
+	DINFOX_CURRENT_UNIT_DMA,
+	DINFOX_CURRENT_UNIT_MA,
+	DINFOX_CURRENT_UNIT_DA
+} DINFOX_current_unit_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_ELECTRICAL_POWER_UNIT_MW = 0,
+	DINFOX_ELECTRICAL_POWER_UNIT_DW,
+	DINFOX_ELECTRICAL_POWER_UNIT_W,
+	DINFOX_ELECTRICAL_POWER_UNIT_DAW
+} DINFOX_electrical_power_unit_t;
 
 /*******************************************************************/
 typedef union {
@@ -60,25 +98,13 @@ typedef union {
 } DINFOX_time_t;
 
 /*******************************************************************/
-typedef enum {
-	DINFOX_TEMPERATURE_SIGN_POSITIVE = 0,
-	DINFOX_TEMPERATURE_SIGN_NEGATIVE
-} DINFOX_temperature_sign_t;
-
-/*******************************************************************/
 typedef union {
 	DINFOX_temperature_representation_t representation;
 	struct {
 		unsigned value : DINFOX_TEMPERATURE_VALUE_SIZE_BITS;
-		DINFOX_temperature_sign_t sign : DINFOX_TEMPERATURE_SIGN_SIZE_BITS;
+		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_temperature_t;
-
-/*******************************************************************/
-typedef enum {
-	DINFOX_VOLTAGE_UNIT_MV = 0,
-	DINFOX_VOLTAGE_UNIT_DV
-} DINFOX_voltage_unit_t;
 
 /*******************************************************************/
 typedef union {
@@ -90,14 +116,6 @@ typedef union {
 } DINFOX_voltage_t;
 
 /*******************************************************************/
-typedef enum {
-	DINFOX_CURRENT_UNIT_UA = 0,
-	DINFOX_CURRENT_UNIT_DMA,
-	DINFOX_CURRENT_UNIT_MA,
-	DINFOX_CURRENT_UNIT_DA
-} DINFOX_current_unit_t;
-
-/*******************************************************************/
 typedef union {
 	DINFOX_current_representation_t representation;
 	struct {
@@ -105,6 +123,25 @@ typedef union {
 		DINFOX_current_unit_t unit : DINFOX_CURRENT_UNIT_SIZE_BITS;
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_current_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_electrical_power_representation_t representation;
+	struct {
+		unsigned value : DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS;
+		DINFOX_current_unit_t unit : DINFOX_ELECTRICAL_POWER_UNIT_SIZE_BITS;
+		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_electrical_power_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_power_factor_representation_t representation;
+	struct {
+		unsigned value : DINFOX_POWER_FACTOR_VALUE_SIZE_BITS;
+		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_power_factor_t;
 
 /*** DINFOX local functions ***/
 
@@ -220,25 +257,25 @@ DINFOX_time_representation_t DINFOX_convert_seconds(uint32_t time_seconds) {
 uint32_t DINFOX_get_seconds(DINFOX_time_representation_t dinfox_time) {
 	// Local variables.
 	uint32_t time_seconds = 0;
-	uint8_t local_dinfox_time = dinfox_time;
+	uint32_t value = 0;
+	DINFOX_time_representation_t local_dinfox_time = dinfox_time;
 	DINFOX_time_unit_t unit = DINFOX_TIME_UNIT_SECOND;
-	uint8_t value = 0;
-	// Parse field.
+	// Parse fields.
 	unit = ((DINFOX_time_t*) &local_dinfox_time) -> unit;
-	value = ((DINFOX_time_t*) &local_dinfox_time) -> value;
+	value = (uint32_t) ((DINFOX_time_t*) &local_dinfox_time) -> value;
 	// Compute seconds.
 	switch (unit) {
 	case DINFOX_TIME_UNIT_SECOND:
-		time_seconds = (uint32_t) value;
+		time_seconds = value;
 		break;
 	case DINFOX_TIME_UNIT_MINUTE:
-		time_seconds = (uint32_t) (DINFOX_SECONDS_PER_MINUTE * value);
+		time_seconds = (DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	case DINFOX_TIME_UNIT_HOUR:
-		time_seconds = (uint32_t) (DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
+		time_seconds = (DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	default:
-		time_seconds = (uint32_t) (DINFOX_HOURS_PER_DAY * DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
+		time_seconds = (DINFOX_HOURS_PER_DAY * DINFOX_MINUTES_PER_HOUR * DINFOX_SECONDS_PER_MINUTE * value);
 		break;
 	}
 	return time_seconds;
@@ -258,15 +295,14 @@ DINFOX_temperature_representation_t DINFOX_convert_degrees(int8_t temperature_de
 int8_t DINFOX_get_degrees(DINFOX_temperature_representation_t dinfox_temperature) {
 	// Local variables.
 	int8_t temperature_degrees = 0;
-	uint8_t local_dinfox_temperature = dinfox_temperature;
-	uint8_t sign = 0;
-	uint8_t value = 0;
-	// Parse sign and value.
+	uint32_t value = 0;
+	DINFOX_temperature_representation_t local_dinfox_temperature = dinfox_temperature;
+	DINFOX_sign_t sign = DINFOX_SIGN_POSITIVE;
+	// Parse fields.
 	sign = (uint32_t) (((DINFOX_temperature_t*) &local_dinfox_temperature) -> sign);
 	value = (uint32_t) (((DINFOX_temperature_t*) &local_dinfox_temperature) -> value);
 	// Check sign.
-	temperature_degrees = (sign == DINFOX_TEMPERATURE_SIGN_POSITIVE) ? (value) : ((-1) * value);
-
+	temperature_degrees = (sign == DINFOX_SIGN_POSITIVE) ? (value) : ((-1) * value);
 	return temperature_degrees;
 }
 
@@ -290,14 +326,14 @@ DINFOX_voltage_representation_t DINFOX_convert_mv(uint32_t voltage_mv) {
 uint32_t DINFOX_get_mv(DINFOX_voltage_representation_t dinfox_voltage) {
 	// Local variables.
 	uint32_t voltage_mv = 0;
-	uint16_t local_dinfox_voltage = dinfox_voltage;
+	uint32_t value = 0;
+	DINFOX_voltage_representation_t local_dinfox_voltage = dinfox_voltage;
 	DINFOX_voltage_unit_t unit = DINFOX_VOLTAGE_UNIT_MV;
-	uint16_t value = 0;
-	// Parse field.
+	// Parse fields.
 	unit = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> unit;
-	value = ((DINFOX_voltage_t*) &local_dinfox_voltage) -> value;
+	value = (uint32_t) ((DINFOX_voltage_t*) &local_dinfox_voltage) -> value;
 	// Compute mV.
-	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? ((uint32_t) value) : ((uint32_t) (value * DINFOX_MV_PER_DV));
+	voltage_mv = (unit == DINFOX_VOLTAGE_UNIT_MV) ? (value) : (value * DINFOX_MV_PER_DV);
 	return voltage_mv;
 }
 
@@ -334,28 +370,118 @@ DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua) {
 uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current) {
 	// Local variables.
 	uint32_t current_ua = 0;
-	uint8_t local_dinfox_current = dinfox_current;
-	DINFOX_time_unit_t unit = DINFOX_TIME_UNIT_SECOND;
-	uint8_t value = 0;
-	// Parse field.
-	unit = ((DINFOX_time_t*) &local_dinfox_current) -> unit;
-	value = ((DINFOX_time_t*) &local_dinfox_current) -> value;
+	uint32_t value = 0;
+	DINFOX_current_representation_t local_dinfox_current = dinfox_current;
+	DINFOX_current_unit_t unit = DINFOX_CURRENT_UNIT_UA;
+	// Parse fields.
+	unit = ((DINFOX_current_t*) &local_dinfox_current) -> unit;
+	value = (uint32_t) ((DINFOX_current_t*) &local_dinfox_current) -> value;
 	// Compute seconds.
 	switch (unit) {
 	case DINFOX_CURRENT_UNIT_UA:
-		current_ua = (uint32_t) value;
+		current_ua = value;
 		break;
 	case DINFOX_CURRENT_UNIT_DMA:
-		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * value);
+		current_ua = (DINFOX_UA_PER_DMA * value);
 		break;
 	case DINFOX_CURRENT_UNIT_MA:
-		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * value);
+		current_ua = (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * value);
 		break;
 	default:
-		current_ua = (uint32_t) (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * DINFOX_MA_PER_DA * value);
+		current_ua = (DINFOX_UA_PER_DMA * DINFOX_DMA_PER_MA * DINFOX_MA_PER_DA * value);
 		break;
 	}
 	return current_ua;
+}
+
+/*******************************************************************/
+DINFOX_electrical_power_representation_t DINFOX_convert_mw(int32_t electrical_power_mw) {
+	// Local variables.
+	DINFOX_electrical_power_t dinfox_electrical_power;
+	uint32_t absolute_value = 0;
+	// Read absolute value.
+	MATH_abs(electrical_power_mw, &absolute_value);
+	// Select sign.
+	dinfox_electrical_power.sign = (electrical_power_mw < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
+	// Select unit.
+	if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
+		dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_MW;
+	}
+	else {
+		absolute_value /= DINFOX_MW_PER_DW;
+		if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
+			dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DW;
+		}
+		else {
+			absolute_value /= DINFOX_DW_PER_W;
+			if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
+				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_W;
+			}
+			else {
+				absolute_value /= DINFOX_W_PER_DAW;
+				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DAW;
+			}
+		}
+	}
+	dinfox_electrical_power.value = absolute_value;
+	return (dinfox_electrical_power.representation);
+}
+
+/*******************************************************************/
+int32_t DINFOX_get_mw(DINFOX_electrical_power_representation_t dinfox_electrical_power) {
+	// Local variables.
+	int32_t electrical_power_mw = 0;
+	int32_t absolute_value = 0;
+	int32_t sign_multiplicator = 0;
+	DINFOX_electrical_power_representation_t local_dinfox_electrical_power = dinfox_electrical_power;
+	DINFOX_current_unit_t unit = DINFOX_CURRENT_UNIT_UA;
+	DINFOX_sign_t sign = DINFOX_SIGN_POSITIVE;
+	// Parse fields.
+	sign = ((DINFOX_electrical_power_t*) &local_dinfox_electrical_power) -> sign;
+	unit = ((DINFOX_electrical_power_t*) &local_dinfox_electrical_power) -> unit;
+	absolute_value = (int32_t) ((DINFOX_electrical_power_t*) &local_dinfox_electrical_power) -> value;
+	// Compute multiplicator.
+	sign_multiplicator = (sign == DINFOX_SIGN_NEGATIVE) ? (-1) : (1);
+	// Compute seconds.
+	switch (unit) {
+	case DINFOX_ELECTRICAL_POWER_UNIT_MW:
+		electrical_power_mw = (absolute_value * sign_multiplicator);
+		break;
+	case DINFOX_ELECTRICAL_POWER_UNIT_DW:
+		electrical_power_mw = (DINFOX_MW_PER_DW * absolute_value * sign_multiplicator);
+		break;
+	case DINFOX_ELECTRICAL_POWER_UNIT_W:
+		electrical_power_mw = (DINFOX_MW_PER_DW * DINFOX_DW_PER_W * absolute_value * sign_multiplicator);
+		break;
+	default:
+		electrical_power_mw = (DINFOX_MW_PER_DW * DINFOX_DW_PER_W * DINFOX_W_PER_DAW * absolute_value * sign_multiplicator);
+		break;
+	}
+	return electrical_power_mw;
+}
+
+/*******************************************************************/
+DINFOX_power_factor_representation_t DINFOX_convert_power_factor(int32_t power_factor) {
+	// Local variables.
+	uint32_t dinfox_power_factor = 0;
+	// DINFox representation is equivalent to signed magnitude
+	MATH_int32_to_signed_magnitude(power_factor, DINFOX_POWER_FACTOR_VALUE_SIZE_BITS, &dinfox_power_factor);
+	return ((DINFOX_power_factor_representation_t) dinfox_power_factor);
+}
+
+/*******************************************************************/
+int32_t DINFOX_get_power_factor(DINFOX_power_factor_representation_t dinfox_power_factor) {
+	// Local variables.
+	int32_t power_factor = 0;
+	uint32_t value = 0;
+	DINFOX_power_factor_representation_t local_dinfox_power_factor = dinfox_power_factor;
+	DINFOX_sign_t sign = DINFOX_SIGN_POSITIVE;
+	// Parse fields.
+	sign = (((DINFOX_power_factor_t*) &local_dinfox_power_factor) -> sign);
+	value = (uint32_t) (((DINFOX_power_factor_t*) &local_dinfox_power_factor) -> value);
+	// Check sign.
+	power_factor = (sign == DINFOX_SIGN_POSITIVE) ? (value) : ((-1) * value);
+	return power_factor;
 }
 
 /*******************************************************************/

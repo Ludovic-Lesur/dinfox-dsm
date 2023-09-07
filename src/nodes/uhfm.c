@@ -415,9 +415,8 @@ NODE_status_t UHFM_update_register(uint8_t reg_addr) {
 		// Nothing to do for other registers.
 		break;
 	}
-	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 errors:
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
 #endif
@@ -481,9 +480,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 		// Nothing to do for other registers.
 		break;
 	}
-	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, new_reg_mask, new_reg_value);
 errors:
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, new_reg_mask, new_reg_value);
 	return status;
 }
 #endif

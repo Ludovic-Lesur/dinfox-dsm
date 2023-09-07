@@ -84,8 +84,8 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 		break;
 	}
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 errors:
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
 #endif

@@ -133,7 +133,7 @@ POWER_status_t POWER_disable(POWER_domain_t domain) {
 	switch (domain) {
 	case POWER_DOMAIN_ANALOG:
 		// Turn analog front-end off and release ADC.
-		status = ADC1_de_init();
+		adc1_status = ADC1_de_init();
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 		GPIO_write(&GPIO_MNTR_EN, 0);
 #endif

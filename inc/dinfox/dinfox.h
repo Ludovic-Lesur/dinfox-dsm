@@ -23,6 +23,9 @@
 #define DINFOX_HUMIDITY_ERROR_VALUE			0xFF
 #define DINFOX_VOLTAGE_ERROR_VALUE			0xFFFF
 #define DINFOX_CURRENT_ERROR_VALUE			0xFFFF
+#define DINFOX_ELECTRICAL_POWER_ERROR_VALUE	0xFFFF
+#define DINFOX_POWER_FACTOR_ERROR_VALUE		0xFFFF
+#define DINFOX_RF_POWER_ERROR_VALUE			0xFF
 
 #define DINFOX_NODE_ADDRESS_RANGE_R4S8CR	15
 
@@ -101,6 +104,18 @@ typedef uint16_t DINFOX_voltage_representation_t;
  * \brief DINFox current representation type.
  *******************************************************************/
 typedef uint16_t DINFOX_current_representation_t;
+
+/*!******************************************************************
+ * \type DINFOX_electrical_power_representation_t
+ * \brief DINFox electrical power representation type.
+ *******************************************************************/
+typedef uint16_t DINFOX_electrical_power_representation_t;
+
+/*!******************************************************************
+ * \type DINFOX_power_factor_representation_t
+ * \brief DINFox power factor representation type.
+ *******************************************************************/
+typedef uint16_t DINFOX_power_factor_representation_t;
 
 /*!******************************************************************
  * \type DINFOX_rf_power_representation_t
@@ -227,6 +242,42 @@ DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua);
  * \retval		Converted current value in uA.
  *******************************************************************/
 uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current);
+
+/*!******************************************************************
+ * \fn DINFOX_electrical_power_representation_t DINFOX_convert_mw(int32_t electrical_power_mw)
+ * \brief Convert an electrical power to DINFox representation.
+ * \param[in]  	electrical_power_mw: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_electrical_power_representation_t DINFOX_convert_mw(int32_t electrical_power_mw);
+
+/*!******************************************************************
+ * \fn int32_t DINFOX_get_mw(DINFOX_electrical_power_representation_t dinfox_electrical_power)
+ * \brief Convert a DINFox representation to electrical power.
+ * \param[in]  	dinfox_electrical_power: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted electrical power value in mW.
+ *******************************************************************/
+int32_t DINFOX_get_mw(DINFOX_electrical_power_representation_t dinfox_electrical_power);
+
+/*!******************************************************************
+ * \fn DINFOX_power_factor_representation_t DINFOX_convert_power_factor(int32_t power_factor)
+ * \brief Convert an power factor to DINFox representation.
+ * \param[in]  	power_factor: Value to convert
+ * \param[out] 	none
+ * \retval		DINFox representation.
+ *******************************************************************/
+DINFOX_power_factor_representation_t DINFOX_convert_power_factor(int32_t power_factor);
+
+/*!******************************************************************
+ * \fn int32_t DINFOX_get_power_factor(DINFOX_power_factor_representation_t dinfox_power_factor)
+ * \brief Convert a DINFox representation to electrical power.
+ * \param[in]  	dinfox_electrical_power: DINFox representation to convert.
+ * \param[out] 	none
+ * \retval		Converted power factor.
+ *******************************************************************/
+int32_t DINFOX_get_power_factor(DINFOX_power_factor_representation_t dinfox_power_factor);
 
 /*!******************************************************************
  * \fn DINFOX_rf_power_representation_t DINFOX_convert_dbm(int16_t rf_power_dbm)
