@@ -23,12 +23,13 @@
 
 #define ADC_FULL_SCALE_12BITS			4095
 
-#define ADC_VREFINT_VOLTAGE_MV			((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_FULL_SCALE_12BITS))
 #define ADC_VMCU_DEFAULT_MV				3000
+
+#define ADC_VREFINT_VOLTAGE_MV			((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_FULL_SCALE_12BITS))
+#define ADC_VREFINT_12BITS_DEFAULT_MV	((VREFINT_CAL * VREFINT_VCC_CALIB_MV) / (ADC_VMCU_DEFAULT_MV))
 
 #define ADC_LT6106_VOLTAGE_GAIN			59
 #define ADC_LT6106_SHUNT_RESISTOR_MOHMS	10
-#define ADC_LT6106_OFFSET_CURRENT_UA	25000 // (250µV maximum) / (10mR) = 25mA.
 
 #define ADC_TIMEOUT_COUNT				1000000
 
@@ -256,20 +257,13 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 		case ADC_CONVERSION_TYPE_LT6106:
 			// Current conversion.
-			num = voltage_12bits;
-			num *= ADC_VREFINT_VOLTAGE_MV;
-			num *= 1000000;
-			den = adc_ctx.vrefint_12bits;
-			den *= ADC_LT6106_VOLTAGE_GAIN;
-			den *= ADC_LT6106_SHUNT_RESISTOR_MOHMS;
-			adc_ctx.data[idx] = (num) / (den);
-			// Remove offset current.
-			if (adc_ctx.data[idx] < ADC_LT6106_OFFSET_CURRENT_UA) {
-				adc_ctx.data[idx] = 0;
-			}
-			else {
-				adc_ctx.data[idx] -= ADC_LT6106_OFFSET_CURRENT_UA;
-			}
+			num = (uint64_t) voltage_12bits;
+			num *= (uint64_t) ADC_VREFINT_VOLTAGE_MV;
+			num *= (uint64_t) 1000000;
+			den = (uint64_t) adc_ctx.vrefint_12bits;
+			den *= (uint64_t) ADC_LT6106_VOLTAGE_GAIN;
+			den *= (uint64_t) ADC_LT6106_SHUNT_RESISTOR_MOHMS;
+			adc_ctx.data[idx] = (uint32_t) (num) / (den);
 			break;
 #endif
 		default:
@@ -313,9 +307,8 @@ ADC_status_t ADC1_init(void) {
 	uint8_t idx = 0;
 	uint32_t loop_count = 0;
 	// Init context.
-	adc_ctx.vrefint_12bits = 0;
+	adc_ctx.vrefint_12bits = ADC_VREFINT_12BITS_DEFAULT_MV;
 	for (idx=0 ; idx<ADC_DATA_INDEX_LAST ; idx++) adc_ctx.data[idx] = 0;
-	adc_ctx.data[ADC_DATA_INDEX_VMCU_MV] = ADC_VMCU_DEFAULT_MV;
 	adc_ctx.tmcu_degrees = 0;
 	// Init GPIOs.
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined GPSM)
@@ -363,6 +356,7 @@ ADC_status_t ADC1_init(void) {
 	}
 	// Enable ADC peripheral.
 	ADC1 -> CR |= (0b1 << 0); // ADEN='1'.
+	loop_count = 0;
 	while (((ADC1 -> ISR) & (0b1 << 0)) == 0) {
 		// Wait for ADC to be ready (ADRDY='1') or timeout.
 		loop_count++;
