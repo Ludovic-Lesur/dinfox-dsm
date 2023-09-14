@@ -67,7 +67,7 @@ void USART2_init(USART_character_match_irq_cb_t irq_callback) {
 	USART2 -> CR3 |= (0b1 << 12); // No overrun detection (OVRDIS='0').
 	brr = (RCC_HSI_FREQUENCY_KHZ * 1000);
 	brr /= USART_BAUD_RATE;
-	USART2 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate).
+	USART2 -> BRR = (brr & 0x000FFFFF); // BRR = (fCK)/(baud rate).
 	// Configure character match interrupt and DMA.
 	USART2 -> CR2 |= (STRING_CHAR_LF << 24); // LF character used to trigger CM interrupt.
 	USART2 -> CR3 |= (0b1 << 6); // Transfer is performed after each RXNE event.

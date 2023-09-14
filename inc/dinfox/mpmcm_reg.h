@@ -15,8 +15,8 @@
 
 /*******************************************************************/
 #define MPMCM_DATA_REG_SET(channel, data)  \
-	MPMCM_REG_CH##channel##_##data##_0,  \
-	MPMCM_REG_CH##channel##_##data##_1, \
+	MPMCM_REG_ADDR_CH##channel##_##data##_0,  \
+	MPMCM_REG_ADDR_CH##channel##_##data##_1, \
 
 /*******************************************************************/
 #define MPMCM_CHANNEL_REG_SET(channel)          \
@@ -32,6 +32,8 @@
  *******************************************************************/
 typedef enum {
 	MPMCM_REG_ADDR_STATUS_CONTROL_1 = COMMON_REG_ADDR_LAST,
+	MPMCM_REG_ADDR_MAINS_FREQUENCY_0,
+	MPMCM_REG_ADDR_MAINS_FREQUENCY_1,
 	MPMCM_CHANNEL_REG_SET(1)
 	MPMCM_CHANNEL_REG_SET(2)
 	MPMCM_CHANNEL_REG_SET(3)
@@ -42,9 +44,19 @@ typedef enum {
 /*** MPMCM number of specific registers ***/
 
 #define MPMCM_NUMBER_OF_SPECIFIC_REG			(MPMCM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
-#define MPMCM_NUMBER_OF_REG_PER_DATA			(MPMCM_REG_CH2_ACTIVE_POWER_0 - MPMCM_REG_CH1_ACTIVE_POWER_0)
+#define MPMCM_NUMBER_OF_REG_PER_DATA			(MPMCM_REG_ADDR_CH2_ACTIVE_POWER_0 - MPMCM_REG_ADDR_CH1_ACTIVE_POWER_0)
 
 /*** MPMCM registers mask ***/
+
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH1S	0x00000001
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH1D	0x00000002
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH2S	0x00000004
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH2D	0x00000008
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH3S	0x00000010
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH3D	0x00000020
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH4S	0x00000040
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_CH4D	0x00000080
+#define MPMCM_REG_STATUS_CONTROL_1_MASK_FRQS	0x00000100
 
 #define MPMCM_REG_X_0_MIN_MASK					0x0000FFFF
 #define MPMCM_REG_X_0_MAX_MASK					0xFFFF0000

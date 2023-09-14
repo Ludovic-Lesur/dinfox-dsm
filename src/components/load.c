@@ -61,7 +61,7 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 #if (defined LVRM) && (defined HW2_0)
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	// Enable DC-DC.
-	GPIO_write(&GPIO_COIL_POWER_ENABLE, 1);
+	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(LOAD_DC_DC_DELAY_MS, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM);
 	// Enable COIL voltage.
@@ -74,11 +74,6 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	GPIO_write(&GPIO_OUT_CONTROL, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(LOAD_RELAY_CONTROL_DURATION_MS, LPTIM_DELAY_MODE_STOP);
 	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM);
-	// Turn all GPIOs off.
-	GPIO_write(&GPIO_OUT_CONTROL, 0);
-	GPIO_write(&GPIO_OUT_SELECT, 0);
-	GPIO_write(&GPIO_COIL_POWER_ENABLE, 0);
-	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 0);
 #else
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, state);
@@ -86,6 +81,13 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	// Update state.
 	load_state = state;
 errors:
+#if (defined LVRM) && (defined HW2_0)
+	// Turn all GPIOs off.
+	GPIO_write(&GPIO_OUT_CONTROL, 0);
+	GPIO_write(&GPIO_OUT_SELECT, 0);
+	GPIO_write(&GPIO_COIL_POWER_ENABLE, 0);
+	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 0);
+#endif
 	return status;
 }
 #endif
