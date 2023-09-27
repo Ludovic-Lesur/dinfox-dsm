@@ -1,7 +1,7 @@
 /*
  * common.c
  *
- *  Created on: 4 jun. 2023
+ *  Created on: 04 jun. 2023
  *      Author: Ludo
  */
 
@@ -32,7 +32,7 @@ static void _COMMON_reset_analog_data(void) {
 	// Local variables.
 	uint32_t analog_data_0 = 0;
 	uint32_t analog_data_0_mask = 0;
-	// Vsrc / Vstr.
+	// VMCU and TMCU.
 	DINFOX_write_field(&analog_data_0, &analog_data_0_mask, DINFOX_VOLTAGE_ERROR_VALUE, COMMON_REG_ANALOG_DATA_0_MASK_VMCU);
 	DINFOX_write_field(&analog_data_0, &analog_data_0_mask, DINFOX_TEMPERATURE_ERROR_VALUE, COMMON_REG_ANALOG_DATA_0_MASK_TMCU);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);

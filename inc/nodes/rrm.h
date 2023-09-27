@@ -1,8 +1,8 @@
 /*
  * rrm.h
  *
- *  Created on: Jun 10, 2023
- *      Author: ludo
+ *  Created on: 10 jun. 2023
+ *      Author: Ludo
  */
 
 #ifndef __RRM_H__

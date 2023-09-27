@@ -196,7 +196,7 @@ static NEOM8N_status_t _NEOM8N_compute_ubx_checksum(uint8_t* neom8n_command, uin
 		status = NEOM8N_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
-	// See algorithme on p.136 of NEO-M8 programming manual.
+	// See algorithm on p.136 of NEO-M8 programming manual.
 	for (checksum_idx=NEOM8N_CHECKSUM_OFFSET ; checksum_idx<(NEOM8N_CHECKSUM_OFFSET+NEOM8N_CHECKSUM_OVERHEAD_SIZE+payload_length) ; checksum_idx++) {
 		ck_a = ck_a + neom8n_command[checksum_idx];
 		ck_b = ck_b + ck_a;
@@ -230,7 +230,7 @@ static NEOM8N_status_t _NEOM8N_get_nmea_checksum(char_t* nmea_rx_buf, uint8_t* c
 		status = NEOM8N_ERROR_CHECKSUM_INDEX;
 		goto errors;
 	}
-	// Convert hexa to value.
+	// Convert hexadecimal to value.
 	string_status = STRING_string_to_value(&(nmea_rx_buf[checksum_start_char_idx + 1]), STRING_FORMAT_HEXADECIMAL, 2, &ck_value);
 	STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 	// Cast to byte.
@@ -253,7 +253,7 @@ static NEOM8N_status_t _NEOM8N_compute_nmea_checksum(char_t* nmea_rx_buf, uint8_
 		status = NEOM8N_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
-	// Get message start index (see algorithme on p.105 of NEO-M8 programming manual).
+	// Get message start index (see algorithm on p.105 of NEO-M8 programming manual).
 	while ((nmea_rx_buf[message_start_char_idx] != NMEA_CHAR_MESSAGE_START) && (message_start_char_idx < NMEA_RX_BUFFER_SIZE)) {
 		message_start_char_idx++;
 	}
@@ -348,7 +348,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, NEOM8N_time_t
 					goto errors;
 				}
 				break;
-			// Field 1 = time = <hhmmss.ss>.
+			// Field 1 = time = hhmmss.ss.
 			case NMEA_ZDA_FIELD_INDEX_TIME:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_ZDA_FIELD_SIZE_TIME);
@@ -365,7 +365,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, NEOM8N_time_t
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_time -> seconds = (uint8_t) value;
 				break;
-			// Field 2 = day = <dd>.
+			// Field 2 = day = dd.
 			case NMEA_ZDA_FIELD_INDEX_DAY:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_ZDA_FIELD_SIZE_DAY);
@@ -374,7 +374,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, NEOM8N_time_t
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_time -> date = (uint8_t) value;
 				break;
-			// Field 3 = month = <mm>.
+			// Field 3 = month = mm.
 			case NMEA_ZDA_FIELD_INDEX_MONTH:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_ZDA_FIELD_SIZE_MONTH);
@@ -383,7 +383,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, NEOM8N_time_t
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_time -> month = (uint8_t) value;
 				break;
-			// Field 4 = year = <yyyy>.
+			// Field 4 = year = yyyy.
 			case NMEA_ZDA_FIELD_INDEX_YEAR:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_ZDA_FIELD_SIZE_YEAR);
@@ -484,7 +484,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 					goto errors;
 				}
 				break;
-			// Field 2 = latitude = <ddmm.mmmmm>.
+			// Field 2 = latitude = ddmm.mmmmm.
 			case NMEA_GGA_FIELD_INDEX_LAT:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_GGA_FIELD_SIZE_LAT);
@@ -518,7 +518,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 					goto errors;
 				}
 				break;
-			// Field 4 = longitude = <dddmm.mmmmm>.
+			// Field 4 = longitude = dddmm.mmmmm.
 			case NMEA_GGA_FIELD_INDEX_LONG:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_GGA_FIELD_SIZE_LONG);
@@ -571,7 +571,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 				string_status = STRING_string_to_value(&(nmea_rx_buf[separator_idx + 1]), STRING_FORMAT_DECIMAL, alt_number_of_digits, &value);
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_position -> altitude = (uint32_t) value;
-				// Rounding operation if fractionnal part exists.
+				// Rounding operation if fractional part exists.
 				if ((char_idx - (separator_idx + alt_number_of_digits) - 1) >= 2) {
 					// Convert tenth part.
 					string_status = STRING_string_to_value(&(nmea_rx_buf[separator_idx + alt_number_of_digits + 2]), STRING_FORMAT_DECIMAL, 1, &value);
@@ -756,7 +756,7 @@ NEOM8N_status_t NEOM8N_get_time(NEOM8N_time_t* gps_time, uint32_t timeout_second
 		while (neom8n_ctx.flags.rx_irq == 0) {
 			// Enter sleep mode.
 			PWR_enter_sleep_mode();
-			// Cheak wake-up reason.
+			// Check wake-up reason.
 			if (neom8n_ctx.flags.rx_irq == 0) {
 				external_wakeup_count++;
 				if (external_wakeup_count > NEOM8N_EXTERNAL_WAKEUP_COUNT_LIMIT) {
@@ -837,7 +837,7 @@ NEOM8N_status_t NEOM8N_get_position(NEOM8N_position_t* gps_position, uint32_t ti
 		while (neom8n_ctx.flags.rx_irq == 0) {
 			// Enter sleep mode.
 			PWR_enter_sleep_mode();
-			// Cheak wake-up reason.
+			// Check wake-up reason.
 			if (neom8n_ctx.flags.rx_irq == 0) {
 				external_wakeup_count++;
 				if (external_wakeup_count > NEOM8N_EXTERNAL_WAKEUP_COUNT_LIMIT) {

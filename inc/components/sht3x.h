@@ -60,7 +60,7 @@ SHT3X_status_t SHT3X_get_temperature(int8_t* temperature_degrees);
 #ifdef SM
 /*!******************************************************************
  * \fn SHT3X_status_t SHT3X_get_humidity(uint8_t* humidity_percent)
- * \brief Read humidy.
+ * \brief Read humidly.
  * \param[in]  	none
  * \param[out] 	humidity_percent: Pointer to byte that will contain the humidity in percent.
  * \retval		Function execution status.

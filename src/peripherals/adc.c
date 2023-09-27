@@ -267,7 +267,7 @@ static ADC_status_t _ADC1_compute_all_channels(void) {
 			den = (uint64_t) adc_ctx.vrefint_12bits;
 			den *= (uint64_t) ADC_LT6106_VOLTAGE_GAIN;
 			den *= (uint64_t) ADC_LT6106_SHUNT_RESISTOR_MOHMS;
-			adc_ctx.data[idx] = (uint32_t) (num) / (den);
+			adc_ctx.data[idx] = (den == 0) ? 0 : (uint32_t) ((num) / (den));
 			break;
 #endif
 		default:
