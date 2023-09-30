@@ -361,7 +361,7 @@ static void _AT_BUS_print_sw_version(void) {
 	uint32_t reg_value = 0;
 	_AT_BUS_reply_add_string("SW");
 	// Read software version register 0.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_0, &reg_value);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_0, &reg_value);
 	// Major version.
 	_AT_BUS_reply_add_value((int32_t) DINFOX_read_field(reg_value, COMMON_REG_SW_VERSION_0_MASK_MAJOR), STRING_FORMAT_DECIMAL, 0);
 	// Minor version.
@@ -375,7 +375,7 @@ static void _AT_BUS_print_sw_version(void) {
 		_AT_BUS_reply_add_string(".d");
 	}
 	// Commit ID.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_SW_VERSION_1, &reg_value);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_1, &reg_value);
 	_AT_BUS_reply_add_string(" (");
 	_AT_BUS_reply_add_value((int32_t) DINFOX_read_field(reg_value, COMMON_REG_SW_VERSION_1_MASK_COMMIT_ID), STRING_FORMAT_HEXADECIMAL, 1);
 	_AT_BUS_reply_add_string(")");
@@ -398,7 +398,7 @@ static void _AT_BUS_print_error_stack(void) {
 	_AT_BUS_reply_add_string("[ ");
 	do {
 		// Read error stack.
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ERROR_STACK, &reg_value);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ERROR_STACK, &reg_value);
 		error = (ERROR_code_t) DINFOX_read_field(reg_value, COMMON_REG_ERROR_STACK_MASK_ERROR);
 		// Check value.
 		if (error != SUCCESS) {
@@ -429,10 +429,10 @@ static void _AT_BUS_adc_callback(void) {
 	int32_t value = 0;
 	// Trigger measurements.
 	DINFOX_write_field(&status_control_0, &status_control_0_mask, 0b1, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, status_control_0_mask, status_control_0);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, status_control_0_mask, status_control_0);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read data.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, &analog_data_0);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, &analog_data_0);
 	// MCU voltage.
 	_AT_BUS_reply_add_string("Vmcu=");
 	_AT_BUS_reply_add_value((int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_0, COMMON_REG_ANALOG_DATA_0_MASK_VMCU)), STRING_FORMAT_DECIMAL, 0);
@@ -445,23 +445,23 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_send();
 	// Input voltage.
 #ifdef LVRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, LVRM_REG_ANALOG_DATA_1_MASK_VCOM));
 	_AT_BUS_reply_add_string("Vcom=");
 #endif
 #ifdef BPSM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, BPSM_REG_ANALOG_DATA_1_MASK_VSRC));
 	_AT_BUS_reply_add_string("Vsrc=");
 #endif
 #ifdef DDRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, DDRM_REG_ANALOG_DATA_1_MASK_VIN));
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_reply_add_string("Vin=");
 #endif
 #ifdef RRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, RRM_REG_ANALOG_DATA_1_MASK_VIN));
 	_AT_BUS_reply_add_string("Vin=");
 #endif
@@ -492,7 +492,7 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("Vout=");
 #endif
 #ifdef BPSM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_2, BPSM_REG_ANALOG_DATA_2_MASK_VBKP));
 	_AT_BUS_reply_add_string("Vbkp=");
 #endif
@@ -503,17 +503,17 @@ static void _AT_BUS_adc_callback(void) {
 #endif
 	// Output current.
 #ifdef LVRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
 #ifdef DDRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_2, DDRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
 #ifdef RRM
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
@@ -525,7 +525,7 @@ static void _AT_BUS_adc_callback(void) {
 	// AINx voltage.
 #if (defined SM) && (defined SM_AIN_ENABLE)
 	// Read data.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	// AIN0 voltage.
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, SM_REG_ANALOG_DATA_1_MASK_VAIN0));
 	_AT_BUS_reply_add_string("AIN0=");
@@ -539,7 +539,7 @@ static void _AT_BUS_adc_callback(void) {
 	_AT_BUS_reply_add_string("mV");
 	_AT_BUS_reply_send();
 	// Read data.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, SM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_ANALOG_DATA_2, &analog_data_2);
 	// AIN2 voltage.
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_2, SM_REG_ANALOG_DATA_2_MASK_VAIN2));
 	_AT_BUS_reply_add_string("AIN2=");
@@ -556,7 +556,7 @@ static void _AT_BUS_adc_callback(void) {
 	// Radio voltages.
 #ifdef UHFM
 	// Read data
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	// TX voltage.
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, UHFM_REG_ANALOG_DATA_1_MASK_VRF_TX));
 	_AT_BUS_reply_add_string("Vrf_tx=");
@@ -572,7 +572,7 @@ static void _AT_BUS_adc_callback(void) {
 #endif
 #ifdef GPSM
 	// Read data
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, &analog_data_1);
 	// GPS voltage.
 	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(analog_data_1, GPSM_REG_ANALOG_DATA_1_MASK_VGPS));
 	_AT_BUS_reply_add_string("Vgps=");
@@ -657,7 +657,7 @@ static void _AT_BUS_get_id_callback(void) {
 	uint8_t sigfox_ep_id[SIGFOX_EP_ID_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read ID.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Print ID.
 	for (idx=0 ; idx<SIGFOX_EP_ID_SIZE_BYTES ; idx++) {
@@ -692,7 +692,7 @@ static void _AT_BUS_set_id_callback(void) {
 		NVM_stack_exit_error(ERROR_BASE_NVM + nvm_status);
 	}
 	// Update register.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_id, SIGFOX_EP_ID_SIZE_BYTES);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -711,7 +711,7 @@ static void _AT_BUS_get_key_callback(void) {
 	uint8_t sigfox_ep_key[SIGFOX_EP_KEY_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read key.
-	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
+	node_status = NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Print key.
 	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
@@ -746,7 +746,7 @@ static void _AT_BUS_set_key_callback(void) {
 		NVM_stack_exit_error(ERROR_BASE_NVM + nvm_status);
 	}
 	// Update registers.
-	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
+	node_status = NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_key, SIGFOX_EP_KEY_SIZE_BYTES);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -763,7 +763,7 @@ static void _AT_BUS_print_dl_payload(void) {
 	uint8_t dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
 	uint8_t idx = 0;
 	// Read registers.
-	NODE_read_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
+	NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
 	// Print DL payload.
 	_AT_BUS_reply_add_string("+RX=");
 	for (idx=0 ; idx<SIGFOX_DL_PAYLOAD_SIZE_BYTES ; idx++) {
@@ -785,10 +785,10 @@ static void _AT_BUS_send_sigfox_message(uint8_t bidir_flag) {
 	uint32_t status_control_1_mask = 0;
 	// Send Sigfox message.
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read message status.
-	node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
+	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	message_status.all = (uint8_t) DINFOX_read_field(status_control_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
 	// Print message status.
@@ -818,7 +818,7 @@ static void _AT_BUS_so_callback(void) {
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b1, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG);
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(0);
 	return;
@@ -853,7 +853,7 @@ static void _AT_BUS_sb_callback(void) {
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BIT0 + ul_bit), UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(bidir_flag);
 	return;
@@ -893,9 +893,9 @@ static void _AT_BUS_sf_callback(void) {
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
 	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) ul_payload_size, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
 	// Write uplink payload.
-	NODE_write_byte_array(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
+	NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(bidir_flag);
 	return;
@@ -929,9 +929,9 @@ static void _AT_BUS_tm_callback(void) {
 	DINFOX_write_field(&ep_config_0, &ep_config_0_mask, (uint32_t) test_mode, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG);
 	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, ep_config_0_mask, ep_config_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, ep_config_0_mask, ep_config_0);
 	// Trigger test mode.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -979,12 +979,12 @@ static void _AT_BUS_cw_callback(void) {
 	DINFOX_write_field(&radio_test_1, &radio_test_1_mask, (uint32_t) DINFOX_convert_dbm(power_dbm), UHFM_REG_RADIO_TEST_1_MASK_TX_POWER);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) enable, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, radio_test_0_mask, radio_test_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, radio_test_0_mask, radio_test_0);
 	if (power_given != 0) {
-		NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, radio_test_1_mask, radio_test_1);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, radio_test_1_mask, radio_test_1);
 	}
 	// Control CW mode.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -1021,14 +1021,14 @@ static void _AT_BUS_rssi_callback(void) {
 	DINFOX_write_field(&radio_test_0, &radio_test_0_mask, (uint32_t) frequency_hz, UHFM_REG_RADIO_TEST_0_MASK_RF_FREQUENCY);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, radio_test_0_mask, radio_test_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, radio_test_0_mask, radio_test_0);
 	// Start RSSI measurement.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Measurement loop.
 	while (report_loop < ((duration_seconds * 1000) / AT_BUS_RSSI_REPORT_PERIOD_MS)) {
 		// Read RSSI.
-		node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &radio_test_1);
+		node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &radio_test_1);
 		NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 		rssi_dbm = DINFOX_get_dbm((DINFOX_rf_power_representation_t) DINFOX_read_field(radio_test_1, UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI));
 		// Print RSSI.
@@ -1045,7 +1045,7 @@ static void _AT_BUS_rssi_callback(void) {
 	status_control_1 = 0;
 	status_control_1_mask = 0;
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -1054,7 +1054,7 @@ errors:
 	status_control_1 = 0;
 	status_control_1_mask = 0;
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	// Print error.
 	_AT_BUS_print_error(status);
 	return;
@@ -1084,23 +1084,23 @@ static void _AT_BUS_time_callback(void) {
 	DINFOX_write_field(&timeout, &timeout_mask, (uint32_t) timeout_seconds, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, GPSM_REG_STATUS_CONTROL_1_MASK_TTRG);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEOUT, timeout_mask, timeout);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, timeout_mask, timeout);
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
 	// Check status.
 	if (DINFOX_read_field(status_control_1, GPSM_REG_STATUS_CONTROL_1_MASK_TFS) == 0) {
 		_AT_BUS_reply_add_string("Timeout");
 	}
 	else {
 		// Read registers.
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIME_DATA_0, &time_data_0);
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIME_DATA_1, &time_data_1);
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIME_DATA_2, &time_data_2);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, &time_data_0);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, &time_data_1);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, &time_data_2);
 		// Year.
 		value = (int32_t) DINFOX_get_year(DINFOX_read_field(time_data_0, GPSM_REG_TIME_DATA_0_MASK_YEAR));
 		_AT_BUS_reply_add_value(value, STRING_FORMAT_DECIMAL, 0);
@@ -1177,24 +1177,24 @@ static void _AT_BUS_gps_callback(void) {
 	DINFOX_write_field(&timeout, &timeout_mask, (uint32_t) timeout_seconds, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, GPSM_REG_STATUS_CONTROL_1_MASK_GTRG);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEOUT, timeout_mask, timeout);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, timeout_mask, timeout);
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
-	NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
 	// Check status.
 	if (DINFOX_read_field(status_control_1, GPSM_REG_STATUS_CONTROL_1_MASK_GFS) == 0) {
 		_AT_BUS_reply_add_string("Timeout");
 	}
 	else {
 		// Read registers.
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, &geoloc_data_0);
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, &geoloc_data_1);
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, &geoloc_data_2);
-		NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, &geoloc_data_3);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, &geoloc_data_0);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, &geoloc_data_1);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, &geoloc_data_2);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, &geoloc_data_3);
 		// Latitude degrees.
 		_AT_BUS_reply_add_string("Lat=");
 		_AT_BUS_reply_add_value((int32_t) DINFOX_read_field(geoloc_data_0, GPSM_REG_GEOLOC_DATA_0_MASK_DEGREE), STRING_FORMAT_DECIMAL, 0);
@@ -1265,10 +1265,10 @@ static void _AT_BUS_pulse_callback(void) {
 	DINFOX_write_field(&timepulse_configuration_1, &timepulse_configuration_1_mask, (uint32_t) duty_cycle_percent, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) active, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, timepulse_configuration_0_mask, timepulse_configuration_0);
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, timepulse_configuration_1_mask, timepulse_configuration_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, timepulse_configuration_0_mask, timepulse_configuration_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, timepulse_configuration_1_mask, timepulse_configuration_1);
 	// Control timepulse output.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
