@@ -24,7 +24,7 @@
 #define DINFOX_VOLTAGE_ERROR_VALUE			0xFFFF
 #define DINFOX_CURRENT_ERROR_VALUE			0xFFFF
 #define DINFOX_ELECTRICAL_POWER_ERROR_VALUE	0xFFFF
-#define DINFOX_POWER_FACTOR_ERROR_VALUE		0xFFFF
+#define DINFOX_POWER_FACTOR_ERROR_VALUE		0xFF
 #define DINFOX_RF_POWER_ERROR_VALUE			0xFF
 #define DINFOX_MAINS_FREQUENCY_ERROR_VALUE	0xFFFF
 
@@ -117,7 +117,7 @@ typedef uint16_t DINFOX_electrical_power_representation_t;
  * \type DINFOX_power_factor_representation_t
  * \brief DINFox power factor representation type.
  *******************************************************************/
-typedef uint16_t DINFOX_power_factor_representation_t;
+typedef uint8_t DINFOX_power_factor_representation_t;
 
 /*!******************************************************************
  * \type DINFOX_rf_power_representation_t
