@@ -429,7 +429,7 @@ static void _AT_BUS_adc_callback(void) {
 	int32_t value = 0;
 	// Trigger measurements.
 	DINFOX_write_field(&status_control_0, &status_control_0_mask, 0b1, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, status_control_0_mask, status_control_0);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, status_control_0_mask, status_control_0);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read data.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, &analog_data_0);
@@ -785,11 +785,10 @@ static void _AT_BUS_send_sigfox_message(uint8_t bidir_flag) {
 	uint32_t status_control_1_mask = 0;
 	// Send Sigfox message.
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b1, UHFM_REG_STATUS_CONTROL_1_MASK_STRG);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read message status.
-	node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
-	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
 	message_status.all = (uint8_t) DINFOX_read_field(status_control_1, UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
 	// Print message status.
 	_AT_BUS_reply_add_string("+MSG_STAT=");
@@ -931,7 +930,7 @@ static void _AT_BUS_tm_callback(void) {
 	// Write registers.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, ep_config_0_mask, ep_config_0);
 	// Trigger test mode.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -984,7 +983,7 @@ static void _AT_BUS_cw_callback(void) {
 		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, radio_test_1_mask, radio_test_1);
 	}
 	// Control CW mode.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -1023,7 +1022,7 @@ static void _AT_BUS_rssi_callback(void) {
 	// Write configuration.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, radio_test_0_mask, radio_test_0);
 	// Start RSSI measurement.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Measurement loop.
 	while (report_loop < ((duration_seconds * 1000) / AT_BUS_RSSI_REPORT_PERIOD_MS)) {
@@ -1045,7 +1044,7 @@ static void _AT_BUS_rssi_callback(void) {
 	status_control_1 = 0;
 	status_control_1_mask = 0;
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
@@ -1054,7 +1053,7 @@ errors:
 	status_control_1 = 0;
 	status_control_1_mask = 0;
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	// Print error.
 	_AT_BUS_print_error(status);
 	return;
@@ -1088,7 +1087,7 @@ static void _AT_BUS_time_callback(void) {
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
@@ -1181,7 +1180,7 @@ static void _AT_BUS_gps_callback(void) {
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, &status_control_1);
@@ -1268,7 +1267,7 @@ static void _AT_BUS_pulse_callback(void) {
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, timepulse_configuration_0_mask, timepulse_configuration_0);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, timepulse_configuration_1_mask, timepulse_configuration_1);
 	// Control timepulse output.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
 	return;
