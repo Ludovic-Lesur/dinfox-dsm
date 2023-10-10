@@ -1264,8 +1264,10 @@ static void _AT_BUS_pulse_callback(void) {
 	DINFOX_write_field(&timepulse_configuration_1, &timepulse_configuration_1_mask, (uint32_t) duty_cycle_percent, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
 	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) active, GPSM_REG_STATUS_CONTROL_1_MASK_TPEN);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, timepulse_configuration_0_mask, timepulse_configuration_0);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, timepulse_configuration_1_mask, timepulse_configuration_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, timepulse_configuration_0_mask, timepulse_configuration_0);
+	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, timepulse_configuration_1_mask, timepulse_configuration_1);
+	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Control timepulse output.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
