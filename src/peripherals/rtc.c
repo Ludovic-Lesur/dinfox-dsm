@@ -20,6 +20,7 @@
 /*** RTC local global variables ***/
 
 static volatile uint8_t rtc_wakeup_timer_flag = 0;
+static volatile uint32_t rtc_time_seconds = 0;
 
 /*** RTC local functions ***/
 
@@ -30,6 +31,7 @@ void __attribute__((optimize("-O0"))) RTC_IRQHandler(void) {
 		// Set local flag.
 		if (((RTC -> CR) & (0b1 << 14)) != 0) {
 			rtc_wakeup_timer_flag = 1;
+			rtc_time_seconds += RTC_WAKEUP_PERIOD_SECONDS;
 		}
 		// Clear RTC and EXTI flags.
 		RTC -> ISR &= ~(0b1 << 10); // WUTF='0'.
@@ -112,4 +114,9 @@ volatile uint8_t RTC_get_wakeup_timer_flag(void) {
 void RTC_clear_wakeup_timer_flag(void) {
 	// Clear flag.
 	rtc_wakeup_timer_flag = 0;
+}
+
+/*******************************************************************/
+uint32_t RTC_get_time_seconds(void) {
+	return rtc_time_seconds;
 }
