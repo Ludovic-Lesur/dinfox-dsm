@@ -46,6 +46,22 @@ static void _SM_reset_analog_data(void) {
 }
 #endif
 
+#ifdef SM
+/*******************************************************************/
+static void _SM_reset_digital_data(void) {
+	// Local variables.
+	uint32_t digital_data = 0;
+	uint32_t digital_data_mask = 0;
+	// Reset fields to error value.
+	DINFOX_write_field(&digital_data, &digital_data_mask, DINFOX_BIT_ERROR, SM_REG_DIGITAL_DATA_MASK_DIO0);
+	DINFOX_write_field(&digital_data, &digital_data_mask, DINFOX_BIT_ERROR, SM_REG_DIGITAL_DATA_MASK_DIO1);
+	DINFOX_write_field(&digital_data, &digital_data_mask, DINFOX_BIT_ERROR, SM_REG_DIGITAL_DATA_MASK_DIO2);
+	DINFOX_write_field(&digital_data, &digital_data_mask, DINFOX_BIT_ERROR, SM_REG_DIGITAL_DATA_MASK_DIO3);
+	// Write register.
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REG_ADDR_DIGITAL_DATA, digital_data_mask, digital_data);
+}
+#endif
+
 /*** SM functions ***/
 
 #ifdef SM
@@ -53,6 +69,7 @@ static void _SM_reset_analog_data(void) {
 void SM_init_registers(void) {
 	// Load default values.
 	_SM_reset_analog_data();
+	_SM_reset_digital_data();
 }
 #endif
 
@@ -105,6 +122,7 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 #endif
 	// Reset results.
 	_SM_reset_analog_data();
+	_SM_reset_digital_data();
 #ifdef SM_AIN_ENABLE
 	// Perform analog measurements.
 	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
@@ -189,13 +207,13 @@ NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status) {
 	power_status = POWER_disable(POWER_DOMAIN_SENSORS);
 	POWER_exit_error(NODE_ERROR_BASE_POWER);
 	if (sht3x_status == SHT3X_SUCCESS) {
-		// Tamb.
+		// TAMB.
 		sht3x_status = SHT3X_get_temperature(&tamb_degrees);
 		SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
 		if (sht3x_status == SHT3X_SUCCESS) {
 			DINFOX_write_field(&analog_data_3, &analog_data_3_mask, (uint32_t) DINFOX_convert_degrees(tamb_degrees), SM_REG_ANALOG_DATA_3_MASK_TAMB);
 		}
-		// Tamb.
+		// HAMB.
 		sht3x_status = SHT3X_get_humidity(&hamb_percent);
 		SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
 		if (sht3x_status == SHT3X_SUCCESS) {

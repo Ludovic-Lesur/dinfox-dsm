@@ -7,6 +7,7 @@
 
 #include "digital.h"
 
+#include "dinfox.h"
 #include "gpio.h"
 #include "lptim.h"
 #include "mapping.h"
@@ -14,8 +15,9 @@
 
 /*** DIGITAL local structures ***/
 
+/*******************************************************************/
 typedef struct {
-	uint8_t data[DIGITAL_DATA_INDEX_LAST];
+	DINFOX_bit_representation_t data[DIGITAL_DATA_INDEX_LAST];
 } DIGITAL_context_t;
 
 /*** DIGITAL local global variables ***/
@@ -53,12 +55,16 @@ void DIGITAL_perform_measurements(void) {
 
 #ifdef SM
 /*******************************************************************/
-DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state) {
+DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, DINFOX_bit_representation_t* state) {
 	// Local variables.
 	DIGITAL_status_t status = DIGITAL_SUCCESS;
-	// Check index.
+	// Check parameters.
 	if (data_idx >= DIGITAL_DATA_INDEX_LAST) {
 		status = DIGITAL_ERROR_DATA_INDEX;
+		goto errors;
+	}
+	if (state == NULL) {
+		status = DIGITAL_ERROR_NULL_PARAMETER;
 		goto errors;
 	}
 	// Read GPIO.

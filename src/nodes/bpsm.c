@@ -16,18 +16,17 @@
 
 /*** BPSM local structures ***/
 
-typedef union {
-	struct {
-		unsigned chen : 1;
-		unsigned bken : 1;
-	};
-	uint8_t all;
-} BPSM_flags_t;
+/*******************************************************************/
+typedef struct {
+	DINFOX_bit_representation_t chen;
+	DINFOX_bit_representation_t chst;
+	DINFOX_bit_representation_t bken;
+} BPSM_context_t;
 
 /*** BPSM local global variables ***/
 
 #ifdef BPSM
-static BPSM_flags_t bpsm_flags;
+static BPSM_context_t bpsm_ctx;
 #endif
 
 /*** BPSM local functions ***/
@@ -67,31 +66,25 @@ void BPSM_init_registers(void) {
 NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint8_t state = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
 	case BPSM_REG_ADDR_STATUS_CONTROL_1:
 		// Charge status.
-		state = LOAD_get_charge_status();
-		DINFOX_write_field(&reg_value, &reg_mask, ((state == 0) ? 0b0 : 0b1), BPSM_REG_STATUS_CONTROL_1_MASK_CHEN);
+		bpsm_ctx.chst = LOAD_get_charge_status();
+		DINFOX_write_field(&reg_value, &reg_mask, bpsm_ctx.chst, BPSM_REG_STATUS_CONTROL_1_MASK_CHST);
 		// Charge state.
-		state = LOAD_get_charge_state();
-		bpsm_flags.chen = (state == 0) ? 0b0 : 0b1;
-		DINFOX_write_field(&reg_value, &reg_mask, bpsm_flags.chen, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN);
+		bpsm_ctx.chen = LOAD_get_charge_state();
+		DINFOX_write_field(&reg_value, &reg_mask, bpsm_ctx.chen, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN);
 		// Backup_output state.
-		load_status = LOAD_get_output_state(&state);
-		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
-		bpsm_flags.bken = (state == 0) ? 0b0 : 0b1;
-		DINFOX_write_field(&reg_value, &reg_mask, bpsm_flags.bken, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN);
+		bpsm_ctx.bken = LOAD_get_output_state();
+		DINFOX_write_field(&reg_value, &reg_mask, bpsm_ctx.bken, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN);
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
@@ -110,18 +103,18 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case BPSM_REG_ADDR_STATUS_CONTROL_1:
 		// Read CHEN bit.
-		if (DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN) != bpsm_flags.chen) {
+		if (DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN) != bpsm_ctx.chen) {
 			// Update local flag.
-			bpsm_flags.chen = DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN);
+			bpsm_ctx.chen = DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_CHEN);
 			// Set charge state.
-			LOAD_set_charge_state((uint8_t) bpsm_flags.chen);
+			LOAD_set_charge_state(bpsm_ctx.chen);
 		}
 		// Read BKEN bit.
-		if (DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN) != bpsm_flags.bken) {
+		if (DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN) != bpsm_ctx.bken) {
 			// Update local flag.
-			bpsm_flags.bken = DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN);
+			bpsm_ctx.bken = DINFOX_read_field(reg_value, BPSM_REG_STATUS_CONTROL_1_MASK_BKEN);
 			// Set output state.
-			load_status = LOAD_set_output_state((uint8_t) bpsm_flags.bken);
+			load_status = LOAD_set_output_state(bpsm_ctx.bken);
 			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		}
 		break;

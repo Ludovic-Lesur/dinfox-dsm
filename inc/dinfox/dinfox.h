@@ -83,6 +83,17 @@ typedef enum {
 } DINFOX_register_access_t;
 
 /*!******************************************************************
+ * \type DINFOX_bit_representation_t
+ * \brief DINFox bit representation type.
+ *******************************************************************/
+typedef enum {
+	DINFOX_BIT_0 = 0b00,
+	DINFOX_BIT_1 = 0b01,
+	DINFOX_BIT_FORCED_HARDWARE = 0b10,
+	DINFOX_BIT_ERROR = 0b11,
+} DINFOX_bit_representation_t;
+
+/*!******************************************************************
  * \type DINFOX_time_representation_t
  * \brief DINFox time representation type.
  *******************************************************************/

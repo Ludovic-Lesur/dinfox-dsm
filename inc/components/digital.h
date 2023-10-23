@@ -8,6 +8,7 @@
 #ifndef __DIGITAL_H__
 #define __DIGITAL_H__
 
+#include "dinfox.h"
 #include "types.h"
 
 /*** DIGITAL structures ***/
@@ -19,6 +20,7 @@
 typedef enum {
 	// Driver errors.
 	DIGITAL_SUCCESS = 0,
+	DIGITAL_ERROR_NULL_PARAMETER,
 	DIGITAL_ERROR_DATA_INDEX,
 	// Last base value.
 	DIGITAL_ERROR_BASE_LAST = 0x100,
@@ -65,10 +67,10 @@ void DIGITAL_perform_measurements(void);
  * \fn DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state)
  * \brief Read digital data.
  * \param[in]  	data_idx: Data to read.
- * \param[out] 	state: Pointer to boolean that will contain the result.
+ * \param[out] 	state: Pointer to bit representation that will contain the digital input state.
  * \retval		Function execution status.
  *******************************************************************/
-DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state);
+DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, DINFOX_bit_representation_t* state);
 #endif
 
 /*******************************************************************/

@@ -7,24 +7,33 @@
 
 #include "load.h"
 
+#include "dinfox.h"
 #include "gpio.h"
 #include "lptim.h"
 #include "mapping.h"
+#include "mode.h"
 #include "types.h"
 
 /*** LOAD local macros ***/
 
-#define LOAD_STATE_UNKNOWN_VALUE		0xFF
 #if (defined LVRM) && (defined HW2_0)
 #define LOAD_DC_DC_DELAY_MS				100
 #define LOAD_VCOIL_DELAY_MS				100
 #define LOAD_RELAY_CONTROL_DURATION_MS	1000
 #endif
 
+#if ((defined LVRM_RLS_FORCED_HARDWARE) || (defined BPSM_BKEN_FORCED_HARDWARE) || (defined DDRM_DDEN_FORCED_HARDWARE) || (defined RRM_REN_FORCED_HARDWARE))
+#define LOAD_OUTPUT_FORCED_HARDWARE
+#endif
+
 /*** LOAD local global variables ***/
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-static uint8_t load_state = LOAD_STATE_UNKNOWN_VALUE;
+#ifdef LOAD_OUTPUT_FORCED_HARDWARE
+static DINFOX_bit_representation_t load_state = DINFOX_BIT_FORCED_HARDWARE;
+#else
+static DINFOX_bit_representation_t load_state = DINFOX_BIT_ERROR;
+#endif
 #endif
 
 /*** LOAD functions ***/
@@ -46,18 +55,30 @@ void LOAD_init(void) {
 	GPIO_configure(&GPIO_CHRG_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_CHRG_ST, GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
+#ifndef LOAD_OUTPUT_FORCED_HARDWARE
 	// Open relay by default.
 	LOAD_set_output_state(0);
+#endif
 }
 #endif
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
-LOAD_status_t LOAD_set_output_state(uint8_t state) {
+LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
+	// Check parameter.
+	if ((state == DINFOX_BIT_FORCED_HARDWARE) || (state >= DINFOX_BIT_ERROR)) {
+		status = LOAD_ERROR_STATE;
+		goto errors;
+	}
+#ifdef LOAD_OUTPUT_FORCED_HARDWARE
+	// Load is not controllable.
+	status = LOAD_ERROR_FORCED_HARDWARE;
+#else
+
 	// Directly exit with success if state is already set.
-	if ((state == load_state) && (load_state != LOAD_STATE_UNKNOWN_VALUE)) goto errors;
+	if ((state == load_state) && (load_state != DINFOX_BIT_ERROR)) goto errors;
 #if (defined LVRM) && (defined HW2_0)
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
 	// Enable DC-DC.
@@ -80,8 +101,9 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 #endif
 	// Update state.
 	load_state = state;
+#endif /* LOAD_OUTPUT_FORCED_HARDWARE */
 errors:
-#if (defined LVRM) && (defined HW2_0)
+#if (defined LVRM) && (defined HW2_0) && !(defined LOAD_OUTPUT_FORCED_HARDWARE)
 	// Turn all GPIOs off.
 	GPIO_write(&GPIO_OUT_CONTROL, 0);
 	GPIO_write(&GPIO_OUT_SELECT, 0);
@@ -94,40 +116,56 @@ errors:
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
-LOAD_status_t LOAD_get_output_state(uint8_t* state) {
+DINFOX_bit_representation_t LOAD_get_output_state(void) {
+	// Read current state.
+	return load_state;
+}
+#endif
+
+#ifdef BPSM
+/*******************************************************************/
+LOAD_status_t LOAD_set_charge_state(DINFOX_bit_representation_t state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
-	// Check state.
-	if (load_state == LOAD_STATE_UNKNOWN_VALUE) {
-		status = LOAD_ERROR_STATE_UNKNOWN;
+	// Check parameter.
+	if ((state == DINFOX_BIT_FORCED_HARDWARE) || (state >= DINFOX_BIT_ERROR)) {
+		status = LOAD_ERROR_STATE;
 		goto errors;
 	}
-	(*state) = load_state;
-errors:
-	return status;
-}
-#endif
-
-#ifdef BPSM
-/*******************************************************************/
-void LOAD_set_charge_state(uint8_t state) {
+#ifdef BPSM_CHEN_FORCED_HARDWARE
+	// Load is not controllable.
+	status = LOAD_ERROR_FORCED_HARDWARE;
+#else
 	// Set GPIO.
 	GPIO_write(&GPIO_CHRG_EN, state);
+	return status;
+#endif
+errors:
+		return status;
 }
 #endif
 
 #ifdef BPSM
 /*******************************************************************/
-uint8_t LOAD_get_charge_state(void) {
+DINFOX_bit_representation_t LOAD_get_charge_state(void) {
+#ifdef BPSM_CHEN_FORCED_HARDWARE
+	return DINFOX_BIT_FORCED_HARDWARE;
+#else
 	// Read GPIO.
 	return (GPIO_read(&GPIO_CHRG_EN));
+#endif
+
 }
 #endif
 
 #ifdef BPSM
 /*******************************************************************/
-uint8_t LOAD_get_charge_status(void) {
+DINFOX_bit_representation_t LOAD_get_charge_status(void) {
+#ifdef BPSM_CHST_FORCED_HARDWARE
+	return DINFOX_BIT_FORCED_HARDWARE;
+#else
 	// Read GPIO.
 	return (GPIO_read(&GPIO_CHRG_ST));
+#endif
 }
 #endif

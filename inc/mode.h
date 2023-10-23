@@ -14,8 +14,23 @@
 
 /*** Specific nodes options ***/
 
+#ifdef LVRM
+//#define LVRM_RLST_FORCED_HARDWARE
+#endif
+
 #ifdef BPSM
+#define BPSM_BKEN_FORCED_HARDWARE
+#define BPSM_CHEN_FORCED_HARDWARE
+#define BPSM_CHST_FORCED_HARDWARE
 #define BPSM_VSTR_VOLTAGE_DIVIDER_RATIO		2
+#endif
+
+#ifdef DDRM
+//#define DDRM_DDEN_FORCED_HARDWARE
+#endif
+
+#ifdef GPSM
+#define GPSM_ACTIVE_ANTENNA
 #endif
 
 #ifdef SM
@@ -24,8 +39,8 @@
 #define SM_DIGITAL_SENSORS_ENABLE
 #endif
 
-#ifdef GPSM
-#define GPSM_ACTIVE_ANTENNA
+#ifdef RRM
+//#define RRM_REN_FORCED_HARDWARE
 #endif
 
 /*** Debug mode ***/

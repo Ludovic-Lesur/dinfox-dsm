@@ -16,17 +16,15 @@
 
 /*** DDRM local structures ***/
 
-typedef union {
-	struct {
-		unsigned dden : 1;
-	};
-	uint8_t all;
-} DDRM_flags_t;
+/*******************************************************************/
+typedef struct {
+	DINFOX_bit_representation_t dden;
+} DDRM_context_t;
 
 /*** DDRM local global variables ***/
 
 #ifdef DDRM
-static DDRM_flags_t ddrm_flags;
+static DDRM_context_t ddrm_ctx;
 #endif
 
 /*** DDRM local functions ***/
@@ -66,25 +64,20 @@ void DDRM_init_registers(void) {
 NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint8_t state = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
 	case DDRM_REG_ADDR_STATUS_CONTROL_1:
 		// DC-DC state.
-		load_status = LOAD_get_output_state(&state);
-		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
-		ddrm_flags.dden = (state == 0) ? 0b0 : 0b1;
-		DINFOX_write_field(&reg_value, &reg_mask, ddrm_flags.dden, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
+		ddrm_ctx.dden = LOAD_get_output_state();
+		DINFOX_write_field(&reg_value, &reg_mask, ddrm_ctx.dden, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
 	// Write register.
-errors:
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
@@ -103,11 +96,11 @@ NODE_status_t DDRM_check_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case DDRM_REG_ADDR_STATUS_CONTROL_1:
 		// Read DDEN bit.
-		if (DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN) != ddrm_flags.dden) {
+		if (DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN) != ddrm_ctx.dden) {
 			// Update local flag.
-			ddrm_flags.dden = DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
+			ddrm_ctx.dden = DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
 			// Set DC-DC state.
-			load_status = LOAD_set_output_state((uint8_t) ddrm_flags.dden);
+			load_status = LOAD_set_output_state(ddrm_ctx.dden);
 			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		}
 		break;

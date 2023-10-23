@@ -16,17 +16,15 @@
 
 /*** RRM local structures ***/
 
+/*******************************************************************/
 typedef union {
-	struct {
-		unsigned ren : 1;
-	};
-	uint8_t all;
-} RRM_flags_t;
+	DINFOX_bit_representation_t ren;
+} RRM_context_t;
 
 /*** RRM local global variables ***/
 
 #ifdef RRM
-static RRM_flags_t rrm_flags;
+static RRM_context_t rrm_ctx;
 #endif
 
 /*** RRM local functions ***/
@@ -66,24 +64,19 @@ void RRM_init_registers(void) {
 NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint8_t state = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
 	case RRM_REG_ADDR_STATUS_CONTROL_1:
 		// Relay state.
-		load_status = LOAD_get_output_state(&state);
-		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
-		rrm_flags.ren = (state == 0) ? 0b0 : 0b1;
-		DINFOX_write_field(&reg_value, &reg_mask, rrm_flags.ren, RRM_REG_STATUS_CONTROL_1_MASK_REN);
+		rrm_ctx.ren = LOAD_get_output_state();
+		DINFOX_write_field(&reg_value, &reg_mask, rrm_ctx.ren, RRM_REG_STATUS_CONTROL_1_MASK_REN);
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
@@ -102,11 +95,11 @@ NODE_status_t RRM_check_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case RRM_REG_ADDR_STATUS_CONTROL_1:
 		// Read REN bit.
-		if (DINFOX_read_field(reg_value, RRM_REG_STATUS_CONTROL_1_MASK_REN) != rrm_flags.ren) {
+		if (DINFOX_read_field(reg_value, RRM_REG_STATUS_CONTROL_1_MASK_REN) != rrm_ctx.ren) {
 			// Update local flag.
-			rrm_flags.ren = DINFOX_read_field(reg_value, RRM_REG_STATUS_CONTROL_1_MASK_REN);
+			rrm_ctx.ren = DINFOX_read_field(reg_value, RRM_REG_STATUS_CONTROL_1_MASK_REN);
 			// Set DC-DC state.
-			load_status = LOAD_set_output_state((uint8_t) rrm_flags.ren);
+			load_status = LOAD_set_output_state(rrm_ctx.ren);
 			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		}
 		break;

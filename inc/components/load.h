@@ -8,6 +8,7 @@
 #ifndef __LOAD_H__
 #define __LOAD_H__
 
+#include "dinfox.h"
 #include "lptim.h"
 #include "types.h"
 
@@ -20,7 +21,8 @@
 typedef enum {
 	// Driver errors.
 	LOAD_SUCCESS = 0,
-	LOAD_ERROR_STATE_UNKNOWN,
+	LOAD_ERROR_FORCED_HARDWARE,
+	LOAD_ERROR_STATE,
 	// Low level drivers errors.
 	LOAD_ERROR_BASE_LPTIM = 0x0100,
 	// Last base value.
@@ -42,24 +44,24 @@ void LOAD_init(void);
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn LOAD_status_t LOAD_set_output_state(uint8_t state)
+ * \fn LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state)
  * \brief Set load output state.
  * \param[in]  	state: New state to set.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-LOAD_status_t LOAD_set_output_state(uint8_t state);
+LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state);
 #endif
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn LOAD_status_t LOAD_get_output_state(uint8_t* state)
+ * \fn DINFOX_bit_representation_t LOAD_get_output_state(void)
  * \brief Read load output state.
  * \param[in]  	none
- * \param[out] 	state: Pointer to boolean that will contain load output state.
- * \retval		Function execution status.
+ * \param[out] 	none
+ * \retval		Load state.
  *******************************************************************/
-LOAD_status_t LOAD_get_output_state(uint8_t* state);
+DINFOX_bit_representation_t LOAD_get_output_state(void);
 #endif
 
 #ifdef BPSM
@@ -68,9 +70,9 @@ LOAD_status_t LOAD_get_output_state(uint8_t* state);
  * \brief Set charge enable state.
  * \param[in]  	state: New state to set.
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void LOAD_set_charge_state(uint8_t state);
+LOAD_status_t LOAD_set_charge_state(DINFOX_bit_representation_t state);
 #endif
 
 #ifdef BPSM
@@ -81,7 +83,7 @@ void LOAD_set_charge_state(uint8_t state);
  * \param[out] 	none
  * \retval		Charge enable state.
  *******************************************************************/
-uint8_t LOAD_get_charge_state(void);
+DINFOX_bit_representation_t LOAD_get_charge_state(void);
 #endif
 
 #ifdef BPSM
@@ -92,7 +94,7 @@ uint8_t LOAD_get_charge_state(void);
  * \param[out] 	none
  * \retval		Charge status.
  *******************************************************************/
-uint8_t LOAD_get_charge_status(void);
+DINFOX_bit_representation_t LOAD_get_charge_status(void);
 #endif
 
 /*******************************************************************/

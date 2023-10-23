@@ -16,17 +16,15 @@
 
 /*** LVRM local structures ***/
 
-typedef union {
-	struct {
-		unsigned rlst : 1;
-	};
-	uint8_t all;
-} LVRM_flags_t;
+/*******************************************************************/
+typedef struct {
+	DINFOX_bit_representation_t rlst;
+} LVRM_context_t;
 
 /*** LVRM local global variables ***/
 
 #ifdef LVRM
-static LVRM_flags_t lvrm_flags;
+static LVRM_context_t lvrm_ctx;
 #endif
 
 /*** LVRM local functions ***/
@@ -66,24 +64,19 @@ void LVRM_init_registers(void) {
 NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint8_t state = 0;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Relay state.
-		load_status = LOAD_get_output_state(&state);
-		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
-		lvrm_flags.rlst = (state == 0) ? 0b0 : 0b1;
-		DINFOX_write_field(&reg_value, &reg_mask, lvrm_flags.rlst, LVRM_REG_STATUS_CONTROL_1_MASK_RLST);
+		lvrm_ctx.rlst = LOAD_get_output_state();
+		DINFOX_write_field(&reg_value, &reg_mask, lvrm_ctx.rlst, LVRM_REG_STATUS_CONTROL_1_MASK_RLST);
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-errors:
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
@@ -102,11 +95,11 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case LVRM_REG_ADDR_STATUS_CONTROL_1:
 		// Read DDEN bit.
-		if (DINFOX_read_field(reg_value, LVRM_REG_STATUS_CONTROL_1_MASK_RLST) != lvrm_flags.rlst) {
+		if (DINFOX_read_field(reg_value, LVRM_REG_STATUS_CONTROL_1_MASK_RLST) != lvrm_ctx.rlst) {
 			// Update local flag.
-			lvrm_flags.rlst = DINFOX_read_field(reg_value, LVRM_REG_STATUS_CONTROL_1_MASK_RLST);
+			lvrm_ctx.rlst = DINFOX_read_field(reg_value, LVRM_REG_STATUS_CONTROL_1_MASK_RLST);
 			// Set DC-DC state.
-			load_status = LOAD_set_output_state((uint8_t) lvrm_flags.rlst);
+			load_status = LOAD_set_output_state(lvrm_ctx.rlst);
 			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 		}
 		break;
