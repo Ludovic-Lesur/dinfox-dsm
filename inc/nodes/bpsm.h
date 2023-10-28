@@ -28,6 +28,7 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY
 };
 #endif
@@ -61,10 +62,11 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr);
  * \fn NODE_status_t BPSM_check_register(uint8_t reg_addr)
  * \brief Check BPSM register.
  * \param[in]  	reg_addr: Address of the register to check.
+ * \param[in]	reg_mask: Mask of the bits to check.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t BPSM_check_register(uint8_t reg_addr);
+NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask);
 #endif
 
 #ifdef BPSM

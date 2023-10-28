@@ -89,7 +89,7 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, analog_data_0_mask, analog_data_0);
 	}
 errors:
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG, 0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, COMMON_REG_CONTROL_0_MASK_MTRG, 0);
 	return status;
 }
 
@@ -165,24 +165,30 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t COMMON_check_register(uint8_t reg_addr) {
+NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	uint32_t reg_value = 0;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_CONTROL_0, &reg_value);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, &reg_value);
 	// Check address.
 	switch (reg_addr) {
-	case COMMON_REG_ADDR_STATUS_CONTROL_0:
-		// Reset trigger bit.
-		if ((DINFOX_read_field(reg_value, COMMON_REG_STATUS_CONTROL_0_MASK_RTRG)) != 0) {
-			// Reset MCU.
-			PWR_software_reset();
+	case COMMON_REG_ADDR_CONTROL_0:
+		// RTRG.
+		if ((reg_mask & COMMON_REG_CONTROL_0_MASK_RTRG) != 0) {
+			// Read bit.
+			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_RTRG)) != 0) {
+				// Reset MCU.
+				PWR_software_reset();
+			}
 		}
-		// Measure trigger bit.
-		if ((DINFOX_read_field(reg_value, COMMON_REG_STATUS_CONTROL_0_MASK_MTRG)) != 0) {
-			// Perform measurements.
-			_COMMON_mtrg_callback();
+		// MTRG.
+		if ((reg_mask & COMMON_REG_CONTROL_0_MASK_MTRG) != 0) {
+			// Read bit.
+			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_MTRG)) != 0) {
+				// Perform measurements.
+				_COMMON_mtrg_callback();
+			}
 		}
 		break;
 	default:

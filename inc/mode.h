@@ -31,6 +31,7 @@
 
 #ifdef GPSM
 #define GPSM_ACTIVE_ANTENNA
+//#define GPSM_BKEN_FORCED_HARDWARE
 #endif
 
 #ifdef SM

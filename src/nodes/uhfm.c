@@ -110,8 +110,10 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	SIGFOX_EP_API_application_message_t application_message;
 	SIGFOX_EP_API_control_message_t control_message;
 	SIGFOX_EP_API_message_status_t message_status;
-	uint32_t status_control_1 = 0;
-	uint32_t status_control_1_mask = 0;
+	uint32_t reg_control_1 = 0;
+	uint32_t reg_control_1_mask = 0;
+	uint32_t reg_status = 0;
+	uint32_t reg_status_mask = 0;
 	uint32_t ep_config_0 = 0;
 	uint32_t ep_config_2 = 0;
 	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
@@ -156,7 +158,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 			SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 			// Write DL payload registers and RSSI.
 			NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
-			DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm), UHFM_REG_STATUS_CONTROL_1_MASK_DL_RSSI);
+			DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm), UHFM_REG_STATUS_MASK_DL_RSSI);
 		}
 	}
 	else {
@@ -174,20 +176,22 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	sigfox_ep_api_status = SIGFOX_EP_API_close();
 	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 	// Update message status and clear flag.
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0, UHFM_REG_STATUS_CONTROL_1_MASK_STRG);
-	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
+	DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_MASK_MESSAGE_STATUS);
+	// Write registers.
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS, reg_status_mask, reg_status);
 	// Return status.
 	return status;
 errors:
 	// Close library.
 	SIGFOX_EP_API_close();
 	// Update message status and clear flag.
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_CONTROL_1_MASK_MESSAGE_STATUS);
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0, UHFM_REG_STATUS_CONTROL_1_MASK_STRG);
-	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
+	DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_MASK_MESSAGE_STATUS);
+	// Write registers.
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS, reg_status_mask, reg_status);
 	// Return status.
 	return status;
 }
@@ -202,8 +206,8 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	SIGFOX_EP_ADDON_RFP_API_config_t addon_config;
 	SIGFOX_EP_ADDON_RFP_API_test_mode_t test_mode;
 	uint32_t ep_config_0 = 0;
-	uint32_t status_control_1 = 0;
-	uint32_t status_control_1_mask = 0;
+	uint32_t reg_control_1 = 0;
+	uint32_t reg_control_1_mask = 0;
 	// Read configuration register.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, &ep_config_0);
 	// Check radio state.
@@ -222,16 +226,16 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_close();
 	_UHFM_sigfox_ep_addon_rfp_exit_error();
 	// Clear flag.
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_TTRG);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Return status.
 	return status;
 errors:
 	// Close addon.
 	SIGFOX_EP_ADDON_RFP_API_close();
 	// Clear flag.
-	DINFOX_write_field(&status_control_1, &status_control_1_mask, 0b0, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_CONTROL_1, status_control_1_mask, status_control_1);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_TTRG);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Return status.
 	return status;
 }
@@ -423,7 +427,7 @@ errors:
 
 #ifdef UHFM
 /*******************************************************************/
-NODE_status_t UHFM_check_register(uint8_t reg_addr) {
+NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	uint32_t cwen = 0;
@@ -435,45 +439,58 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr) {
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	// Check address.
 	switch (reg_addr) {
-	case UHFM_REG_ADDR_STATUS_CONTROL_1:
-		// Read bits.
-		cwen = DINFOX_read_field(reg_value, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN);
-		rsen = DINFOX_read_field(reg_value, UHFM_REG_STATUS_CONTROL_1_MASK_RSEN);
-		// Read STRG bit.
-		if (DINFOX_read_field(reg_value, UHFM_REG_STATUS_CONTROL_1_MASK_STRG) != 0) {
-			// Send Sigfox message.
-			status = _UHFM_strg_callback();
-			if (status != NODE_SUCCESS) goto errors;
-		}
-		// Read TTRG bit.
-		if (DINFOX_read_field(reg_value, UHFM_REG_STATUS_CONTROL_1_MASK_TTRG) != 0) {
-			// Perform Sigfox test mode.
-			status = _UHFM_ttrg_callback();
-			if (status != NODE_SUCCESS) goto errors;
-		}
-		// Read CWEN bit.
-		if (cwen != uhfm_flags.cwen) {
-			// Start or stop CW.
-			status = _UHFM_cwen_callback(cwen);
-			if (status != NODE_SUCCESS) {
-				// Clear request.
-				DINFOX_write_field(&new_reg_value, &new_reg_mask, uhfm_flags.cwen, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN);
-				goto errors;
+	case UHFM_REG_ADDR_CONTROL_1:
+		// STRG.
+		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_STRG) != 0) {
+			// Read bit.
+			if (DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_STRG) != 0) {
+				// Send Sigfox message.
+				status = _UHFM_strg_callback();
+				if (status != NODE_SUCCESS) goto errors;
 			}
-			// Update local flag.
-			uhfm_flags.cwen = cwen;
 		}
-		// Read RSEN bit.
-		if (rsen != uhfm_flags.rsen) {
-			// Start or stop RSSI measurement.
-			status = _UHFM_rsen_callback(rsen);
-			if (status != NODE_SUCCESS) {
-				// Clear request.
-				DINFOX_write_field(&new_reg_value, &new_reg_mask, uhfm_flags.rsen, UHFM_REG_STATUS_CONTROL_1_MASK_CWEN);
-				goto errors;
+		// TTRG.
+		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_TTRG)) {
+			// Read bit.
+			if (DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_TTRG) != 0) {
+				// Perform Sigfox test mode.
+				status = _UHFM_ttrg_callback();
+				if (status != NODE_SUCCESS) goto errors;
 			}
-			// Update local flag.
-			uhfm_flags.rsen = rsen;
+		}
+		// CWEN.
+		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_CWEN) != 0) {
+			// Read bit.
+			cwen = DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_CWEN);
+			// Compare to current state.
+			if (cwen != uhfm_flags.cwen) {
+				// Start or stop CW.
+				status = _UHFM_cwen_callback(cwen);
+				if (status != NODE_SUCCESS) {
+					// Clear request.
+					DINFOX_write_field(&new_reg_value, &new_reg_mask, uhfm_flags.cwen, UHFM_REG_CONTROL_1_MASK_CWEN);
+					goto errors;
+				}
+				// Update local flag.
+				uhfm_flags.cwen = cwen;
+			}
+		}
+		// RSEN.
+		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_RSEN) != 0) {
+			// Read bit.
+			rsen = DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_RSEN);
+			// Compare to current state.
+			if (rsen != uhfm_flags.rsen) {
+				// Start or stop RSSI measurement.
+				status = _UHFM_rsen_callback(rsen);
+				if (status != NODE_SUCCESS) {
+					// Clear request.
+					DINFOX_write_field(&new_reg_value, &new_reg_mask, uhfm_flags.rsen, UHFM_REG_CONTROL_1_MASK_CWEN);
+					goto errors;
+				}
+				// Update local flag.
+				uhfm_flags.rsen = rsen;
+			}
 		}
 		break;
 	default:

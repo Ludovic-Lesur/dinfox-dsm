@@ -18,7 +18,7 @@
 
 /*******************************************************************/
 typedef struct {
-	DINFOX_bit_representation_t dden;
+	DINFOX_bit_representation_t ddenst;
 } DDRM_context_t;
 
 /*** DDRM local global variables ***/
@@ -37,11 +37,11 @@ static void _DDRM_reset_analog_data(void) {
 	uint32_t analog_data_1_mask = 0;
 	uint32_t analog_data_2 = 0;
 	uint32_t analog_data_2_mask = 0;
-	// Vin / Vout.
+	// VIN / VOUT.
 	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, DDRM_REG_ANALOG_DATA_1_MASK_VIN);
 	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, DDRM_REG_ANALOG_DATA_1_MASK_VOUT);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
-	// Iout.
+	// IOUT.
 	DINFOX_write_field(&analog_data_2, &analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, DDRM_REG_ANALOG_DATA_2_MASK_IOUT);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
 }
@@ -53,7 +53,7 @@ static void _DDRM_reset_analog_data(void) {
 /*******************************************************************/
 void DDRM_init_registers(void) {
 	// Read init state.
-	DDRM_update_register(DDRM_REG_ADDR_STATUS_CONTROL_1);
+	DDRM_update_register(DDRM_REG_ADDR_STATUS);
 	// Load default values.
 	_DDRM_reset_analog_data();
 }
@@ -68,10 +68,10 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case DDRM_REG_ADDR_STATUS_CONTROL_1:
+	case DDRM_REG_ADDR_STATUS:
 		// DC-DC state.
-		ddrm_ctx.dden = LOAD_get_output_state();
-		DINFOX_write_field(&reg_value, &reg_mask, ddrm_ctx.dden, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
+		ddrm_ctx.ddenst = LOAD_get_output_state();
+		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) ddrm_ctx.ddenst), DDRM_REG_STATUS_MASK_DDENST);
 		break;
 	default:
 		// Nothing to do for other registers.
@@ -85,23 +85,27 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 
 #ifdef DDRM
 /*******************************************************************/
-NODE_status_t DDRM_check_register(uint8_t reg_addr) {
+NODE_status_t DDRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint32_t reg_value = 0;
+	DINFOX_bit_representation_t dden = DINFOX_BIT_ERROR;
 	// Read register.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	// Check address.
 	switch (reg_addr) {
-	case DDRM_REG_ADDR_STATUS_CONTROL_1:
-		// Read DDEN bit.
-		if (DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN) != ddrm_ctx.dden) {
-			// Update local flag.
-			ddrm_ctx.dden = DINFOX_read_field(reg_value, DDRM_REG_STATUS_CONTROL_1_MASK_DDEN);
-			// Set DC-DC state.
-			load_status = LOAD_set_output_state(ddrm_ctx.dden);
-			LOAD_exit_error(NODE_ERROR_BASE_LOAD);
+	case DDRM_REG_ADDR_CONTROL_1:
+		// DDEN.
+		if ((reg_mask & DDRM_REG_CONTROL_1_MASK_DDEN) != 0) {
+			// Read bit.
+			dden = DINFOX_read_field(reg_value, DDRM_REG_CONTROL_1_MASK_DDEN);
+			// Compare to current state.
+			if (dden != ddrm_ctx.ddenst) {
+				// Set DC-DC state.
+				load_status = LOAD_set_output_state(dden);
+				LOAD_exit_error(NODE_ERROR_BASE_LOAD);
+			}
 		}
 		break;
 	default:
@@ -109,6 +113,8 @@ NODE_status_t DDRM_check_register(uint8_t reg_addr) {
 		break;
 	}
 errors:
+	// Update status register.
+	DDRM_update_register(DDRM_REG_ADDR_STATUS);
 	return status;
 }
 #endif

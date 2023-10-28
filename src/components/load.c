@@ -76,7 +76,6 @@ LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state) {
 	// Load is not controllable.
 	status = LOAD_ERROR_FORCED_HARDWARE;
 #else
-
 	// Directly exit with success if state is already set.
 	if ((state == load_state) && (load_state != DINFOX_BIT_ERROR)) goto errors;
 #if (defined LVRM) && (defined HW2_0)

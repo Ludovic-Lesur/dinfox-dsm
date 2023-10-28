@@ -7,6 +7,7 @@
 
 #include "neom8n.h"
 
+#include "dinfox.h"
 #include "dma.h"
 #include "gpio.h"
 #include "iwdg.h"
@@ -710,19 +711,37 @@ void NEOM8N_de_init(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void NEOM8N_set_backup(uint8_t state) {
+NEOM8N_status_t NEOM8N_set_backup(DINFOX_bit_representation_t state) {
+	// Local variables.
+	NEOM8N_status_t status = NEOM8N_SUCCESS;
+	// Check parameter.
+	if ((state == DINFOX_BIT_FORCED_HARDWARE) || (state >= DINFOX_BIT_ERROR)) {
+		status = NEOM8N_ERROR_BACKUP_STATE;
+		goto errors;
+	}
+#ifdef GPSM_BKEN_FORCED_HARDWARE
+	// Load is not controllable.
+	status = NEOM8N_ERROR_BACKUP_FORCED_HARDWARE;
+#else
 	// Set backup pin.
 	GPIO_write(&GPIO_GPS_VBCKP, state);
+#endif
+errors:
+	return status;
 }
 #endif
 
 #ifdef GPSM
 /*******************************************************************/
-uint8_t NEOM8N_get_backup(void) {
+DINFOX_bit_representation_t NEOM8N_get_backup(void) {
 	// Local variables.
-	uint8_t backup = 0;
+	DINFOX_bit_representation_t backup = 0;
+#ifdef GPSM_BKEN_FORCED_HARDWARE
+	backup = DINFOX_BIT_FORCED_HARDWARE;
+#else
 	// Read backup pin.
 	backup = GPIO_read(&GPIO_GPS_VBCKP);
+#endif
 	return backup;
 }
 #endif

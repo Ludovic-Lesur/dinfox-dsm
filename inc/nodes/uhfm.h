@@ -33,6 +33,7 @@ static const DINFOX_register_access_t NODE_REG_ACCESS[UHFM_REG_ADDR_LAST] = {
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_WRITE,
@@ -79,10 +80,11 @@ NODE_status_t UHFM_update_register(uint8_t reg_addr);
  * \fn NODE_status_t UHFM_check_register(uint8_t reg_addr)
  * \brief Check UHFM register.
  * \param[in]  	reg_addr: Address of the register to check.
+ * \param[in]	reg_mask: Mask of the bits to check.
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t UHFM_check_register(uint8_t reg_addr);
+NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask);
 #endif
 
 #ifdef UHFM

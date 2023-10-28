@@ -8,6 +8,7 @@
 #ifndef __NEOM8N_H__
 #define __NEOM8N_H__
 
+#include "dinfox.h"
 #include "lptim.h"
 #include "math.h"
 #include "string.h"
@@ -39,6 +40,8 @@ typedef enum {
 	NEOM8N_ERROR_POSITION_TIMEOUT,
 	NEOM8N_ERROR_TIMEPULSE_FREQUENCY,
 	NEOM8N_ERROR_TIMEPULSE_DUTY_CYCLE,
+	NEOM8N_ERROR_BACKUP_STATE,
+	NEOM8N_ERROR_BACKUP_FORCED_HARDWARE,
 	// Low level drivers errors.
 	NEOM8N_ERROR_BASE_USART = 0x0100,
 	NEOM8N_ERROR_BASE_LPTIM = (NEOM8N_ERROR_BASE_USART + USART_ERROR_BASE_LAST),
@@ -121,9 +124,9 @@ void NEOM8N_de_init(void);
  * \brief Set NEOM8N backup voltage state.
  * \param[in]  	state: Backup voltage state.
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void NEOM8N_set_backup(uint8_t state);
+NEOM8N_status_t NEOM8N_set_backup(DINFOX_bit_representation_t state);
 #endif
 
 #ifdef GPSM
@@ -134,7 +137,7 @@ void NEOM8N_set_backup(uint8_t state);
  * \param[out] 	none
  * \retval		Backup voltage state.
  *******************************************************************/
-uint8_t NEOM8N_get_backup(void);
+DINFOX_bit_representation_t NEOM8N_get_backup(void);
 #endif
 
 #ifdef GPSM
