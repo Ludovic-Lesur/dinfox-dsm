@@ -33,17 +33,17 @@ static RRM_context_t rrm_ctx;
 /*******************************************************************/
 static void _RRM_reset_analog_data(void) {
 	// Local variables.
-	uint32_t analog_data_1 = 0;
-	uint32_t analog_data_1_mask = 0;
-	uint32_t analog_data_2 = 0;
-	uint32_t analog_data_2_mask = 0;
+	uint32_t reg_analog_data_1 = 0;
+	uint32_t reg_analog_data_1_mask = 0;
+	uint32_t reg_analog_data_2 = 0;
+	uint32_t reg_analog_data_2_mask = 0;
 	// VIN / VOUT.
-	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VIN);
-	DINFOX_write_field(&analog_data_1, &analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VOUT);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
+	DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VIN);
+	DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_1_MASK_VOUT);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
 	// IOUT.
-	DINFOX_write_field(&analog_data_2, &analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_2_MASK_IOUT);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
+	DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, RRM_REG_ANALOG_DATA_2_MASK_IOUT);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
 }
 #endif
 
@@ -126,10 +126,10 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
-	uint32_t analog_data_1 = 0;
-	uint32_t analog_data_1_mask = 0;
-	uint32_t analog_data_2 = 0;
-	uint32_t analog_data_2_mask = 0;
+	uint32_t reg_analog_data_1 = 0;
+	uint32_t reg_analog_data_1_mask = 0;
+	uint32_t reg_analog_data_2 = 0;
+	uint32_t reg_analog_data_2_mask = 0;
 	// Reset result.
 	_RRM_reset_analog_data();
 	// Perform analog measurements.
@@ -145,23 +145,23 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VIN);
+			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VIN);
 		}
 		// Relay output voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VOUT);
+			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VOUT);
 		}
 		// Relay output current.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&analog_data_2, &analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), RRM_REG_ANALOG_DATA_2_MASK_IOUT);
+			DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), RRM_REG_ANALOG_DATA_2_MASK_IOUT);
 		}
 		// Write registers.
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask, analog_data_1);
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, analog_data_2_mask, analog_data_2);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
 	}
 	// Update ADC status.
 	if (adc_status != NULL) {

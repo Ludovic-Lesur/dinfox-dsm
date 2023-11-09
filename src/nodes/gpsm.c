@@ -131,41 +131,41 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	NEOM8N_time_t gps_time;
 	uint32_t time_fix_duration = 0;
-	uint32_t timeout = 0;
+	uint32_t reg_timeout = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status = 0;
 	uint32_t reg_status_mask = 0;
-	uint32_t time_data_0 = 0;
-	uint32_t time_data_0_mask = 0;
-	uint32_t time_data_1 = 0;
-	uint32_t time_data_1_mask = 0;
-	uint32_t time_data_2 = 0;
-	uint32_t time_data_2_mask = 0;
+	uint32_t reg_time_data_0 = 0;
+	uint32_t reg_time_data_0_mask = 0;
+	uint32_t reg_time_data_1 = 0;
+	uint32_t reg_time_data_1_mask = 0;
+	uint32_t reg_time_data_2 = 0;
+	uint32_t reg_time_data_2_mask = 0;
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &timeout);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &reg_timeout);
 	// Reset status flag.
 	DINFOX_write_field(&reg_status, &reg_status_mask, 0b0, GPSM_REG_STATUS_MASK_TFS);
 	// Perform time fix.
-	neom8n_status = NEOM8N_get_time(&gps_time, DINFOX_read_field(timeout, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT), &time_fix_duration);
+	neom8n_status = NEOM8N_get_time(&gps_time, DINFOX_read_field(reg_timeout, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT), &time_fix_duration);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 	// Update status flag.
 	DINFOX_write_field(&reg_status, &reg_status_mask, 0b1, GPSM_REG_STATUS_MASK_TFS);
 	// Fill registers with time data.
-	DINFOX_write_field(&time_data_0, &time_data_0_mask, (uint32_t) DINFOX_convert_year(gps_time.year), GPSM_REG_TIME_DATA_0_MASK_YEAR);
-	DINFOX_write_field(&time_data_0, &time_data_0_mask, (uint32_t) gps_time.month, GPSM_REG_TIME_DATA_0_MASK_MONTH);
-	DINFOX_write_field(&time_data_0, &time_data_0_mask, (uint32_t) gps_time.date, GPSM_REG_TIME_DATA_0_MASK_DATE);
-	DINFOX_write_field(&time_data_1, &time_data_1_mask, (uint32_t) gps_time.hours, GPSM_REG_TIME_DATA_1_MASK_HOUR);
-	DINFOX_write_field(&time_data_1, &time_data_1_mask, (uint32_t) gps_time.minutes, GPSM_REG_TIME_DATA_1_MASK_MINUTE);
-	DINFOX_write_field(&time_data_1, &time_data_1_mask, (uint32_t) gps_time.seconds, GPSM_REG_TIME_DATA_1_MASK_SECOND);
-	DINFOX_write_field(&time_data_2, &time_data_2_mask, time_fix_duration, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION);
+	DINFOX_write_field(&reg_time_data_0, &reg_time_data_0_mask, (uint32_t) DINFOX_convert_year(gps_time.year), GPSM_REG_TIME_DATA_0_MASK_YEAR);
+	DINFOX_write_field(&reg_time_data_0, &reg_time_data_0_mask, (uint32_t) gps_time.month, GPSM_REG_TIME_DATA_0_MASK_MONTH);
+	DINFOX_write_field(&reg_time_data_0, &reg_time_data_0_mask, (uint32_t) gps_time.date, GPSM_REG_TIME_DATA_0_MASK_DATE);
+	DINFOX_write_field(&reg_time_data_1, &reg_time_data_1_mask, (uint32_t) gps_time.hours, GPSM_REG_TIME_DATA_1_MASK_HOUR);
+	DINFOX_write_field(&reg_time_data_1, &reg_time_data_1_mask, (uint32_t) gps_time.minutes, GPSM_REG_TIME_DATA_1_MASK_MINUTE);
+	DINFOX_write_field(&reg_time_data_1, &reg_time_data_1_mask, (uint32_t) gps_time.seconds, GPSM_REG_TIME_DATA_1_MASK_SECOND);
+	DINFOX_write_field(&reg_time_data_2, &reg_time_data_2_mask, time_fix_duration, GPSM_REG_TIME_DATA_2_MASK_FIX_DURATION);
 	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, time_data_0_mask, time_data_0);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, time_data_1_mask, time_data_1);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, time_data_2_mask, time_data_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_0, reg_time_data_0_mask, reg_time_data_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_1, reg_time_data_1_mask, reg_time_data_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIME_DATA_2, reg_time_data_2_mask, reg_time_data_2);
 	// Turn GPS off is possible.
 	status = _GPSM_power_request(0);
 	if (status != NODE_SUCCESS) goto errors;
@@ -187,47 +187,47 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	NEOM8N_position_t gps_position;
 	uint32_t geoloc_fix_duration = 0;
-	uint32_t timeout = 0;
+	uint32_t reg_timeout = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status = 0;
 	uint32_t reg_status_mask = 0;
-	uint32_t geoloc_data_0 = 0;
-	uint32_t geoloc_data_0_mask = 0;
-	uint32_t geoloc_data_1 = 0;
-	uint32_t geoloc_data_1_mask = 0;
-	uint32_t geoloc_data_2 = 0;
-	uint32_t geoloc_data_2_mask = 0;
-	uint32_t geoloc_data_3 = 0;
-	uint32_t geoloc_data_3_mask = 0;
+	uint32_t reg_geoloc_data_0 = 0;
+	uint32_t reg_geoloc_data_0_mask = 0;
+	uint32_t reg_geoloc_data_1 = 0;
+	uint32_t reg_geoloc_data_1_mask = 0;
+	uint32_t reg_geoloc_data_2 = 0;
+	uint32_t reg_geoloc_data_2_mask = 0;
+	uint32_t reg_geoloc_data_3 = 0;
+	uint32_t reg_geoloc_data_3_mask = 0;
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &timeout);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &reg_timeout);
 	// Reset status flag.
 	DINFOX_write_field(&reg_status, &reg_status_mask, 0b0, GPSM_REG_STATUS_MASK_GFS);
 	// Perform time fix.
-	neom8n_status = NEOM8N_get_position(&gps_position, DINFOX_read_field(timeout, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration);
+	neom8n_status = NEOM8N_get_position(&gps_position, DINFOX_read_field(reg_timeout, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 	// Update status flag.
 	DINFOX_write_field(&reg_status, &reg_status_mask, 0b1, GPSM_REG_STATUS_MASK_GFS);
 	// Fill registers with geoloc data.
-	DINFOX_write_field(&geoloc_data_0, &geoloc_data_0_mask, (uint32_t) gps_position.lat_north_flag, GPSM_REG_GEOLOC_DATA_0_MASK_NF);
-	DINFOX_write_field(&geoloc_data_0, &geoloc_data_0_mask, gps_position.lat_seconds, GPSM_REG_GEOLOC_DATA_0_MASK_SECOND);
-	DINFOX_write_field(&geoloc_data_0, &geoloc_data_0_mask, (uint32_t) gps_position.lat_minutes, GPSM_REG_GEOLOC_DATA_0_MASK_MINUTE);
-	DINFOX_write_field(&geoloc_data_0, &geoloc_data_0_mask, (uint32_t) gps_position.lat_degrees, GPSM_REG_GEOLOC_DATA_0_MASK_DEGREE);
-	DINFOX_write_field(&geoloc_data_1, &geoloc_data_1_mask, (uint32_t) gps_position.long_east_flag, GPSM_REG_GEOLOC_DATA_1_MASK_EF);
-	DINFOX_write_field(&geoloc_data_1, &geoloc_data_1_mask, gps_position.long_seconds, GPSM_REG_GEOLOC_DATA_1_MASK_SECOND);
-	DINFOX_write_field(&geoloc_data_1, &geoloc_data_1_mask, (uint32_t) gps_position.long_minutes, GPSM_REG_GEOLOC_DATA_1_MASK_MINUTE);
-	DINFOX_write_field(&geoloc_data_1, &geoloc_data_1_mask, (uint32_t) gps_position.long_degrees, GPSM_REG_GEOLOC_DATA_1_MASK_DEGREE);
-	DINFOX_write_field(&geoloc_data_2, &geoloc_data_2_mask, gps_position.altitude, GPSM_REG_GEOLOC_DATA_2_MASK_ALTITUDE);
-	DINFOX_write_field(&geoloc_data_3, &geoloc_data_3_mask, geoloc_fix_duration, GPSM_REG_GEOLOC_DATA_3_MASK_FIX_DURATION);
+	DINFOX_write_field(&reg_geoloc_data_0, &reg_geoloc_data_0_mask, (uint32_t) gps_position.lat_north_flag, GPSM_REG_GEOLOC_DATA_0_MASK_NF);
+	DINFOX_write_field(&reg_geoloc_data_0, &reg_geoloc_data_0_mask, gps_position.lat_seconds, GPSM_REG_GEOLOC_DATA_0_MASK_SECOND);
+	DINFOX_write_field(&reg_geoloc_data_0, &reg_geoloc_data_0_mask, (uint32_t) gps_position.lat_minutes, GPSM_REG_GEOLOC_DATA_0_MASK_MINUTE);
+	DINFOX_write_field(&reg_geoloc_data_0, &reg_geoloc_data_0_mask, (uint32_t) gps_position.lat_degrees, GPSM_REG_GEOLOC_DATA_0_MASK_DEGREE);
+	DINFOX_write_field(&reg_geoloc_data_1, &reg_geoloc_data_1_mask, (uint32_t) gps_position.long_east_flag, GPSM_REG_GEOLOC_DATA_1_MASK_EF);
+	DINFOX_write_field(&reg_geoloc_data_1, &reg_geoloc_data_1_mask, gps_position.long_seconds, GPSM_REG_GEOLOC_DATA_1_MASK_SECOND);
+	DINFOX_write_field(&reg_geoloc_data_1, &reg_geoloc_data_1_mask, (uint32_t) gps_position.long_minutes, GPSM_REG_GEOLOC_DATA_1_MASK_MINUTE);
+	DINFOX_write_field(&reg_geoloc_data_1, &reg_geoloc_data_1_mask, (uint32_t) gps_position.long_degrees, GPSM_REG_GEOLOC_DATA_1_MASK_DEGREE);
+	DINFOX_write_field(&reg_geoloc_data_2, &reg_geoloc_data_2_mask, gps_position.altitude, GPSM_REG_GEOLOC_DATA_2_MASK_ALTITUDE);
+	DINFOX_write_field(&reg_geoloc_data_3, &reg_geoloc_data_3_mask, geoloc_fix_duration, GPSM_REG_GEOLOC_DATA_3_MASK_FIX_DURATION);
 	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, geoloc_data_0_mask, geoloc_data_0);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, geoloc_data_1_mask, geoloc_data_1);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, geoloc_data_2_mask, geoloc_data_2);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, geoloc_data_3_mask, geoloc_data_3);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_0, reg_geoloc_data_0_mask, reg_geoloc_data_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_1, reg_geoloc_data_1_mask, reg_geoloc_data_1);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_2, reg_geoloc_data_2_mask, reg_geoloc_data_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_GEOLOC_DATA_3, reg_geoloc_data_3_mask, reg_geoloc_data_3);
 	// Turn GPS off is possible.
 	status = _GPSM_power_request(0);
 	if (status != NODE_SUCCESS) goto errors;
@@ -248,18 +248,18 @@ static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
 	NODE_status_t status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
 	NEOM8N_timepulse_config_t timepulse_config;
-	uint32_t timepulse_configuration_0 = 0;
-	uint32_t timepulse_configuration_1 = 0;
+	uint32_t reg_timepulse_configuration_0 = 0;
+	uint32_t reg_timepulse_configuration_1 = 0;
 	// Turn GPS on.
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read registers.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, &timepulse_configuration_0);
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, &timepulse_configuration_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, &reg_timepulse_configuration_0);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, &reg_timepulse_configuration_1);
 	// Set parameters.
 	timepulse_config.active = state;
-	timepulse_config.frequency_hz = DINFOX_read_field(timepulse_configuration_0, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY);
-	timepulse_config.duty_cycle_percent = (uint8_t) DINFOX_read_field(timepulse_configuration_1, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
+	timepulse_config.frequency_hz = DINFOX_read_field(reg_timepulse_configuration_0, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY);
+	timepulse_config.duty_cycle_percent = (uint8_t) DINFOX_read_field(reg_timepulse_configuration_1, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
 	// Set timepulse.
 	neom8n_status = NEOM8N_configure_timepulse(&timepulse_config);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
@@ -452,8 +452,8 @@ NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
-	uint32_t analog_data_1 = 0;
-	uint32_t analog_data_1_mask = 0;
+	uint32_t reg_analog_data_1 = 0;
+	uint32_t reg_analog_data_1_mask = 0;
 	// Reset results.
 	_GPSM_reset_analog_data();
 	// Turn GPS on.
@@ -475,16 +475,16 @@ NODE_status_t GPSM_mtrg_callback(ADC_status_t* adc_status) {
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VGPS_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), GPSM_REG_ANALOG_DATA_1_MASK_VGPS);
+			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), GPSM_REG_ANALOG_DATA_1_MASK_VGPS);
 		}
 		// Active antenna voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VANT_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&analog_data_1, &analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), GPSM_REG_ANALOG_DATA_1_MASK_VANT);
+			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), GPSM_REG_ANALOG_DATA_1_MASK_VANT);
 		}
 		// Write register.
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, analog_data_1_mask,analog_data_1);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
 	}
 	// Update ADC status.
 	if (adc_status != NULL) {
