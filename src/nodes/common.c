@@ -150,11 +150,15 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_ERROR_STACK:
 #ifdef UHFM
-		// Import Sigfox errors into MCU stack.
+	// Import Sigfox errors into MCU stack.
 	ERROR_import_sigfox_stack();
 #endif
 		// Unstack error.
 		DINFOX_write_field(&reg_value, &reg_mask, (uint32_t) ERROR_stack_read(), COMMON_REG_ERROR_STACK_MASK_ERROR);
+		break;
+	case COMMON_REG_ADDR_STATUS_0:
+		// Check error stack.
+		DINFOX_write_field(&reg_value, &reg_mask, ((ERROR_stack_is_empty() == 0) ? 0b1 : 0b0), COMMON_REG_STATUS_0_MASK_ESF);
 		break;
 	default:
 		// Nothing to do.
@@ -189,6 +193,16 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_MTRG)) != 0) {
 				// Perform measurements.
 				_COMMON_mtrg_callback();
+			}
+		}
+		// BFC.
+		if ((reg_mask & COMMON_REG_CONTROL_0_MASK_BFC) != 0) {
+			// Read bit.
+			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_BFC)) != 0) {
+				// Clear boot flag.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_0, COMMON_REG_STATUS_0_MASK_BF, 0b0);
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, COMMON_REG_CONTROL_0_MASK_BFC, 0b0);
 			}
 		}
 		break;
