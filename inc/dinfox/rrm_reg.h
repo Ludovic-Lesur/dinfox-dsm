@@ -18,8 +18,8 @@
  * \brief RRM registers map.
  *******************************************************************/
 typedef enum {
-	RRM_REG_ADDR_CONTROL_1 = COMMON_REG_ADDR_LAST,
-	RRM_REG_ADDR_STATUS,
+	RRM_REG_ADDR_STATUS_1 = COMMON_REG_ADDR_LAST,
+	RRM_REG_ADDR_CONTROL_1,
 	RRM_REG_ADDR_ANALOG_DATA_1,
 	RRM_REG_ADDR_ANALOG_DATA_2,
 	RRM_REG_ADDR_LAST,
@@ -31,9 +31,9 @@ typedef enum {
 
 /*** RRM registers mask ***/
 
-#define RRM_REG_CONTROL_1_MASK_REN			0x00000001
+#define RRM_REG_STATUS_1_MASK_RENST			0x00000003
 
-#define RRM_REG_STATUS_MASK_RENST			0x00000003
+#define RRM_REG_CONTROL_1_MASK_REN			0x00000001
 
 #define RRM_REG_ANALOG_DATA_1_MASK_VIN		0x0000FFFF
 #define RRM_REG_ANALOG_DATA_1_MASK_VOUT		0xFFFF0000

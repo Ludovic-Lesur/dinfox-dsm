@@ -68,7 +68,7 @@ LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
 	// Check parameter.
-	if ((state == DINFOX_BIT_FORCED_HARDWARE) || (state >= DINFOX_BIT_ERROR)) {
+	if (state >= DINFOX_BIT_FORCED_HARDWARE) {
 		status = LOAD_ERROR_STATE;
 		goto errors;
 	}
@@ -127,7 +127,7 @@ LOAD_status_t LOAD_set_charge_state(DINFOX_bit_representation_t state) {
 	// Local variables.
 	LOAD_status_t status = LOAD_SUCCESS;
 	// Check parameter.
-	if ((state == DINFOX_BIT_FORCED_HARDWARE) || (state >= DINFOX_BIT_ERROR)) {
+	if (state >= DINFOX_BIT_FORCED_HARDWARE) {
 		status = LOAD_ERROR_STATE;
 		goto errors;
 	}

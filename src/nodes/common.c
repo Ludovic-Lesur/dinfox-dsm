@@ -106,8 +106,8 @@ void COMMON_init_registers(NODE_address_t self_address) {
 	uint32_t reg_sw_version_0_mask = 0;
 	uint32_t reg_sw_version_1 = 0;
 	uint32_t reg_sw_version_1_mask = 0;
-	uint32_t reg_reset_flags = 0;
-	uint32_t reg_reset_flags_mask = 0;
+	uint32_t reg_status_0 = 0;
+	uint32_t reg_status_0_mask = 0;
 	// Node ID register.
 	DINFOX_write_field(&reg_node_id, &reg_node_id_mask, (uint32_t) self_address, COMMON_REG_NODE_ID_MASK_NODE_ADDR);
 	DINFOX_write_field(&reg_node_id, &reg_node_id_mask, (uint32_t) NODE_BOARD_ID, COMMON_REG_NODE_ID_MASK_BOARD_ID);
@@ -128,13 +128,14 @@ void COMMON_init_registers(NODE_address_t self_address) {
 	// SW version register 1.
 	DINFOX_write_field(&reg_sw_version_1, &reg_sw_version_1_mask, (uint32_t) GIT_COMMIT_ID, COMMON_REG_SW_VERSION_1_MASK_COMMIT_ID);
 	// Reset flags registers.
-	DINFOX_write_field(&reg_reset_flags, &reg_reset_flags_mask, (uint32_t) (((RCC -> CSR) >> 24) & 0xFF), COMMON_REG_RESET_FLAGS_MASK_ALL);
+	DINFOX_write_field(&reg_status_0, &reg_status_0_mask, (uint32_t) (((RCC -> CSR) >> 24) & 0xFF), COMMON_REG_STATUS_0_MASK_RESET_FLAGS);
+	DINFOX_write_field(&reg_status_0, &reg_status_0_mask, 0b1, COMMON_REG_STATUS_0_MASK_BF);
 	// Write registers.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_NODE_ID, reg_node_id_mask, reg_node_id);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_HW_VERSION, reg_hw_version_mask, reg_hw_version);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_0, reg_sw_version_0_mask, reg_sw_version_0);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_SW_VERSION_1, reg_sw_version_1_mask, reg_sw_version_1);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_RESET_FLAGS, reg_reset_flags_mask, reg_reset_flags);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_0, reg_status_0_mask, reg_status_0);
 	// Load default values.
 	_COMMON_reset_analog_data();
 }

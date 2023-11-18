@@ -53,7 +53,7 @@ static void _RRM_reset_analog_data(void) {
 /*******************************************************************/
 void RRM_init_registers(void) {
 	// Status and control register 1.
-	RRM_update_register(RRM_REG_ADDR_STATUS);
+	RRM_update_register(RRM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_RRM_reset_analog_data();
 }
@@ -68,10 +68,10 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case RRM_REG_ADDR_STATUS:
+	case RRM_REG_ADDR_STATUS_1:
 		// Relay state.
 		rrm_ctx.renst = LOAD_get_output_state();
-		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) rrm_ctx.renst), RRM_REG_STATUS_MASK_RENST);
+		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) rrm_ctx.renst), RRM_REG_STATUS_1_MASK_RENST);
 		break;
 	default:
 		// Nothing to do for other registers.
@@ -113,7 +113,7 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	}
 errors:
 	// Update status register.
-	RRM_update_register(RRM_REG_ADDR_STATUS);
+	RRM_update_register(RRM_REG_ADDR_STATUS_1);
 	return status;
 }
 #endif

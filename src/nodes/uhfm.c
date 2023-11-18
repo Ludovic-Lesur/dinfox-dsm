@@ -112,8 +112,8 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	SIGFOX_EP_API_message_status_t message_status;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
-	uint32_t reg_status = 0;
-	uint32_t reg_status_mask = 0;
+	uint32_t reg_status_1 = 0;
+	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_ep_config_0 = 0;
 	uint32_t reg_ep_config_2 = 0;
 	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
@@ -158,7 +158,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 			SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 			// Write DL payload registers and RSSI.
 			NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
-			DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm), UHFM_REG_STATUS_MASK_DL_RSSI);
+			DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) DINFOX_convert_dbm(dl_rssi_dbm), UHFM_REG_STATUS_1_MASK_DL_RSSI);
 		}
 	}
 	else {
@@ -177,10 +177,10 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 	// Update message status and clear flag.
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
-	DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_MASK_MESSAGE_STATUS);
+	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
 	// Write registers.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS, reg_status_mask, reg_status);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
 	// Return status.
 	return status;
 errors:
@@ -188,10 +188,10 @@ errors:
 	SIGFOX_EP_API_close();
 	// Update message status and clear flag.
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
-	DINFOX_write_field(&reg_status, &reg_status_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_MASK_MESSAGE_STATUS);
+	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
 	// Write registers.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS, reg_status_mask, reg_status);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
 	// Return status.
 	return status;
 }
