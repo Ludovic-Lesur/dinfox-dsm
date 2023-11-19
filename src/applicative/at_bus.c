@@ -789,8 +789,8 @@ static void _AT_BUS_send_sigfox_message(uint8_t bidir_flag) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read message status.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS, &reg_status);
-	message_status.all = (uint8_t) DINFOX_read_field(reg_status, UHFM_REG_STATUS_MASK_MESSAGE_STATUS);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, &reg_status);
+	message_status.all = (uint8_t) DINFOX_read_field(reg_status, UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
 	// Print message status.
 	_AT_BUS_reply_add_string("+MSG_STAT=");
 	_AT_BUS_reply_add_value(message_status.all, STRING_FORMAT_HEXADECIMAL, 1);
@@ -1030,7 +1030,7 @@ static void _AT_BUS_rssi_callback(void) {
 		// Read RSSI.
 		node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &reg_radio_test_1);
 		NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
-		rssi_dbm = DINFOX_get_dbm((DINFOX_rf_power_representation_t) DINFOX_read_field(reg_radio_test_1, UHFM_REG_STATUS_MASK_DL_RSSI));
+		rssi_dbm = DINFOX_get_dbm((DINFOX_rf_power_representation_t) DINFOX_read_field(reg_radio_test_1, UHFM_REG_RADIO_TEST_1_MASK_RSSI));
 		// Print RSSI.
 		_AT_BUS_reply_add_string("+RSSI=");
 		_AT_BUS_reply_add_value((int32_t) rssi_dbm, STRING_FORMAT_DECIMAL, 0);
@@ -1092,9 +1092,9 @@ static void _AT_BUS_time_callback(void) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS, &reg_status);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_1, &reg_status);
 	// Check status.
-	if (DINFOX_read_field(reg_status, GPSM_REG_STATUS_MASK_TFS) == 0) {
+	if (DINFOX_read_field(reg_status, GPSM_REG_STATUS_1_MASK_TFS) == 0) {
 		_AT_BUS_reply_add_string("Timeout");
 	}
 	else {
@@ -1186,9 +1186,9 @@ static void _AT_BUS_gps_callback(void) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Read status.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS, &reg_status);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_STATUS_1, &reg_status);
 	// Check status.
-	if (DINFOX_read_field(reg_status, GPSM_REG_STATUS_MASK_GFS) == 0) {
+	if (DINFOX_read_field(reg_status, GPSM_REG_STATUS_1_MASK_GFS) == 0) {
 		_AT_BUS_reply_add_string("Timeout");
 	}
 	else {

@@ -15,6 +15,7 @@
 #include "node.h"
 #include "nvm.h"
 #ifdef UHFM
+#include "manuf/mcu_api.h"
 #include "manuf/rf_api.h"
 #include "s2lp.h"
 #include "sigfox_ep_addon_rfp_api.h"
@@ -106,6 +107,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	SIGFOX_EP_API_status_t sigfox_ep_api_status = SIGFOX_EP_API_SUCCESS;
+	MCU_API_status_t mcu_api_status = MCU_API_SUCCESS;
 	SIGFOX_EP_API_config_t lib_config;
 	SIGFOX_EP_API_application_message_t application_message;
 	SIGFOX_EP_API_control_message_t control_message;
@@ -114,10 +116,13 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_ep_config_0 = 0;
 	uint32_t reg_ep_config_2 = 0;
+	sfx_bool bidirectional_flag = 0;
 	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
 	sfx_u8 ul_payload_size = 0;
 	sfx_u8 dl_payload[SIGFOX_DL_PAYLOAD_SIZE_BYTES];
 	sfx_s16 dl_rssi_dbm = 0;
+	sfx_u8 nvm_data[SIGFOX_NVM_DATA_SIZE_BYTES];
+	uint32_t message_counter = 0;
 	// Reset status.
 	message_status.all = 0;
 	// Read configuration registers.
@@ -136,12 +141,23 @@ static NODE_status_t _UHFM_strg_callback(void) {
 		ul_payload_size = (sfx_u8) DINFOX_read_field(reg_ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
 		// Read UL payload.
 		NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
+		// Update bidirectional flag.
+		bidirectional_flag = (sfx_bool) DINFOX_read_field(reg_ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
+		// Read current message counter.
+		if (bidirectional_flag == SFX_TRUE) {
+			// Read memory.
+			mcu_api_status = MCU_API_get_nvm((sfx_u8*) nvm_data, SIGFOX_NVM_DATA_SIZE_BYTES);
+			MCU_API_check_status(NODE_ERROR_SIGFOX_MCU_API);
+			// Compute message counter.
+			message_counter = (sfx_u32) (message_counter | ((((sfx_u32) nvm_data[SIGFOX_NVM_DATA_INDEX_MESSAGE_COUNTER_MSB]) << 8) & 0xFF00));
+			message_counter = (sfx_u32) (message_counter | ((((sfx_u32) nvm_data[SIGFOX_NVM_DATA_INDEX_MESSAGE_COUNTER_LSB]) << 0) & 0x00FF));
+		}
 		// Build message structure.
 		application_message.common_parameters.number_of_frames = (sfx_u8) DINFOX_read_field(reg_ep_config_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_NFR);
 		application_message.common_parameters.ul_bit_rate = (SIGFOX_ul_bit_rate_t) DINFOX_read_field(reg_ep_config_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_BR);
 		application_message.common_parameters.ep_key_type = SIGFOX_EP_KEY_PRIVATE;
 		application_message.type = (SIGFOX_application_message_type_t) DINFOX_read_field(reg_ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
-		application_message.bidirectional_flag = (sfx_u8) DINFOX_read_field(reg_ep_config_2, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
+		application_message.bidirectional_flag = bidirectional_flag;
 		application_message.ul_payload = (sfx_u8*) ul_payload;
 		application_message.ul_payload_size_bytes = ul_payload_size;
 		// Send message.
@@ -170,19 +186,15 @@ static NODE_status_t _UHFM_strg_callback(void) {
 		// Read message status.
 		message_status = SIGFOX_EP_API_get_message_status();
 	}
-	// Close library.
-	sigfox_ep_api_status = SIGFOX_EP_API_close();
-	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
-	// Update message status.
-	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
-	// Return status.
-	return status;
 errors:
 	// Close library.
 	SIGFOX_EP_API_close();
 	// Update message status.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
+	// Update birectional message counter.
+	if ((bidirectional_flag == SFX_TRUE) && (message_status.all != 0)) {
+		DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (message_counter + 1), UHFM_REG_STATUS_1_MASK_BIDIRECTIONAL_MC);
+	}
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
 	// Return status.
 	return status;
@@ -212,11 +224,6 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	test_mode.ul_bit_rate = (SIGFOX_ul_bit_rate_t) DINFOX_read_field(reg_ep_config_0, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_BR);
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_test_mode(&test_mode);
 	_UHFM_sigfox_ep_addon_rfp_exit_error();
-	// Close addon.
-	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_close();
-	_UHFM_sigfox_ep_addon_rfp_exit_error();
-	// Return status.
-	return status;
 errors:
 	// Close addon.
 	SIGFOX_EP_ADDON_RFP_API_close();
