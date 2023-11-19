@@ -132,8 +132,6 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	NEOM8N_time_t gps_time;
 	uint32_t time_fix_duration = 0;
 	uint32_t reg_timeout = 0;
-	uint32_t reg_control_1 = 0;
-	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status_1 = 0;
 	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_time_data_0 = 0;
@@ -170,9 +168,6 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	status = _GPSM_power_request(0);
 	if (status != NODE_SUCCESS) goto errors;
 errors:
-	// Clear request.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, GPSM_REG_CONTROL_1_MASK_TTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Turn GPS off is possible.
 	_GPSM_power_request(0);
 	return status;
@@ -188,8 +183,6 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
 	NEOM8N_position_t gps_position;
 	uint32_t geoloc_fix_duration = 0;
 	uint32_t reg_timeout = 0;
-	uint32_t reg_control_1 = 0;
-	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status_1 = 0;
 	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_geoloc_data_0 = 0;
@@ -232,9 +225,6 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
 	status = _GPSM_power_request(0);
 	if (status != NODE_SUCCESS) goto errors;
 errors:
-	// Clear request.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, GPSM_REG_CONTROL_1_MASK_GTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Turn GPS off is possible.
 	_GPSM_power_request(0);
 	return status;
@@ -338,7 +328,8 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	DINFOX_bit_representation_t tpen = 0;
 	DINFOX_bit_representation_t bken = 0;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
 	case GPSM_REG_ADDR_CONTROL_1:
@@ -346,6 +337,8 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		if ((reg_mask & GPSM_REG_CONTROL_1_MASK_TTRG) != 0) {
 			// Read bit.
 			if (DINFOX_read_field(reg_value, GPSM_REG_CONTROL_1_MASK_TTRG) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONTROL_1, GPSM_REG_CONTROL_1_MASK_TTRG, 0b0);
 				// Start GPS time fix.
 				status = _GPSM_ttrg_callback();
 				if (status != NODE_SUCCESS) goto errors;
@@ -355,6 +348,8 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		if ((reg_mask & GPSM_REG_CONTROL_1_MASK_GTRG) != 0) {
 			// Read bit.
 			if (DINFOX_read_field(reg_value, GPSM_REG_CONTROL_1_MASK_GTRG) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONTROL_1, GPSM_REG_CONTROL_1_MASK_GTRG, 0b0);
 				// Start GPS geolocation fix.
 				status = _GPSM_gtrg_callback();
 				if (status != NODE_SUCCESS) goto errors;

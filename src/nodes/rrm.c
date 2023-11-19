@@ -91,7 +91,8 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	uint32_t reg_value = 0;
 	DINFOX_bit_representation_t ren = DINFOX_BIT_ERROR;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
 	case RRM_REG_ADDR_CONTROL_1:

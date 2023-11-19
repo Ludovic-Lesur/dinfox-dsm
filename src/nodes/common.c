@@ -71,7 +71,7 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 	status = RRM_mtrg_callback(&adc1_status);
 #endif
 	if (status != NODE_SUCCESS) goto errors;
-	// Try reading VMCU and TMCU, but will be returned anyway at the end.
+	// Try reading VMCU and TMCU, but error will be returned anyway at the end.
 	if (adc1_status == ADC_SUCCESS) {
 		// MCU voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VMCU_MV, &vmcu_mv);
@@ -89,7 +89,6 @@ NODE_status_t _COMMON_mtrg_callback(void) {
 		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_ANALOG_DATA_0, reg_analog_data_0_mask, reg_analog_data_0);
 	}
 errors:
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, COMMON_REG_CONTROL_0_MASK_MTRG, 0);
 	return status;
 }
 
@@ -150,8 +149,8 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_ERROR_STACK:
 #ifdef UHFM
-	// Import Sigfox errors into MCU stack.
-	ERROR_import_sigfox_stack();
+		// Import Sigfox errors into MCU stack.
+		ERROR_import_sigfox_stack();
 #endif
 		// Unstack error.
 		DINFOX_write_field(&reg_value, &reg_mask, (uint32_t) ERROR_stack_read(), COMMON_REG_ERROR_STACK_MASK_ERROR);
@@ -175,7 +174,8 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	NODE_status_t status = NODE_SUCCESS;
 	uint32_t reg_value = 0;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, &reg_value);
+	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
 	case COMMON_REG_ADDR_CONTROL_0:
@@ -191,18 +191,21 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		if ((reg_mask & COMMON_REG_CONTROL_0_MASK_MTRG) != 0) {
 			// Read bit.
 			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_MTRG)) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, COMMON_REG_CONTROL_0_MASK_MTRG, 0b0);
 				// Perform measurements.
-				_COMMON_mtrg_callback();
+				status = _COMMON_mtrg_callback();
+				if (status != NODE_SUCCESS) goto errors;
 			}
 		}
 		// BFC.
 		if ((reg_mask & COMMON_REG_CONTROL_0_MASK_BFC) != 0) {
 			// Read bit.
 			if ((DINFOX_read_field(reg_value, COMMON_REG_CONTROL_0_MASK_BFC)) != 0) {
-				// Clear boot flag.
-				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_0, COMMON_REG_STATUS_0_MASK_BF, 0b0);
 				// Clear request.
 				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_CONTROL_0, COMMON_REG_CONTROL_0_MASK_BFC, 0b0);
+				// Clear boot flag.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REG_ADDR_STATUS_0, COMMON_REG_STATUS_0_MASK_BF, 0b0);
 			}
 		}
 		break;
@@ -210,5 +213,6 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		// Nothing to do for other registers.
 		break;
 	}
+errors:
 	return status;
 }

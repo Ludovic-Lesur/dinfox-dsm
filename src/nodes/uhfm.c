@@ -110,8 +110,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	SIGFOX_EP_API_application_message_t application_message;
 	SIGFOX_EP_API_control_message_t control_message;
 	SIGFOX_EP_API_message_status_t message_status;
-	uint32_t reg_control_1 = 0;
-	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status_1 = 0;
 	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_ep_config_0 = 0;
@@ -175,22 +173,16 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	// Close library.
 	sigfox_ep_api_status = SIGFOX_EP_API_close();
 	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
-	// Update message status and clear flag.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
+	// Update message status.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
-	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
 	// Return status.
 	return status;
 errors:
 	// Close library.
 	SIGFOX_EP_API_close();
-	// Update message status and clear flag.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0, UHFM_REG_CONTROL_1_MASK_STRG);
+	// Update message status.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REG_STATUS_1_MASK_MESSAGE_STATUS);
-	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_STATUS_1, reg_status_1_mask, reg_status_1);
 	// Return status.
 	return status;
@@ -206,8 +198,6 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	SIGFOX_EP_ADDON_RFP_API_config_t addon_config;
 	SIGFOX_EP_ADDON_RFP_API_test_mode_t test_mode;
 	uint32_t reg_ep_config_0 = 0;
-	uint32_t reg_control_1 = 0;
-	uint32_t reg_control_1_mask = 0;
 	// Read configuration register.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, &reg_ep_config_0);
 	// Check radio state.
@@ -225,17 +215,11 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	// Close addon.
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_close();
 	_UHFM_sigfox_ep_addon_rfp_exit_error();
-	// Clear flag.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_TTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Return status.
 	return status;
 errors:
 	// Close addon.
 	SIGFOX_EP_ADDON_RFP_API_close();
-	// Clear flag.
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_TTRG);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Return status.
 	return status;
 }
@@ -429,7 +413,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	uint32_t new_reg_value = 0;
 	uint32_t new_reg_mask = 0;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
 	case UHFM_REG_ADDR_CONTROL_1:
@@ -437,6 +422,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_STRG) != 0) {
 			// Read bit.
 			if (DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_STRG) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, UHFM_REG_CONTROL_1_MASK_STRG, 0b0);
 				// Send Sigfox message.
 				status = _UHFM_strg_callback();
 				if (status != NODE_SUCCESS) goto errors;
@@ -446,6 +433,8 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_TTRG)) {
 			// Read bit.
 			if (DINFOX_read_field(reg_value, UHFM_REG_CONTROL_1_MASK_TTRG) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, UHFM_REG_CONTROL_1_MASK_TTRG, 0b0);
 				// Perform Sigfox test mode.
 				status = _UHFM_ttrg_callback();
 				if (status != NODE_SUCCESS) goto errors;

@@ -102,7 +102,8 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	DINFOX_bit_representation_t chen = DINFOX_BIT_ERROR;
 	DINFOX_bit_representation_t bken = DINFOX_BIT_ERROR;
 	// Read register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
+	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
 	case BPSM_REG_ADDR_CONTROL_1:
