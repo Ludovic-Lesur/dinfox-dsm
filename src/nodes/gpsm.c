@@ -271,6 +271,7 @@ void GPSM_init_registers(void) {
 	// Init flags.
 	gpsm_ctx.flags.all = 0;
 	// Read init state.
+	GPSM_update_register(GPSM_REG_ADDR_CONFIGURATION);
 	GPSM_update_register(GPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_GPSM_reset_analog_data();
@@ -289,6 +290,14 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
+	case GPSM_REG_ADDR_CONFIGURATION:
+		// Active antenna flag.
+#ifdef GPSM_ACTIVE_ANTENNA
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_MASK_AAF);
+#else
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_MASK_AAF);
+#endif
+		break;
 	case GPSM_REG_ADDR_STATUS_1:
 		// Timepulse enable.
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) gpsm_ctx.flags.tpen), GPSM_REG_STATUS_1_MASK_TPST);
@@ -297,12 +306,6 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 		// Backup enable.
 		gpsm_ctx.bkenst = NEOM8N_get_backup();
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) gpsm_ctx.bkenst), GPSM_REG_STATUS_1_MASK_BKENST);
-		// Active antenna flag.
-#ifdef GPSM_ACTIVE_ANTENNA
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_STATUS_1_MASK_AAF);
-#else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_STATUS_1_MASK_AAF);
-#endif
 		break;
 	default:
 		// Nothing to do for other registers.

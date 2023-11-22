@@ -54,6 +54,7 @@ static void _BPSM_reset_analog_data(void) {
 /*******************************************************************/
 void BPSM_init_registers(void) {
 	// Read init state.
+	BPSM_update_register(BPSM_REG_ADDR_CONFIGURATION);
 	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_BPSM_reset_analog_data();
@@ -70,9 +71,11 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	DINFOX_bit_representation_t chrgst = DINFOX_BIT_ERROR;
 	// Check address.
 	switch (reg_addr) {
-	case BPSM_REG_ADDR_STATUS_1:
+	case BPSM_REG_ADDR_CONFIGURATION:
 		// Voltage divider ratio.
-		DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_STATUS_1_MASK_VSTR_RATIO);
+		DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_CONFIGURATION_MASK_VSTR_RATIO);
+		break;
+	case BPSM_REG_ADDR_STATUS_1:
 		// Charge status.
 		chrgst = LOAD_get_charge_status();
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst), BPSM_REG_STATUS_1_MASK_CHRGST);

@@ -67,6 +67,8 @@ static void _SM_reset_digital_data(void) {
 #ifdef SM
 /*******************************************************************/
 void SM_init_registers(void) {
+	// Read init state.
+	SM_update_register(SM_REG_ADDR_CONFIGURATION);
 	// Load default values.
 	_SM_reset_analog_data();
 	_SM_reset_digital_data();
@@ -78,7 +80,35 @@ void SM_init_registers(void) {
 NODE_status_t SM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	// Nothing to do on SM registers.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// Check address.
+	switch (reg_addr) {
+	case SM_REG_ADDR_CONFIGURATION:
+#ifdef SM_AIN_ENABLE
+		// Analog inputs enable flag.
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_AINF);
+#else
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_AINF);
+#endif
+		// Digital inputs enable flag.
+#ifdef SM_DIO_ENABLE
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_DIOF);
+#else
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_DIOF);
+#endif
+		// Digital sensors enable flag.
+#ifdef SM_DIGITAL_SENSORS_ENABLE
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_DIGF);
+#else
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_DIGF);
+#endif
+		break;
+	default:
+		// Nothing to do for other registers.
+		break;
+	}
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
 #endif
