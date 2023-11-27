@@ -134,13 +134,16 @@ LOAD_status_t LOAD_set_charge_state(DINFOX_bit_representation_t state) {
 #ifdef BPSM_CHEN_FORCED_HARDWARE
 	// Load is not controllable.
 	status = LOAD_ERROR_FORCED_HARDWARE;
-#else
+	goto errors;
+#endif
+#ifdef BPSM_CHEN_AUTO
+	status = LOAD_ERROR_FORCED_SOFTWARE;
+	goto errors;
+#endif
 	// Set GPIO.
 	GPIO_write(&GPIO_CHRG_EN, state);
-	return status;
-#endif
 errors:
-		return status;
+	return status;
 }
 #endif
 

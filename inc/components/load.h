@@ -22,6 +22,7 @@ typedef enum {
 	// Driver errors.
 	LOAD_SUCCESS = 0,
 	LOAD_ERROR_FORCED_HARDWARE,
+	LOAD_ERROR_FORCED_SOFTWARE,
 	LOAD_ERROR_STATE,
 	// Low level drivers errors.
 	LOAD_ERROR_BASE_LPTIM = 0x0100,

@@ -54,7 +54,8 @@ static void _BPSM_reset_analog_data(void) {
 /*******************************************************************/
 void BPSM_init_registers(void) {
 	// Read init state.
-	BPSM_update_register(BPSM_REG_ADDR_CONFIGURATION);
+	BPSM_update_register(BPSM_REG_ADDR_CONFIGURATION_0);
+	BPSM_update_register(BPSM_REG_ADDR_CONFIGURATION_1);
 	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_BPSM_reset_analog_data();
@@ -71,9 +72,20 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	DINFOX_bit_representation_t chrgst = DINFOX_BIT_ERROR;
 	// Check address.
 	switch (reg_addr) {
-	case BPSM_REG_ADDR_CONFIGURATION:
+	case BPSM_REG_ADDR_CONFIGURATION_0:
 		// Voltage divider ratio.
-		DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_CONFIGURATION_MASK_VSTR_RATIO);
+		DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_CONFIGURATION_0_MASK_VSTR_RATIO);
+		// CHEN auto flag.
+#ifdef BPSM_CHEN_AUTO
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, BPSM_REG_CONFIGURATION_0_MASK_CHAF);
+#else
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, BPSM_REG_CONFIGURATION_0_MASK_CHAF);
+#endif
+		break;
+	case BPSM_REG_ADDR_CONFIGURATION_1:
+		// CHEN threshold and toggle period.
+		DINFOX_write_field(&reg_value, &reg_mask, BPSM_CHEN_VSRC_THRESHOLD_MV, BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
+		DINFOX_write_field(&reg_value, &reg_mask, BPSM_CHEN_TOGGLE_PERIOD_SECONDS, BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
 		break;
 	case BPSM_REG_ADDR_STATUS_1:
 		// Charge status.
