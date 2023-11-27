@@ -41,7 +41,16 @@ typedef enum {
 } NODE_reply_type_t;
 
 /*!******************************************************************
- * \enum NODE_reply_parameters_t
+ * \enum NODE_reply_type_t
+ * \brief Node reply type.
+ *******************************************************************/
+typedef enum {
+	NODE_ACCESS_TYPE_READ = 0b0,
+	NODE_ACCESS_TYPE_WRITE = 0b1
+} NODE_access_type_t;
+
+/*!******************************************************************
+ * \struct NODE_reply_parameters_t
  * \brief Node reply parameters.
  *******************************************************************/
 typedef struct {
@@ -50,7 +59,7 @@ typedef struct {
 } NODE_reply_parameters_t;
 
 /*!******************************************************************
- * \enum NODE_command_parameters_t
+ * \struct NODE_command_parameters_t
  * \brief Node command parameters.
  *******************************************************************/
 typedef struct {
@@ -59,7 +68,7 @@ typedef struct {
 } NODE_command_parameters_t;
 
 /*!******************************************************************
- * \enum NODE_access_parameters_t
+ * \struct NODE_access_parameters_t
  * \brief Node access parameters.
  *******************************************************************/
 typedef struct {
@@ -69,12 +78,13 @@ typedef struct {
 } NODE_access_parameters_t;
 
 /*!******************************************************************
- * \enum NODE_access_status_t
+ * \union NODE_access_status_t
  * \brief Node access status.
  *******************************************************************/
 typedef union {
 	struct {
-		unsigned unused : 4;
+		NODE_access_type_t type : 1;
+		unsigned unused : 3;
 		unsigned sequence_timeout : 1;
 		unsigned reply_timeout : 1;
 		unsigned parser_error : 1;
