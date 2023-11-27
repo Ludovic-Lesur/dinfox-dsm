@@ -81,6 +81,19 @@ typedef enum {
 	ADC_DATA_INDEX_LAST
 } ADC_data_index_t;
 
+/*******************************************************************/
+typedef enum {
+	ADC_CONVERSION_TYPE_VMCU = 0,
+	ADC_CONVERSION_TYPE_VOLTAGE_ATTENUATION,
+#ifdef SM
+	ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION,
+#endif
+#if (defined LVRM) || (defined DDRM) || (defined RRM)
+	ADC_CONVERSION_TYPE_LT6106,
+#endif
+	ADC_CONVERSION_TYPE_LAST
+} ADC_conversion_t;
+
 /*** ADC functions ***/
 
 /*!******************************************************************

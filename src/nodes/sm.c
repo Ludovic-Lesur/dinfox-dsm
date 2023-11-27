@@ -68,7 +68,9 @@ static void _SM_reset_digital_data(void) {
 /*******************************************************************/
 void SM_init_registers(void) {
 	// Read init state.
-	SM_update_register(SM_REG_ADDR_CONFIGURATION);
+	SM_update_register(SM_REG_ADDR_CONFIGURATION_0);
+	SM_update_register(SM_REG_ADDR_CONFIGURATION_1);
+	SM_update_register(SM_REG_ADDR_CONFIGURATION_2);
 	// Load default values.
 	_SM_reset_analog_data();
 	_SM_reset_digital_data();
@@ -84,26 +86,42 @@ NODE_status_t SM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case SM_REG_ADDR_CONFIGURATION:
+	case SM_REG_ADDR_CONFIGURATION_0:
 #ifdef SM_AIN_ENABLE
 		// Analog inputs enable flag.
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_AINF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_0_MASK_AINF);
 #else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_AINF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_0_MASK_AINF);
 #endif
 		// Digital inputs enable flag.
 #ifdef SM_DIO_ENABLE
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_DIOF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_0_MASK_DIOF);
 #else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_DIOF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_0_MASK_DIOF);
 #endif
 		// Digital sensors enable flag.
 #ifdef SM_DIGITAL_SENSORS_ENABLE
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_MASK_DIGF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, SM_REG_CONFIGURATION_0_MASK_DIGF);
 #else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_MASK_DIGF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, SM_REG_CONFIGURATION_0_MASK_DIGF);
 #endif
 		break;
+#ifdef SM_AIN_ENABLE
+	case SM_REG_ADDR_CONFIGURATION_1:
+		// Analog inputs type and gain.
+		DINFOX_write_field(&reg_value, &reg_mask, ((SM_AIN0_CONVERSION_TYPE == ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION) ? 0b1 : 0b0), SM_REG_CONFIGURATION_1_MASK_AIN0_TYPE);
+		DINFOX_write_field(&reg_value, &reg_mask, SM_AIN0_GAIN, SM_REG_CONFIGURATION_1_MASK_AIN0_GAIN);
+		DINFOX_write_field(&reg_value, &reg_mask, ((SM_AIN1_CONVERSION_TYPE == ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION) ? 0b1 : 0b0), SM_REG_CONFIGURATION_1_MASK_AIN1_TYPE);
+		DINFOX_write_field(&reg_value, &reg_mask, SM_AIN1_GAIN, SM_REG_CONFIGURATION_1_MASK_AIN1_GAIN);
+		break;
+	case SM_REG_ADDR_CONFIGURATION_2:
+		// Analog inputs type and gain.
+		DINFOX_write_field(&reg_value, &reg_mask, ((SM_AIN2_CONVERSION_TYPE == ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION) ? 0b1 : 0b0), SM_REG_CONFIGURATION_2_MASK_AIN2_TYPE);
+		DINFOX_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REG_CONFIGURATION_2_MASK_AIN2_GAIN);
+		DINFOX_write_field(&reg_value, &reg_mask, ((SM_AIN2_CONVERSION_TYPE == ADC_CONVERSION_TYPE_VOLTAGE_AMPLIFICATION) ? 0b1 : 0b0), SM_REG_CONFIGURATION_2_MASK_AIN3_TYPE);
+		DINFOX_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REG_CONFIGURATION_2_MASK_AIN3_GAIN);
+		break;
+#endif
 	default:
 		// Nothing to do for other registers.
 		break;
