@@ -13,7 +13,7 @@
 /*** RTC macros ***/
 
 // RTC wake-up timer period. Value must be lower than the watchdog period (~27s).
-#define RTC_WAKEUP_PERIOD_SECONDS	10
+#define RTC_WAKEUP_PERIOD_SECONDS	5
 
 /*** RTC structures ***/
 

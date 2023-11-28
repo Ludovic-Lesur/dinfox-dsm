@@ -14,6 +14,7 @@
 #include "mapping.h"
 #include "nvic.h"
 #include "pwr.h"
+#include "rtc.h"
 #include "s2lp_reg.h"
 #include "spi.h"
 #include "types.h"
@@ -28,6 +29,10 @@
 #define S2LP_REGISTER_SPI_TRANSFER_SIZE			3
 #define S2LP_COMMAND_SPI_TRANSFER_SIZE			2
 #define S2LP_FIFO_SPI_TRANSFER_SIZE				2
+// State switch timeout.
+#define S2LP_STATE_TIMEOUT_SECONDS				3
+#define S2LP_OSCILLATOR_TIMEOUT_SECONDS			3
+#define S2LP_FIFO_WRITE_TIMEOUT_SECONDS			2
 // Crystal frequency ranges.
 #define S2LP_XO_FREQUENCY_HZ					49152000
 #define S2LP_XO_HIGH_RANGE_THRESHOLD_HZ			48000000
@@ -445,11 +450,17 @@ S2LP_status_t S2LP_wait_for_state(S2LP_state_t new_state) {
 	S2LP_status_t status = S2LP_SUCCESS;
 	uint8_t state = 0;
 	uint8_t reg_value = 0;
+	uint32_t start_time = RTC_get_time_seconds();
 	// Poll MC_STATE until state is reached.
 	do {
 		status = _S2LP_read_register(S2LP_REG_MC_STATE0, &reg_value);
 		if (status != S2LP_SUCCESS) goto errors;
 		state = (reg_value >> 1) & 0x7F;
+		// Check timeout.
+		if (RTC_get_time_seconds() > (start_time + S2LP_STATE_TIMEOUT_SECONDS)) {
+			status = S2LP_ERROR_STATE_TIMEOUT;
+			goto errors;
+		}
 	}
 	while (state != new_state);
 errors:
@@ -491,11 +502,17 @@ S2LP_status_t S2LP_wait_for_oscillator(void) {
 	S2LP_status_t status = S2LP_SUCCESS;
 	uint8_t xo_on = 0;
 	uint8_t reg_value = 0;
+	uint32_t start_time = RTC_get_time_seconds();
 	// Poll MC_STATE until XO bit is set.
 	do {
 		status = _S2LP_read_register(S2LP_REG_MC_STATE0, &reg_value);
 		if (status != S2LP_SUCCESS) goto errors;
 		xo_on = (reg_value & 0x01);
+		// Check timeout.
+		if (RTC_get_time_seconds() > (start_time + S2LP_OSCILLATOR_TIMEOUT_SECONDS)) {
+			status = S2LP_ERROR_OSCILLATOR_TIMEOUT;
+			goto errors;
+		}
 	}
 	while (xo_on == 0);
 errors:
@@ -1201,6 +1218,7 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes) {
 	// Local variables.
 	S2LP_status_t status = S2LP_SUCCESS;
 	SPI_status_t spi1_status = SPI_SUCCESS;
+	uint32_t start_time = RTC_get_time_seconds();
 	// Check parameters.
 	if (tx_data == NULL) {
 		status = S2LP_ERROR_NULL_PARAMETER;
@@ -1222,7 +1240,13 @@ S2LP_status_t S2LP_write_fifo(uint8_t* tx_data, uint8_t tx_data_length_bytes) {
 	// Transfer buffer.
 	DMA1_CH3_start();
 	while (DMA1_CH3_get_transfer_status() == 0) {
+		// Enter sleep mode.
 		PWR_enter_sleep_mode();
+		// Check timeout.
+		if (RTC_get_time_seconds() > (start_time + S2LP_FIFO_WRITE_TIMEOUT_SECONDS)) {
+			status = S2LP_ERROR_FIFO_WRITE_TIMEOUT;
+			goto errors;
+		}
 	}
 	DMA1_CH3_stop();
 errors:
