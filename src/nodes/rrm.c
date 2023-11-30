@@ -69,8 +69,12 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 	// Check address.
 	switch (reg_addr) {
 	case RRM_REG_ADDR_STATUS_1:
-		// Relay state.
+		// Regulator state.
+#ifdef RRM_REN_FORCED_HARDWARE
+		rrm_ctx.renst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		rrm_ctx.renst = LOAD_get_output_state();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) rrm_ctx.renst), RRM_REG_STATUS_1_MASK_RENST);
 		break;
 	default:
@@ -87,9 +91,11 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+#ifndef RRM_REN_FORCED_HARDWARE
 	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint32_t reg_value = 0;
 	DINFOX_bit_representation_t ren = DINFOX_BIT_ERROR;
+#endif
+	uint32_t reg_value = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
@@ -98,6 +104,11 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	case RRM_REG_ADDR_CONTROL_1:
 		// REN.
 		if ((reg_mask & RRM_REG_CONTROL_1_MASK_REN) != 0) {
+			// Check pin mode.
+#ifdef RRM_REN_FORCED_HARDWARE
+			status = NODE_ERROR_FORCED_HARDWARE;
+			goto errors;
+#else
 			// Read bit.
 			ren = DINFOX_read_field(reg_value, RRM_REG_CONTROL_1_MASK_REN);
 			// Compare to current state.
@@ -106,6 +117,7 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				load_status = LOAD_set_output_state(ren);
 				LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 			}
+#endif
 		}
 		break;
 	default:

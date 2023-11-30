@@ -304,7 +304,11 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 		// Power enable.
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) gpsm_ctx.flags.pwen), GPSM_REG_STATUS_1_MASK_PWST);
 		// Backup enable.
+#ifdef GPSM_BKEN_FORCED_HARDWARE
+		gpsm_ctx.bkenst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		gpsm_ctx.bkenst = NEOM8N_get_backup();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) gpsm_ctx.bkenst), GPSM_REG_STATUS_1_MASK_BKENST);
 		break;
 	default:
@@ -322,14 +326,16 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+#ifndef GPSM_BKEN_FORCED_HARDWARE
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
-	uint32_t reg_value = 0;
-	uint32_t new_reg_value = 0;
-	uint32_t new_reg_mask = 0;
+	DINFOX_bit_representation_t bken = 0;
+#endif
 	DINFOX_bit_representation_t pwmd = 0;
 	DINFOX_bit_representation_t pwen = 0;
 	DINFOX_bit_representation_t tpen = 0;
-	DINFOX_bit_representation_t bken = 0;
+	uint32_t reg_value = 0;
+	uint32_t new_reg_value = 0;
+	uint32_t new_reg_mask = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
@@ -397,19 +403,31 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		}
 		// PWEN.
 		if ((reg_mask & GPSM_REG_CONTROL_1_MASK_PWEN) != 0) {
-			// Read bit.
-			pwen = DINFOX_read_field(reg_value, GPSM_REG_CONTROL_1_MASK_PWEN);
-			// Compare to current state.
-			if ((pwmd != 0) && (pwen != gpsm_ctx.flags.pwen)) {
-				// Apply PWEN bit.
-				status = _GPSM_power_control(pwen);
-				if (status != NODE_SUCCESS) goto errors;
-				// Update local flag.
-				gpsm_ctx.flags.pwen = pwen;
+			// Check control mode.
+			if (pwmd != 0) {
+				// Read bit.
+				pwen = DINFOX_read_field(reg_value, GPSM_REG_CONTROL_1_MASK_PWEN);
+				// Compare to current state.
+				if (pwen != gpsm_ctx.flags.pwen) {
+					// Apply PWEN bit.
+					status = _GPSM_power_control(pwen);
+					if (status != NODE_SUCCESS) goto errors;
+					// Update local flag.
+					gpsm_ctx.flags.pwen = pwen;
+				}
+			}
+			else {
+				status = NODE_ERROR_FORCED_SOFTWARE;
+				goto errors;
 			}
 		}
 		// BKEN.
 		if ((reg_mask & GPSM_REG_CONTROL_1_MASK_BKEN) != 0) {
+			// Check pin mode.
+#ifdef GPSM_BKEN_FORCED_HARDWARE
+			status = NODE_ERROR_FORCED_HARDWARE;
+			goto errors;
+#else
 			// Read bit.
 			bken = DINFOX_read_field(reg_value, GPSM_REG_CONTROL_1_MASK_BKEN);
 			// Compare to current state.
@@ -418,6 +436,7 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				neom8n_status = NEOM8N_set_backup(bken);
 				NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 			}
+#endif
 		}
 		break;
 	case GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0:

@@ -82,4 +82,15 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask);
 NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status);
 #endif
 
+#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
+/*!******************************************************************
+ * \fn void BPSM_charge_process(void)
+ * \brief BPSM automatic charge control process.
+ * \param[in]  	process_period: Function call period in seconds.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void BPSM_charge_process(uint32_t process_period_seconds);
+#endif
+
 #endif /* __BPSM_H__ */

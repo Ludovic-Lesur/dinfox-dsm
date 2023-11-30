@@ -20,6 +20,9 @@
 typedef struct {
 	DINFOX_bit_representation_t chenst;
 	DINFOX_bit_representation_t bkenst;
+#ifndef BPSM_CHEN_FORCED_HARDWARE
+	uint32_t chen_on_seconds_count;
+#endif
 } BPSM_context_t;
 
 /*** BPSM local global variables ***/
@@ -59,6 +62,12 @@ void BPSM_init_registers(void) {
 	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_BPSM_reset_analog_data();
+	// Automatic CHEN control enabled by default.
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, BPSM_REG_CONTROL_1_MASK_CHMD, BPSM_REG_CONTROL_1_MASK_CHMD);
+	// Init context.
+#ifndef BPSM_CHEN_FORCED_HARDWARE
+	bpsm_ctx.chen_on_seconds_count = 0;
+#endif
 }
 #endif
 
@@ -75,12 +84,6 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	case BPSM_REG_ADDR_CONFIGURATION_0:
 		// Voltage divider ratio.
 		DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_CONFIGURATION_0_MASK_VSTR_RATIO);
-		// CHEN auto flag.
-#ifdef BPSM_CHEN_AUTO
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, BPSM_REG_CONFIGURATION_0_MASK_CHAF);
-#else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, BPSM_REG_CONFIGURATION_0_MASK_CHAF);
-#endif
 		break;
 	case BPSM_REG_ADDR_CONFIGURATION_1:
 		// CHEN threshold and toggle period.
@@ -89,13 +92,25 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 		break;
 	case BPSM_REG_ADDR_STATUS_1:
 		// Charge status.
+#ifdef BPSM_CHST_FORCED_HARDWARE
+		chrgst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		chrgst = LOAD_get_charge_status();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst), BPSM_REG_STATUS_1_MASK_CHRGST);
 		// Charge state.
+#ifdef BPSM_CHEN_FORCED_HARDWARE
+		bpsm_ctx.chenst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		bpsm_ctx.chenst = LOAD_get_charge_state();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.chenst), BPSM_REG_STATUS_1_MASK_CHENST);
 		// Backup_output state.
+#ifdef BPSM_BKEN_FORCED_HARDWARE
+		bpsm_ctx.bkenst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		bpsm_ctx.bkenst = LOAD_get_output_state();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.bkenst), BPSM_REG_STATUS_1_MASK_BKENST);
 		break;
 	default:
@@ -112,10 +127,12 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+#ifndef BPSM_BKEN_FORCED_HARDWARE
 	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint32_t reg_value = 0;
-	DINFOX_bit_representation_t chen = DINFOX_BIT_ERROR;
 	DINFOX_bit_representation_t bken = DINFOX_BIT_ERROR;
+#endif
+	DINFOX_bit_representation_t chen = DINFOX_BIT_ERROR;
+	uint32_t reg_value = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
@@ -124,16 +141,28 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	case BPSM_REG_ADDR_CONTROL_1:
 		// CHEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_CHEN) != 0) {
-			// Read bit.
-			chen = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHEN);
-			// Compare to current state.
-			if (chen != bpsm_ctx.chenst) {
-				// Set charge state.
-				LOAD_set_charge_state(chen);
+			// Check control mode.
+			if (DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHMD) == 0) {
+				// Read bit.
+				chen = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHEN);
+				// Compare to current state.
+				if (chen != bpsm_ctx.chenst) {
+					// Set charge state.
+					LOAD_set_charge_state(chen);
+				}
+			}
+			else {
+				status = NODE_ERROR_FORCED_SOFTWARE;
+				goto errors;
 			}
 		}
 		// BKEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_BKEN) != 0) {
+			// Check pin mode.
+#ifdef BPSM_BKEN_FORCED_HARDWARE
+			status = NODE_ERROR_FORCED_HARDWARE;
+			goto errors;
+#else
 			// Read bit.
 			bken = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_BKEN);
 			// Compare to current state.
@@ -142,6 +171,7 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				load_status = LOAD_set_output_state(bken);
 				LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 			}
+#endif
 		}
 		break;
 	default:
@@ -212,5 +242,42 @@ errors:
 		(*adc_status) = adc1_status;
 	}
 	return status;
+}
+#endif
+
+#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
+/*******************************************************************/
+void BPSM_charge_process(uint32_t process_period_seconds) {
+	// Local variables.
+	ADC_status_t adc1_status = ADC_SUCCESS;
+	uint32_t reg_control_1 = 0;
+	uint32_t vsrc_mv = 0;
+	// Read control register.
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, &reg_control_1);
+	// Check mode.
+	if (DINFOX_read_field(reg_control_1, BPSM_REG_CONTROL_1_MASK_CHMD) != 0) {
+		// Check source voltage.
+		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &vsrc_mv);
+		ADC1_stack_error();
+		// Check voltage.
+		if (vsrc_mv >= BPSM_CHEN_VSRC_THRESHOLD_MV) {
+			// Check toggle period.
+			if (bpsm_ctx.chen_on_seconds_count >= BPSM_CHEN_TOGGLE_PERIOD_SECONDS) {
+				// Disable charge.
+				LOAD_set_charge_state(0);
+				bpsm_ctx.chen_on_seconds_count = 0;
+			}
+			else {
+				// Enable charge.
+				LOAD_set_charge_state(1);
+				bpsm_ctx.chen_on_seconds_count += process_period_seconds;
+			}
+		}
+		else {
+			// Disable charge.
+			LOAD_set_charge_state(0);
+			bpsm_ctx.chen_on_seconds_count = 0;
+		}
+	}
 }
 #endif

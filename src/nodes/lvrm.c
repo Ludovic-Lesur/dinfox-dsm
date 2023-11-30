@@ -70,7 +70,11 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	switch (reg_addr) {
 	case LVRM_REG_ADDR_STATUS_1:
 		// Relay state.
+#ifdef LVRM_RLST_FORCED_HARDWARE
+		lvrm_ctx.rlstst = DINFOX_BIT_FORCED_HARDWARE;
+#else
 		lvrm_ctx.rlstst = LOAD_get_output_state();
+#endif
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) lvrm_ctx.rlstst), LVRM_REG_STATUS_1_MASK_RLSTST);
 		break;
 	default:
@@ -87,9 +91,11 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+#ifndef LVRM_RLST_FORCED_HARDWARE
 	LOAD_status_t load_status = LOAD_SUCCESS;
-	uint32_t reg_value = 0;
 	DINFOX_bit_representation_t rlst = DINFOX_BIT_ERROR;
+#endif
+	uint32_t reg_value = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
@@ -98,6 +104,11 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	case LVRM_REG_ADDR_CONTROL_1:
 		// RLST.
 		if ((reg_mask & LVRM_REG_CONTROL_1_MASK_RLST) != 0) {
+			// Check pin mode.
+#ifdef LVRM_RLST_FORCED_HARDWARE
+			status = NODE_ERROR_FORCED_HARDWARE;
+			goto errors;
+#else
 			// Read bit.
 			rlst = DINFOX_read_field(reg_value, LVRM_REG_CONTROL_1_MASK_RLST);
 			// Compare to current state.
@@ -106,6 +117,7 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				load_status = LOAD_set_output_state(rlst);
 				LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 			}
+#endif
 		}
 		break;
 	default:
