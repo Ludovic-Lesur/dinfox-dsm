@@ -62,8 +62,6 @@ void BPSM_init_registers(void) {
 	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_BPSM_reset_analog_data();
-	// Automatic CHEN control enabled by default.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, BPSM_REG_CONTROL_1_MASK_CHMD, BPSM_REG_CONTROL_1_MASK_CHMD);
 	// Init context.
 #ifndef BPSM_CHEN_FORCED_HARDWARE
 	bpsm_ctx.chen_on_seconds_count = 0;
@@ -142,7 +140,7 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		// CHEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_CHEN) != 0) {
 			// Check control mode.
-			if (DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHMD) == 0) {
+			if (DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHMD) != 0) {
 				// Read bit.
 				chen = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHEN);
 				// Compare to current state.
@@ -255,7 +253,7 @@ void BPSM_charge_process(uint32_t process_period_seconds) {
 	// Read control register.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, &reg_control_1);
 	// Check mode.
-	if (DINFOX_read_field(reg_control_1, BPSM_REG_CONTROL_1_MASK_CHMD) != 0) {
+	if (DINFOX_read_field(reg_control_1, BPSM_REG_CONTROL_1_MASK_CHMD) == 0) {
 		// Check source voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &vsrc_mv);
 		ADC1_stack_error();
