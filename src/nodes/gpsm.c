@@ -18,10 +18,9 @@
 
 /*** GPSM local macros ***/
 
-#define GPSM_REG_TIMEOUT_DEFAULT_VALUE						0x00B40078
-
-#define GPSM_REG_TIMEPULSE_CONFIGURATION_0_DEFAULT_VALUE	0x00989680
-#define GPSM_REG_TIMEPULSE_CONFIGURATION_1_DEFAULT_VALUE	0x00000032
+#define GPSM_REG_CONFIGURATION_1_DEFAULT_VALUE	0x00B40078
+#define GPSM_REG_CONFIGURATION_2_DEFAULT_VALUE	0x00989680
+#define GPSM_REG_CONFIGURATION_3_DEFAULT_VALUE	0x00000032
 
 /*** GPSM local structures ***/
 
@@ -144,11 +143,11 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &reg_timeout);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, &reg_timeout);
 	// Reset status flag.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, 0b0, GPSM_REG_STATUS_1_MASK_TFS);
 	// Perform time fix.
-	neom8n_status = NEOM8N_get_time(&gps_time, DINFOX_read_field(reg_timeout, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT), &time_fix_duration);
+	neom8n_status = NEOM8N_get_time(&gps_time, DINFOX_read_field(reg_timeout, GPSM_REG_CONFIGURATION_1_MASK_TIME_TIMEOUT), &time_fix_duration);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 	// Update status flag.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, 0b1, GPSM_REG_STATUS_1_MASK_TFS);
@@ -197,11 +196,11 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read timeout.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, &reg_timeout);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, &reg_timeout);
 	// Reset status flag.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, 0b0, GPSM_REG_STATUS_1_MASK_GFS);
 	// Perform time fix.
-	neom8n_status = NEOM8N_get_position(&gps_position, DINFOX_read_field(reg_timeout, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration);
+	neom8n_status = NEOM8N_get_position(&gps_position, DINFOX_read_field(reg_timeout, GPSM_REG_CONFIGURATION_1_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 	// Update status flag.
 	DINFOX_write_field(&reg_status_1, &reg_status_1_mask, 0b1, GPSM_REG_STATUS_1_MASK_GFS);
@@ -244,12 +243,12 @@ static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
 	status = _GPSM_power_request(1);
 	if (status != NODE_SUCCESS) goto errors;
 	// Read registers.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, &reg_timepulse_configuration_0);
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, &reg_timepulse_configuration_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, &reg_timepulse_configuration_0);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_3, &reg_timepulse_configuration_1);
 	// Set parameters.
 	timepulse_config.active = state;
-	timepulse_config.frequency_hz = DINFOX_read_field(reg_timepulse_configuration_0, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY);
-	timepulse_config.duty_cycle_percent = (uint8_t) DINFOX_read_field(reg_timepulse_configuration_1, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
+	timepulse_config.frequency_hz = DINFOX_read_field(reg_timepulse_configuration_0, GPSM_REG_CONFIGURATION_2_MASK_TP_FREQUENCY);
+	timepulse_config.duty_cycle_percent = (uint8_t) DINFOX_read_field(reg_timepulse_configuration_1, GPSM_REG_CONFIGURATION_3_MASK_TP_DUTY_CYCLE);
 	// Set timepulse.
 	neom8n_status = NEOM8N_configure_timepulse(&timepulse_config);
 	NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
@@ -271,13 +270,13 @@ void GPSM_init_registers(void) {
 	// Init flags.
 	gpsm_ctx.flags.all = 0;
 	// Read init state.
-	GPSM_update_register(GPSM_REG_ADDR_CONFIGURATION);
+	GPSM_update_register(GPSM_REG_ADDR_CONFIGURATION_0);
 	GPSM_update_register(GPSM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_GPSM_reset_analog_data();
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEOUT_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_0_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_TIMEPULSE_CONFIGURATION_1_DEFAULT_VALUE);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_1_DEFAULT_VALUE);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_2_DEFAULT_VALUE);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_3, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_3_DEFAULT_VALUE);
 }
 #endif
 
@@ -290,12 +289,12 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case GPSM_REG_ADDR_CONFIGURATION:
+	case GPSM_REG_ADDR_CONFIGURATION_0:
 		// Active antenna flag.
 #ifdef GPSM_ACTIVE_ANTENNA
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_MASK_AAF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_0_MASK_AAF);
 #else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_MASK_AAF);
+		DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_0_MASK_AAF);
 #endif
 		break;
 	case GPSM_REG_ADDR_STATUS_1:
@@ -439,8 +438,8 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 #endif
 		}
 		break;
-	case GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0:
-	case GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1:
+	case GPSM_REG_ADDR_CONFIGURATION_2:
+	case GPSM_REG_ADDR_CONFIGURATION_3:
 		// Update timepulse signal if running.
 		if (gpsm_ctx.flags.tpen != 0) {
 			// Start timepulse with new settings.
