@@ -7,7 +7,6 @@
 
 #include "s2lp.h"
 
-#include "dma.h"
 #include "exti.h"
 #include "gpio.h"
 #include "lptim.h"
@@ -28,7 +27,7 @@
 #define S2LP_REGISTER_SPI_TRANSFER_SIZE			3
 #define S2LP_COMMAND_SPI_TRANSFER_SIZE			2
 #define S2LP_FIFO_SPI_TRANSFER_SIZE				2
-// State switch timeout.
+// Timeouts.
 #define S2LP_STATE_TIMEOUT_SECONDS				3
 #define S2LP_OSCILLATOR_TIMEOUT_SECONDS			3
 #define S2LP_FIFO_WRITE_TIMEOUT_SECONDS			2
@@ -107,7 +106,7 @@ static uint8_t s2lp_rx_data[S2LP_FIFO_SIZE_BYTES];
 /*** S2LP local functions ***/
 
 /*******************************************************************/
-#define S2LP_abs(a) ((a) > 0 ? (a) : -(a))
+#define _S2LP_abs(a) ((a) > 0 ? (a) : -(a))
 
 #ifdef UHFM
 /*******************************************************************/
@@ -320,8 +319,8 @@ static S2LP_status_t _S2LP_compute_mantissa_exponent_rx_bandwidth(uint32_t rx_ba
 		channel_filter_delta = 0xFFFFFFFF;
 		// Check delta.
 		for (j=0 ; j<S2LP_CHANNEL_FILTER_TABLE_SIZE ; j++) {
-			if (S2LP_abs(channel_filter[j]) < channel_filter_delta) {
-				channel_filter_delta = S2LP_abs(channel_filter[j]);
+			if (_S2LP_abs(channel_filter[j]) < channel_filter_delta) {
+				channel_filter_delta = _S2LP_abs(channel_filter[j]);
 				idx = (idx_tmp + j - 1);
 			}
 		}
@@ -338,7 +337,7 @@ errors:
 #ifdef UHFM
 /*******************************************************************/
 void S2LP_init(void) {
-	// Init SPI and DMA.
+	// Init SPI.
 	SPI1_init();
 	// Configure GPIOs as input
 	GPIO_configure(&GPIO_S2LP_SDN, GPIO_MODE_ANALOG, GPIO_TYPE_OPEN_DRAIN, GPIO_SPEED_LOW, GPIO_PULL_NONE);
@@ -360,7 +359,7 @@ void S2LP_de_init(void) {
 	GPIO_configure(&GPIO_S2LP_GPIO0, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Configure chip select pin.
 	GPIO_write(&GPIO_S2LP_CS, 0);
-	// Release SPI and DMA.
+	// Release SPI.
 	SPI1_de_init();
 }
 #endif
@@ -1271,5 +1270,4 @@ errors:
 	GPIO_write(&GPIO_S2LP_CS, 1); // Set CS pin.
 	return status;
 }
-
-#endif /* UHFM */
+#endif

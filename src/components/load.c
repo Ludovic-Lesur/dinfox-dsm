@@ -22,7 +22,9 @@
 
 /*** LOAD local global variables ***/
 
+#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 static uint8_t load_state = 0xFF;
+#endif
 
 /*** LOAD functions ***/
 

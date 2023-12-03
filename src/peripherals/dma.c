@@ -26,7 +26,7 @@ static DMA_transfer_complete_irq_cb_t dma1_ch6_tc_irq_callback = NULL;
 void __attribute__((optimize("-O0"))) DMA1_Channel4_5_6_7_IRQHandler(void) {
 	// Transfer complete interrupt (TCIF6='1').
 	if (((DMA1 -> ISR) & (0b1 << 21)) != 0) {
-		// Switch DMA buffer without decoding.
+		// Call transfer complete callback.
 		if ((((DMA1 -> CCR6) & (0b1 << 1)) != 0) && (dma1_ch6_tc_irq_callback != NULL)) {
 			dma1_ch6_tc_irq_callback();
 		}
