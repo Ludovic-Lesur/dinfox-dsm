@@ -27,6 +27,8 @@
 static const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST] = {
 	COMMON_REG_ACCESS
 	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_WRITE,
 	DINFOX_REG_ACCESS_READ_ONLY,
 	DINFOX_REG_ACCESS_READ_ONLY
@@ -78,6 +80,17 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status);
+#endif
+
+#if (defined LVRM) && (defined LVRM_MODE_BMS)
+/*!******************************************************************
+ * \fn NODE_status_t LVRM_bms_process(NODE_address_t lvrm_node_addr)
+ * \brief BMS function.
+ * \param[in]  	none
+ * \param[out] 	none
+ * \retval		Function execution status.
+ *******************************************************************/
+NODE_status_t LVRM_bms_process(void);
 #endif
 
 #endif /* __LVRM_H__ */

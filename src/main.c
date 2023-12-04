@@ -25,6 +25,7 @@
 #include "power.h"
 // Nodes.
 #include "bpsm.h"
+#include "lvrm.h"
 // Applicative.
 #include "at_bus.h"
 #include "error.h"
@@ -201,6 +202,10 @@ int main(void) {
 	_XM_init_context();
 #endif
 	_XM_init_hw();
+	// Local variables.
+#if ((defined LVRM) && (defined LVRM_MODE_BMS)) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
+	NODE_status_t node_status = NODE_SUCCESS;
+#endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
 	_XM_static_measurements();
 #endif
@@ -233,7 +238,15 @@ int main(void) {
 				// Reset count.
 				xm_ctx.static_measurements_seconds_count = 0;
 				_XM_static_measurements();
+#if (defined LVRM) && (defined LVRM_MODE_BMS)
+				node_status = LVRM_bms_process();
+				NODE_stack_error();
+#endif
 			}
+#endif
+#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
+			node_status = BPSM_charge_process(RTC_WAKEUP_PERIOD_SECONDS);
+			NODE_stack_error();
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 			// Increment seconds count.
@@ -244,9 +257,6 @@ int main(void) {
 				xm_ctx.iout_indicator_seconds_count = 0;
 				_XM_iout_indicator();
 			}
-#endif
-#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
-			BPSM_charge_process(RTC_WAKEUP_PERIOD_SECONDS);
 #endif
 		}
 		// Perform command task.

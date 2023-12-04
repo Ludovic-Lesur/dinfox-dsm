@@ -139,6 +139,10 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	case BPSM_REG_ADDR_CONTROL_1:
 		// CHEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_CHEN) != 0) {
+#ifdef BPSM_CHEN_FORCED_HARDWARE
+			status = NODE_ERROR_FORCED_HARDWARE;
+			goto errors;
+#else
 			// Check control mode.
 			if (DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHMD) != 0) {
 				// Read bit.
@@ -154,6 +158,7 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				goto errors;
 			}
 		}
+#endif
 		// BKEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_BKEN) != 0) {
 			// Check pin mode.
@@ -245,8 +250,9 @@ errors:
 
 #if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
 /*******************************************************************/
-void BPSM_charge_process(uint32_t process_period_seconds) {
+NODE_status_t BPSM_charge_process(uint32_t process_period_seconds) {
 	// Local variables.
+	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t reg_control_1 = 0;
 	uint32_t vsrc_mv = 0;
@@ -256,7 +262,7 @@ void BPSM_charge_process(uint32_t process_period_seconds) {
 	if (DINFOX_read_field(reg_control_1, BPSM_REG_CONTROL_1_MASK_CHMD) == 0) {
 		// Check source voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &vsrc_mv);
-		ADC1_stack_error();
+		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		// Check voltage.
 		if (vsrc_mv >= BPSM_CHEN_VSRC_THRESHOLD_MV) {
 			// Check toggle period.
@@ -277,5 +283,7 @@ void BPSM_charge_process(uint32_t process_period_seconds) {
 			bpsm_ctx.chen_on_seconds_count = 0;
 		}
 	}
+errors:
+	return status;
 }
 #endif

@@ -88,9 +88,9 @@ NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status);
  * \brief BPSM automatic charge control process.
  * \param[in]  	process_period: Function call period in seconds.
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void BPSM_charge_process(uint32_t process_period_seconds);
+NODE_status_t BPSM_charge_process(uint32_t process_period_seconds);
 #endif
 
 #endif /* __BPSM_H__ */
