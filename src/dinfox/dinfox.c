@@ -14,41 +14,48 @@
 
 /*** DINFOX local macros ***/
 
-#define DINFOX_SIGN_SIZE_BITS					1
+#define DINFOX_SIGN_SIZE_BITS						1
 
-#define DINFOX_TIME_UNIT_SIZE_BITS				2
-#define DINFOX_TIME_VALUE_SIZE_BITS				6
+#define DINFOX_TIME_UNIT_SIZE_BITS					2
+#define DINFOX_TIME_VALUE_SIZE_BITS					6
 
-#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS		7
+#define DINFOX_TEMPERATURE_VALUE_SIZE_BITS			7
 
-#define DINFOX_VOLTAGE_UNIT_SIZE_BITS			1
-#define DINFOX_VOLTAGE_VALUE_SIZE_BITS			15
+#define DINFOX_VOLTAGE_UNIT_SIZE_BITS				1
+#define DINFOX_VOLTAGE_VALUE_SIZE_BITS				15
 
-#define DINFOX_CURRENT_UNIT_SIZE_BITS			2
-#define DINFOX_CURRENT_VALUE_SIZE_BITS			14
+#define DINFOX_CURRENT_UNIT_SIZE_BITS				2
+#define DINFOX_CURRENT_VALUE_SIZE_BITS				14
 
-#define DINFOX_ELECTRICAL_POWER_UNIT_SIZE_BITS	2
-#define DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS	13
+#define DINFOX_ELECTRICAL_POWER_UNIT_SIZE_BITS		2
+#define DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS		13
 
-#define DINFOX_POWER_FACTOR_VALUE_SIZE_BITS		7
+#define DINFOX_ELECTRICAL_ENERGY_UNIT_SIZE_BITS		2
+#define DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS	13
 
-#define DINFOX_SECONDS_PER_MINUTE				60
-#define DINFOX_MINUTES_PER_HOUR					60
-#define DINFOX_HOURS_PER_DAY					24
+#define DINFOX_POWER_FACTOR_VALUE_SIZE_BITS			7
 
-#define DINFOX_MV_PER_DV						100
+#define DINFOX_SECONDS_PER_MINUTE					60
+#define DINFOX_MINUTES_PER_HOUR						60
+#define DINFOX_HOURS_PER_DAY						24
 
-#define DINFOX_UA_PER_DMA						100
-#define DINFOX_DMA_PER_MA						10
-#define DINFOX_MA_PER_DA						100
+#define DINFOX_MV_PER_DV							100
 
-#define DINFOX_MW_PER_DW						100
-#define DINFOX_DW_PER_W							10
-#define DINFOX_W_PER_DAW						10
+#define DINFOX_UA_PER_DMA							100
+#define DINFOX_DMA_PER_MA							10
+#define DINFOX_MA_PER_DA							100
 
-#define DINFOX_RF_POWER_OFFSET					174
+#define DINFOX_MW_MVA_PER_DW_DVA					100
+#define DINFOX_DW_DVA_PER_W_VA						10
+#define DINFOX_W_VA_PER_DAW_DAVA					10
 
-#define DINFOX_YEAR_OFFSET						2000
+#define DINFOX_MWH_MVAH_PER_DWH_DVAH				100
+#define DINFOX_DWH_DVAH_PER_WH_VAH					10
+#define DINFOX_WH_VAH_PER_DAWH_DAVAH				10
+
+#define DINFOX_RF_POWER_OFFSET						174
+
+#define DINFOX_YEAR_OFFSET							2000
 
 /*** DINFOX local structures ***/
 
@@ -82,11 +89,19 @@ typedef enum {
 
 /*******************************************************************/
 typedef enum {
-	DINFOX_ELECTRICAL_POWER_UNIT_MW = 0,
-	DINFOX_ELECTRICAL_POWER_UNIT_DW,
-	DINFOX_ELECTRICAL_POWER_UNIT_W,
-	DINFOX_ELECTRICAL_POWER_UNIT_DAW
+	DINFOX_ELECTRICAL_POWER_UNIT_MW_MVA = 0,
+	DINFOX_ELECTRICAL_POWER_UNIT_DW_DVA,
+	DINFOX_ELECTRICAL_POWER_UNIT_W_VA,
+	DINFOX_ELECTRICAL_POWER_UNIT_DAW_DAVA
 } DINFOX_electrical_power_unit_t;
+
+/*******************************************************************/
+typedef enum {
+	DINFOX_ELECTRICAL_ENERGY_UNIT_MWH_MVAH = 0,
+	DINFOX_ELECTRICAL_ENERGY_UNIT_DWH_DVAH,
+	DINFOX_ELECTRICAL_ENERGY_UNIT_WH_VAH,
+	DINFOX_ELECTRICAL_ENERGY_UNIT_DAWH_DAVAH
+} DINFOX_electrical_energy_unit_t;
 
 /*******************************************************************/
 typedef union {
@@ -133,6 +148,16 @@ typedef union {
 		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_electrical_power_t;
+
+/*******************************************************************/
+typedef union {
+	DINFOX_electrical_energy_representation_t representation;
+	struct {
+		unsigned value : DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS;
+		DINFOX_electrical_power_unit_t unit : DINFOX_ELECTRICAL_ENERGY_UNIT_SIZE_BITS;
+		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
+	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
+} DINFOX_electrical_energy_t;
 
 /*******************************************************************/
 typedef union {
@@ -395,31 +420,31 @@ uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current) {
 }
 
 /*******************************************************************/
-DINFOX_electrical_power_representation_t DINFOX_convert_mw(int32_t electrical_power_mw) {
+DINFOX_electrical_power_representation_t DINFOX_convert_mw_mva(int32_t electrical_power_mw_mva) {
 	// Local variables.
 	DINFOX_electrical_power_t dinfox_electrical_power;
 	uint32_t absolute_value = 0;
 	// Read absolute value.
-	MATH_abs(electrical_power_mw, &absolute_value);
+	MATH_abs(electrical_power_mw_mva, &absolute_value);
 	// Select sign.
-	dinfox_electrical_power.sign = (electrical_power_mw < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
+	dinfox_electrical_power.sign = (electrical_power_mw_mva < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
 	// Select unit.
 	if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
-		dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_MW;
+		dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_MW_MVA;
 	}
 	else {
-		absolute_value /= DINFOX_MW_PER_DW;
+		absolute_value /= DINFOX_MW_MVA_PER_DW_DVA;
 		if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
-			dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DW;
+			dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DW_DVA;
 		}
 		else {
-			absolute_value /= DINFOX_DW_PER_W;
+			absolute_value /= DINFOX_DW_DVA_PER_W_VA;
 			if (absolute_value < (0b1 << DINFOX_ELECTRICAL_POWER_VALUE_SIZE_BITS)) {
-				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_W;
+				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_W_VA;
 			}
 			else {
-				absolute_value /= DINFOX_W_PER_DAW;
-				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DAW;
+				absolute_value /= DINFOX_W_VA_PER_DAW_DAVA;
+				dinfox_electrical_power.unit = DINFOX_ELECTRICAL_POWER_UNIT_DAW_DAVA;
 			}
 		}
 	}
@@ -428,13 +453,13 @@ DINFOX_electrical_power_representation_t DINFOX_convert_mw(int32_t electrical_po
 }
 
 /*******************************************************************/
-int32_t DINFOX_get_mw(DINFOX_electrical_power_representation_t dinfox_electrical_power) {
+int32_t DINFOX_get_mw_mva(DINFOX_electrical_power_representation_t dinfox_electrical_power) {
 	// Local variables.
-	int32_t electrical_power_mw = 0;
+	int32_t electrical_power_mw_mva = 0;
 	int32_t absolute_value = 0;
 	int32_t sign_multiplicator = 0;
 	DINFOX_electrical_power_representation_t local_dinfox_electrical_power = dinfox_electrical_power;
-	DINFOX_current_unit_t unit = DINFOX_CURRENT_UNIT_UA;
+	DINFOX_electrical_power_unit_t unit = DINFOX_ELECTRICAL_POWER_UNIT_MW_MVA;
 	DINFOX_sign_t sign = DINFOX_SIGN_POSITIVE;
 	// Parse fields.
 	sign = ((DINFOX_electrical_power_t*) &local_dinfox_electrical_power) -> sign;
@@ -444,20 +469,86 @@ int32_t DINFOX_get_mw(DINFOX_electrical_power_representation_t dinfox_electrical
 	sign_multiplicator = (sign == DINFOX_SIGN_NEGATIVE) ? (-1) : (1);
 	// Compute seconds.
 	switch (unit) {
-	case DINFOX_ELECTRICAL_POWER_UNIT_MW:
-		electrical_power_mw = (absolute_value * sign_multiplicator);
+	case DINFOX_ELECTRICAL_POWER_UNIT_MW_MVA:
+		electrical_power_mw_mva = (absolute_value * sign_multiplicator);
 		break;
-	case DINFOX_ELECTRICAL_POWER_UNIT_DW:
-		electrical_power_mw = (DINFOX_MW_PER_DW * absolute_value * sign_multiplicator);
+	case DINFOX_ELECTRICAL_POWER_UNIT_DW_DVA:
+		electrical_power_mw_mva = (DINFOX_MW_MVA_PER_DW_DVA * absolute_value * sign_multiplicator);
 		break;
-	case DINFOX_ELECTRICAL_POWER_UNIT_W:
-		electrical_power_mw = (DINFOX_MW_PER_DW * DINFOX_DW_PER_W * absolute_value * sign_multiplicator);
+	case DINFOX_ELECTRICAL_POWER_UNIT_W_VA:
+		electrical_power_mw_mva = (DINFOX_MW_MVA_PER_DW_DVA * DINFOX_DW_DVA_PER_W_VA * absolute_value * sign_multiplicator);
 		break;
 	default:
-		electrical_power_mw = (DINFOX_MW_PER_DW * DINFOX_DW_PER_W * DINFOX_W_PER_DAW * absolute_value * sign_multiplicator);
+		electrical_power_mw_mva = (DINFOX_MW_MVA_PER_DW_DVA * DINFOX_DW_DVA_PER_W_VA * DINFOX_W_VA_PER_DAW_DAVA * absolute_value * sign_multiplicator);
 		break;
 	}
-	return electrical_power_mw;
+	return electrical_power_mw_mva;
+}
+
+/*******************************************************************/
+DINFOX_electrical_energy_representation_t DINFOX_convert_mwh_mvah(int32_t electrical_energy_mwh_mvah) {
+	// Local variables.
+	DINFOX_electrical_energy_t dinfox_electrical_energy;
+	uint32_t absolute_value = 0;
+	// Read absolute value.
+	MATH_abs(electrical_energy_mwh_mvah, &absolute_value);
+	// Select sign.
+	dinfox_electrical_energy.sign = (electrical_energy_mwh_mvah < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
+	// Select unit.
+	if (absolute_value < (0b1 << DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS)) {
+		dinfox_electrical_energy.unit = DINFOX_ELECTRICAL_ENERGY_UNIT_MWH_MVAH;
+	}
+	else {
+		absolute_value /= DINFOX_MWH_MVAH_PER_DWH_DVAH;
+		if (absolute_value < (0b1 << DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS)) {
+			dinfox_electrical_energy.unit = DINFOX_ELECTRICAL_ENERGY_UNIT_DWH_DVAH;
+		}
+		else {
+			absolute_value /= DINFOX_DWH_DVAH_PER_WH_VAH;
+			if (absolute_value < (0b1 << DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS)) {
+				dinfox_electrical_energy.unit = DINFOX_ELECTRICAL_ENERGY_UNIT_WH_VAH;
+			}
+			else {
+				absolute_value /= DINFOX_WH_VAH_PER_DAWH_DAVAH;
+				dinfox_electrical_energy.unit = DINFOX_ELECTRICAL_ENERGY_UNIT_DAWH_DAVAH;
+			}
+		}
+	}
+	dinfox_electrical_energy.value = absolute_value;
+	return (dinfox_electrical_energy.representation);
+}
+
+/*******************************************************************/
+int32_t DINFOX_get_mwh_mvah(DINFOX_electrical_energy_representation_t dinfox_electrical_energy) {
+	// Local variables.
+	int32_t electrical_energy_mwh_mvah = 0;
+	int32_t absolute_value = 0;
+	int32_t sign_multiplicator = 0;
+	DINFOX_electrical_energy_representation_t local_dinfox_electrical_energy = dinfox_electrical_energy;
+	DINFOX_electrical_energy_unit_t unit = DINFOX_ELECTRICAL_ENERGY_UNIT_MWH_MVAH;
+	DINFOX_sign_t sign = DINFOX_SIGN_POSITIVE;
+	// Parse fields.
+	sign = ((DINFOX_electrical_energy_t*) &local_dinfox_electrical_energy) -> sign;
+	unit = ((DINFOX_electrical_energy_t*) &local_dinfox_electrical_energy) -> unit;
+	absolute_value = (int32_t) ((DINFOX_electrical_energy_t*) &local_dinfox_electrical_energy) -> value;
+	// Compute multiplicator.
+	sign_multiplicator = (sign == DINFOX_SIGN_NEGATIVE) ? (-1) : (1);
+	// Compute seconds.
+	switch (unit) {
+	case DINFOX_ELECTRICAL_ENERGY_UNIT_MWH_MVAH:
+		electrical_energy_mwh_mvah = (absolute_value * sign_multiplicator);
+		break;
+	case DINFOX_ELECTRICAL_ENERGY_UNIT_DWH_DVAH:
+		electrical_energy_mwh_mvah = (DINFOX_MWH_MVAH_PER_DWH_DVAH * absolute_value * sign_multiplicator);
+		break;
+	case DINFOX_ELECTRICAL_ENERGY_UNIT_WH_VAH:
+		electrical_energy_mwh_mvah = (DINFOX_MWH_MVAH_PER_DWH_DVAH * DINFOX_DWH_DVAH_PER_WH_VAH * absolute_value * sign_multiplicator);
+		break;
+	default:
+		electrical_energy_mwh_mvah = (DINFOX_MWH_MVAH_PER_DWH_DVAH * DINFOX_DWH_DVAH_PER_WH_VAH * DINFOX_WH_VAH_PER_DAWH_DAVAH * absolute_value * sign_multiplicator);
+		break;
+	}
+	return electrical_energy_mwh_mvah;
 }
 
 /*******************************************************************/
