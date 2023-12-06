@@ -14,6 +14,11 @@
 #include "rrm_reg.h"
 #include "node.h"
 
+/*** RRM local macros ***/
+
+// Note: IOUT measurement uses LT6106 and OPA187 chips whose minimum operating voltage is 4.5V.
+#define RRM_IOUT_MEASUREMENT_VSH_MIN_MV		4500
+
 /*** RRM local structures ***/
 
 /*******************************************************************/
@@ -139,6 +144,7 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	uint32_t vsh_mv = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
@@ -154,23 +160,27 @@ NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_exit_error(NODE_ERROR_BASE_POWER);
 	// Check status.
 	if (adc1_status == ADC_SUCCESS) {
-		// Relay common voltage.
+		// Regulator input voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VIN);
 		}
-		// Relay output voltage.
+		// Regulator output voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), RRM_REG_ANALOG_DATA_1_MASK_VOUT);
 		}
-		// Relay output current.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), RRM_REG_ANALOG_DATA_2_MASK_IOUT);
+		vsh_mv = adc_data;
+		// Check IOUT measurement validity.
+		if (vsh_mv >= RRM_IOUT_MEASUREMENT_VSH_MIN_MV) {
+			// Regulator output current.
+			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
+			ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+			if (adc1_status == ADC_SUCCESS) {
+				DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), RRM_REG_ANALOG_DATA_2_MASK_IOUT);
+			}
 		}
 		// Write registers.
 		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);

@@ -14,6 +14,11 @@
 #include "lvrm_reg.h"
 #include "node.h"
 
+/*** LVRM local macros ***/
+
+// Note: IOUT measurement uses LT6106, OPA187 and optionally TMUX7219 chips whose minimum operating voltage is 4.5V.
+#define LVRM_IOUT_MEASUREMENT_VCOM_MIN_MV	4500
+
 /*** LVRM local structures ***/
 
 /*******************************************************************/
@@ -159,6 +164,7 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
+	uint32_t vcom_mv = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
@@ -180,17 +186,21 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), LVRM_REG_ANALOG_DATA_1_MASK_VCOM);
 		}
+		vcom_mv = adc_data;
 		// Relay output voltage.
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VOUT_MV, &adc_data);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		if (adc1_status == ADC_SUCCESS) {
 			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), LVRM_REG_ANALOG_DATA_1_MASK_VOUT);
 		}
-		// Relay output current.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
+		// Check IOUT measurement validity.
+		if (vcom_mv >= LVRM_IOUT_MEASUREMENT_VCOM_MIN_MV) {
+			// Relay output current.
+			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
+			ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+			if (adc1_status == ADC_SUCCESS) {
+				DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
+			}
 		}
 		// Write registers.
 		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
