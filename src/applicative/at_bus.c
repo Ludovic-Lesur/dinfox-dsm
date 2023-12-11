@@ -813,14 +813,14 @@ errors:
 /*******************************************************************/
 static void _AT_BUS_so_callback(void) {
 	// Local variables.
-	uint32_t ep_config_2 = 0;
-	uint32_t ep_config_2_mask = 0;
+	uint32_t reg_config_2 = 0;
+	uint32_t reg_config_2_mask = 0;
 	// Configure message.
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b01, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b1, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b1, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE, UHFM_REG_CONFIGURATION_2_MASK_MSGT);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(0);
 	return;
@@ -835,8 +835,8 @@ static void _AT_BUS_sb_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	int32_t ul_bit = 0;
 	int32_t bidir_flag = 0;
-	uint32_t ep_config_2 = 0;
-	uint32_t ep_config_2_mask = 0;
+	uint32_t reg_config_2 = 0;
+	uint32_t reg_config_2_mask = 0;
 	// First try with 2 parameters.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, AT_BUS_CHAR_SEPARATOR, &ul_bit);
 	if (parser_status == PARSER_SUCCESS) {
@@ -850,12 +850,12 @@ static void _AT_BUS_sb_callback(void) {
 		PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	}
 	// Configure message.
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b01, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b0, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BIT0 + ul_bit), UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b0, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BIT0 + ul_bit), UHFM_REG_CONFIGURATION_2_MASK_MSGT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_CONFIGURATION_2_MASK_BF);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(bidir_flag);
 	return;
@@ -874,8 +874,8 @@ static void _AT_BUS_sf_callback(void) {
 	uint8_t ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
 	uint8_t ul_payload_size = 0;
 	int32_t bidir_flag = 0;
-	uint32_t ep_config_2 = 0;
-	uint32_t ep_config_2_mask = 0;
+	uint32_t reg_config_2 = 0;
+	uint32_t reg_config_2_mask = 0;
 	// First try with 2 parameters.
 	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
 	if (parser_status == PARSER_SUCCESS) {
@@ -889,13 +889,13 @@ static void _AT_BUS_sf_callback(void) {
 		PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	}
 	// Configure message.
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b01, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, 0b0, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BYTE_ARRAY), UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_MSGT);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_BF);
-	DINFOX_write_field(&ep_config_2, &ep_config_2_mask, (uint32_t) ul_payload_size, UHFM_REG_SIGFOX_EP_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b0, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BYTE_ARRAY), UHFM_REG_CONFIGURATION_2_MASK_MSGT);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_CONFIGURATION_2_MASK_BF);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) ul_payload_size, UHFM_REG_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_2, ep_config_2_mask, ep_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
 	// Write uplink payload.
 	NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
 	// Send Sigfox message.
@@ -916,8 +916,8 @@ static void _AT_BUS_tm_callback(void) {
 	NODE_status_t node_status = NODE_SUCCESS;
 	int32_t rc_index = 0;
 	int32_t test_mode = 0;
-	uint32_t reg_ep_config_0 = 0;
-	uint32_t reg_ep_config_0_mask = 0;
+	uint32_t reg_config_0 = 0;
+	uint32_t reg_config_0_mask = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	// Read RC parameter.
@@ -927,11 +927,11 @@ static void _AT_BUS_tm_callback(void) {
 	parser_status =  PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &test_mode);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure test mode.
-	DINFOX_write_field(&reg_ep_config_0, &reg_ep_config_0_mask, (uint32_t) rc_index, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_RC);
-	DINFOX_write_field(&reg_ep_config_0, &reg_ep_config_0_mask, (uint32_t) test_mode, UHFM_REG_SIGFOX_EP_CONFIGURATION_0_MASK_TEST_MODE);
+	DINFOX_write_field(&reg_config_0, &reg_config_0_mask, (uint32_t) rc_index, UHFM_REG_CONFIGURATION_0_MASK_RC);
+	DINFOX_write_field(&reg_config_0, &reg_config_0_mask, (uint32_t) test_mode, UHFM_REG_CONFIGURATION_0_MASK_TEST_MODE);
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b1, UHFM_REG_CONTROL_1_MASK_TTRG);
 	// Write registers.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_CONFIGURATION_0, reg_ep_config_0_mask, reg_ep_config_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_config_0_mask, reg_config_0);
 	// Trigger test mode.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
@@ -1071,8 +1071,8 @@ static void _AT_BUS_time_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
 	int32_t timeout_seconds = 0;
-	uint32_t reg_timeout = 0;
-	uint32_t reg_timeout_mask = 0;
+	uint32_t reg_config_1 = 0;
+	uint32_t reg_config_1_mask = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status = 0;
@@ -1084,10 +1084,10 @@ static void _AT_BUS_time_callback(void) {
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &timeout_seconds);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure time acquisition.
-	DINFOX_write_field(&reg_timeout, &reg_timeout_mask, (uint32_t) timeout_seconds, GPSM_REG_TIMEOUT_MASK_TIME_TIMEOUT);
+	DINFOX_write_field(&reg_config_1, &reg_config_1_mask, (uint32_t) timeout_seconds, GPSM_REG_CONFIGURATION_1_MASK_TIME_TIMEOUT);
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b1, GPSM_REG_CONTROL_1_MASK_TTRG);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, reg_timeout_mask, reg_timeout);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, reg_config_1_mask, reg_config_1);
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
@@ -1165,8 +1165,8 @@ static void _AT_BUS_gps_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	NODE_status_t node_status = NODE_SUCCESS;
 	int32_t timeout_seconds = 0;
-	uint32_t reg_timeout = 0;
-	uint32_t reg_timeout_mask = 0;
+	uint32_t reg_config_1 = 0;
+	uint32_t reg_config_1_mask = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	uint32_t reg_status = 0;
@@ -1178,10 +1178,10 @@ static void _AT_BUS_gps_callback(void) {
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &timeout_seconds);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure GPS acquisition.
-	DINFOX_write_field(&reg_timeout, &reg_timeout_mask, (uint32_t) timeout_seconds, GPSM_REG_TIMEOUT_MASK_GEOLOC_TIMEOUT);
+	DINFOX_write_field(&reg_config_1, &reg_config_1_mask, (uint32_t) timeout_seconds, GPSM_REG_CONFIGURATION_1_MASK_GEOLOC_TIMEOUT);
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b1, GPSM_REG_CONTROL_1_MASK_GTRG);
 	// Write configuration.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_TIMEOUT, reg_timeout_mask, reg_timeout);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, reg_config_1_mask, reg_config_1);
 	// Start GPS acquisition.
 	_AT_BUS_reply_add_string("GPS running...");
 	_AT_BUS_reply_send();
@@ -1251,10 +1251,10 @@ static void _AT_BUS_pulse_callback(void) {
 	int32_t active = 0;
 	int32_t frequency_hz = 0;
 	int32_t duty_cycle_percent;
-	uint32_t reg_timepulse_configuration_0 = 0;
-	uint32_t reg_timepulse_configuration_0_mask = 0;
-	uint32_t reg_timepulse_configuration_1 = 0;
-	uint32_t reg_timepulse_configuration_1_mask = 0;
+	uint32_t reg_config_2 = 0;
+	uint32_t reg_config_2_mask = 0;
+	uint32_t reg_config_3 = 0;
+	uint32_t reg_config_3_mask = 0;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_control_1_mask = 0;
 	// Read parameters.
@@ -1265,13 +1265,13 @@ static void _AT_BUS_pulse_callback(void) {
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_DECIMAL, STRING_CHAR_NULL, &duty_cycle_percent);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure timepulse signal.
-	DINFOX_write_field(&reg_timepulse_configuration_0, &reg_timepulse_configuration_0_mask, (uint32_t) frequency_hz, GPSM_REG_TIMEPULSE_CONFIGURATION_0_MASK_FREQUENCY);
-	DINFOX_write_field(&reg_timepulse_configuration_1, &reg_timepulse_configuration_1_mask, (uint32_t) duty_cycle_percent, GPSM_REG_TIMEPULSE_CONFIGURATION_1_MASK_DUTY_CYCLE);
+	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) frequency_hz, GPSM_REG_CONFIGURATION_2_MASK_TP_FREQUENCY);
+	DINFOX_write_field(&reg_config_3, &reg_config_3_mask, (uint32_t) duty_cycle_percent, GPSM_REG_RADIO_TEST_0_MASK_TP_DUTY_CYCLE);
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) active, GPSM_REG_CONTROL_1_MASK_TPEN);
 	// Write configuration.
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_0, reg_timepulse_configuration_0_mask, reg_timepulse_configuration_0);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
-	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_TIMEPULSE_CONFIGURATION_1, reg_timepulse_configuration_1_mask, reg_timepulse_configuration_1);
+	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_3, reg_config_3_mask, reg_config_3);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Control timepulse output.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);

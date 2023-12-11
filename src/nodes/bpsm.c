@@ -85,8 +85,8 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 		break;
 	case BPSM_REG_ADDR_CONFIGURATION_1:
 		// CHEN threshold and toggle period.
-		DINFOX_write_field(&reg_value, &reg_mask, BPSM_CHEN_VSRC_THRESHOLD_MV, BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
-		DINFOX_write_field(&reg_value, &reg_mask, BPSM_CHEN_TOGGLE_PERIOD_SECONDS, BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
+		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
+		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS), BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
 		break;
 	case BPSM_REG_ADDR_STATUS_1:
 		// Charge status.

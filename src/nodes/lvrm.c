@@ -85,8 +85,8 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 		break;
 	case LVRM_REG_ADDR_CONFIGURATION_1:
 		// VBATT thresholds.
-		DINFOX_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV, LVRM_REG_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD);
-		DINFOX_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REG_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD);
+		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(LVRM_BMS_VBATT_LOW_THRESHOLD_MV), LVRM_REG_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD);
+		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(LVRM_BMS_VBATT_HIGH_THRESHOLD_MV), LVRM_REG_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD);
 		break;
 	case LVRM_REG_ADDR_STATUS_1:
 		// Relay state.

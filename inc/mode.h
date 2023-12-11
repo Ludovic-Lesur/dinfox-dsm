@@ -8,11 +8,12 @@
 #ifndef __MODE_H__
 #define __MODE_H__
 
-/*** AT commands mode ***/
+/*** Board modes ***/
 
-//#define ATM	// AT command mode.
+//#define ATM
+//#define DEBUG
 
-/*** Specific nodes options ***/
+/*** Board options ***/
 
 #ifdef LVRM
 //#define LVRM_RLST_FORCED_HARDWARE
@@ -60,9 +61,5 @@
 #ifdef RRM
 //#define RRM_REN_FORCED_HARDWARE
 #endif
-
-/*** Debug mode ***/
-
-//#define DEBUG		// Use programming pins for debug purpose if defined.
 
 #endif /* __MODE_H__ */
