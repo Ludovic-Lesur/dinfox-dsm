@@ -129,7 +129,9 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	DINFOX_bit_representation_t bken = DINFOX_BIT_ERROR;
 #endif
+#ifndef BPSM_CHEN_FORCED_HARDWARE
 	DINFOX_bit_representation_t chen = DINFOX_BIT_ERROR;
+#endif
 	uint32_t reg_value = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
@@ -157,8 +159,8 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				status = NODE_ERROR_FORCED_SOFTWARE;
 				goto errors;
 			}
-		}
 #endif
+		}
 		// BKEN.
 		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_BKEN) != 0) {
 			// Check pin mode.
