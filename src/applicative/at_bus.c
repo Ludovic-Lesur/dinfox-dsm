@@ -41,8 +41,10 @@
 #define AT_BUS_STRING_VALUE_BUFFER_SIZE		16
 #define AT_BUS_FRAME_END					STRING_CHAR_CR
 #define AT_BUS_REPLY_TAB					"     "
-#if (defined ATM) && (defined UHFM)
+#if (defined ATM) && ((defined UHFM) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define AT_BUS_COMMAND_NVM
+#endif
+#if (defined ATM) && (defined UHFM)
 #define AT_BUS_COMMAND_SIGFOX_EP_LIB
 #define AT_BUS_COMMAND_SIGFOX_ADDON_RFP
 #define AT_BUS_COMMAND_CW
@@ -147,7 +149,7 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 	{PARSER_MODE_COMMAND, "AT$ADC?", STRING_NULL, "Get ADC data", _AT_BUS_adc_callback},
 #endif
 #if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
-	{PARSER_MODE_HEADER,  "AT$NVMR=", "address[dec]", "Read NVM byte", _AT_BUS_nvm_read_callback},
+	{PARSER_MODE_HEADER,  "AT$NVMR=", "address[hex]", "Read NVM byte", _AT_BUS_nvm_read_callback},
 	{PARSER_MODE_HEADER, "AT$NVMW=", "address[hex],value[hex]", "Write NVM byte", _AT_BUS_nvm_write_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
@@ -506,17 +508,17 @@ static void _AT_BUS_adc_callback(void) {
 	// Output current.
 #ifdef LVRM
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, &reg_analog_data_2);
-	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(reg_analog_data_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT));
+	value = (int32_t) DINFOX_get_ua((DINFOX_current_representation_t) DINFOX_read_field(reg_analog_data_2, LVRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
 #ifdef DDRM
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REG_ADDR_ANALOG_DATA_2, &reg_analog_data_2);
-	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(reg_analog_data_2, DDRM_REG_ANALOG_DATA_2_MASK_IOUT));
+	value = (int32_t) DINFOX_get_ua((DINFOX_current_representation_t) DINFOX_read_field(reg_analog_data_2, DDRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
 #ifdef RRM
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REG_ADDR_ANALOG_DATA_2, &reg_analog_data_2);
-	value = (int32_t) DINFOX_get_mv((DINFOX_voltage_representation_t) DINFOX_read_field(reg_analog_data_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT));
+	value = (int32_t) DINFOX_get_ua((DINFOX_current_representation_t) DINFOX_read_field(reg_analog_data_2, RRM_REG_ANALOG_DATA_2_MASK_IOUT));
 	_AT_BUS_reply_add_string("Iout=");
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

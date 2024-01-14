@@ -24,6 +24,7 @@
 /*******************************************************************/
 typedef struct {
 	DINFOX_bit_representation_t rlstst;
+	uint32_t lt6106_offset_current_ua;
 } LVRM_context_t;
 
 /*** LVRM local global variables ***/
@@ -38,6 +39,8 @@ static LVRM_context_t lvrm_ctx;
 /*******************************************************************/
 static void _LVRM_reset_analog_data(void) {
 	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t lt6106_offset_current_ma = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
@@ -49,6 +52,10 @@ static void _LVRM_reset_analog_data(void) {
 	// IOUT.
 	DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
+	// Read LT6106 offset current.
+	nvm_status = NVM_read_byte(NVM_ADDRESS_LT6106_OFFSET_CURRENT_MA, &lt6106_offset_current_ma);
+	NVM_stack_error();
+	lvrm_ctx.lt6106_offset_current_ua = (nvm_status == NVM_SUCCESS) ? (1000 * ((uint32_t) lt6106_offset_current_ma)) : 0;
 }
 #endif
 
@@ -101,6 +108,7 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 		// Nothing to do for other registers.
 		break;
 	}
+	// Write register.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
 	return status;
 }
@@ -111,11 +119,15 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
+	POWER_status_t power_status = POWER_SUCCESS;
+	ADC_status_t adc1_status = ADC_SUCCESS;
+	NVM_status_t nvm_status = NVM_SUCCESS;
 #if !(defined LVRM_RLST_FORCED_HARDWARE) && !(defined LVRM_MODE_BMS)
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	DINFOX_bit_representation_t rlst = DINFOX_BIT_ERROR;
 #endif
 	uint32_t reg_value = 0;
+	uint32_t output_current_ua = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
@@ -143,6 +155,28 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 			}
 #endif
 #endif
+		}
+		// ZCCT.
+		if ((reg_mask & LVRM_REG_CONTROL_1_MASK_ZCCT) != 0) {
+			// Read bit.
+			if (DINFOX_read_field(reg_value, LVRM_REG_CONTROL_1_MASK_ZCCT) != 0) {
+				// Clear request.
+				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_CONTROL_1, LVRM_REG_CONTROL_1_MASK_ZCCT, 0);
+				// Perform current measurement.
+				power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+				POWER_exit_error(NODE_ERROR_BASE_POWER);
+				adc1_status = ADC1_perform_measurements();
+				ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+				power_status = POWER_disable(POWER_DOMAIN_ANALOG);
+				POWER_exit_error(NODE_ERROR_BASE_POWER);
+				// Get output current.
+				adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &output_current_ua);
+				ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+				// Update offset in NVM and locally (value is rounded to upper mA).
+				NVM_write_byte(NVM_ADDRESS_LT6106_OFFSET_CURRENT_MA, (uint8_t) ((output_current_ua / 1000) + 1));
+				NVM_stack_error();
+				lvrm_ctx.lt6106_offset_current_ua = output_current_ua;
+			}
 		}
 		break;
 	default:
@@ -199,6 +233,8 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
 			ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 			if (adc1_status == ADC_SUCCESS) {
+				// Remove offset.
+				adc_data = (adc_data < lvrm_ctx.lt6106_offset_current_ua) ? 0 : (adc_data - lvrm_ctx.lt6106_offset_current_ua);
 				DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
 			}
 		}
