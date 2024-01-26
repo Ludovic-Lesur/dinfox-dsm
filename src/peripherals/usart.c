@@ -25,7 +25,7 @@
 /*** USART local global variables ***/
 
 #ifdef GPSM
-static USART_character_match_irq_cb_t usart2_cm_irq_callback = NULL;
+static USART_character_match_irq_cb_t usart_cm_irq_callback = NULL;
 #endif
 
 /*** USART local functions ***/
@@ -36,8 +36,8 @@ void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 	// Character match interrupt.
 	if (((USART2 -> ISR) & (0b1 << 17)) != 0) {
 		// Notify upper layer.
-		if ((((USART2 -> CR1) & (0b1 << 14)) != 0) && (usart2_cm_irq_callback != NULL)) {
-			usart2_cm_irq_callback();
+		if ((((USART2 -> CR1) & (0b1 << 14)) != 0) && (usart_cm_irq_callback != NULL)) {
+			usart_cm_irq_callback();
 		}
 		// Clear CM flag.
 		USART2 -> ICR |= (0b1 << 17);
@@ -55,9 +55,15 @@ void __attribute__((optimize("-O0"))) USART2_IRQHandler(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void USART2_init(USART_character_match_irq_cb_t irq_callback) {
+USART_status_t USART2_init(USART_character_match_irq_cb_t irq_callback) {
 	// Local variables.
+	USART_status_t status = USART_SUCCESS;
+	RCC_status_t rcc_status = RCC_SUCCESS;
+	uint32_t usart_clock_hz = 0;
 	uint32_t brr = 0;
+	// Get clock source frequency.
+	rcc_status = RCC_get_frequency_hz(RCC_CLOCK_HSI, &usart_clock_hz);
+	RCC_exit_error(USART_ERROR_BASE_RCC);
 	// Select HSI as peripheral clock.
 	RCC -> CCIPR &= ~(0b11 << 2); // Reset bits 2-3.
 	RCC -> CCIPR |= (0b10 << 2); // USART2SEL='10'.
@@ -65,8 +71,7 @@ void USART2_init(USART_character_match_irq_cb_t irq_callback) {
 	RCC -> APB1ENR |= (0b1 << 17); // USART2EN='1'.
 	// Configure peripheral.
 	USART2 -> CR3 |= (0b1 << 12); // No overrun detection (OVRDIS='0').
-	brr = (RCC_HSI_FREQUENCY_KHZ * 1000);
-	brr /= USART_BAUD_RATE;
+	brr = (usart_clock_hz / USART_BAUD_RATE);
 	USART2 -> BRR = (brr & 0x000FFFFF); // BRR = (fCK)/(baud rate).
 	// Configure character match interrupt and DMA.
 	USART2 -> CR2 |= (STRING_CHAR_LF << 24); // LF character used to trigger CM interrupt.
@@ -80,7 +85,9 @@ void USART2_init(USART_character_match_irq_cb_t irq_callback) {
 	GPIO_configure(&GPIO_USART2_TX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_USART2_RX, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Register callback.
-	usart2_cm_irq_callback = irq_callback;
+	usart_cm_irq_callback = irq_callback;
+errors:
+	return status;
 }
 #endif
 

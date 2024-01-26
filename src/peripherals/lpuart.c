@@ -77,7 +77,7 @@ errors:
 /*******************************************************************/
 void LPUART1_init(NODE_address_t self_address, LPUART_rx_irq_cb_t irq_callback) {
 	// Local variables.
-	uint32_t brr = 0;
+	uint64_t brr = 0;
 	// Select LSE as clock source.
 	RCC -> CCIPR |= (0b11 << 10); // LPUART1SEL='11'.
 	// Enable peripheral clock.
@@ -87,9 +87,9 @@ void LPUART1_init(NODE_address_t self_address, LPUART_rx_irq_cb_t irq_callback) 
 	LPUART1 -> CR2 |= (self_address << 24) | (0b1 << 4);
 	LPUART1 -> CR3 |= 0x00805000;
 	// Baud rate.
-	brr = (RCC_LSE_FREQUENCY_HZ * 256);
-	brr /= LPUART_BAUD_RATE;
-	LPUART1 -> BRR = (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate). See p.730 of RM0377 datasheet.
+	brr = ((uint64_t) RCC_LSE_FREQUENCY_HZ) << 8;
+	brr /= (uint64_t) LPUART_BAUD_RATE;
+	LPUART1 -> BRR = (uint32_t) (brr & 0x000FFFFF); // BRR = (256*fCK)/(baud rate). See p.730 of RM0377 datasheet.
 	// Configure interrupt.
 	EXTI_configure_line(EXTI_LINE_LPUART1, EXTI_TRIGGER_RISING_EDGE);
 	// Enable transmitter.

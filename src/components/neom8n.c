@@ -16,6 +16,7 @@
 #include "mapping.h"
 #include "nvic.h"
 #include "pwr.h"
+#include "rtc.h"
 #include "string.h"
 #include "types.h"
 #include "usart.h"
@@ -279,7 +280,7 @@ errors:
 
 #ifdef GPSM
 /*******************************************************************/
-static NEOM8N_status_t _NEOM8N_time_is_valid(NEOM8N_time_t* gps_time) {
+static NEOM8N_status_t _NEOM8N_time_is_valid(RTC_time_t* gps_time) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
 	// Check parameters.
@@ -304,7 +305,7 @@ errors:
 
 #ifdef GPSM
 /*******************************************************************/
-static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, NEOM8N_time_t* gps_time) {
+static NEOM8N_status_t _NEOM8N_parse_nmea_zda(char_t* nmea_rx_buf, RTC_time_t* gps_time) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
 	STRING_status_t string_status = STRING_SUCCESS;
@@ -502,7 +503,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_position -> lat_seconds = (uint32_t) value;
 				break;
-			// Field 3 = <N> or <S>.
+			// Field 3 = N or S.
 			case NMEA_GGA_FIELD_INDEX_NS:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_GGA_FIELD_SIZE_NS);
@@ -536,7 +537,7 @@ static NEOM8N_status_t _NEOM8N_parse_nmea_gga(char_t* nmea_rx_buf, NEOM8N_positi
 				STRING_exit_error(NEOM8N_ERROR_BASE_STRING);
 				gps_position -> long_seconds = (uint32_t) value;
 				break;
-			// Field 5 = <E> or <W>.
+			// Field 5 = E or W.
 			case NMEA_GGA_FIELD_INDEX_EW:
 				// Check field length.
 				_NEOM8N_check_field_length(NMEA_GGA_FIELD_SIZE_EW);
@@ -636,7 +637,7 @@ static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mas
 		if (status != NEOM8N_SUCCESS) goto errors;
 		// Send message.
 		usart2_status = USART2_write(neom8n_cfg_msg, (NEOM8N_MSG_OVERHEAD_SIZE + NEOM8N_CFG_MSG_PAYLOAD_SIZE));
-		USART2_exit_error(NEOM8N_ERROR_BASE_USART);
+		USART2_exit_error(NEOM8N_ERROR_BASE_USART2);
 		// Delay between messages.
 		lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_SLEEP);
 		LPTIM1_exit_error(NEOM8N_ERROR_BASE_LPTIM);
@@ -678,15 +679,19 @@ static void _NEOM8N_stop(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-void NEOM8N_init(void) {
+NEOM8N_status_t NEOM8N_init(void) {
 	// Local variables.
+	NEOM8N_status_t status = NEOM8N_SUCCESS;
+	USART_status_t usart2_status = USART_SUCCESS;
 	uint32_t idx = 0;
 	// Init backup and reset pins.
 	GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_GPS_RESET, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Init USART and DMA.
-	USART2_init(&_NEOM8N_usart_cm_irq_callback);
+	usart2_status = USART2_init(&_NEOM8N_usart_cm_irq_callback);
+	USART2_exit_error(NEOM8N_ERROR_BASE_USART2);
 	DMA1_CH6_init(&_NEOM8N_dma_tc_irq_callback);
+errors:
 	// Init context.
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buffer0[idx] = 0;
 	for (idx=0 ; idx<NMEA_RX_BUFFER_SIZE ; idx++) neom8n_ctx.rx_buffer1[idx] = 0;
@@ -694,6 +699,7 @@ void NEOM8N_init(void) {
 	neom8n_ctx.gga_same_altitude_count = 0;
 	neom8n_ctx.gga_previous_altitude = 0;
 #endif
+	return status;
 }
 #endif
 
@@ -748,7 +754,7 @@ DINFOX_bit_representation_t NEOM8N_get_backup(void) {
 
 #ifdef GPSM
 /*******************************************************************/
-NEOM8N_status_t NEOM8N_get_time(NEOM8N_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds) {
+NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds) {
 	// Local variables.
 	NEOM8N_status_t status = NEOM8N_SUCCESS;
 	uint8_t valid_data_flag = 0;
@@ -989,7 +995,7 @@ NEOM8N_status_t NEOM8N_configure_timepulse(NEOM8N_timepulse_config_t* timepulse_
 	if (status != NEOM8N_SUCCESS) goto errors;
 	// Send message.
 	usart2_status = USART2_write(neom8n_cfg_tp5, (NEOM8N_MSG_OVERHEAD_SIZE + NEOM8N_CFG_TP5_PAYLOAD_SIZE));
-	USART2_exit_error(NEOM8N_ERROR_BASE_USART);
+	USART2_exit_error(NEOM8N_ERROR_BASE_USART2);
 errors:
 	return status;
 }

@@ -31,14 +31,20 @@ static void _LED_off(void) {
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 /*******************************************************************/
-void LED_init(void) {
+LED_status_t LED_init(void) {
+	// Local variables.
+	LED_status_t status = LED_SUCCESS;
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
+	TIM_status_t tim2_status = TIM_SUCCESS;
 	// Init timers.
-	TIM2_init();
+	tim2_status = TIM2_init();
+	TIM2_exit_error(LED_ERROR_BASE_TIM2);
 	TIM21_init();
+errors:
 #endif
 	// Turn LED off.
 	_LED_off();
+	return status;
 }
 #endif
 
@@ -47,6 +53,7 @@ void LED_init(void) {
 LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
 	// Local variables.
 	LED_status_t status = LED_SUCCESS;
+	TIM_status_t tim21_status = TIM_SUCCESS;
 	// Check parameters.
 	if (blink_duration_ms == 0) {
 		status = LED_ERROR_NULL_DURATION;
@@ -62,7 +69,8 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
 	GPIO_configure(&GPIO_LED_BLUE, GPIO_MODE_ALTERNATE_FUNCTION, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	// Start blink.
 	TIM2_start(color);
-	TIM21_start(blink_duration_ms);
+	tim21_status = TIM21_start(blink_duration_ms);
+	TIM21_exit_error(LED_ERROR_BASE_TIM21);
 errors:
 	return status;
 }

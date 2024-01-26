@@ -22,8 +22,11 @@ typedef enum {
 	LED_SUCCESS,
 	LED_ERROR_NULL_DURATION,
 	LED_ERROR_COLOR,
+	// Low level drivers errors.
+	LED_ERROR_BASE_TIM2 = 0x0100,
+	LED_ERROR_BASE_TIM21 = (LED_ERROR_BASE_TIM2 + TIM_ERROR_BASE_LAST),
 	// Last base value.
-	LED_ERROR_BASE_LAST = 0x0100
+	LED_ERROR_BASE_LAST = (LED_ERROR_BASE_TIM21 + TIM_ERROR_BASE_LAST)
 } LED_status_t;
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
@@ -65,13 +68,13 @@ typedef enum {
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
 /*!******************************************************************
- * \fn void LED_init(void)
+ * \fn LED_status_t LED_init(void)
  * \brief Init LED driver.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void LED_init(void);
+LED_status_t LED_init(void);
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)

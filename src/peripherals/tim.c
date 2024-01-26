@@ -38,7 +38,8 @@
 #define TIM2_NUMBER_OF_USED_CHANNELS	3
 #define TIM2_CCRX_MASK_OFF				0xFFFF
 #define TIM2_PWM_FREQUENCY_HZ			10000
-#define TIM2_ARR_VALUE					((RCC_HSI_FREQUENCY_KHZ * 1000) / (TIM2_PWM_FREQUENCY_HZ))
+
+#define TIM21_INPUT_CAPTURE_PRESCALER	8
 
 #define TIM21_PRESCALER					8
 #define TIM21_DIMMING_LUT_LENGTH		100
@@ -51,6 +52,16 @@ typedef struct {
 	uint32_t etrf_clock_hz;
 	volatile uint8_t channel_running[TIM2_CHANNEL_LAST];
 } TIM2_context_t;
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+typedef struct {
+	volatile uint16_t ccr1_start;
+	volatile uint16_t ccr1_end;
+	volatile uint16_t capture_count;
+	volatile uint8_t capture_done;
+} TIM21_context_t;
 #endif
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
@@ -74,6 +85,9 @@ static const uint8_t TIM2_LED_CHANNELS[TIM2_NUMBER_OF_USED_CHANNELS] = {
 	TIM2_CHANNEL_LED_BLUE
 };
 static uint16_t tim2_ccrx_mask[TIM2_NUMBER_OF_CHANNELS];
+#endif
+#ifdef GPSM
+static TIM21_context_t tim21_ctx;
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 static const uint16_t TIM21_DIMMING_LUT[TIM21_DIMMING_LUT_LENGTH] = {
@@ -107,6 +121,37 @@ void __attribute__((optimize("-O0"))) TIM2_IRQHandler(void) {
 			// Clear flag.
 			TIM2 -> SR &= ~(0b1 << (channel_idx + 1));
 		}
+	}
+}
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
+	// TI1 interrupt.
+	if (((TIM21 -> SR) & (0b1 << 1)) != 0) {
+		// Update flags.
+		if (((TIM21 -> DIER) & (0b1 << 1)) != 0) {
+			// Check count.
+			if (tim21_ctx.capture_count == 0) {
+				// Store start value.
+				tim21_ctx.ccr1_start = (TIM21 -> CCR1);
+				tim21_ctx.capture_count++;
+			}
+			else {
+				// Check rollover.
+				if ((TIM21 -> CCR1) > tim21_ctx.ccr1_end) {
+					// Store new value.
+					tim21_ctx.ccr1_end = (TIM21 -> CCR1);
+					tim21_ctx.capture_count++;
+				}
+				else {
+					// Capture complete.
+					tim21_ctx.capture_done = 1;
+				}
+			}
+		}
+		TIM21 -> SR &= ~(0b1 << 1);
 	}
 }
 #endif
@@ -180,7 +225,7 @@ void _TIM2_reset_channels(void) {
 		// Reset mask.
 		tim2_ccrx_mask[idx] = TIM2_CCRX_MASK_OFF;
 		// Disable channel.
-		TIM2 -> CCRx[idx] = (TIM2_ARR_VALUE + 1);
+		TIM2 -> CCRx[idx] = (TIM2 -> ARR) + 1;
 	}
 	// Reset counter.
 	TIM2 -> CNT = 0;
@@ -392,13 +437,19 @@ errors:
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
-void TIM2_init(void) {
+TIM_status_t TIM2_init(void) {
 	// Local variables.
+	TIM_status_t status = TIM_SUCCESS;
+	RCC_status_t rcc_status = RCC_SUCCESS;
+	uint32_t tim2_clock_hz = 0;
 	uint8_t idx = 0;
+	// Get clock source frequency.
+	rcc_status = RCC_get_frequency_hz(RCC_CLOCK_HSI, &tim2_clock_hz);
+	RCC_exit_error(TIM_ERROR_BASE_RCC);
 	// Enable peripheral clock.
 	RCC -> APB1ENR |= (0b1 << 0); // TIM2EN='1'.
 	// Set PWM frequency.
-	TIM2 -> ARR = TIM2_ARR_VALUE;
+	TIM2 -> ARR = (tim2_clock_hz / TIM2_PWM_FREQUENCY_HZ);
 	// Configure channels 1-4 in PWM mode 1 (OCxM='110' and OCxPE='1').
 	TIM2 -> CCMR1 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
 	TIM2 -> CCMR2 |= (0b110 << 12) | (0b1 << 11) | (0b110 << 4) | (0b1 << 3);
@@ -411,6 +462,8 @@ void TIM2_init(void) {
 	_TIM2_reset_channels();
 	// Generate event to update registers.
 	TIM2 -> EGR |= (0b1 << 0); // UG='1'.
+errors:
+	return status;
 }
 #endif
 
@@ -442,6 +495,81 @@ void TIM2_stop(void) {
 }
 #endif
 
+#ifdef GPSM
+/*******************************************************************/
+void TIM21_init(void) {
+	// Enable peripheral clock.
+	RCC -> APB2ENR |= (0b1 << 2); // TIM21EN='1'.
+	// Configure timer.
+	// Channel input on TI1.
+	// Capture done every 8 edges.
+	// CH1 mapped on MCO.
+	TIM21 -> CCMR1 |= (0b01 << 0) | (0b11 << 2);
+	TIM21 -> OR |= (0b111 << 2);
+	// Enable interrupt.
+	TIM21 -> DIER |= (0b1 << 1); // CC1IE='1'.
+	// Generate event to update registers.
+	TIM21 -> EGR |= (0b1 << 0); // UG='1'.
+}
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+void TIM21_de_init(void) {
+	// Disable timer.
+	TIM21 -> CR1 &= ~(0b1 << 0); // CEN='0'.
+	// Disable peripheral clock.
+	RCC -> APB2ENR &= ~(0b1 << 2); // TIM21EN='0'.
+}
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+TIM_status_t TIM21_mco_capture(uint16_t* ref_clock_pulse_count, uint16_t* mco_pulse_count) {
+	// Local variables.
+	TIM_status_t status = TIM_SUCCESS;
+	uint32_t loop_count = 0;
+	// Check parameters.
+	if ((ref_clock_pulse_count == NULL) || (mco_pulse_count == NULL)) {
+		status = TIM_ERROR_NULL_PARAMETER;
+		goto errors;
+	}
+	// Reset timer context.
+	tim21_ctx.ccr1_start = 0;
+	tim21_ctx.ccr1_end = 0;
+	tim21_ctx.capture_count = 0;
+	tim21_ctx.capture_done = 0;
+	// Reset counter.
+	TIM21 -> CNT = 0;
+	TIM21 -> CCR1 = 0;
+	// Enable interrupt.
+	TIM21 -> SR &= 0xFFFFF9B8; // Clear all flags.
+	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_TIM21);
+	// Enable TIM21 peripheral.
+	TIM21 -> CR1 |= (0b1 << 0); // CEN='1'.
+	TIM21 -> CCER |= (0b1 << 0); // CC1E='1'.
+	// Wait for capture to complete.
+	while (tim21_ctx.capture_done == 0) {
+		// Manage timeout.
+		loop_count++;
+		if (loop_count > TIM_TIMEOUT_COUNT) {
+			status = TIM_ERROR_CAPTURE_TIMEOUT;
+			goto errors;
+		}
+	}
+	// Update results.
+	(*ref_clock_pulse_count) = (tim21_ctx.ccr1_end - tim21_ctx.ccr1_start);
+	(*mco_pulse_count) = (TIM21_INPUT_CAPTURE_PRESCALER * (tim21_ctx.capture_count - 1));
+errors:
+	// Disable interrupt.
+	NVIC_disable_interrupt(NVIC_INTERRUPT_TIM21);
+	// Stop counter.
+	TIM21 -> CR1 &= ~(0b1 << 0); // CEN='0'.
+	TIM21 -> CCER &= ~(0b1 << 0); // CC1E='0'.
+	return status;
+}
+#endif
+
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void TIM21_init(void) {
@@ -462,19 +590,31 @@ void TIM21_init(void) {
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
-void TIM21_start(uint32_t led_blink_period_ms) {
+TIM_status_t TIM21_start(uint32_t led_blink_period_ms) {
+	// Local variables.
+	TIM_status_t status = TIM_SUCCESS;
+	RCC_status_t rcc_status = RCC_SUCCESS;
+	uint32_t tim22_clock_hz = 0;
+	uint64_t arr = 0;
+	// Get clock source frequency.
+	rcc_status = RCC_get_frequency_hz(RCC_CLOCK_HSI, &tim22_clock_hz);
+	RCC_exit_error(TIM_ERROR_BASE_RCC);
 	// Reset LUT index and flag.
 	tim21_ctx.dimming_lut_idx = 0;
 	tim21_ctx.dimming_lut_direction = 0;
 	tim21_ctx.single_blink_done = 0;
 	// Set period.
 	TIM21 -> CNT = 0;
-	TIM21 -> ARR = (led_blink_period_ms * RCC_HSI_FREQUENCY_KHZ) / (TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
+	arr = ((uint64_t) led_blink_period_ms) * ((uint64_t) tim22_clock_hz);
+	arr /= (1000 * TIM21_PRESCALER * 2 * TIM21_DIMMING_LUT_LENGTH);
+	TIM21 -> ARR = (uint32_t) arr;
 	// Clear flag and enable interrupt.
 	TIM21 -> SR &= ~(0b1 << 0); // Clear flag (UIF='0').
 	NVIC_enable_interrupt(NVIC_INTERRUPT_TIM21, NVIC_PRIORITY_TIM21);
 	// Enable TIM21 peripheral.
 	TIM21 -> CR1 |= (0b1 << 0); // Enable TIM21 (CEN='1').
+errors:
+	return status;
 }
 #endif
 

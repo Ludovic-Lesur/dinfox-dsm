@@ -100,6 +100,9 @@ static void _XM_init_hw(void) {
 #ifndef DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
+#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
+	LED_status_t led_status = LED_SUCCESS;
+#endif
 	// Init error stack
 	ERROR_stack_init();
 	// Init memory.
@@ -119,6 +122,11 @@ static void _XM_init_hw(void) {
 	// High speed oscillator.
 	rcc_status = RCC_switch_to_hsi();
 	RCC_stack_error();
+#ifdef GPSM
+	// Calibrate clocks.
+	rcc_status = RCC_calibrate();
+	RCC_stack_error();
+#endif
 	// Init RTC.
 	rtc_status = RTC_init();
 	RTC_stack_error();
@@ -130,7 +138,8 @@ static void _XM_init_hw(void) {
 	LOAD_init();
 #endif
 #if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
-	LED_init();
+	led_status = LED_init();
+	LED_stack_error();
 #endif
 	// Init AT BUS layer.
 	AT_BUS_init();

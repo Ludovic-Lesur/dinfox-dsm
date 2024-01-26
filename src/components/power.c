@@ -59,6 +59,9 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 	POWER_status_t status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
+#ifdef GPSM
+	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
+#endif
 	uint32_t delay_ms = 0;
 	// Check domain.
 	switch (domain) {
@@ -96,7 +99,8 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 #ifdef GPSM_ACTIVE_ANTENNA
 		GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
 #endif
-		NEOM8N_init();
+		neom8n_status = NEOM8N_init();
+		NEOM8N_exit_error(POWER_ERROR_BASE_NEOM8N);
 		delay_ms = POWER_ON_DELAY_MS_GPS;
 		break;
 #endif

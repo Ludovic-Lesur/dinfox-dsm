@@ -11,6 +11,7 @@
 #include "dinfox.h"
 #include "lptim.h"
 #include "math.h"
+#include "rtc.h"
 #include "string.h"
 #include "types.h"
 #include "usart.h"
@@ -43,27 +44,12 @@ typedef enum {
 	NEOM8N_ERROR_BACKUP_STATE,
 	NEOM8N_ERROR_BACKUP_FORCED_HARDWARE,
 	// Low level drivers errors.
-	NEOM8N_ERROR_BASE_USART = 0x0100,
-	NEOM8N_ERROR_BASE_LPTIM = (NEOM8N_ERROR_BASE_USART + USART_ERROR_BASE_LAST),
+	NEOM8N_ERROR_BASE_USART2 = 0x0100,
+	NEOM8N_ERROR_BASE_LPTIM = (NEOM8N_ERROR_BASE_USART2 + USART_ERROR_BASE_LAST),
 	NEOM8N_ERROR_BASE_STRING = (NEOM8N_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST),
 	// Last base value.
 	NEOM8N_ERROR_BASE_LAST = (NEOM8N_ERROR_BASE_STRING + STRING_ERROR_BASE_LAST)
 } NEOM8N_status_t;
-
-/*!******************************************************************
- * \enum NEOM8N_time_t
- * \brief GPS time data.
- *******************************************************************/
-typedef struct {
-	// Date.
-	uint16_t year;
-	uint8_t month;
-	uint8_t date;
-	// Time.
-	uint8_t hours;
-	uint8_t minutes;
-	uint8_t seconds;
-} NEOM8N_time_t;
 
 /*!******************************************************************
  * \enum NEOM8N_position_t
@@ -102,9 +88,9 @@ typedef struct {
  * \brief Init NEOM8N interface.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void NEOM8N_init(void);
+NEOM8N_status_t NEOM8N_init(void);
 #endif
 
 #ifdef GPSM
@@ -149,7 +135,7 @@ DINFOX_bit_representation_t NEOM8N_get_backup(void);
  * \param[out]	fix_duration_seconds: Pointer to integer that will contain GPS fix duration in seconds.
  * \retval		Function execution status.
  *******************************************************************/
-NEOM8N_status_t NEOM8N_get_time(NEOM8N_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds);
+NEOM8N_status_t NEOM8N_get_time(RTC_time_t* gps_time, uint32_t timeout_seconds, uint32_t* fix_duration_seconds);
 #endif
 
 #ifdef GPSM

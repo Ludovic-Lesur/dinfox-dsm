@@ -13,8 +13,9 @@
 #include "gpsm_reg.h"
 #include "load.h"
 #include "neom8n.h"
-#include "power.h"
 #include "node.h"
+#include "power.h"
+#include "rtc.h"
 
 /*** GPSM local macros ***/
 
@@ -128,7 +129,7 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	NEOM8N_status_t neom8n_status = NEOM8N_SUCCESS;
-	NEOM8N_time_t gps_time;
+	RTC_time_t gps_time;
 	uint32_t time_fix_duration = 0;
 	uint32_t reg_timeout = 0;
 	uint32_t reg_status_1 = 0;

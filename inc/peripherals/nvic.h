@@ -57,6 +57,9 @@ typedef enum {
 typedef enum {
 	// Common.
 	NVIC_PRIORITY_RCC_CRS = 0,
+#ifdef GPSM
+	NVIC_PRIORITY_TIM21 = 1,
+#endif
 	NVIC_PRIORITY_LPTIM1 = 2,
 	NVIC_PRIORITY_RTC = 3,
 	// RS485 interface.
