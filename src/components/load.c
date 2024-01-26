@@ -62,17 +62,17 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	// Enable DC-DC.
 	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(LOAD_DC_DC_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM);
+	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
 	// Enable COIL voltage.
 	GPIO_write(&GPIO_COIL_POWER_ENABLE, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(LOAD_VCOIL_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM);
+	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
 	// Select coil.
 	GPIO_write(&GPIO_OUT_SELECT, state);
 	// Set relay state.
 	GPIO_write(&GPIO_OUT_CONTROL, 1);
 	lptim1_status = LPTIM1_delay_milliseconds(LOAD_RELAY_CONTROL_DURATION_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM);
+	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
 #else
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, state);

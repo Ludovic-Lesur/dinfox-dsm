@@ -640,7 +640,7 @@ static NEOM8N_status_t _NEOM8N_select_nmea_messages(uint32_t nmea_message_id_mas
 		USART2_exit_error(NEOM8N_ERROR_BASE_USART2);
 		// Delay between messages.
 		lptim1_status = LPTIM1_delay_milliseconds(100, LPTIM_DELAY_MODE_SLEEP);
-		LPTIM1_exit_error(NEOM8N_ERROR_BASE_LPTIM);
+		LPTIM1_exit_error(NEOM8N_ERROR_BASE_LPTIM1);
 	}
 errors:
 	return status;
