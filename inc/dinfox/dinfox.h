@@ -151,7 +151,7 @@ typedef uint8_t DINFOX_year_representation_t;
 /*** DINFOX functions ***/
 
 /*!******************************************************************
- * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t field_value, uint32_t field_mask)
+ * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask)
  * \brief Write a field in register.
  * \param[in]  	reg_value: Pointer to the register value.
  * \param[in]	field_value: Field value to write.
@@ -254,7 +254,7 @@ uint32_t DINFOX_get_mv(DINFOX_voltage_representation_t dinfox_voltage);
 DINFOX_current_representation_t DINFOX_convert_ua(uint32_t current_ua);
 
 /*!******************************************************************
- * \fn uint32_t uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current)
+ * \fn uint32_t DINFOX_get_ua(DINFOX_current_representation_t dinfox_current)
  * \brief Convert a DINFox representation to current.
  * \param[in]  	dinfox_current: DINFox representation to convert.
  * \param[out] 	none
@@ -290,7 +290,7 @@ int32_t DINFOX_get_mw_mva(DINFOX_electrical_power_representation_t dinfox_electr
 DINFOX_electrical_energy_representation_t DINFOX_convert_mwh_mvah(int32_t electrical_energy_mwh_mvah);
 
 /*!******************************************************************
- * \fn int32_t DINFOX_get_mw(DINFOX_get_mwh_mvah dinfox_electrical_power)
+ * \fn int32_t DINFOX_get_mwh_mvah(DINFOX_electrical_energy_representation_t dinfox_electrical_energy)
  * \brief Convert a DINFox representation to electrical energy.
  * \param[in]  	dinfox_electrical_energy: DINFox representation to convert.
  * \param[out] 	none

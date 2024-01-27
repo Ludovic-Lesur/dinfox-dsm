@@ -53,7 +53,7 @@ void DIGITAL_init(void);
 
 #ifdef SM
 /*!******************************************************************
- * \fn DIGITAL_status_t DIGITAL_perform_measurements(void)
+ * \fn void DIGITAL_perform_measurements(void)
  * \brief Perform all digital channels measurement.
  * \param[in]  	none
  * \param[out] 	none
@@ -64,7 +64,7 @@ void DIGITAL_perform_measurements(void);
 
 #ifdef SM
 /*!******************************************************************
- * \fn DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, uint8_t* state)
+ * \fn DIGITAL_status_t DIGITAL_read(DIGITAL_data_index_t data_idx, DINFOX_bit_representation_t* state)
  * \brief Read digital data.
  * \param[in]  	data_idx: Data to read.
  * \param[out] 	state: Pointer to bit representation that will contain the digital input state.

@@ -114,7 +114,7 @@ void LED_stop_blink(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn LED_status_t LED_set(LED_color_t color
+ * \fn LED_status_t LED_set(LED_color_t color)
  * \brief Set LED state.
  * \param[in]	color: LED color.
  * \param[out] 	none

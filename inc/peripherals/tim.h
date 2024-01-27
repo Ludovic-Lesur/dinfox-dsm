@@ -127,7 +127,7 @@ void TIM2_de_init(void);
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms)
+ * \fn TIM_status_t TIM2_start(TIM2_channel_t channel, uint32_t duration_ms, TIM_waiting_mode_t waiting_mode)
  * \brief Start a timer channel.
  * \param[in]  	channel: Channel to start.
  * \param[in]	duration_ms: Timer duration in ms.
@@ -162,7 +162,7 @@ TIM_status_t TIM2_get_status(TIM2_channel_t channel, uint8_t* timer_has_elapsed)
 
 #ifdef UHFM
 /*!******************************************************************
- * \fn TIM_status_t TIM2_wait_completion(TIM2_channel_t channel)
+ * \fn TIM_status_t TIM2_wait_completion(TIM2_channel_t channel, TIM_waiting_mode_t waiting_mode)
  * \brief Blocking function waiting for a timer channel completion.
  * \param[in]  	channel: Channel to wait for.
  * \param[in]	waiting_mode: Completion waiting mode.
@@ -174,7 +174,7 @@ TIM_status_t TIM2_wait_completion(TIM2_channel_t channel, TIM_waiting_mode_t wai
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn void TIM2_init(void)
+ * \fn TIM_status_t TIM2_init(void)
  * \brief Init TIM2 peripheral for RGB LED blinking operation.
  * \param[in]  	none
  * \param[out] 	none
@@ -253,7 +253,7 @@ void TIM21_init(void);
 
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn void TIM21_start(uint32_t led_blink_period_ms)
+ * \fn TIM_status_t TIM21_start(uint32_t led_blink_period_ms)
  * \brief Start LED blink duration timer.
  * \param[in]  	led_blink_period_ms: Blink duration in ms.
  * \param[out] 	none

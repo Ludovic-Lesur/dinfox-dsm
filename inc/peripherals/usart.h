@@ -38,7 +38,7 @@ typedef void (*USART_character_match_irq_cb_t)(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void USART2_init(USART_character_match_irq_cb_t irq_callback)
+ * \fn USART_status_t USART2_init(USART_character_match_irq_cb_t irq_callback)
  * \brief Init USART2 peripheral.
  * \param[in]  	irq_callback: Function to call on character match interrupt.
  * \param[out] 	none

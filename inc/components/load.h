@@ -42,7 +42,7 @@ void LOAD_init(void);
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn LOAD_status_t LOAD_set_output_state(DINFOX_bit_representation_t state)
+ * \fn LOAD_status_t LOAD_set_output_state(uint8_t state)
  * \brief Set load output state.
  * \param[in]  	state: New state to set.
  * \param[out] 	none
@@ -53,7 +53,7 @@ LOAD_status_t LOAD_set_output_state(uint8_t state);
 
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*!******************************************************************
- * \fn DINFOX_bit_representation_t LOAD_get_output_state(void)
+ * \fn uint8_t LOAD_get_output_state(void)
  * \brief Read load output state.
  * \param[in]  	none
  * \param[out] 	none

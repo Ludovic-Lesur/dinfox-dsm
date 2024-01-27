@@ -84,7 +84,7 @@ typedef struct {
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void NEOM8N_init(void)
+ * \fn NEOM8N_status_t NEOM8N_init(void)
  * \brief Init NEOM8N interface.
  * \param[in]  	none
  * \param[out] 	none
@@ -106,7 +106,7 @@ void NEOM8N_de_init(void);
 
 #ifdef GPSM
 /*!******************************************************************
- * \fn void NEOM8N_set_backup(uint8_t state)
+ * \fn NEOM8N_status_t NEOM8N_set_backup(uint8_t state)
  * \brief Set NEOM8N backup voltage state.
  * \param[in]  	state: Backup voltage state.
  * \param[out] 	none
