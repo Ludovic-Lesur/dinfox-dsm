@@ -17,12 +17,6 @@
 #include "power.h"
 #include "rtc.h"
 
-/*** GPSM local macros ***/
-
-#define GPSM_REG_CONFIGURATION_1_DEFAULT_VALUE	0x00B40078
-#define GPSM_REG_CONFIGURATION_2_DEFAULT_VALUE	0x00989680
-#define GPSM_REG_CONFIGURATION_3_DEFAULT_VALUE	0x00000032
-
 /*** GPSM local structures ***/
 
 /*******************************************************************/
@@ -49,6 +43,44 @@ static GPSM_context_t gpsm_ctx;
 #endif
 
 /*** GPSM local functions ***/
+
+#ifdef GPSM
+/*******************************************************************/
+static void _GPSM_load_fixed_configuration(void) {
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// Active antenna flag.
+#ifdef GPSM_ACTIVE_ANTENNA
+	DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_0_MASK_AAF);
+#else
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_0_MASK_AAF);
+#endif
+	// Backup output control mode.
+#ifdef GPSM_BKEN_FORCED_HARDWARE
+	DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_0_MASK_BKFH);
+#else
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_0_MASK_BKFH);
+#endif
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+}
+#endif
+
+#ifdef GPSM
+/*******************************************************************/
+static void _GPSM_load_dynamic_configuration(void) {
+	// Local variables.
+	uint8_t reg_addr = 0;
+	uint32_t reg_value = 0;
+	// Load configuration registers from NVM.
+	for (reg_addr=GPSM_REG_ADDR_CONFIGURATION_1 ; reg_addr<GPSM_REG_ADDR_STATUS_1 ; reg_addr++) {
+		// Read NVM.
+		reg_value = DINFOX_read_nvm_register(reg_addr);
+		// Write register.
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, DINFOX_REG_MASK_ALL, reg_value);
+	}
+}
+#endif
 
 #ifdef GPSM
 /*******************************************************************/
@@ -271,13 +303,11 @@ void GPSM_init_registers(void) {
 	// Init flags.
 	gpsm_ctx.flags.all = 0;
 	// Read init state.
-	GPSM_update_register(GPSM_REG_ADDR_CONFIGURATION_0);
 	GPSM_update_register(GPSM_REG_ADDR_STATUS_1);
 	// Load default values.
+	_GPSM_load_fixed_configuration();
+	_GPSM_load_dynamic_configuration();
 	_GPSM_reset_analog_data();
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_1_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_2_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REG_ADDR_CONFIGURATION_3, DINFOX_REG_MASK_ALL, GPSM_REG_CONFIGURATION_3_DEFAULT_VALUE);
 }
 #endif
 
@@ -290,14 +320,6 @@ NODE_status_t GPSM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case GPSM_REG_ADDR_CONFIGURATION_0:
-		// Active antenna flag.
-#ifdef GPSM_ACTIVE_ANTENNA
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, GPSM_REG_CONFIGURATION_0_MASK_AAF);
-#else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, GPSM_REG_CONFIGURATION_0_MASK_AAF);
-#endif
-		break;
 	case GPSM_REG_ADDR_STATUS_1:
 		// Timepulse enable.
 		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) gpsm_ctx.flags.tpen), GPSM_REG_STATUS_1_MASK_TPST);
@@ -341,6 +363,25 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
+	case GPSM_REG_ADDR_CONFIGURATION_1:
+		// Store new value in NVM.
+		if (reg_mask != 0) {
+			DINFOX_write_nvm_register(reg_addr, reg_value);
+		}
+		break;
+	case GPSM_REG_ADDR_CONFIGURATION_2:
+	case GPSM_REG_ADDR_CONFIGURATION_3:
+		// Store new value in NVM.
+		if (reg_mask != 0) {
+			DINFOX_write_nvm_register(reg_addr, reg_value);
+		}
+		// Update timepulse signal if running.
+		if (gpsm_ctx.flags.tpen != 0) {
+			// Start timepulse with new settings.
+			status = _GPSM_tpen_callback(1);
+			if (status != NODE_SUCCESS) goto errors;
+		}
+		break;
 	case GPSM_REG_ADDR_CONTROL_1:
 		// TTRG.
 		if ((reg_mask & GPSM_REG_CONTROL_1_MASK_TTRG) != 0) {
@@ -437,15 +478,6 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				NEOM8N_exit_error(NODE_ERROR_BASE_NEOM8N);
 			}
 #endif
-		}
-		break;
-	case GPSM_REG_ADDR_CONFIGURATION_2:
-	case GPSM_REG_ADDR_CONFIGURATION_3:
-		// Update timepulse signal if running.
-		if (gpsm_ctx.flags.tpen != 0) {
-			// Start timepulse with new settings.
-			status = _GPSM_tpen_callback(1);
-			if (status != NODE_SUCCESS) goto errors;
 		}
 		break;
 	default:

@@ -13,7 +13,7 @@
 #include "sigfox_types.h"
 #endif
 
-/*** NVM macros ***/
+/*** NVM structures ***/
 
 /*!******************************************************************
  * \enum NVM_status_t
@@ -26,6 +26,7 @@ typedef enum {
 	NVM_ERROR_ADDRESS,
 	NVM_ERROR_UNLOCK,
 	NVM_ERROR_LOCK,
+	NVM_ERROR_READ,
 	NVM_ERROR_WRITE,
 	// Last base value.
 	NVM_ERROR_BASE_LAST = 0x0100
@@ -41,13 +42,9 @@ typedef enum {
 	NVM_ADDRESS_SIGFOX_EP_ID = 1,
 	NVM_ADDRESS_SIGFOX_EP_KEY = (NVM_ADDRESS_SIGFOX_EP_ID + SIGFOX_EP_ID_SIZE_BYTES),
 	NVM_ADDRESS_SIGFOX_EP_LIB_DATA = (NVM_ADDRESS_SIGFOX_EP_KEY + SIGFOX_EP_KEY_SIZE_BYTES),
-	NVM_ADDRESS_LAST = (NVM_ADDRESS_SIGFOX_EP_LIB_DATA + SIGFOX_NVM_DATA_SIZE_BYTES)
-#else
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	NVM_ADDRESS_LT6106_OFFSET_CURRENT_MA,
 #endif
-	NVM_ADDRESS_LAST
-#endif
+	NVM_ADDRESS_REGISTERS = 0x40,
+	NVM_ADDRESS_LAST = 0xFF
 } NVM_address_t;
 
 /*** NVM functions ***/

@@ -7,10 +7,18 @@
 
 #include "dinfox.h"
 
-#include "math.h"
+#include "error.h"
 #include "parser.h"
-#include "string.h"
 #include "types.h"
+#ifdef MPMCM
+#include "flash.h"
+#include "math_custom.h"
+#include "string_custom.h"
+#else
+#include "math.h"
+#include "nvm.h"
+#include "string.h"
+#endif
 
 /*** DINFOX local macros ***/
 
@@ -184,6 +192,59 @@ static uint8_t _DINFOX_get_shift(uint32_t field_mask) {
 }
 
 /*** DINFOX functions ***/
+
+/*******************************************************************/
+uint32_t DINFOX_read_nvm_register(uint8_t reg_addr) {
+	// Local variables.
+	uint32_t reg_value = 0;
+#ifdef MPMCM
+	FLASH_status_t flash_status = FLASH_SUCCESS;
+	// Read NVM.
+	flash_status = FLASH_read_word((FLASH_ADDRESS_REGISTERS + reg_addr), &reg_value);
+	FLASH_stack_error();
+#else
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t nvm_byte = 0;
+	uint8_t idx = 0;
+	// Byte loop.
+	for (idx=0 ; idx<4 ; idx++) {
+		// Read NVM.
+		nvm_status = NVM_read_byte((NVM_ADDRESS_REGISTERS + (reg_addr << 2) + idx), &nvm_byte);
+		NVM_stack_error();
+		if (nvm_status != NVM_SUCCESS) {
+			reg_value = 0;
+			break;
+		}
+		reg_value |= ((uint32_t) nvm_byte) << (idx << 3);
+	}
+#endif
+	return reg_value;
+}
+
+/*******************************************************************/
+void DINFOX_write_nvm_register(uint8_t reg_addr, uint32_t reg_value) {
+#ifdef MPMCM
+	// Local variables.
+	FLASH_status_t flash_status = FLASH_SUCCESS;
+	// Write NVM.
+	flash_status = FLASH_write_word((FLASH_ADDRESS_REGISTERS + reg_addr), reg_value);
+	FLASH_stack_error();
+#else
+	// Local variables.
+	NVM_status_t nvm_status = NVM_SUCCESS;
+	uint8_t nvm_byte = 0;
+	uint8_t idx = 0;
+	// Byte loop.
+	for (idx=0 ; idx<4 ; idx++) {
+		// Compute byte.
+		nvm_byte = (uint8_t) (((reg_value) >> (idx << 3)) & 0x000000FF);
+		// Write NVM.
+		nvm_status = NVM_write_byte((NVM_ADDRESS_REGISTERS + (reg_addr << 2) + idx), nvm_byte);
+		NVM_stack_error();
+		if (nvm_status != NVM_SUCCESS) break;
+	}
+#endif
+}
 
 /*******************************************************************/
 void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask) {

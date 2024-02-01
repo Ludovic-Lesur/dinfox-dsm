@@ -151,6 +151,25 @@ typedef uint8_t DINFOX_year_representation_t;
 /*** DINFOX functions ***/
 
 /*!******************************************************************
+ * \fn uint32_t DINFOX_read_nvm_register(uint8_t reg_addr)
+ * \brief Read register value stored in NVM.
+ * \param[in]  	reg_addr: Address of the register to read.
+ * \param[out] 	none
+ * \retval		Register value.
+ *******************************************************************/
+uint32_t DINFOX_read_nvm_register(uint8_t reg_addr);
+
+/*!******************************************************************
+ * \fn void DINFOX_write_nvm_register(uint8_t reg_addr, uint32_t reg_value)
+ * \brief Store register value in NVM.
+ * \param[in]  	reg_addr: Address of the register to write.
+ * \param[in]	reg_value: Register value to write.
+ * \param[out] 	none
+ * \retval		none
+ *******************************************************************/
+void DINFOX_write_nvm_register(uint8_t reg_addr, uint32_t reg_value);
+
+/*!******************************************************************
  * \fn void DINFOX_write_field(uint32_t* reg_value, uint32_t* reg_mask, uint32_t field_value, uint32_t field_mask)
  * \brief Write a field in register.
  * \param[in]  	reg_value: Pointer to the register value.

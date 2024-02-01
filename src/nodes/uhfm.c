@@ -26,13 +26,8 @@
 
 /*** UHFM local macros ***/
 
-#define UHFM_REG_CONFIGURATION_0_DEFAULT_VALUE		0x00000ED0
-#define UHFM_REG_CONFIGURATION_1_DEFAULT_VALUE		0x07D001F4
-#define UHFM_REG_CONFIGURATION_2_DEFAULT_VALUE		0x00000001
-#define UHFM_REG_RADIO_TEST_0_DEFAULT_VALUE		0x33AD5EC0
-#define UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE		0x000000BC
-
-#define UHFM_NUMBER_OF_SIGFOX_RC					7
+#define UHFM_REG_RADIO_TEST_0_DEFAULT_VALUE			0x33AD5EC0
+#define UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE			0x000000BC
 
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ		830000000
 #define UHFM_ADC_MEASUREMENTS_TX_POWER_DBM			14
@@ -64,6 +59,36 @@ static UHFM_flags_t uhfm_flags;
 		status = (NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API + sigfox_ep_addon_rfp_status); \
 		goto errors; \
 	} \
+}
+#endif
+
+#ifdef UHFM
+/*******************************************************************/
+static void _UHFM_load_dynamic_configuration(void) {
+	// Local variables.
+	uint8_t reg_addr = 0;
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// Load configuration registers from NVM.
+	for (reg_addr=UHFM_REG_ADDR_CONFIGURATION_0 ; reg_addr<UHFM_REG_ADDR_STATUS_1 ; reg_addr++) {
+		// Read NVM.
+		reg_value = DINFOX_read_nvm_register(reg_addr);
+		// Write register.
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, DINFOX_REG_MASK_ALL, reg_value);
+	}
+	// Override fields fixed by Sigfox library compilation flags.
+	// TX power and RC.
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_dbm((int16_t) TX_POWER_DBM_EIRP), UHFM_REG_CONFIGURATION_0_MASK_TX_POWER);
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REG_CONFIGURATION_0_MASK_RC);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+	// TIFU and TCONF.
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, T_IFU_MS,  UHFM_REG_CONFIGURATION_1_MASK_TIFU);
+	DINFOX_write_field(&reg_value, &reg_mask, T_CONF_MS, UHFM_REG_CONFIGURATION_1_MASK_TCONF);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
 }
 #endif
 
@@ -114,7 +139,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	uint32_t reg_status_1 = 0;
 	uint32_t reg_status_1_mask = 0;
 	uint32_t reg_config_0 = 0;
-	uint32_t reg_config_2 = 0;
+	uint32_t reg_control_1 = 0;
 	sfx_bool bidirectional_flag = 0;
 	sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
 	sfx_u8 ul_payload_size = 0;
@@ -126,7 +151,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	message_status.all = 0;
 	// Read configuration registers.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, &reg_config_0);
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, &reg_config_2);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, &reg_control_1);
 	// Check radio state.
 	status = _UHFM_is_radio_free();
 	if (status != NODE_SUCCESS) goto errors;
@@ -135,13 +160,13 @@ static NODE_status_t _UHFM_strg_callback(void) {
 	sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
 	SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 	// Check control message flag.
-	if (DINFOX_read_field(reg_config_2, UHFM_REG_CONFIGURATION_2_MASK_CMSG) == 0) {
+	if (DINFOX_read_field(reg_control_1, UHFM_REG_CONTROL_1_MASK_CMSG) == 0) {
 		// Get payload size.
-		ul_payload_size = (sfx_u8) DINFOX_read_field(reg_config_2, UHFM_REG_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
+		ul_payload_size = (sfx_u8) DINFOX_read_field(reg_control_1, UHFM_REG_CONTROL_1_MASK_UL_PAYLOAD_SIZE);
 		// Read UL payload.
 		NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
 		// Update bidirectional flag.
-		bidirectional_flag = (sfx_bool) DINFOX_read_field(reg_config_2, UHFM_REG_CONFIGURATION_2_MASK_BF);
+		bidirectional_flag = (sfx_bool) DINFOX_read_field(reg_control_1, UHFM_REG_CONTROL_1_MASK_BF);
 		// Read current message counter.
 		if (bidirectional_flag == SFX_TRUE) {
 			// Read memory.
@@ -155,7 +180,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 		application_message.common_parameters.number_of_frames = (sfx_u8) DINFOX_read_field(reg_config_0, UHFM_REG_CONFIGURATION_0_MASK_NFR);
 		application_message.common_parameters.ul_bit_rate = (SIGFOX_ul_bit_rate_t) DINFOX_read_field(reg_config_0, UHFM_REG_CONFIGURATION_0_MASK_BR);
 		application_message.common_parameters.ep_key_type = SIGFOX_EP_KEY_PRIVATE;
-		application_message.type = (SIGFOX_application_message_type_t) DINFOX_read_field(reg_config_2, UHFM_REG_CONFIGURATION_2_MASK_MSGT);
+		application_message.type = (SIGFOX_application_message_type_t) DINFOX_read_field(reg_control_1, UHFM_REG_CONTROL_1_MASK_MSGT);
 		application_message.bidirectional_flag = bidirectional_flag;
 		application_message.ul_payload = (sfx_u8*) ul_payload;
 		application_message.ul_payload_size_bytes = ul_payload_size;
@@ -209,8 +234,10 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	SIGFOX_EP_ADDON_RFP_API_config_t addon_config;
 	SIGFOX_EP_ADDON_RFP_API_test_mode_t test_mode;
 	uint32_t reg_config_0 = 0;
-	// Read configuration register.
+	uint32_t reg_control_1 = 0;
+	// Read configuration registers.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, &reg_config_0);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, &reg_control_1);
 	// Check radio state.
 	status = _UHFM_is_radio_free();
 	if (status != NODE_SUCCESS) goto errors;
@@ -219,7 +246,7 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_open(&addon_config);
 	_UHFM_sigfox_ep_addon_rfp_exit_error();
 	// Call test mode function.
-	test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) DINFOX_read_field(reg_config_0, UHFM_REG_CONFIGURATION_0_MASK_TEST_MODE);
+	test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) DINFOX_read_field(reg_control_1, UHFM_REG_CONTROL_1_MASK_RFP_TEST_MODE);
 	test_mode.ul_bit_rate = (SIGFOX_ul_bit_rate_t) DINFOX_read_field(reg_config_0, UHFM_REG_CONFIGURATION_0_MASK_BR);
 	sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_test_mode(&test_mode);
 	_UHFM_sigfox_ep_addon_rfp_exit_error();
@@ -354,19 +381,15 @@ void UHFM_init_registers(void) {
 	for (idx=0 ; idx<SIGFOX_EP_ID_SIZE_BYTES ; idx++) {
 		NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_ID + idx), &(sigfox_ep_tab[idx]));
 	}
-	// Write registers.
 	NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_ID, (uint8_t*) sigfox_ep_tab, SIGFOX_EP_ID_SIZE_BYTES);
-	// Sigfox EP key register.
+	// Sigfox EP key registers.
 	for (idx=0 ; idx<SIGFOX_EP_KEY_SIZE_BYTES ; idx++) {
 		NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), &(sigfox_ep_tab[idx]));
 	}
-	// Write registers.
 	NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_EP_KEY_0, (uint8_t*) sigfox_ep_tab, SIGFOX_EP_KEY_SIZE_BYTES);
 	// Load default values.
+	_UHFM_load_dynamic_configuration();
 	_UHFM_reset_analog_data();
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, DINFOX_REG_MASK_ALL, UHFM_REG_CONFIGURATION_0_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_1, DINFOX_REG_MASK_ALL, UHFM_REG_CONFIGURATION_1_DEFAULT_VALUE);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, DINFOX_REG_MASK_ALL, UHFM_REG_CONFIGURATION_2_DEFAULT_VALUE);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_0, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_0_DEFAULT_VALUE);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, DINFOX_REG_MASK_ALL, UHFM_REG_RADIO_TEST_1_DEFAULT_VALUE);
 }
@@ -423,6 +446,13 @@ NODE_status_t UHFM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
+	case UHFM_REG_ADDR_CONFIGURATION_0:
+	case UHFM_REG_ADDR_CONFIGURATION_1:
+		// Store new value in NVM.
+		if (reg_mask != 0) {
+			DINFOX_write_nvm_register(reg_addr, reg_value);
+		}
+		break;
 	case UHFM_REG_ADDR_CONTROL_1:
 		// STRG.
 		if ((reg_mask & UHFM_REG_CONTROL_1_MASK_STRG) != 0) {

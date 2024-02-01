@@ -41,7 +41,7 @@
 #define AT_BUS_STRING_VALUE_BUFFER_SIZE		16
 #define AT_BUS_FRAME_END					STRING_CHAR_CR
 #define AT_BUS_REPLY_TAB					"     "
-#if (defined ATM) && ((defined UHFM) || (defined LVRM) || (defined DDRM) || (defined RRM))
+#ifdef ATM
 #define AT_BUS_COMMAND_NVM
 #endif
 #if (defined ATM) && (defined UHFM)
@@ -150,7 +150,7 @@ static const AT_BUS_command_t AT_BUS_COMMAND_LIST[] = {
 #endif
 #if (defined ATM) && (defined AT_BUS_COMMAND_NVM)
 	{PARSER_MODE_HEADER,  "AT$NVMR=", "address[hex]", "Read NVM byte", _AT_BUS_nvm_read_callback},
-	{PARSER_MODE_HEADER, "AT$NVMW=", "address[hex],value[hex]", "Write NVM byte", _AT_BUS_nvm_write_callback},
+	{PARSER_MODE_HEADER,  "AT$NVMW=", "address[hex],value[hex]", "Write NVM byte", _AT_BUS_nvm_write_callback},
 #endif
 #if (defined ATM) && (defined UHFM) && (defined AT_BUS_COMMAND_NVM)
 	{PARSER_MODE_COMMAND, "AT$ID?", STRING_NULL, "Get Sigfox EP ID", _AT_BUS_get_id_callback},
@@ -609,14 +609,14 @@ static void _AT_BUS_nvm_read_callback(void) {
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	int32_t address = 0;
 	uint8_t nvm_data = 0;
-	// Read address parameters.
+	// Read address parameter.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &address);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Read byte at requested address.
 	nvm_status = NVM_read_byte((NVM_address_t) address, &nvm_data);
 	NVM_stack_exit_error(ERROR_BASE_NVM + nvm_status);
 	// Print data.
-	_AT_BUS_reply_add_value(nvm_data, STRING_FORMAT_HEXADECIMAL, 1);
+	_AT_BUS_reply_add_value((int32_t) nvm_data, STRING_FORMAT_HEXADECIMAL, 1);
 	_AT_BUS_reply_send();
 	_AT_BUS_print_ok();
 	return;
@@ -635,10 +635,10 @@ static void _AT_BUS_nvm_write_callback(void) {
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	int32_t address = 0;
 	int32_t value = 0;
-	// Read address parameters.
+	// Read address parameter.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, AT_BUS_CHAR_SEPARATOR, &address);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
-	// Read value.
+	// Read value parameter.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_HEXADECIMAL, STRING_CHAR_NULL, &value);
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Read byte at requested address.
@@ -1333,15 +1333,15 @@ void AT_BUS_init(void) {
 	// Local variables.
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	LBUS_status_t lbus_status = LBUS_SUCCESS;
-	NODE_address_t self_address = 0;
+	uint8_t self_address = 0;
 	// Read self address in NVM.
 	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
 	NVM_stack_error();
 	// Init LBUS layer.
-	lbus_status = LBUS_init(self_address, &_AT_BUS_fill_rx_buffer);
+	lbus_status = LBUS_init((NODE_address_t) self_address, &_AT_BUS_fill_rx_buffer);
 	LBUS_stack_error();
 	// Init registers.
-	NODE_init(self_address);
+	NODE_init((NODE_address_t) self_address);
 	// Init context.
 	_AT_BUS_reset_parser();
 	// Enable receiver.

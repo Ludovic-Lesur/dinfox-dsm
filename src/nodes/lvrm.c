@@ -24,7 +24,6 @@
 /*******************************************************************/
 typedef struct {
 	DINFOX_bit_representation_t rlstst;
-	uint32_t lt6106_offset_current_ua;
 } LVRM_context_t;
 
 /*** LVRM local global variables ***/
@@ -37,10 +36,46 @@ static LVRM_context_t lvrm_ctx;
 
 #ifdef LVRM
 /*******************************************************************/
+static void _LVRM_load_fixed_configuration(void) {
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// BMS flag.
+#ifdef LVRM_MODE_BMS
+	DINFOX_write_field(&reg_value, &reg_mask, 0b1, LVRM_REG_CONFIGURATION_0_MASK_BMSF);
+#else
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0, LVRM_REG_CONFIGURATION_0_MASK_BMSF);
+#endif
+	// Relay control mode.
+#ifdef LVRM_RLST_FORCED_HARDWARE
+	DINFOX_write_field(&reg_value, &reg_mask, 0b1, LVRM_REG_CONFIGURATION_0_MASK_RLFH);
+#else
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0, LVRM_REG_CONFIGURATION_0_MASK_RLFH);
+#endif
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+}
+#endif
+
+#ifdef LVRM
+/*******************************************************************/
+static void _LVRM_load_dynamic_configuration(void) {
+	// Local variables.
+	uint8_t reg_addr = 0;
+	uint32_t reg_value = 0;
+	// Load configuration registers from NVM.
+	for (reg_addr=LVRM_REG_ADDR_CONFIGURATION_1 ; reg_addr<LVRM_REG_ADDR_STATUS_1 ; reg_addr++) {
+		// Read NVM.
+		reg_value = DINFOX_read_nvm_register(reg_addr);
+		// Write register.
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, DINFOX_REG_MASK_ALL, reg_value);
+	}
+}
+#endif
+
+#ifdef LVRM
+/*******************************************************************/
 static void _LVRM_reset_analog_data(void) {
 	// Local variables.
-	NVM_status_t nvm_status = NVM_SUCCESS;
-	uint8_t lt6106_offset_current_ma = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
@@ -52,10 +87,6 @@ static void _LVRM_reset_analog_data(void) {
 	// IOUT.
 	DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
-	// Read LT6106 offset current.
-	nvm_status = NVM_read_byte(NVM_ADDRESS_LT6106_OFFSET_CURRENT_MA, &lt6106_offset_current_ma);
-	NVM_stack_error();
-	lvrm_ctx.lt6106_offset_current_ua = (nvm_status == NVM_SUCCESS) ? (1000 * ((uint32_t) lt6106_offset_current_ma)) : 0;
 }
 #endif
 
@@ -65,10 +96,10 @@ static void _LVRM_reset_analog_data(void) {
 /*******************************************************************/
 void LVRM_init_registers(void) {
 	// Read init state.
-	LVRM_update_register(LVRM_REG_ADDR_CONFIGURATION_0);
-	LVRM_update_register(LVRM_REG_ADDR_CONFIGURATION_1);
 	LVRM_update_register(LVRM_REG_ADDR_STATUS_1);
 	// Load defaults values.
+	_LVRM_load_fixed_configuration();
+	_LVRM_load_dynamic_configuration();
 	_LVRM_reset_analog_data();
 }
 #endif
@@ -82,19 +113,6 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr) {
 	uint32_t reg_mask = 0;
 	// Check address.
 	switch (reg_addr) {
-	case LVRM_REG_ADDR_CONFIGURATION_0:
-		// BMSF.
-#ifdef LVRM_MODE_BMS
-		DINFOX_write_field(&reg_value, &reg_mask, 0b1, LVRM_REG_CONFIGURATION_0_MASK_BMSF);
-#else
-		DINFOX_write_field(&reg_value, &reg_mask, 0b0, LVRM_REG_CONFIGURATION_0_MASK_BMSF);
-#endif
-		break;
-	case LVRM_REG_ADDR_CONFIGURATION_1:
-		// VBATT thresholds.
-		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(LVRM_BMS_VBATT_LOW_THRESHOLD_MV), LVRM_REG_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD);
-		DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(LVRM_BMS_VBATT_HIGH_THRESHOLD_MV), LVRM_REG_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD);
-		break;
 	case LVRM_REG_ADDR_STATUS_1:
 		// Relay state.
 #ifdef LVRM_RLST_FORCED_HARDWARE
@@ -121,18 +139,26 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	NODE_status_t status = NODE_SUCCESS;
 	POWER_status_t power_status = POWER_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
-	NVM_status_t nvm_status = NVM_SUCCESS;
 #if !(defined LVRM_RLST_FORCED_HARDWARE) && !(defined LVRM_MODE_BMS)
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	DINFOX_bit_representation_t rlst = DINFOX_BIT_ERROR;
 #endif
 	uint32_t reg_value = 0;
 	uint32_t output_current_ua = 0;
+	uint32_t reg_config_2 = 0;
+	uint32_t reg_config_2_mask = 0;
 	// Read register.
 	status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
 	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
+	case LVRM_REG_ADDR_CONFIGURATION_1:
+	case LVRM_REG_ADDR_CONFIGURATION_2:
+		// Store new value in NVM.
+		if (reg_mask != 0) {
+			DINFOX_write_nvm_register(reg_addr, reg_value);
+		}
+		break;
 	case LVRM_REG_ADDR_CONTROL_1:
 		// RLST.
 		if ((reg_mask & LVRM_REG_CONTROL_1_MASK_RLST) != 0) {
@@ -172,10 +198,9 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				// Get output current.
 				adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &output_current_ua);
 				ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-				// Update offset in NVM and locally (value is rounded to upper mA).
-				NVM_write_byte(NVM_ADDRESS_LT6106_OFFSET_CURRENT_MA, (uint8_t) ((output_current_ua / 1000) + 1));
-				NVM_stack_error();
-				lvrm_ctx.lt6106_offset_current_ua = output_current_ua;
+				// Write register and NVM.
+				DINFOX_write_field(&reg_config_2, &reg_config_2_mask, DINFOX_convert_ua(output_current_ua), LVRM_REG_CONFIGURATION_2_MASK_IOUT_OFFSET);
+				NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
 			}
 		}
 		break;
@@ -199,6 +224,8 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	uint32_t adc_data = 0;
 	uint32_t vcom_mv = 0;
+	uint32_t lt6106_offset_current_ua = 0;
+	uint32_t reg_config_2 = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
@@ -233,8 +260,11 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status) {
 			adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &adc_data);
 			ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 			if (adc1_status == ADC_SUCCESS) {
+				// Read IOUT offset.
+				NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_CONFIGURATION_2, &reg_config_2);
+				lt6106_offset_current_ua = DINFOX_get_ua(DINFOX_read_field(reg_config_2, LVRM_REG_CONFIGURATION_2_MASK_IOUT_OFFSET));
 				// Remove offset.
-				adc_data = (adc_data < lvrm_ctx.lt6106_offset_current_ua) ? 0 : (adc_data - lvrm_ctx.lt6106_offset_current_ua);
+				adc_data = (adc_data < lt6106_offset_current_ua) ? 0 : (adc_data - lt6106_offset_current_ua);
 				DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_ua(adc_data), LVRM_REG_ANALOG_DATA_2_MASK_IOUT);
 			}
 		}
@@ -264,17 +294,25 @@ NODE_status_t LVRM_bms_process(void) {
 	NODE_status_t status = NODE_SUCCESS;
 	ADC_status_t adc1_status = ADC_SUCCESS;
 	LOAD_status_t load_status = LOAD_SUCCESS;
+	uint32_t reg_config_1 = 0;
 	uint32_t vbatt_mv = 0;
+	uint32_t vbatt_low_threshold_mv = 0;
+	uint32_t vbatt_high_threshold_mv = 0;
 	// Check battery voltage.
 	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &vbatt_mv);
 	ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+	// Read thresholds in registers.
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REG_ADDR_CONFIGURATION_1, &reg_config_1);
+	// Convert thresholds in mV.
+	vbatt_low_threshold_mv =  DINFOX_get_mv(DINFOX_read_field(reg_config_1, LVRM_REG_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD));
+	vbatt_high_threshold_mv = DINFOX_get_mv(DINFOX_read_field(reg_config_1, LVRM_REG_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD));
 	// Check battery voltage.
-	if (vbatt_mv < LVRM_BMS_VBATT_LOW_THRESHOLD_MV) {
+	if (vbatt_mv < vbatt_low_threshold_mv) {
 		// Open relay.
 		load_status = LOAD_set_output_state(0);
 		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 	}
-	if (vbatt_mv > LVRM_BMS_VBATT_HIGH_THRESHOLD_MV) {
+	if (vbatt_mv > vbatt_high_threshold_mv) {
 		// Close relay.
 		load_status = LOAD_set_output_state(1);
 		LOAD_exit_error(NODE_ERROR_BASE_LOAD);

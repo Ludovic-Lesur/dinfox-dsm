@@ -30,7 +30,7 @@ typedef enum {
 
 /*** SM number of specific registers ***/
 
-#define SM_NUMBER_OF_SPECIFIC_REG				(SM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
+#define SM_NUMBER_OF_SPECIFIC_REG			(SM_REG_ADDR_LAST - COMMON_REG_ADDR_LAST)
 
 /*** SM registers mask ***/
 
