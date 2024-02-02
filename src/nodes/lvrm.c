@@ -95,6 +95,20 @@ static void _LVRM_reset_analog_data(void) {
 #ifdef LVRM
 /*******************************************************************/
 void LVRM_init_registers(void) {
+#ifdef NVM_FACTORY_RESET
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// VBATT thresholds in BMS mode.
+	DINFOX_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV,  LVRM_REG_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD);
+	DINFOX_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REG_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+	// IOUT offset.
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, 0, LVRM_REG_CONFIGURATION_2_MASK_IOUT_OFFSET);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REG_ADDR_CONFIGURATION_2, reg_mask, reg_value);
+#endif
 	// Read init state.
 	LVRM_update_register(LVRM_REG_ADDR_STATUS_1);
 	// Load defaults values.

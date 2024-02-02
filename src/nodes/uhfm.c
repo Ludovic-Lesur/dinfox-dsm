@@ -82,13 +82,13 @@ static void _UHFM_load_dynamic_configuration(void) {
 	reg_mask = 0;
 	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_dbm((int16_t) TX_POWER_DBM_EIRP), UHFM_REG_CONFIGURATION_0_MASK_TX_POWER);
 	DINFOX_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REG_CONFIGURATION_0_MASK_RC);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
 	// TIFU and TCONF.
 	reg_value = 0;
 	reg_mask = 0;
 	DINFOX_write_field(&reg_value, &reg_mask, T_IFU_MS,  UHFM_REG_CONFIGURATION_1_MASK_TIFU);
 	DINFOX_write_field(&reg_value, &reg_mask, T_CONF_MS, UHFM_REG_CONFIGURATION_1_MASK_TCONF);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
 }
 #endif
 
@@ -375,6 +375,22 @@ void UHFM_init_registers(void) {
 	// Local variables.
 	uint8_t idx = 0;
 	uint8_t sigfox_ep_tab[SIGFOX_EP_KEY_SIZE_BYTES];
+#ifdef NVM_FACTORY_RESET
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// TX power, NFR, bit rate and RC.
+	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_dbm((int16_t) TX_POWER_DBM_EIRP), UHFM_REG_CONFIGURATION_0_MASK_TX_POWER);
+	DINFOX_write_field(&reg_value, &reg_mask, 0b11, UHFM_REG_CONFIGURATION_0_MASK_NFR);
+	DINFOX_write_field(&reg_value, &reg_mask, 0b01, UHFM_REG_CONFIGURATION_0_MASK_BR);
+	DINFOX_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REG_CONFIGURATION_0_MASK_RC);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+	// TCONF and TIFU.
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, T_IFU_MS,  UHFM_REG_CONFIGURATION_1_MASK_TIFU);
+	DINFOX_write_field(&reg_value, &reg_mask, T_CONF_MS, UHFM_REG_CONFIGURATION_1_MASK_TCONF);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+#endif
 	// Init flags.
 	uhfm_flags.all = 0;
 	// Sigfox EP ID register.

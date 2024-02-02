@@ -300,6 +300,24 @@ errors:
 #ifdef GPSM
 /*******************************************************************/
 void GPSM_init_registers(void) {
+#ifdef NVM_FACTORY_RESET
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// Timeouts.
+	DINFOX_write_field(&reg_value, &reg_mask, GPSM_TIME_TIMEOUT_SECONDS,   GPSM_REG_CONFIGURATION_1_MASK_TIME_TIMEOUT);
+	DINFOX_write_field(&reg_value, &reg_mask, GPSM_GEOLOC_TIMEOUT_SECONDS, GPSM_REG_CONFIGURATION_1_MASK_GEOLOC_TIMEOUT);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+	// Timepulse settings.
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_FREQUENCY_HZ, GPSM_REG_CONFIGURATION_2_MASK_TP_FREQUENCY);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, reg_mask, reg_value);
+	reg_value = 0;
+	reg_mask = 0;
+	DINFOX_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_DUTY_CYCLE, GPSM_REG_CONFIGURATION_3_MASK_TP_DUTY_CYCLE);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_3, reg_mask, reg_value);
+#endif
 	// Init flags.
 	gpsm_ctx.flags.all = 0;
 	// Read init state.

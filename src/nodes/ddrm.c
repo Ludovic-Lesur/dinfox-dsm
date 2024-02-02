@@ -89,6 +89,14 @@ static void _DDRM_reset_analog_data(void) {
 #ifdef DDRM
 /*******************************************************************/
 void DDRM_init_registers(void) {
+#ifdef NVM_FACTORY_RESET
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// IOUT offset.
+	DINFOX_write_field(&reg_value, &reg_mask, 0, DDRM_REG_CONFIGURATION_1_MASK_IOUT_OFFSET);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+#endif
 	// Read init state.
 	DDRM_update_register(DDRM_REG_ADDR_STATUS_1);
 	// Load default values.

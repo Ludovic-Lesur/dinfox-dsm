@@ -102,6 +102,15 @@ static void _BPSM_reset_analog_data(void) {
 #ifdef BPSM
 /*******************************************************************/
 void BPSM_init_registers(void) {
+#ifdef NVM_FACTORY_RESET
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// CHEN toggle threshold and period.
+	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS),  BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
+	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+#endif
 	// Read init state.
 	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
 	// Load default values.

@@ -89,7 +89,15 @@ static void _RRM_reset_analog_data(void) {
 #ifdef RRM
 /*******************************************************************/
 void RRM_init_registers(void) {
-	// Status and control register 1.
+#ifdef NVM_FACTORY_RESET
+	// Local variables.
+	uint32_t reg_value = 0;
+	uint32_t reg_mask = 0;
+	// IOUT offset.
+	DINFOX_write_field(&reg_value, &reg_mask, 0, RRM_REG_CONFIGURATION_1_MASK_IOUT_OFFSET);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+#endif
+	// Read init state.
 	RRM_update_register(RRM_REG_ADDR_STATUS_1);
 	// Load default values.
 	_RRM_load_fixed_configuration();
