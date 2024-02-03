@@ -43,9 +43,8 @@ void POWER_init(void) {
 	GPIO_configure(&GPIO_SEN_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef UHFM
-	// Radio domain.
-	GPIO_configure(&GPIO_RF_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 	GPIO_configure(&GPIO_TCXO_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+	GPIO_configure(&GPIO_RF_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 	// Disable all domains by default.
 	for (domain=0 ; domain<POWER_DOMAIN_LAST ; domain++) {
@@ -105,10 +104,14 @@ POWER_status_t POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode
 		break;
 #endif
 #ifdef UHFM
+	case POWER_DOMAIN_TCXO:
+		// Turn TCXO on.
+		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 1);
+		delay_ms = POWER_ON_DELAY_MS_TCXO;
+		break;
 	case POWER_DOMAIN_RADIO:
 		// Turn radio on and init S2LP driver.
 		GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
-		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 1);
 		S2LP_init();
 		delay_ms = POWER_ON_DELAY_MS_RADIO;
 		break;
@@ -168,10 +171,13 @@ POWER_status_t POWER_disable(POWER_domain_t domain) {
 		break;
 #endif
 #ifdef UHFM
+	case POWER_DOMAIN_TCXO:
+		// Turn TCXO off.
+		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 0);
+		break;
 	case POWER_DOMAIN_RADIO:
 		// Turn radio off and release S2LP driver.
 		S2LP_de_init();
-		GPIO_write(&GPIO_TCXO_POWER_ENABLE, 0);
 		GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
 		break;
 #endif
