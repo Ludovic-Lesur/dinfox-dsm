@@ -321,7 +321,7 @@ NODE_status_t BPSM_charge_process(uint32_t process_period_seconds) {
 		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &vsrc_mv);
 		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
 		// Read threshold and period.
-		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, &reg_config_1);
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONFIGURATION_1, &reg_config_1);
 		vsrc_threshold_mv = DINFOX_get_mv(DINFOX_read_field(reg_config_1, BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD));
 		toggle_period_seconds = DINFOX_get_seconds(DINFOX_read_field(reg_config_1, BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
 		// Check voltage.
