@@ -16,6 +16,10 @@
 
 /*** Board options ***/
 
+#ifdef NVM_FACTORY_RESET
+#define NODE_ADDRESS						0x7F
+#endif
+
 #ifdef LVRM
 #ifdef NVM_FACTORY_RESET
 #define LVRM_BMS_VBATT_LOW_THRESHOLD_MV		10000

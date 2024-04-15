@@ -1334,6 +1334,10 @@ void AT_BUS_init(void) {
 	NVM_status_t nvm_status = NVM_SUCCESS;
 	LBUS_status_t lbus_status = LBUS_SUCCESS;
 	uint8_t self_address = 0;
+#ifdef NVM_FACTORY_RESET
+	nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, NODE_ADDRESS);
+	NVM_stack_error();
+#endif
 	// Read self address in NVM.
 	nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
 	NVM_stack_error();
