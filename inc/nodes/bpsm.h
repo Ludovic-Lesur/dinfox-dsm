@@ -8,9 +8,8 @@
 #ifndef __BPSM_H__
 #define __BPSM_H__
 
+#include "adc.h"
 #include "bpsm_reg.h"
-#include "common.h"
-#include "common_reg.h"
 #include "dinfox.h"
 #include "node.h"
 
@@ -24,15 +23,7 @@
 /*** BPSM global variables ***/
 
 #ifdef BPSM
-static const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
+extern const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST];
 #endif
 
 /*** BPSM functions ***/

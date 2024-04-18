@@ -26,6 +26,20 @@ typedef struct {
 	DINFOX_bit_representation_t ddenst;
 } DDRM_context_t;
 
+/*** DDRM global variables ***/
+
+#ifdef DDRM
+const DINFOX_register_access_t NODE_REG_ACCESS[DDRM_REG_ADDR_LAST] = {
+	COMMON_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+#endif
+
 /*** DDRM local global variables ***/
 
 #ifdef DDRM

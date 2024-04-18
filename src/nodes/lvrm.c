@@ -26,6 +26,21 @@ typedef struct {
 	DINFOX_bit_representation_t rlstst;
 } LVRM_context_t;
 
+/*** LVRM global variables ***/
+
+#ifdef LVRM
+const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST] = {
+	COMMON_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+#endif
+
 /*** LVRM local global variables ***/
 
 #ifdef LVRM

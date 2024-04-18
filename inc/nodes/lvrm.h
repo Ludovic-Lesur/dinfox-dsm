@@ -8,8 +8,7 @@
 #ifndef __LVRM_H__
 #define __LVRM_H__
 
-#include "common.h"
-#include "common_reg.h"
+#include "adc.h"
 #include "dinfox.h"
 #include "lvrm_reg.h"
 #include "node.h"
@@ -24,16 +23,7 @@
 /*** LVRM global variables ***/
 
 #ifdef LVRM
-static const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
+extern const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST];
 #endif
 
 /*** LVRM functions ***/

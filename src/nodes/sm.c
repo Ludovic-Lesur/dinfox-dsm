@@ -18,6 +18,21 @@
 #include "sht3x.h"
 #include "sm_reg.h"
 
+/*** SM global variables ***/
+
+#ifdef SM
+const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST] = {
+	COMMON_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+#endif
+
 /*** SM local functions ***/
 
 #ifdef SM

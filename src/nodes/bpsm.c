@@ -25,6 +25,20 @@ typedef struct {
 #endif
 } BPSM_context_t;
 
+/*** BPSM global variables ***/
+
+#ifdef BPSM
+const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST] = {
+	COMMON_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+#endif
+
 /*** BPSM local global variables ***/
 
 #ifdef BPSM

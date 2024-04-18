@@ -8,9 +8,8 @@
 #ifndef __DDRM_H__
 #define __DDRM_H__
 
+#include "adc.h"
 #include "ddrm_reg.h"
-#include "common.h"
-#include "common_reg.h"
 #include "dinfox.h"
 #include "node.h"
 
@@ -24,15 +23,7 @@
 /*** DDRM global variables ***/
 
 #ifdef DDRM
-static const DINFOX_register_access_t NODE_REG_ACCESS[DDRM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
+extern const DINFOX_register_access_t NODE_REG_ACCESS[DDRM_REG_ADDR_LAST];
 #endif
 
 /*** DDRM functions ***/

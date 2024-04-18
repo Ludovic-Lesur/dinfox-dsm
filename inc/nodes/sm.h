@@ -8,8 +8,7 @@
 #ifndef __SM_H__
 #define __SM_H__
 
-#include "common.h"
-#include "common_reg.h"
+#include "adc.h"
 #include "dinfox.h"
 #include "sm_reg.h"
 #include "node.h"
@@ -24,16 +23,7 @@
 /*** SM global variables ***/
 
 #ifdef SM
-static const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
+extern const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST];
 #endif
 
 /*** SM functions ***/

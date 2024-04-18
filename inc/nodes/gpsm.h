@@ -8,8 +8,7 @@
 #ifndef __GPSM_H__
 #define __GPSM_H__
 
-#include "common.h"
-#include "common_reg.h"
+#include "adc.h"
 #include "dinfox.h"
 #include "gpsm_reg.h"
 #include "node.h"
@@ -24,23 +23,7 @@
 /*** GPSM global variables ***/
 
 #ifdef GPSM
-static const DINFOX_register_access_t NODE_REG_ACCESS[GPSM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
+extern const DINFOX_register_access_t NODE_REG_ACCESS[GPSM_REG_ADDR_LAST];
 #endif
 
 /*** GPSM functions ***/

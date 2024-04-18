@@ -26,6 +26,18 @@ typedef union {
 	DINFOX_bit_representation_t renst;
 } RRM_context_t;
 
+/*** RRM global variables ***/
+
+#ifdef RRM
+const DINFOX_register_access_t NODE_REG_ACCESS[RRM_REG_ADDR_LAST] = {
+	COMMON_REG_ACCESS
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_WRITE,
+	DINFOX_REG_ACCESS_READ_ONLY,
+	DINFOX_REG_ACCESS_READ_ONLY
+};
+#endif
+
 /*** RRM local global variables ***/
 
 #ifdef RRM

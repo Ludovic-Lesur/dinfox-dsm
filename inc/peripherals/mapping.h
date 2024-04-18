@@ -9,169 +9,168 @@
 #define __MAPPING_H__
 
 #include "gpio.h"
-#include "gpio_reg.h"
 
 // ADC inputs.
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined GPSM)
-static const GPIO_pin_t GPIO_ADC1_IN0 =				(GPIO_pin_t) {GPIOA, 0, 0, 0};
+extern const GPIO_pin_t GPIO_ADC1_IN0;
 #endif
 #if ((defined LVRM) && (defined HW2_0)) || (defined GPSM)
-static const GPIO_pin_t GPIO_ADC1_IN1 =				(GPIO_pin_t) {GPIOA, 0, 1, 0};
+extern const GPIO_pin_t GPIO_ADC1_IN1;
 #endif
 #if ((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM)
-static const GPIO_pin_t GPIO_ADC1_IN4 =				(GPIO_pin_t) {GPIOA, 0, 4, 0};
+extern const GPIO_pin_t GPIO_ADC1_IN4;
 #endif
 #if (defined LVRM) || (defined BPSM) || (defined RRM)
-static const GPIO_pin_t GPIO_ADC1_IN6 =				(GPIO_pin_t) {GPIOA, 0, 6, 0};
+extern const GPIO_pin_t GPIO_ADC1_IN6;
 #endif
 #if (defined DDRM) || (defined RRM) || (defined UHFM)
-static const GPIO_pin_t GPIO_ADC1_IN7 =				(GPIO_pin_t) {GPIOA, 0, 7, 0};
+extern const GPIO_pin_t GPIO_ADC1_IN7;
 #endif
 // Monitoring enable.
 #if (defined LVRM) && (defined HW2_0)
-static const GPIO_pin_t GPIO_MNTR_EN =				(GPIO_pin_t) {GPIOB, 1, 7, 0};
+extern const GPIO_pin_t GPIO_MNTR_EN;
 #endif
 // Charge control and status.
 #ifdef BPSM
-static const GPIO_pin_t GPIO_MNTR_EN =				(GPIO_pin_t) {GPIOA, 0, 1, 0};
-static const GPIO_pin_t GPIO_CHRG_ST=				(GPIO_pin_t) {GPIOA, 0, 8, 0};
-static const GPIO_pin_t GPIO_CHRG_EN =				(GPIO_pin_t) {GPIOA, 0, 9, 0};
+extern const GPIO_pin_t GPIO_MNTR_EN;
+extern const GPIO_pin_t GPIO_CHRG_ST;
+extern const GPIO_pin_t GPIO_CHRG_EN;
 #endif
 // Analog front-end.
 #ifdef SM
-static const GPIO_pin_t GPIO_ANA_POWER_ENABLE =		(GPIO_pin_t) {GPIOA, 0, 8, 0};
-static const GPIO_pin_t GPIO_AIN0 =					(GPIO_pin_t) {GPIOA, 0, 5, 0};
-static const GPIO_pin_t GPIO_AIN1 =					(GPIO_pin_t) {GPIOA, 0, 6, 0};
-static const GPIO_pin_t GPIO_AIN2 =					(GPIO_pin_t) {GPIOA, 0, 7, 0};
-static const GPIO_pin_t GPIO_AIN3 =					(GPIO_pin_t) {GPIOB, 1, 0, 0};
+extern const GPIO_pin_t GPIO_ANA_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_AIN0;
+extern const GPIO_pin_t GPIO_AIN1;
+extern const GPIO_pin_t GPIO_AIN2;
+extern const GPIO_pin_t GPIO_AIN3;
 #endif
 // Digital front-end.
 #ifdef SM
-static const GPIO_pin_t GPIO_DIG_POWER_ENABLE =		(GPIO_pin_t) {GPIOB, 1, 3, 0};
-static const GPIO_pin_t GPIO_DIO0 =					(GPIO_pin_t) {GPIOA, 0, 0, 0};
-static const GPIO_pin_t GPIO_DIO1 =					(GPIO_pin_t) {GPIOA, 0, 1, 0};
-static const GPIO_pin_t GPIO_DIO2 =					(GPIO_pin_t) {GPIOA, 0, 9, 0};
-static const GPIO_pin_t GPIO_DIO3 =					(GPIO_pin_t) {GPIOA, 0, 10, 0};
+extern const GPIO_pin_t GPIO_DIG_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_DIO0;
+extern const GPIO_pin_t GPIO_DIO1;
+extern const GPIO_pin_t GPIO_DIO2;
+extern const GPIO_pin_t GPIO_DIO3;
 #endif
 // Digital sensors.
 #ifdef SM
-static const GPIO_pin_t GPIO_SEN_POWER_ENABLE =		(GPIO_pin_t) {GPIOA, 0, 15, 0};
-static const GPIO_pin_t GPIO_I2C1_SCL =				(GPIO_pin_t) {GPIOB, 1, 6, 1}; // AF1 = I2C1_SCL.
-static const GPIO_pin_t GPIO_I2C1_SDA =				(GPIO_pin_t) {GPIOB, 1, 7, 1}; // AF1 = I2C1_SDA.
+extern const GPIO_pin_t GPIO_SEN_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_I2C1_SCL;
+extern const GPIO_pin_t GPIO_I2C1_SDA;
 #endif
 // Load control.
 #if (defined LVRM) && (defined HW1_0)
-static const GPIO_pin_t GPIO_OUT_EN =				(GPIO_pin_t) {GPIOA, 0, 7, 0};
+extern const GPIO_pin_t GPIO_OUT_EN;
 #endif
 #if (defined LVRM) && (defined HW2_0)
-static const GPIO_pin_t GPIO_DC_DC_POWER_ENABLE =	(GPIO_pin_t) {GPIOB, 1, 6, 0};
-static const GPIO_pin_t GPIO_COIL_POWER_ENABLE =	(GPIO_pin_t) {GPIOA, 0, 9, 0};
-static const GPIO_pin_t GPIO_OUT_SELECT =			(GPIO_pin_t) {GPIOA, 0, 10, 0};
-static const GPIO_pin_t GPIO_OUT_CONTROL =			(GPIO_pin_t) {GPIOA, 0, 15, 0};
+extern const GPIO_pin_t GPIO_DC_DC_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_COIL_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_OUT_SELECT;
+extern const GPIO_pin_t GPIO_OUT_CONTROL;
 #endif
 #ifdef BPSM
-static const GPIO_pin_t GPIO_OUT_EN =				(GPIO_pin_t) {GPIOA, 0, 5, 0};
+extern const GPIO_pin_t GPIO_OUT_EN;
 #endif
 #ifdef DDRM
-static const GPIO_pin_t GPIO_OUT_EN =				(GPIO_pin_t) {GPIOA, 0, 6, 0};
+extern const GPIO_pin_t GPIO_OUT_EN;
 #endif
 #ifdef RRM
-static const GPIO_pin_t GPIO_OUT_EN =				(GPIO_pin_t) {GPIOA, 0, 0, 0};
+extern const GPIO_pin_t GPIO_OUT_EN;
 #endif
 // Radio.
 #ifdef UHFM
-static const GPIO_pin_t GPIO_SPI1_SCK = 			(GPIO_pin_t) {GPIOB, 1, 3, 0};
-static const GPIO_pin_t GPIO_SPI1_MISO = 			(GPIO_pin_t) {GPIOB, 1, 4, 0};
-static const GPIO_pin_t GPIO_SPI1_MOSI = 			(GPIO_pin_t) {GPIOB, 1, 5, 0};
-static const GPIO_pin_t GPIO_S2LP_CS = 				(GPIO_pin_t) {GPIOA, 0, 15, 0};
+extern const GPIO_pin_t GPIO_SPI1_SCK;
+extern const GPIO_pin_t GPIO_SPI1_MISO;
+extern const GPIO_pin_t GPIO_SPI1_MOSI;
+extern const GPIO_pin_t GPIO_S2LP_CS;
 // RF power enable.
-static const GPIO_pin_t GPIO_RF_POWER_ENABLE =		(GPIO_pin_t) {GPIOB, 1, 8, 0};
-static const GPIO_pin_t GPIO_RF_TX_ENABLE =			(GPIO_pin_t) {GPIOB, 1, 7, 0};
-static const GPIO_pin_t GPIO_RF_RX_ENABLE =			(GPIO_pin_t) {GPIOB, 1, 6, 0};
+extern const GPIO_pin_t GPIO_RF_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_RF_TX_ENABLE;
+extern const GPIO_pin_t GPIO_RF_RX_ENABLE;
 // TCXO power control.
-static const GPIO_pin_t GPIO_TCXO_POWER_ENABLE =	(GPIO_pin_t) {GPIOA, 0, 8, 0};
+extern const GPIO_pin_t GPIO_TCXO_POWER_ENABLE;
 // S2LP GPIOs.
-static const GPIO_pin_t GPIO_S2LP_SDN =				(GPIO_pin_t) {GPIOA, 0, 9, 0};
-static const GPIO_pin_t GPIO_S2LP_GPIO0 =			(GPIO_pin_t) {GPIOA, 0, 11, 0};
+extern const GPIO_pin_t GPIO_S2LP_SDN;
+extern const GPIO_pin_t GPIO_S2LP_GPIO0;
 #endif
 // GPS.
 #ifdef GPSM
-static const GPIO_pin_t GPIO_GPS_POWER_ENABLE =		(GPIO_pin_t) {GPIOB, 1, 7, 0};
-static const GPIO_pin_t GPIO_GPS_RESET =			(GPIO_pin_t) {GPIOB, 1, 3, 0};
-static const GPIO_pin_t GPIO_GPS_VBCKP =			(GPIO_pin_t) {GPIOA, 0, 8, 0};
-static const GPIO_pin_t GPIO_GPS_TIMEPULSE =		(GPIO_pin_t) {GPIOA, 0, 15, 0};
-static const GPIO_pin_t GPIO_ANT_POWER_ENABLE =		(GPIO_pin_t) {GPIOB, 1, 6, 0};
-static const GPIO_pin_t GPIO_USART2_TX =			(GPIO_pin_t) {GPIOA, 0, 9, 4}; // AF4 = USART2_TX.
-static const GPIO_pin_t GPIO_USART2_RX =			(GPIO_pin_t) {GPIOA, 0, 10, 4}; // AF4 = USART2_RX.
+extern const GPIO_pin_t GPIO_GPS_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_GPS_RESET;
+extern const GPIO_pin_t GPIO_GPS_VBCKP;
+extern const GPIO_pin_t GPIO_GPS_TIMEPULSE;
+extern const GPIO_pin_t GPIO_ANT_POWER_ENABLE;
+extern const GPIO_pin_t GPIO_USART2_TX;
+extern const GPIO_pin_t GPIO_USART2_RX;
 #endif
 // LPUART1 (RS485).
 #if ((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM)
-static const GPIO_pin_t GPIO_LPUART1_TX =			(GPIO_pin_t) {GPIOB, 1, 6, 6}; // AF6 = LPUART1_TX.
-static const GPIO_pin_t GPIO_LPUART1_RX =			(GPIO_pin_t) {GPIOB, 1, 7, 6}; // AF6 = LPUART1_RX.
+extern const GPIO_pin_t GPIO_LPUART1_TX;
+extern const GPIO_pin_t GPIO_LPUART1_RX;
 
 #endif
 #if ((defined LVRM) && (defined HW2_0)) || (defined SM) || (defined UHFM) || (defined GPSM)
-static const GPIO_pin_t GPIO_LPUART1_TX =			(GPIO_pin_t) {GPIOA, 0, 2, 6}; // AF6 = LPUART1_TX.
-static const GPIO_pin_t GPIO_LPUART1_RX =			(GPIO_pin_t) {GPIOA, 0, 3, 6}; // AF6 = LPUART1_RX.
+extern const GPIO_pin_t GPIO_LPUART1_TX;
+extern const GPIO_pin_t GPIO_LPUART1_RX;
 #endif
-static const GPIO_pin_t GPIO_LPUART1_DE =			(GPIO_pin_t) {GPIOB, 1, 1, 4}; // AF4 = LPUART1_DE.
+extern const GPIO_pin_t GPIO_LPUART1_DE;
 #if ((defined LVRM) && (defined HW1_0)) || (defined DDRM) || (defined RRM)
-static const GPIO_pin_t GPIO_LPUART1_NRE =			(GPIO_pin_t) {GPIOA, 0, 9, 0};
+extern const GPIO_pin_t GPIO_LPUART1_NRE;
 #endif
 #ifdef BPSM
-static const GPIO_pin_t GPIO_LPUART1_NRE =			(GPIO_pin_t) {GPIOA, 0, 10, 0};
+extern const GPIO_pin_t GPIO_LPUART1_NRE;
 #endif
 #if (defined SM) || (defined GPSM)
-static const GPIO_pin_t GPIO_LPUART1_NRE =			(GPIO_pin_t) {GPIOA, 0, 4, 0};
+extern const GPIO_pin_t GPIO_LPUART1_NRE;
 #endif
 #ifdef UHFM
-static const GPIO_pin_t GPIO_LPUART1_NRE =			(GPIO_pin_t) {GPIOB, 1, 2, 0};
+extern const GPIO_pin_t GPIO_LPUART1_NRE;
 #endif
 #if (defined LVRM) && (defined HW2_0)
-static const GPIO_pin_t GPIO_LPUART1_NRE =			(GPIO_pin_t) {GPIOA, 0, 7, 0};
+extern const GPIO_pin_t GPIO_LPUART1_NRE;
 #endif
 // RGB LED.
 #if (defined LVRM) && (defined HW1_0)
-static const GPIO_pin_t GPIO_LED_RED =				(GPIO_pin_t) {GPIOA, 0, 10, 5}; // AF5 = TIM2_CH3.
-static const GPIO_pin_t GPIO_LED_GREEN =			(GPIO_pin_t) {GPIOA, 0, 1, 2}; // AF2 = TIM2_CH2.
-static const GPIO_pin_t GPIO_LED_BLUE =				(GPIO_pin_t) {GPIOA, 0, 5, 5}; // AF5 = TIM2_CH1.
+extern const GPIO_pin_t GPIO_LED_RED;
+extern const GPIO_pin_t GPIO_LED_GREEN;
+extern const GPIO_pin_t GPIO_LED_BLUE;
 #endif
 #if (defined LVRM) && (defined HW2_0)
-static const GPIO_pin_t GPIO_LED_RED =				(GPIO_pin_t) {GPIOB, 1, 3, 2}; // AF2 = TIM2_CH2.
-static const GPIO_pin_t GPIO_LED_GREEN =			(GPIO_pin_t) {GPIOB, 1, 0, 5}; // AF5 = TIM2_CH3.
-static const GPIO_pin_t GPIO_LED_BLUE =				(GPIO_pin_t) {GPIOA, 0, 8, 5}; // AF5 = TIM2_CH1.
+extern const GPIO_pin_t GPIO_LED_RED;
+extern const GPIO_pin_t GPIO_LED_GREEN;
+extern const GPIO_pin_t GPIO_LED_BLUE;
 #endif
 #ifdef DDRM
-static const GPIO_pin_t GPIO_LED_RED =				(GPIO_pin_t) {GPIOA, 0, 10, 5}; // AF5 = TIM2_CH3.
-static const GPIO_pin_t GPIO_LED_GREEN =			(GPIO_pin_t) {GPIOA, 0, 5, 5}; // AF5 = TIM2_CH1.
-static const GPIO_pin_t GPIO_LED_BLUE =				(GPIO_pin_t) {GPIOA, 0, 1, 2}; // AF2 = TIM2_CH2.
+extern const GPIO_pin_t GPIO_LED_RED;
+extern const GPIO_pin_t GPIO_LED_GREEN;
+extern const GPIO_pin_t GPIO_LED_BLUE;
 #endif
 #ifdef RRM
-static const GPIO_pin_t GPIO_LED_RED =				(GPIO_pin_t) {GPIOA, 0, 1, 2}; // AF2 = TIM2_CH2.
-static const GPIO_pin_t GPIO_LED_GREEN =			(GPIO_pin_t) {GPIOA, 0, 10, 5}; // AF5 = TIM2_CH3.
-static const GPIO_pin_t GPIO_LED_BLUE =				(GPIO_pin_t) {GPIOA, 0, 5, 5}; // AF5 = TIM2_CH1.
+extern const GPIO_pin_t GPIO_LED_RED;
+extern const GPIO_pin_t GPIO_LED_GREEN;
+extern const GPIO_pin_t GPIO_LED_BLUE;
 #endif
 #ifdef GPSM
-static const GPIO_pin_t GPIO_LED_RED =				(GPIO_pin_t) {GPIOA, 0, 6, 2}; // AF5 = TIM22_CH1.
-static const GPIO_pin_t GPIO_LED_GREEN =			(GPIO_pin_t) {GPIOA, 0, 7, 5}; // AF5 = TIM22_CH2.
-static const GPIO_pin_t GPIO_LED_BLUE =				(GPIO_pin_t) {GPIOB, 1, 0, 5}; // AF5 = TIM2_CH3.
+extern const GPIO_pin_t GPIO_LED_RED;
+extern const GPIO_pin_t GPIO_LED_GREEN;
+extern const GPIO_pin_t GPIO_LED_BLUE;
 #endif
 // MUX control.
 #if (defined LVRM) && (defined HW2_0)
-static const GPIO_pin_t GPIO_MUX_SEL =				(GPIO_pin_t) {GPIOA, 0, 4, 0};
-static const GPIO_pin_t GPIO_MUX_EN =				(GPIO_pin_t) {GPIOA, 0, 5, 0};
+extern const GPIO_pin_t GPIO_MUX_SEL;
+extern const GPIO_pin_t GPIO_MUX_EN;
 #endif
 // Test points.
 #ifdef UHFM
-static const GPIO_pin_t GPIO_TP1 =					(GPIO_pin_t) {GPIOA, 0, 0, 0};
-static const GPIO_pin_t GPIO_TP2 =					(GPIO_pin_t) {GPIOA, 0, 5, 0};
-static const GPIO_pin_t GPIO_TP3 =					(GPIO_pin_t) {GPIOA, 0, 12, 0};
+extern const GPIO_pin_t GPIO_TP1;
+extern const GPIO_pin_t GPIO_TP2;
+extern const GPIO_pin_t GPIO_TP3;
 #endif
 #ifdef GPSM
-static const GPIO_pin_t GPIO_TP1 =					(GPIO_pin_t) {GPIOA, 0, 5, 0};
+extern const GPIO_pin_t GPIO_TP1;
 #endif
 // Programming.
-static const GPIO_pin_t GPIO_SWDIO =				(GPIO_pin_t) {GPIOA, 0, 13, 0};
-static const GPIO_pin_t GPIO_SWCLK =				(GPIO_pin_t) {GPIOA, 0, 14, 0};
+extern const GPIO_pin_t GPIO_SWDIO;
+extern const GPIO_pin_t GPIO_SWCLK;
 
 #endif /* __MAPPING_H__ */
