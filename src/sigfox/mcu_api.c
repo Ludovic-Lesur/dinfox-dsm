@@ -50,6 +50,7 @@
 #include "nvm.h"
 #include "power.h"
 #include "tim.h"
+#include "types.h"
 
 /*** MCU API local structures ***/
 
@@ -81,6 +82,8 @@ static sfx_u32 MCU_API_LATENCY_MS[MCU_API_LATENCY_LAST] = {
 MCU_API_status_t MCU_API_open(MCU_API_config_t *mcu_api_config) {
 	// Local variables.
 	MCU_API_status_t status = MCU_API_SUCCESS;
+	// Ignore unused parameters.
+	UNUSED(mcu_api_config);
 	// Init timer.
 	TIM2_init();
 	// Return.
@@ -326,6 +329,10 @@ MCU_API_status_t MCU_API_print_dl_payload(sfx_u8 *dl_payload, sfx_u8 dl_payload_
 #if (defined UHFM) && (defined ATM)
 	// Print data on bus.
 	AT_BUS_print_dl_payload(dl_payload, dl_payload_size, rssi_dbm);
+#else
+	UNUSED(dl_payload);
+	UNUSED(dl_payload_size);
+	UNUSED(rssi_dbm);
 #endif
 	RETURN();
 }

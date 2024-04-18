@@ -278,7 +278,7 @@ void TIM21_stop(void);
  * \brief Get the LED blink status.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		0 if the LED blink id running, 1 if it is complete.
+ * \retval		0 if the LED blink is running, 1 if it is complete.
  *******************************************************************/
 uint8_t TIM21_is_single_blink_done(void);
 #endif

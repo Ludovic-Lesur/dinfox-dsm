@@ -137,6 +137,8 @@ NODE_status_t SM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	// None control bit in SM registers.
+	UNUSED(reg_addr);
+	UNUSED(reg_mask);
 	return status;
 }
 #endif

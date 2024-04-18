@@ -48,6 +48,7 @@
 #include "power.h"
 #include "pwr.h"
 #include "s2lp.h"
+#include "types.h"
 
 /*** RF API local macros ***/
 
@@ -374,6 +375,9 @@ errors:
 RF_API_status_t RF_API_open(RF_API_config_t *rf_api_config) {
 	// Local variables.
 	RF_API_status_t status = RF_API_SUCCESS;
+	// Ignore unused parameters.
+	UNUSED(rf_api_config);
+	// Return.
 	RETURN();
 }
 #endif
@@ -570,7 +574,7 @@ RF_API_status_t RF_API_de_init(void) {
 	// Disable front-end.
 	s2lp_status = S2LP_set_radio_path(S2LP_RADIO_PATH_NONE);
 	S2LP_stack_exit_error(RF_API_ERROR_DRIVER_S2LP);
-	// Turn transceiver and TCXO off.
+	// Turn transceiver off.
 	s2lp_status = S2LP_shutdown(1);
 	S2LP_stack_exit_error(RF_API_ERROR_DRIVER_S2LP);
 	// Turn radio off.

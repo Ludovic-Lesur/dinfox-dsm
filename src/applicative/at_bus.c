@@ -815,14 +815,13 @@ errors:
 /*******************************************************************/
 static void _AT_BUS_so_callback(void) {
 	// Local variables.
-	uint32_t reg_config_2 = 0;
-	uint32_t reg_config_2_mask = 0;
+	uint32_t reg_control_1 = 0;
+	uint32_t reg_control_mask = 0;
 	// Configure message.
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b1, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE, UHFM_REG_CONFIGURATION_2_MASK_MSGT);
+	DINFOX_write_field(&reg_control_1, &reg_control_mask, 0b1, UHFM_REG_CONTROL_1_MASK_CMSG);
+	DINFOX_write_field(&reg_control_1, &reg_control_mask, (uint32_t) SIGFOX_CONTROL_MESSAGE_TYPE_KEEP_ALIVE, UHFM_REG_CONTROL_1_MASK_MSGT);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_mask, reg_control_1);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(0);
 	return;
@@ -837,8 +836,8 @@ static void _AT_BUS_sb_callback(void) {
 	PARSER_status_t parser_status = PARSER_ERROR_UNKNOWN_COMMAND;
 	int32_t ul_bit = 0;
 	int32_t bidir_flag = 0;
-	uint32_t reg_config_2 = 0;
-	uint32_t reg_config_2_mask = 0;
+	uint32_t reg_control_1 = 0;
+	uint32_t reg_control_1_mask = 0;
 	// First try with 2 parameters.
 	parser_status = PARSER_get_parameter(&at_bus_ctx.parser, STRING_FORMAT_BOOLEAN, AT_BUS_CHAR_SEPARATOR, &ul_bit);
 	if (parser_status == PARSER_SUCCESS) {
@@ -852,12 +851,11 @@ static void _AT_BUS_sb_callback(void) {
 		PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	}
 	// Configure message.
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b0, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BIT0 + ul_bit), UHFM_REG_CONFIGURATION_2_MASK_MSGT);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_CONFIGURATION_2_MASK_BF);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_CMSG);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BIT0 + ul_bit), UHFM_REG_CONTROL_1_MASK_MSGT);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) bidir_flag, UHFM_REG_CONTROL_1_MASK_BF);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Send Sigfox message.
 	_AT_BUS_send_sigfox_message(bidir_flag);
 	return;
@@ -876,8 +874,8 @@ static void _AT_BUS_sf_callback(void) {
 	uint8_t ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
 	uint8_t ul_payload_size = 0;
 	int32_t bidir_flag = 0;
-	uint32_t reg_config_2 = 0;
-	uint32_t reg_config_2_mask = 0;
+	uint32_t reg_control_1 = 0;
+	uint32_t reg_control_1_mask = 0;
 	// First try with 2 parameters.
 	parser_status = PARSER_get_byte_array(&at_bus_ctx.parser, AT_BUS_CHAR_SEPARATOR, SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES, 0, ul_payload, &ul_payload_size);
 	if (parser_status == PARSER_SUCCESS) {
@@ -891,13 +889,12 @@ static void _AT_BUS_sf_callback(void) {
 		PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	}
 	// Configure message.
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b01, UHFM_REG_CONFIGURATION_2_MASK_PRT);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, 0b0, UHFM_REG_CONFIGURATION_2_MASK_CMSG);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BYTE_ARRAY), UHFM_REG_CONFIGURATION_2_MASK_MSGT);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) bidir_flag, UHFM_REG_CONFIGURATION_2_MASK_BF);
-	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) ul_payload_size, UHFM_REG_CONFIGURATION_2_MASK_UL_PAYLOAD_SIZE);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b0, UHFM_REG_CONTROL_1_MASK_CMSG);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) (SIGFOX_APPLICATION_MESSAGE_TYPE_BYTE_ARRAY), UHFM_REG_CONTROL_1_MASK_MSGT);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) bidir_flag, UHFM_REG_CONTROL_1_MASK_BF);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) ul_payload_size, UHFM_REG_CONTROL_1_MASK_UL_PAYLOAD_SIZE);
 	// Write register.
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Write uplink payload.
 	NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_SIGFOX_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
 	// Send Sigfox message.
@@ -930,11 +927,12 @@ static void _AT_BUS_tm_callback(void) {
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure test mode.
 	DINFOX_write_field(&reg_config_0, &reg_config_0_mask, (uint32_t) rc_index, UHFM_REG_CONFIGURATION_0_MASK_RC);
-	DINFOX_write_field(&reg_config_0, &reg_config_0_mask, (uint32_t) test_mode, UHFM_REG_CONFIGURATION_0_MASK_TEST_MODE);
-	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b1, UHFM_REG_CONTROL_1_MASK_TTRG);
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) test_mode, UHFM_REG_CONTROL_1_MASK_RFP_TEST_MODE);
 	// Write registers.
 	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONFIGURATION_0, reg_config_0_mask, reg_config_0);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	// Trigger test mode.
+	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, 0b1, UHFM_REG_CONTROL_1_MASK_TTRG);
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	_AT_BUS_print_ok();
@@ -1030,7 +1028,7 @@ static void _AT_BUS_rssi_callback(void) {
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REG_ADDR_CONTROL_1, reg_control_1_mask, reg_control_1);
 	NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
 	// Measurement loop.
-	while (report_loop < ((duration_seconds * 1000) / AT_BUS_RSSI_REPORT_PERIOD_MS)) {
+	while (report_loop < ((uint32_t) (duration_seconds * 1000) / AT_BUS_RSSI_REPORT_PERIOD_MS)) {
 		// Read RSSI.
 		node_status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REG_ADDR_RADIO_TEST_1, &reg_radio_test_1);
 		NODE_stack_exit_error(ERROR_BASE_NODE + node_status);
@@ -1268,7 +1266,7 @@ static void _AT_BUS_pulse_callback(void) {
 	PARSER_stack_exit_error(ERROR_BASE_PARSER + parser_status);
 	// Configure timepulse signal.
 	DINFOX_write_field(&reg_config_2, &reg_config_2_mask, (uint32_t) frequency_hz, GPSM_REG_CONFIGURATION_2_MASK_TP_FREQUENCY);
-	DINFOX_write_field(&reg_config_3, &reg_config_3_mask, (uint32_t) duty_cycle_percent, GPSM_REG_RADIO_TEST_0_MASK_TP_DUTY_CYCLE);
+	DINFOX_write_field(&reg_config_3, &reg_config_3_mask, (uint32_t) duty_cycle_percent, GPSM_REG_CONFIGURATION_3_MASK_TP_DUTY_CYCLE);
 	DINFOX_write_field(&reg_control_1, &reg_control_1_mask, (uint32_t) active, GPSM_REG_CONTROL_1_MASK_TPEN);
 	// Write configuration.
 	node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REG_ADDR_CONFIGURATION_2, reg_config_2_mask, reg_config_2);
