@@ -210,7 +210,7 @@ void __attribute__((optimize("-O0"))) TIM21_IRQHandler(void) {
 #ifdef UHFM
 /*******************************************************************/
 static void _TIM2_compute_compare_value(TIM2_channel_t channel) {
-	// Local variables.
+	// Update compare value.
 	TIM2 -> CCRx[channel] = ((TIM2 -> CNT) + ((tim2_ctx.channel[channel].duration_ms * tim2_ctx.etrf_clock_hz) / (1000))) % TIM2_CNT_VALUE_MAX;
 }
 #endif

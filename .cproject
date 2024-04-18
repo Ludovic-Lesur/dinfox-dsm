@@ -482,7 +482,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1044378924" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" useByScannerDiscovery="false" value="rm" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1803808839" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" useByScannerDiscovery="false" value="962691777" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn.2045122022" name="Enable all common warnings (-Wall)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn" useByScannerDiscovery="true" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.308177679" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.308177679" name="Enable extra warnings (-Wextra)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn" value="true" valueType="boolean"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1909265375" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/DDRM}/Release" id="ilg.gnuarmeclipse.managedbuild.cross.builder.607848162" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.340898339" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
@@ -774,7 +774,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.183820951" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" useByScannerDiscovery="false" value="rm" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.268279814" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" useByScannerDiscovery="false" value="962691777" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn.1367901090" name="Enable all common warnings (-Wall)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn" useByScannerDiscovery="true" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.46896710" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.46896710" name="Enable extra warnings (-Wextra)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn" value="true" valueType="boolean"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.649320376" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/DDRM}/Release" id="ilg.gnuarmeclipse.managedbuild.cross.builder.1469000374" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.711487908" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
@@ -786,7 +786,6 @@
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_2"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
-									<listOptionValue builtIn="false" value="RC1"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
 									<listOptionValue builtIn="false" value="BIDIRECTIONAL"/>
 									<listOptionValue builtIn="false" value="LOW_LEVEL_OPEN_CLOSE"/>
@@ -801,6 +800,7 @@
 									<listOptionValue builtIn="false" value="ERROR_STACK=32"/>
 									<listOptionValue builtIn="false" value="PUBLIC_KEY_CAPABLE"/>
 									<listOptionValue builtIn="false" value="CONTROL_KEEP_ALIVE_MESSAGE"/>
+									<listOptionValue builtIn="false" value="RC1_ZONE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1396808884" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
@@ -824,7 +824,6 @@
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="MCU_CATEGORY_2"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
-									<listOptionValue builtIn="false" value="RC1"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
 									<listOptionValue builtIn="false" value="BIDIRECTIONAL"/>
 									<listOptionValue builtIn="false" value="LOW_LEVEL_OPEN_CLOSE"/>
@@ -839,6 +838,7 @@
 									<listOptionValue builtIn="false" value="ERROR_STACK=32"/>
 									<listOptionValue builtIn="false" value="PUBLIC_KEY_CAPABLE"/>
 									<listOptionValue builtIn="false" value="CONTROL_KEEP_ALIVE_MESSAGE"/>
+									<listOptionValue builtIn="false" value="RC1_ZONE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.715225220" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/inc&quot;"/>
