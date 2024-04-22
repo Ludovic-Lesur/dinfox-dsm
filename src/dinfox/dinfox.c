@@ -486,7 +486,7 @@ DINFOX_electrical_power_representation_t DINFOX_convert_mw_mva(int32_t electrica
 	DINFOX_electrical_power_t dinfox_electrical_power;
 	uint32_t absolute_value = 0;
 	// Read absolute value.
-	MATH_abs(electrical_power_mw_mva, &absolute_value);
+	MATH_abs(electrical_power_mw_mva, absolute_value);
 	// Select sign.
 	dinfox_electrical_power.sign = (electrical_power_mw_mva < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
 	// Select unit.
@@ -552,7 +552,7 @@ DINFOX_electrical_energy_representation_t DINFOX_convert_mwh_mvah(int32_t electr
 	DINFOX_electrical_energy_t dinfox_electrical_energy;
 	uint32_t absolute_value = 0;
 	// Read absolute value.
-	MATH_abs(electrical_energy_mwh_mvah, &absolute_value);
+	MATH_abs(electrical_energy_mwh_mvah, absolute_value);
 	// Select sign.
 	dinfox_electrical_energy.sign = (electrical_energy_mwh_mvah < 0) ? DINFOX_SIGN_NEGATIVE : DINFOX_SIGN_POSITIVE;
 	// Select unit.
