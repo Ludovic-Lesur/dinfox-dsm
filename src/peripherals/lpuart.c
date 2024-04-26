@@ -117,6 +117,7 @@ void LPUART1_enable_rx(void) {
 	if (((LPUART1 -> ISR) & (0b1 << 5)) != 0) {
 		LPUART1 -> RQR |= (0b1 << 3);
 	}
+	// Enable interrupt.
 	NVIC_enable_interrupt(NVIC_INTERRUPT_LPUART1, NVIC_PRIORITY_LPUART1);
 	// Enable receiver.
 	LPUART1 -> CR1 |= (0b1 << 2); // RE='1'.

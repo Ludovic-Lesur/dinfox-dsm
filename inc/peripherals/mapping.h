@@ -10,6 +10,8 @@
 
 #include "gpio.h"
 
+/*** MAPPING global variables ***/
+
 // ADC inputs.
 #if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined GPSM)
 extern const GPIO_pin_t GPIO_ADC1_IN0;
