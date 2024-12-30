@@ -1,10 +1,4 @@
 .settings/
-inc/version.h
-bpsm_hw1-0/
-ddrm_hw1-0/
-gpsm_hw1-0/
-lvrm_hw1-0/
-lvrm_hw2-0/
-rrm_hw1-0/
-sm_hw1-0/
-uhfm_hw1-0/
+application/inc/version.h
+*_hw1-0/
+*_hw2-0/

@@ -27,7 +27,6 @@ typedef enum {
 
 /*** AES functions ***/
 
-#ifdef UHFM
 /*!******************************************************************
  * \fn void AES_init(void)
  * \brief Init AES peripheral.
@@ -36,9 +35,7 @@ typedef enum {
  * \retval		none
  *******************************************************************/
 void AES_init(void);
-#endif
 
-#ifdef UHFM
 /*!******************************************************************
  * \fn void AES_de_init(void)
  * \brief Release AES peripheral.
@@ -47,9 +44,7 @@ void AES_init(void);
  * \retval		none
  *******************************************************************/
 void AES_de_init(void);
-#endif
 
-#ifdef UHFM
 /*!******************************************************************
  * \fn AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* key)
  * \brief Compute AES-128.
@@ -59,7 +54,6 @@ void AES_de_init(void);
  * \retval		Function execution status.
  *******************************************************************/
 AES_status_t AES_encrypt(uint8_t* data_in, uint8_t* data_out, uint8_t* key);
-#endif
 
 /*******************************************************************/
 #define AES_exit_error(error_base) { if (aes_status != AES_SUCCESS) { status = (error_base + aes_status); goto errors; } }

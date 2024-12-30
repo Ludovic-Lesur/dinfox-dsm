@@ -162,7 +162,7 @@ typedef union {
 	DINFOX_electrical_energy_representation_t representation;
 	struct {
 		unsigned value : DINFOX_ELECTRICAL_ENERGY_VALUE_SIZE_BITS;
-		DINFOX_electrical_power_unit_t unit : DINFOX_ELECTRICAL_ENERGY_UNIT_SIZE_BITS;
+		DINFOX_electrical_energy_unit_t unit : DINFOX_ELECTRICAL_ENERGY_UNIT_SIZE_BITS;
 		DINFOX_sign_t sign : DINFOX_SIGN_SIZE_BITS;
 	} __attribute__((scalar_storage_order("little-endian"))) __attribute__((packed));
 } DINFOX_electrical_energy_t;
