@@ -10,98 +10,34 @@
 #include "gpio.h"
 #include "iwdg.h"
 #include "lptim.h"
-#include "mapping.h"
+#include "gpio_mapping.h"
 #include "mode.h"
-#include "node.h"
 #include "nvic.h"
+#include "nvic_priority.h"
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
 // Utils.
-#include "types.h"
-// Components.
-#include "led.h"
-#include "load.h"
-#include "power.h"
-// Nodes.
-#include "bpsm.h"
-#include "lvrm.h"
-// Applicative.
-#include "at_bus.h"
 #include "error.h"
-
-/*** MAIN local macros ***/
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined BPSM)
-#define XM_STATIC_MEASUREMENTS_PERIOD_SECONDS	60
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-#define XM_IOUT_INDICATOR_PERIOD_SECONDS		10
-#define XM_IOUT_INDICATOR_RANGE					7
-#define XM_IOUT_INDICATOR_POWER_THRESHOLD_MV	6000
-#endif
-
-/*** MAIN local structures ***/
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-/*******************************************************************/
-typedef struct {
-	uint32_t threshold_ua;
-	LED_color_t led_color;
-} XM_iout_indicator_t;
-#endif
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-/*******************************************************************/
-typedef struct {
-	uint32_t static_measurements_seconds_count;
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	uint32_t iout_indicator_seconds_count;
-	uint8_t iout_indicator_enable;
-#endif
-} XM_context_t;
-#endif
-
-/*** MAIN local global variables ***/
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-static const XM_iout_indicator_t LVRM_IOUT_INDICATOR[XM_IOUT_INDICATOR_RANGE] = {
-	{0, LED_COLOR_GREEN},
-	{50000, LED_COLOR_YELLOW},
-	{500000, LED_COLOR_RED},
-	{1000000, LED_COLOR_MAGENTA},
-	{2000000, LED_COLOR_BLUE},
-	{3000000, LED_COLOR_CYAN},
-	{4000000, LED_COLOR_WHITE}
-};
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-static XM_context_t xm_ctx;
-#endif
+#include "types.h"
+// Middleware.
+#include "cli.h"
+#include "node.h"
+#include "power.h"
+// Applicative.
+#include "error_base.h"
 
 /*** MAIN local functions ***/
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-/*******************************************************************/
-static void _XM_init_context(void) {
-	// Init context.
-	xm_ctx.static_measurements_seconds_count = 0;
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-	xm_ctx.iout_indicator_seconds_count = XM_IOUT_INDICATOR_PERIOD_SECONDS;
-#endif
-}
-#endif
 
 /*******************************************************************/
 static void _XM_init_hw(void) {
 	// Local variables.
 	RCC_status_t rcc_status = RCC_SUCCESS;
 	RTC_status_t rtc_status = RTC_SUCCESS;
-#ifndef DEBUG
+	NODE_status_t node_status = NODE_SUCCESS;
+	CLI_status_t cli_status = CLI_SUCCESS;
+#ifndef XM_DEBUG
 	IWDG_status_t iwdg_status = IWDG_SUCCESS;
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
-	LED_status_t led_status = LED_SUCCESS;
 #endif
 	// Init error stack
 	ERROR_stack_init();
@@ -109,166 +45,66 @@ static void _XM_init_hw(void) {
 	NVIC_init();
 	// Init power module and clock tree.
 	PWR_init();
-	RCC_init();
+	rcc_status = RCC_init(NVIC_PRIORITY_CLOCK);
+	RCC_stack_error(ERROR_BASE_RCC);
 	// Init GPIOs.
 	GPIO_init();
 	EXTI_init();
-#ifndef DEBUG
+#ifndef XM_DEBUG
 	// Start independent watchdog.
 	iwdg_status = IWDG_init();
-	IWDG_stack_error();
+	IWDG_stack_error(ERROR_BASE_IWDG);
 	IWDG_reload();
 #endif
 	// High speed oscillator.
 	rcc_status = RCC_switch_to_hsi();
-	RCC_stack_error();
+	RCC_stack_error(ERROR_BASE_RCC);
 #ifdef GPSM
 	// Calibrate clocks.
-	rcc_status = RCC_calibrate();
-	RCC_stack_error();
+	rcc_status = RCC_calibrate_internal_clocks(NVIC_PRIORITY_CLOCK_CALIBRATION);
+	RCC_stack_error(ERROR_BASE_RCC);
 #endif
 	// Init RTC.
-	rtc_status = RTC_init();
-	RTC_stack_error();
+	rtc_status = RTC_init(NULL, NVIC_PRIORITY_RTC);
+	RTC_stack_error(ERROR_BASE_RTC);
 	// Init delay timer.
-	LPTIM1_init();
+	LPTIM_init(NVIC_PRIORITY_DELAY);
 	// Init components.
 	POWER_init();
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
-	LOAD_init();
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || (defined GPSM)
-	led_status = LED_init();
-	LED_stack_error();
-#endif
-	// Init AT BUS layer.
-	AT_BUS_init();
+	// Init node layer.
+	node_status = NODE_init();
+	NODE_stack_error(ERROR_BASE_NODE);
+	cli_status = CLI_init();
+	CLI_stack_error(ERROR_BASE_CLI);
 }
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-/*******************************************************************/
-static void _XM_static_measurements(void) {
-	// Local variables.
-	POWER_status_t power_status = POWER_SUCCESS;
-	ADC_status_t adc1_status = ADC_SUCCESS;
-	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_SLEEP);
-	POWER_stack_error();
-	adc1_status = ADC1_perform_measurements();
-	ADC1_stack_error();
-	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
-	POWER_stack_error();
-}
-#endif
-
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-/*******************************************************************/
-static void _XM_iout_indicator(void) {
-	// Local variables.
-	ADC_status_t adc1_status = ADC_SUCCESS;
-	LED_status_t led_status = LED_SUCCESS;
-	LED_color_t led_color;
-	uint32_t input_voltage_mv = 0;
-	uint32_t iout_ua;
-	uint8_t idx = XM_IOUT_INDICATOR_RANGE;
-	// Check input voltage.
-#ifdef LVRM
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VCOM_MV, &input_voltage_mv);
-#endif
-#ifdef BPSM
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &input_voltage_mv);
-#endif
-#if (defined DDRM) || (defined RRM)
-	adc1_status = ADC1_get_data(ADC_DATA_INDEX_VIN_MV, &input_voltage_mv);
-#endif
-	ADC1_stack_error();
-	// Enable RGB LED only if power input supplies the board.
-	if (input_voltage_mv > XM_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
-		// Read output current.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_IOUT_UA, &iout_ua);
-		ADC1_stack_error();
-		// Compute LED color according to output current..
-		do {
-			idx--;
-			// Get range and corresponding color.
-			led_color = LVRM_IOUT_INDICATOR[idx].led_color;
-			if (iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
-		}
-		while (idx > 0);
-		// Blink LED.
-		led_status = LED_start_single_blink(2000, led_color);
-		LED_stack_error();
-	}
-}
-#endif
 
 /*** MAIN function ***/
 
 /*******************************************************************/
 int main(void) {
+    // Local variables.
+    NODE_status_t node_status = NODE_SUCCESS;
+    CLI_status_t cli_status = CLI_SUCCESS;
 	// Init board.
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-	_XM_init_context();
-#endif
 	_XM_init_hw();
-	// Local variables.
-#if ((defined LVRM) && (defined LVRM_MODE_BMS)) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-	NODE_status_t node_status = NODE_SUCCESS;
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-	_XM_static_measurements();
-#endif
 	// Main loop.
 	while (1) {
-		// Enter sleep mode.
 		IWDG_reload();
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-		// Check LED state.
-		if (LED_is_single_blink_done() != 0) {
-			LED_stop_blink();
-			PWR_enter_stop_mode();
+#ifndef XM_DEBUG
+		// Enter sleep or stop mode depending on node state.
+		if (NODE_get_state() == NODE_STATE_IDLE) {
+		    PWR_enter_stop_mode();
 		}
 		else {
-			PWR_enter_sleep_mode();
+		    PWR_enter_sleep_mode();
 		}
-#else
-		PWR_enter_stop_mode();
-#endif
 		IWDG_reload();
-		// Check RTC flag.
-		if (RTC_get_wakeup_timer_flag() != 0) {
-			// Clear flag.
-			RTC_clear_wakeup_timer_flag();
-#if (defined LVRM) || (defined DDRM) || (defined RRM) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-			// Increment seconds count.
-			xm_ctx.static_measurements_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
-			// Check ADC period.
-			if (xm_ctx.static_measurements_seconds_count >= XM_STATIC_MEASUREMENTS_PERIOD_SECONDS) {
-				// Reset count.
-				xm_ctx.static_measurements_seconds_count = 0;
-				_XM_static_measurements();
-#if (defined LVRM) && (defined LVRM_MODE_BMS)
-				node_status = LVRM_bms_process();
-				NODE_stack_error();
 #endif
-			}
-#endif
-#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
-			node_status = BPSM_charge_process(RTC_WAKEUP_PERIOD_SECONDS);
-			NODE_stack_error();
-#endif
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
-			// Increment seconds count.
-			xm_ctx.iout_indicator_seconds_count += RTC_WAKEUP_PERIOD_SECONDS;
-			// Check Iout indicator period.
-			if (xm_ctx.iout_indicator_seconds_count >= XM_IOUT_INDICATOR_PERIOD_SECONDS) {
-				// Reset count.
-				xm_ctx.iout_indicator_seconds_count = 0;
-				_XM_iout_indicator();
-			}
-#endif
-		}
+		// Perform node tasks.
+		node_status = NODE_process();
+        NODE_stack_error(ERROR_BASE_NODE);
 		// Perform command task.
-		AT_BUS_task();
+		cli_status = CLI_process();
+		CLI_stack_error(ERROR_BASE_CLI);
 	}
 }

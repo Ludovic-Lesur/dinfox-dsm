@@ -8,38 +8,29 @@
 #ifndef __RRM_H__
 #define __RRM_H__
 
-#include "adc.h"
-#include "dinfox.h"
 #include "node.h"
-#include "rrm_reg.h"
+#include "rrm_registers.h"
+#include "una.h"
+
+#ifdef RRM
 
 /*** RRM macros ***/
 
-#ifdef RRM
-#define NODE_BOARD_ID		DINFOX_BOARD_ID_RRM
-#define NODE_REG_ADDR_LAST	RRM_REG_ADDR_LAST
-#endif
-
-/*** RRM global variables ***/
-
-#ifdef RRM
-extern const DINFOX_register_access_t NODE_REG_ACCESS[RRM_REG_ADDR_LAST];
-#endif
+#define NODE_BOARD_ID               UNA_BOARD_ID_RRM
+#define NODE_REGISTER_ADDRESS_LAST  RRM_REGISTER_ADDRESS_LAST
+#define NODE_REGISTER_ACCESS        RRM_REGISTER_ACCESS
 
 /*** RRM functions ***/
 
-#ifdef RRM
 /*!******************************************************************
- * \fn void RRM_init_registers(void)
+ * \fn NODE_status_t RRM_init_registers(void)
  * \brief Init RRM registers to their default value.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void RRM_init_registers(void);
-#endif
+NODE_status_t RRM_init_registers(void);
 
-#ifdef RRM
 /*!******************************************************************
  * \fn NODE_status_t RRM_update_register(uint8_t reg_addr)
  * \brief Update RRM register.
@@ -48,9 +39,7 @@ void RRM_init_registers(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t RRM_update_register(uint8_t reg_addr);
-#endif
 
-#ifdef RRM
 /*!******************************************************************
  * \fn NODE_status_t RRM_check_register(uint8_t reg_addr)
  * \brief Check RRM register.
@@ -60,17 +49,16 @@ NODE_status_t RRM_update_register(uint8_t reg_addr);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask);
-#endif
 
-#ifdef RRM
 /*!******************************************************************
- * \fn NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status)
+ * \fn NODE_status_t RRM_mtrg_callback(void)
  * \brief RRM measurements callback.
  * \param[in]  	none
- * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t RRM_mtrg_callback(ADC_status_t* adc_status);
-#endif
+NODE_status_t RRM_mtrg_callback(void);
+
+#endif /* RRM */
 
 #endif /* INC_NODES_RRM_H_ */

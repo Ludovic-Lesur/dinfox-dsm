@@ -1,6 +1,33 @@
+[submodule "stm32l0xx-registers"]
+    path = drivers/registers/stm32l0xx-registers
+    url = https://github.com/Ludovic-Lesur/stm32l0xx-registers.git
+[submodule "stm32l0xx-drivers"]
+    path = drivers/peripherals/stm32l0xx-drivers
+    url = https://github.com/Ludovic-Lesur/stm32l0xx-drivers.git
+[submodule "embedded-utils"]
+    path = drivers/utils/embedded-utils
+    url = https://github.com/Ludovic-Lesur/embedded-utils.git
+[submodule "lmac-driver"]
+    path = drivers/mac/lmac-driver
+    url = https://github.com/Ludovic-Lesur/lmac-driver.git
+[submodule "neom8x-driver"]
+    path = drivers/components/neom8x-driver
+    url = https://github.com/Ludovic-Lesur/neom8x-driver.git
+[submodule "sht3x-driver"]
+    path = drivers/components/sht3x-driver
+    url = https://github.com/Ludovic-Lesur/sht3x-driver.git
+[submodule "s2lp-driver"]
+    path = drivers/components/s2lp-driver
+    url = https://github.com/Ludovic-Lesur/s2lp-driver.git
 [submodule "sigfox-ep-lib"]
     path = middleware/sigfox/sigfox-ep-lib
     url = https://github.com/sigfox-tech-radio/sigfox-ep-lib
 [submodule "sigfox-ep-addon-rfp"]
     path = middleware/sigfox/sigfox-ep-addon-rfp
     url = https://github.com/sigfox-tech-radio/sigfox-ep-addon-rfp
+[submodule "una-lib"]
+    path = middleware/node/una-lib
+    url = https://github.com/Ludovic-Lesur/una-lib.git
+[submodule "una-at"]
+    path = middleware/node/una-at
+    url = https://github.com/Ludovic-Lesur/una-at.git

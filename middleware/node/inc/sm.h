@@ -8,38 +8,29 @@
 #ifndef __SM_H__
 #define __SM_H__
 
-#include "adc.h"
-#include "dinfox.h"
-#include "sm_reg.h"
+#include "sm_registers.h"
 #include "node.h"
+#include "una.h"
+
+#ifdef SM
 
 /*** SM macros ***/
 
-#ifdef SM
-#define NODE_BOARD_ID		DINFOX_BOARD_ID_SM
-#define NODE_REG_ADDR_LAST	SM_REG_ADDR_LAST
-#endif
-
-/*** SM global variables ***/
-
-#ifdef SM
-extern const DINFOX_register_access_t NODE_REG_ACCESS[SM_REG_ADDR_LAST];
-#endif
+#define NODE_BOARD_ID               UNA_BOARD_ID_SM
+#define NODE_REGISTER_ADDRESS_LAST  SM_REGISTER_ADDRESS_LAST
+#define NODE_REGISTER_ACCESS        SM_REGISTER_ACCESS
 
 /*** SM functions ***/
 
-#ifdef SM
 /*!******************************************************************
- * \fn void SM_init_registers(void)
+ * \fn NODE_status_t SM_init_registers(void)
  * \brief Init SM registers to their default value.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void SM_init_registers(void);
-#endif
+NODE_status_t SM_init_registers(void);
 
-#ifdef SM
 /*!******************************************************************
  * \fn NODE_status_t SM_update_register(uint8_t reg_addr)
  * \brief Update SM register.
@@ -48,9 +39,7 @@ void SM_init_registers(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t SM_update_register(uint8_t reg_addr);
-#endif
 
-#ifdef SM
 /*!******************************************************************
  * \fn NODE_status_t SM_check_register(uint8_t reg_addr)
  * \brief Check SM register.
@@ -60,17 +49,16 @@ NODE_status_t SM_update_register(uint8_t reg_addr);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t SM_check_register(uint8_t reg_addr, uint32_t reg_mask);
-#endif
 
-#ifdef SM
 /*!******************************************************************
- * \fn NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status)
+ * \fn NODE_status_t SM_mtrg_callback(void)
  * \brief SM measurements callback.
  * \param[in]  	none
- * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t SM_mtrg_callback(ADC_status_t* adc_status);
-#endif
+NODE_status_t SM_mtrg_callback(void);
+
+#endif /* SM */
 
 #endif /* __SM_H__ */

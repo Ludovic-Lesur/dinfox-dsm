@@ -7,28 +7,27 @@
 
 #include "load.h"
 
+#include "error.h"
 #include "gpio.h"
+#include "gpio_mapping.h"
 #include "lptim.h"
-#include "mapping.h"
+#include "mode.h"
 #include "types.h"
+
+#ifdef XM_LOAD_CONTROL
 
 /*** LOAD local macros ***/
 
-#if (defined LVRM) && (defined HW2_0)
 #define LOAD_DC_DC_DELAY_MS				100
 #define LOAD_VCOIL_DELAY_MS				100
 #define LOAD_RELAY_CONTROL_DURATION_MS	1000
-#endif
 
 /*** LOAD local global variables ***/
 
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 static uint8_t load_state = 0xFF;
-#endif
 
 /*** LOAD functions ***/
 
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 void LOAD_init(void) {
 	// Output control.
@@ -48,9 +47,7 @@ void LOAD_init(void) {
 	// Open load by default.
 	LOAD_set_output_state(0);
 }
-#endif
 
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	// Local variables.
@@ -58,21 +55,21 @@ LOAD_status_t LOAD_set_output_state(uint8_t state) {
 	// Directly exit with success if state is already set.
 	if (state == load_state) goto errors;
 #if (defined LVRM) && (defined HW2_0)
-	LPTIM_status_t lptim1_status = LPTIM_SUCCESS;
+	LPTIM_status_t lptim_status = LPTIM_SUCCESS;
 	// Enable DC-DC.
 	GPIO_write(&GPIO_DC_DC_POWER_ENABLE, 1);
-	lptim1_status = LPTIM1_delay_milliseconds(LOAD_DC_DC_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
+	lptim_status = LPTIM_delay_milliseconds(LOAD_DC_DC_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM_exit_error(LOAD_ERROR_BASE_LPTIM);
 	// Enable COIL voltage.
 	GPIO_write(&GPIO_COIL_POWER_ENABLE, 1);
-	lptim1_status = LPTIM1_delay_milliseconds(LOAD_VCOIL_DELAY_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
+	lptim_status = LPTIM_delay_milliseconds(LOAD_VCOIL_DELAY_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM_exit_error(LOAD_ERROR_BASE_LPTIM);
 	// Select coil.
 	GPIO_write(&GPIO_OUT_SELECT, state);
 	// Set relay state.
 	GPIO_write(&GPIO_OUT_CONTROL, 1);
-	lptim1_status = LPTIM1_delay_milliseconds(LOAD_RELAY_CONTROL_DURATION_MS, LPTIM_DELAY_MODE_STOP);
-	LPTIM1_exit_error(LOAD_ERROR_BASE_LPTIM1);
+	lptim_status = LPTIM_delay_milliseconds(LOAD_RELAY_CONTROL_DURATION_MS, LPTIM_DELAY_MODE_STOP);
+	LPTIM_exit_error(LOAD_ERROR_BASE_LPTIM);
 #else
 	// Set GPIO.
 	GPIO_write(&GPIO_OUT_EN, state);
@@ -89,15 +86,12 @@ errors:
 #endif
 	return status;
 }
-#endif
 
-#if (defined LVRM) || (defined BPSM) || (defined DDRM) || (defined RRM)
 /*******************************************************************/
 uint8_t LOAD_get_output_state(void) {
 	// Read current state.
 	return load_state;
 }
-#endif
 
 #ifdef BPSM
 /*******************************************************************/
@@ -122,3 +116,5 @@ uint8_t LOAD_get_charge_status(void) {
 	return (GPIO_read(&GPIO_CHRG_ST));
 }
 #endif
+
+#endif /* XM_LOAD_CONTROL */

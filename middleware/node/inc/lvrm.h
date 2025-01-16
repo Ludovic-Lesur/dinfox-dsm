@@ -8,38 +8,29 @@
 #ifndef __LVRM_H__
 #define __LVRM_H__
 
-#include "adc.h"
-#include "dinfox.h"
-#include "lvrm_reg.h"
+#include "lvrm_registers.h"
 #include "node.h"
+#include "una.h"
+
+#ifdef LVRM
 
 /*** LVRM macros ***/
 
-#ifdef LVRM
-#define NODE_BOARD_ID		DINFOX_BOARD_ID_LVRM
-#define NODE_REG_ADDR_LAST	LVRM_REG_ADDR_LAST
-#endif
-
-/*** LVRM global variables ***/
-
-#ifdef LVRM
-extern const DINFOX_register_access_t NODE_REG_ACCESS[LVRM_REG_ADDR_LAST];
-#endif
+#define NODE_BOARD_ID               UNA_BOARD_ID_LVRM
+#define NODE_REGISTER_ADDRESS_LAST  LVRM_REGISTER_ADDRESS_LAST
+#define NODE_REGISTER_ACCESS        LVRM_REGISTER_ACCESS
 
 /*** LVRM functions ***/
 
-#ifdef LVRM
 /*!******************************************************************
- * \fn void LVRM_init_registers(void)
+ * \fn NODE_status_t LVRM_init_registers(void)
  * \brief Init LVRM registers to their default value.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void LVRM_init_registers(void);
-#endif
+NODE_status_t LVRM_init_registers(void);
 
-#ifdef LVRM
 /*!******************************************************************
  * \fn NODE_status_t LVRM_update_register(uint8_t reg_addr)
  * \brief Update LVRM register.
@@ -48,9 +39,7 @@ void LVRM_init_registers(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t LVRM_update_register(uint8_t reg_addr);
-#endif
 
-#ifdef LVRM
 /*!******************************************************************
  * \fn NODE_status_t LVRM_check_register(uint8_t reg_addr)
  * \brief Check LVRM register.
@@ -60,22 +49,19 @@ NODE_status_t LVRM_update_register(uint8_t reg_addr);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask);
-#endif
 
-#ifdef LVRM
 /*!******************************************************************
- * \fn NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status)
+ * \fn NODE_status_t LVRM_mtrg_callback(void)
  * \brief LVRM measurements callback.
  * \param[in]  	none
- * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status);
-#endif
+NODE_status_t LVRM_mtrg_callback(void);
 
-#if (defined LVRM) && (defined LVRM_MODE_BMS)
+#ifdef LVRM_MODE_BMS
 /*!******************************************************************
- * \fn NODE_status_t LVRM_bms_process(NODE_address_t lvrm_node_addr)
+ * \fn NODE_status_t LVRM_bms_process(UNA_node_address_t lvrm_node_addr)
  * \brief BMS function.
  * \param[in]  	none
  * \param[out] 	none
@@ -83,5 +69,7 @@ NODE_status_t LVRM_mtrg_callback(ADC_status_t* adc_status);
  *******************************************************************/
 NODE_status_t LVRM_bms_process(void);
 #endif
+
+#endif /* LVRM */
 
 #endif /* __LVRM_H__ */

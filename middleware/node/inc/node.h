@@ -8,19 +8,18 @@
 #ifndef __NODE_H__
 #define __NODE_H__
 
-#include "adc.h"
+#include "analog.h"
 #include "digital.h"
-#include "i2c.h"
+#include "gps.h"
+#include "led.h"
 #include "lptim.h"
 #include "load.h"
-#include "neom8n.h"
-#include "node_common.h"
 #include "nvm.h"
 #include "power.h"
 #include "s2lp.h"
 #include "sht3x.h"
 #include "types.h"
-#include "usart.h"
+#include "una.h"
 
 /*** NODE structures ***/
 
@@ -43,19 +42,30 @@ typedef enum {
 	NODE_ERROR_SIGFOX_RF_API,
 	NODE_ERROR_SIGFOX_EP_API,
 	// Low level drivers errors.
-	NODE_ERROR_BASE_ADC1 = 0x0100,
-	NODE_ERROR_BASE_LPTIM1 = (NODE_ERROR_BASE_ADC1 + ADC_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_NVM = (NODE_ERROR_BASE_LPTIM1 + LPTIM_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_DIGITAL = (NODE_ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_LOAD = (NODE_ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_NEOM8N = (NODE_ERROR_BASE_LOAD + LOAD_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_POWER = (NODE_ERROR_BASE_NEOM8N + NEOM8N_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_S2LP = (NODE_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_SHT3X = (NODE_ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST),
-	NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API = (NODE_ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_NVM = 0x0100,
+	NODE_ERROR_BASE_LPTIM = (NODE_ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_DIGITAL = (NODE_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_LED = (NODE_ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_LOAD = (NODE_ERROR_BASE_LED + LED_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_GPS = (NODE_ERROR_BASE_LOAD + LOAD_ERROR_BASE_LAST),
+    NODE_ERROR_BASE_POWER = (NODE_ERROR_BASE_GPS + GPS_ERROR_BASE_LAST),
+    NODE_ERROR_BASE_S2LP = (NODE_ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
+    NODE_ERROR_BASE_SHT3X = (NODE_ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST),
+	NODE_ERROR_BASE_ANALOG = (NODE_ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
+    NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API = (NODE_ERROR_BASE_ANALOG + ANALOG_ERROR_BASE_LAST),
 	// Last base value.
 	NODE_ERROR_BASE_LAST = (NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API + 0x0100)
 } NODE_status_t;
+
+/*!******************************************************************
+ * \enum NODE_state_t
+ * \brief NODE states list.
+ *******************************************************************/
+typedef enum {
+    NODE_STATE_IDLE = 0,
+    NODE_STATE_RUNNING,
+    NODE_STATE_LAST
+} NODE_state_t;
 
 /*!******************************************************************
  * \enum NODE_request_source_t
@@ -70,21 +80,82 @@ typedef enum {
 /*** NODE functions ***/
 
 /*!******************************************************************
- * \fn void NODE_init(NODE_address_t self_address)
- * \brief Init node registers to their default value.
- * \param[in]  	self_address: RS485 address of the node.
+ * \fn NODE_status_t NODE_init(void)
+ * \brief Init node driver.
+ * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void NODE_init(NODE_address_t self_address);
+NODE_status_t NODE_init(void);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_de_init(void)
+ * \brief Release node driver.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t NODE_de_init(void);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_process(void)
+ * \brief Execute node tasks.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t NODE_process(void);
+
+/*!******************************************************************
+ * \fn NODE_state_t NODE_get_state(void)
+ * \brief Get node state.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Current node state.
+ *******************************************************************/
+NODE_state_t NODE_get_state(void);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_value, uint32_t reg_mask)
+ * \brief Write node register.
+ * \param[in]   request_source: Request source.
+ * \param[in]   reg_addr: Address of the register to write.
+ * \param[in]   reg_value: Value to write in register.
+ * \param[in]   reg_mask: Writing operation mask.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_value, uint32_t reg_mask);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
+ * \brief Write multiple registers.
+ * \param[in]   request_source: Request source.
+ * \param[in]   reg_addr_base: Address of the first register to write.
+ * \param[in]   data: Pointer to the registers value.
+ * \param[in]   data_size_byte: Number of bytes to write.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
+
+/*!******************************************************************
+ * \fn NODE_status_t NODE_write_nvm(uint8_t reg_addr, uint32_t reg_value)
+ * \brief Write register in NVM.
+ * \param[in]   reg_addr: Address of the register to write.
+ * \param[in]   reg_value: Value to write in NVM.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t NODE_write_nvm(uint8_t reg_addr, uint32_t reg_value);
 
 /*!******************************************************************
  * \fn NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value)
  * \brief Read node register.
- * \param[in]  	request_source: Request source.
- * \param[in]	reg_addr: Address of the register to read.
- * \param[out] 	reg_value: Pointer to byte that will contain the register value.
- * \retval		Function execution status.
+ * \param[in]   request_source: Request source.
+ * \param[in]   reg_addr: Address of the register to read.
+ * \param[out]  reg_value: Pointer to the register value.
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value);
 
@@ -100,36 +171,21 @@ NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t r
 NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
 
 /*!******************************************************************
- * \fn NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value)
- * \brief Write node register.
- * \param[in]  	request_source: Request source.
- * \param[in]	reg_addr: Address of the register to write.
- * \param[in]	reg_mask: Writing operation mask.
- * \param[in] 	reg_value: Value to write in register.
- * \param[out]	none
- * \retval		Function execution status.
+ * \fn NODE_status_t NODE_read_nvm(uint8_t reg_addr, uint32_t* reg_value)
+ * \brief Write register in NVM.
+ * \param[in]   reg_addr: Address of the register to read.
+ * \param[out]  reg_value: Pointer to the register value.
+ * \retval      Function execution status.
  *******************************************************************/
-NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_mask, uint32_t reg_value);
-
-/*!******************************************************************
- * \fn NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte)
- * \brief Write multiple registers.
- * \param[in]  	request_source: Request source.
- * \param[in]	reg_addr_base: Address of the first register to write.
- * \param[in]	data: Pointer to the registers value.
- * \param[in]	data_size_byte: Number of bytes to write.
- * \param[out]	none
- * \retval		Function execution status.
- *******************************************************************/
-NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte);
+NODE_status_t NODE_read_nvm(uint8_t reg_addr, uint32_t* reg_value);
 
 /*******************************************************************/
-#define NODE_exit_error(error_base) { if (node_status != NODE_SUCCESS) { status = (error_base + node_status); goto errors; } }
+#define NODE_exit_error(base) { ERROR_check_exit(node_status, NODE_SUCCESS, base) }
 
 /*******************************************************************/
-#define NODE_stack_error(void) { if (node_status != NODE_SUCCESS) { ERROR_stack_add(ERROR_BASE_NODE + node_status); } }
+#define NODE_stack_error(base) { ERROR_check_stack(node_status, NODE_SUCCESS, base) }
 
 /*******************************************************************/
-#define NODE_stack_exit_error(error_code) { if (node_status != NODE_SUCCESS) { ERROR_stack_add(ERROR_BASE_NODE + node_status); status = error_code; goto errors; } }
+#define NODE_stack_exit_error(base, code) { ERROR_check_stack_exit(node_status, NODE_SUCCESS, base, code) }
 
 #endif /* __NODE_H__ */

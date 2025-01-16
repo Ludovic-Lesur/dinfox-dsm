@@ -8,38 +8,29 @@
 #ifndef __DDRM_H__
 #define __DDRM_H__
 
-#include "adc.h"
-#include "ddrm_reg.h"
-#include "dinfox.h"
+#include "ddrm_registers.h"
 #include "node.h"
+#include "una.h"
+
+#ifdef DDRM
 
 /*** DDRM macros ***/
 
-#ifdef DDRM
-#define NODE_BOARD_ID		DINFOX_BOARD_ID_DDRM
-#define NODE_REG_ADDR_LAST	DDRM_REG_ADDR_LAST
-#endif
-
-/*** DDRM global variables ***/
-
-#ifdef DDRM
-extern const DINFOX_register_access_t NODE_REG_ACCESS[DDRM_REG_ADDR_LAST];
-#endif
+#define NODE_BOARD_ID		        UNA_BOARD_ID_DDRM
+#define NODE_REGISTER_ADDRESS_LAST	DDRM_REGISTER_ADDRESS_LAST
+#define NODE_REGISTER_ACCESS        DDRM_REGISTER_ACCESS
 
 /*** DDRM functions ***/
 
-#ifdef DDRM
 /*!******************************************************************
- * \fn void DDRM_init_registers(void)
+ * \fn NODE_status_t DDRM_init_registers(void)
  * \brief Init DDRM registers to their default value.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void DDRM_init_registers(void);
-#endif
+NODE_status_t DDRM_init_registers(void);
 
-#ifdef DDRM
 /*!******************************************************************
  * \fn NODE_status_t DDRM_update_register(uint8_t reg_addr)
  * \brief Update DDRM register.
@@ -48,9 +39,7 @@ void DDRM_init_registers(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t DDRM_update_register(uint8_t reg_addr);
-#endif
 
-#ifdef DDRM
 /*!******************************************************************
  * \fn NODE_status_t DDRM_check_register(uint8_t reg_addr)
  * \brief Check DDRM register.
@@ -60,17 +49,16 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t DDRM_check_register(uint8_t reg_addr, uint32_t reg_mask);
-#endif
 
-#ifdef DDRM
 /*!******************************************************************
- * \fn NODE_status_t DDRM_mtrg_callback(ADC_status_t* adc_status)
+ * \fn NODE_status_t DDRM_mtrg_callback(void)
  * \brief DDRM measurements callback.
  * \param[in]  	none
- * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t DDRM_mtrg_callback(ADC_status_t* adc_status);
-#endif
+NODE_status_t DDRM_mtrg_callback(void);
+
+#endif /* DDRM */
 
 #endif /* __DDRM_H__ */

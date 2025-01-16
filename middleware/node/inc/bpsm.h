@@ -8,38 +8,29 @@
 #ifndef __BPSM_H__
 #define __BPSM_H__
 
-#include "adc.h"
-#include "bpsm_reg.h"
-#include "dinfox.h"
+#include "bpsm_registers.h"
 #include "node.h"
+#include "una.h"
+
+#ifdef BPSM
 
 /*** BPSM macros ***/
 
-#ifdef BPSM
-#define NODE_BOARD_ID		DINFOX_BOARD_ID_BPSM
-#define NODE_REG_ADDR_LAST	BPSM_REG_ADDR_LAST
-#endif
-
-/*** BPSM global variables ***/
-
-#ifdef BPSM
-extern const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST];
-#endif
+#define NODE_BOARD_ID		        UNA_BOARD_ID_BPSM
+#define NODE_REGISTER_ADDRESS_LAST	BPSM_REGISTER_ADDRESS_LAST
+#define NODE_REGISTER_ACCESS        BPSM_REGISTER_ACCESS
 
 /*** BPSM functions ***/
 
-#ifdef BPSM
 /*!******************************************************************
- * \fn void BPSM_init_registers(void)
+ * \fn NODE_status_t BPSM_init_registers(void)
  * \brief Init BPSM registers to their default value.
  * \param[in]  	none
  * \param[out] 	none
- * \retval		none
+ * \retval		Function execution status.
  *******************************************************************/
-void BPSM_init_registers(void);
-#endif
+NODE_status_t BPSM_init_registers(void);
 
-#ifdef BPSM
 /*!******************************************************************
  * \fn NODE_status_t BPSM_update_register(uint8_t reg_addr)
  * \brief Update BPSM register.
@@ -48,9 +39,7 @@ void BPSM_init_registers(void);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_update_register(uint8_t reg_addr);
-#endif
 
-#ifdef BPSM
 /*!******************************************************************
  * \fn NODE_status_t BPSM_check_register(uint8_t reg_addr)
  * \brief Check BPSM register.
@@ -60,20 +49,17 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr);
  * \retval		Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask);
-#endif
 
-#ifdef BPSM
 /*!******************************************************************
- * \fn NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status)
+ * \fn NODE_status_t BPSM_mtrg_callback(void)
  * \brief BPSM measurements callback.
  * \param[in]  	none
- * \param[out] 	adc_status: Pointer to the resulting ADC status.
+ * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status);
-#endif
+NODE_status_t BPSM_mtrg_callback(void);
 
-#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
+#ifndef BPSM_CHEN_FORCED_HARDWARE
 /*!******************************************************************
  * \fn void BPSM_charge_process(void)
  * \brief BPSM automatic charge control process.
@@ -83,5 +69,7 @@ NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status);
  *******************************************************************/
 NODE_status_t BPSM_charge_process(uint32_t process_period_seconds);
 #endif
+
+#endif /* BPSM */
 
 #endif /* __BPSM_H__ */

@@ -7,93 +7,75 @@
 
 #include "bpsm.h"
 
-#include "adc.h"
-#include "dinfox.h"
+#include "analog.h"
 #include "error.h"
 #include "load.h"
-#include "bpsm_reg.h"
+#include "bpsm_registers.h"
 #include "node.h"
+#include "swreg.h"
+#include "una.h"
+
+#ifdef BPSM
 
 /*** BPSM local structures ***/
 
 /*******************************************************************/
 typedef struct {
-	DINFOX_bit_representation_t chenst;
-	DINFOX_bit_representation_t bkenst;
+	UNA_bit_representation_t chenst;
+	UNA_bit_representation_t bkenst;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
 	uint32_t chen_on_seconds_count;
 #endif
 } BPSM_context_t;
 
-/*** BPSM global variables ***/
-
-#ifdef BPSM
-const DINFOX_register_access_t NODE_REG_ACCESS[BPSM_REG_ADDR_LAST] = {
-	COMMON_REG_ACCESS
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_WRITE,
-	DINFOX_REG_ACCESS_READ_ONLY,
-	DINFOX_REG_ACCESS_READ_ONLY
-};
-#endif
-
 /*** BPSM local global variables ***/
 
-#ifdef BPSM
 static BPSM_context_t bpsm_ctx;
-#endif
 
 /*** BPSM local functions ***/
 
-#ifdef BPSM
 /*******************************************************************/
 static void _BPSM_load_fixed_configuration(void) {
 	// Local variables.
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Voltage divider ratio.
-	DINFOX_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REG_CONFIGURATION_0_MASK_VSTR_RATIO);
+	SWREG_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REGISTER_CONFIGURATION_0_MASK_VSTR_RATIO);
 	// Backup output control mode.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
-	DINFOX_write_field(&reg_value, &reg_mask, 0b1, BPSM_REG_CONFIGURATION_0_MASK_BKFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b1, BPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
 #else
-	DINFOX_write_field(&reg_value, &reg_mask, 0b0, BPSM_REG_CONFIGURATION_0_MASK_BKFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b0, BPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
 #endif
 	// Charge status mode.
 #ifdef BPSM_CHST_FORCED_HARDWARE
-	DINFOX_write_field(&reg_value, &reg_mask, 0b1, BPSM_REG_CONFIGURATION_0_MASK_CSFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b1, BPSM_REGISTER_CONFIGURATION_0_MASK_CSFH);
 #else
-	DINFOX_write_field(&reg_value, &reg_mask, 0b0, BPSM_REG_CONFIGURATION_0_MASK_CSFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b0, BPSM_REGISTER_CONFIGURATION_0_MASK_CSFH);
 #endif
 	// Charge control mode.
 #ifdef BPSM_CHEN_FORCED_HARDWARE
-	DINFOX_write_field(&reg_value, &reg_mask, 0b1, BPSM_REG_CONFIGURATION_0_MASK_CEFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b1, BPSM_REGISTER_CONFIGURATION_0_MASK_CEFH);
 #else
-	DINFOX_write_field(&reg_value, &reg_mask, 0b0, BPSM_REG_CONFIGURATION_0_MASK_CEFH);
+	SWREG_write_field(&reg_value, &reg_mask, 0b0, BPSM_REGISTER_CONFIGURATION_0_MASK_CEFH);
 #endif
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONFIGURATION_0, reg_mask, reg_value);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
 }
-#endif
 
-#ifdef BPSM
 /*******************************************************************/
 static void _BPSM_load_dynamic_configuration(void) {
 	// Local variables.
 	uint8_t reg_addr = 0;
 	uint32_t reg_value = 0;
 	// Load configuration registers from NVM.
-	for (reg_addr=BPSM_REG_ADDR_CONFIGURATION_1 ; reg_addr<BPSM_REG_ADDR_STATUS_1 ; reg_addr++) {
+	for (reg_addr=BPSM_REGISTER_ADDRESS_CONFIGURATION_1 ; reg_addr<BPSM_REGISTER_ADDRESS_STATUS_1 ; reg_addr++) {
 		// Read NVM.
-		reg_value = DINFOX_read_nvm_register(reg_addr);
+		NODE_read_nvm(reg_addr, &reg_value);
 		// Write register.
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, DINFOX_REG_MASK_ALL, reg_value);
+		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_value, UNA_REGISTER_MASK_ALL);
 	}
 }
-#endif
 
-#ifdef BPSM
 /*******************************************************************/
 static void _BPSM_reset_analog_data(void) {
 	// Local variables.
@@ -102,95 +84,97 @@ static void _BPSM_reset_analog_data(void) {
 	uint32_t reg_analog_data_2 = 0;
 	uint32_t reg_analog_data_2_mask = 0;
 	// VSRC / VSTR.
-	DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, BPSM_REG_ANALOG_DATA_1_MASK_VSRC);
-	DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, DINFOX_VOLTAGE_ERROR_VALUE, BPSM_REG_ANALOG_DATA_1_MASK_VSTR);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
+	SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
+	SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
 	// VBKP.
-	DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, DINFOX_VOLTAGE_ERROR_VALUE, BPSM_REG_ANALOG_DATA_2_MASK_VBKP);
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
+	SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
 }
-#endif
 
 /*** BPSM functions ***/
 
-#ifdef BPSM
 /*******************************************************************/
-void BPSM_init_registers(void) {
-#ifdef NVM_FACTORY_RESET
-	// Local variables.
-	uint32_t reg_value = 0;
-	uint32_t reg_mask = 0;
-	// CHEN toggle threshold and period.
-	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS),  BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
-	DINFOX_write_field(&reg_value, &reg_mask, DINFOX_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
-	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REG_ADDR_CONFIGURATION_1, reg_mask, reg_value);
+NODE_status_t BPSM_init_registers(void) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+#ifdef XM_NVM_FACTORY_RESET
+    uint32_t reg_value = 0;
+    uint32_t reg_mask = 0;
 #endif
-	// Read init state.
-	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
+    // Init context.
+    bpsm_ctx.chenst = UNA_BIT_ERROR;
+    bpsm_ctx.bkenst = UNA_BIT_ERROR;
+#ifndef BPSM_CHEN_FORCED_HARDWARE
+    bpsm_ctx.chen_on_seconds_count = 0;
+#endif
+#ifdef XM_NVM_FACTORY_RESET
+	// CHEN toggle threshold and period.
+	SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS),  BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
+	SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
+	NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+#endif
 	// Load default values.
 	_BPSM_load_fixed_configuration();
 	_BPSM_load_dynamic_configuration();
 	_BPSM_reset_analog_data();
-	// Init context.
-#ifndef BPSM_CHEN_FORCED_HARDWARE
-	bpsm_ctx.chen_on_seconds_count = 0;
-#endif
+	// Read init state.
+    status = BPSM_update_register(BPSM_REGISTER_ADDRESS_STATUS_1);
+	if (status != NODE_SUCCESS) goto errors;
+errors:
+    return status;
 }
-#endif
 
-#ifdef BPSM
 /*******************************************************************/
 NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
-	DINFOX_bit_representation_t chrgst = DINFOX_BIT_ERROR;
+	UNA_bit_representation_t chrgst = UNA_BIT_ERROR;
 	// Check address.
 	switch (reg_addr) {
-	case BPSM_REG_ADDR_STATUS_1:
+	case BPSM_REGISTER_ADDRESS_STATUS_1:
 		// Charge status.
 #ifdef BPSM_CHST_FORCED_HARDWARE
-		chrgst = DINFOX_BIT_FORCED_HARDWARE;
+		chrgst = UNA_BIT_FORCED_HARDWARE;
 #else
 		chrgst = LOAD_get_charge_status();
 #endif
-		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst), BPSM_REG_STATUS_1_MASK_CHRGST);
+		SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst), BPSM_REGISTER_STATUS_1_MASK_CHRGST);
 		// Charge state.
 #ifdef BPSM_CHEN_FORCED_HARDWARE
-		bpsm_ctx.chenst = DINFOX_BIT_FORCED_HARDWARE;
+		bpsm_ctx.chenst = UNA_BIT_FORCED_HARDWARE;
 #else
 		bpsm_ctx.chenst = LOAD_get_charge_state();
 #endif
-		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.chenst), BPSM_REG_STATUS_1_MASK_CHENST);
+		SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.chenst), BPSM_REGISTER_STATUS_1_MASK_CHENST);
 		// Backup_output state.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
-		bpsm_ctx.bkenst = DINFOX_BIT_FORCED_HARDWARE;
+		bpsm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
 #else
-		bpsm_ctx.bkenst = LOAD_get_output_state();
+		bpsm_ctx.bkenst = (LOAD_get_output_state() == 0) ? UNA_BIT_0 : UNA_BIT_1;
 #endif
-		DINFOX_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.bkenst), BPSM_REG_STATUS_1_MASK_BKENST);
+		SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.bkenst), BPSM_REGISTER_STATUS_1_MASK_BKENST);
 		break;
 	default:
 		// Nothing to do for other registers.
 		break;
 	}
-	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_mask, reg_value);
+	NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_value, reg_mask);
 	return status;
 }
-#endif
 
-#ifdef BPSM
 /*******************************************************************/
 NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 #ifndef BPSM_BKEN_FORCED_HARDWARE
 	LOAD_status_t load_status = LOAD_SUCCESS;
-	DINFOX_bit_representation_t bken = DINFOX_BIT_ERROR;
+	UNA_bit_representation_t bken = UNA_BIT_ERROR;
 #endif
 #ifndef BPSM_CHEN_FORCED_HARDWARE
-	DINFOX_bit_representation_t chen = DINFOX_BIT_ERROR;
+	UNA_bit_representation_t chen = UNA_BIT_ERROR;
 #endif
 	uint32_t reg_value = 0;
 	// Read register.
@@ -198,23 +182,24 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	if (status != NODE_SUCCESS) goto errors;
 	// Check address.
 	switch (reg_addr) {
-	case BPSM_REG_ADDR_CONFIGURATION_1:
+	case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
 		// Store new value in NVM.
 		if (reg_mask != 0) {
-			DINFOX_write_nvm_register(reg_addr, reg_value);
+			status = NODE_write_nvm(reg_addr, reg_value);
+			if (status != NODE_SUCCESS) goto errors;
 		}
 		break;
-	case BPSM_REG_ADDR_CONTROL_1:
+	case BPSM_REGISTER_ADDRESS_CONTROL_1:
 		// CHEN.
-		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_CHEN) != 0) {
+		if ((reg_mask & BPSM_REGISTER_CONTROL_1_MASK_CHEN) != 0) {
 #ifdef BPSM_CHEN_FORCED_HARDWARE
 			status = NODE_ERROR_FORCED_HARDWARE;
 			goto errors;
 #else
 			// Check control mode.
-			if (DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHMD) != 0) {
+			if (SWREG_read_field(reg_value, BPSM_REGISTER_CONTROL_1_MASK_CHMD) != 0) {
 				// Read bit.
-				chen = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_CHEN);
+				chen = SWREG_read_field(reg_value, BPSM_REGISTER_CONTROL_1_MASK_CHEN);
 				// Compare to current state.
 				if (chen != bpsm_ctx.chenst) {
 					// Set charge state.
@@ -228,14 +213,14 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 #endif
 		}
 		// BKEN.
-		if ((reg_mask & BPSM_REG_CONTROL_1_MASK_BKEN) != 0) {
+		if ((reg_mask & BPSM_REGISTER_CONTROL_1_MASK_BKEN) != 0) {
 			// Check pin mode.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
 			status = NODE_ERROR_FORCED_HARDWARE;
 			goto errors;
 #else
 			// Read bit.
-			bken = DINFOX_read_field(reg_value, BPSM_REG_CONTROL_1_MASK_BKEN);
+			bken = SWREG_read_field(reg_value, BPSM_REGISTER_CONTROL_1_MASK_BKEN);
 			// Compare to current state.
 			if (bken != bpsm_ctx.bkenst) {
 				// Set output state.
@@ -251,93 +236,63 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 	}
 errors:
 	// Update status register.
-	BPSM_update_register(BPSM_REG_ADDR_STATUS_1);
+	BPSM_update_register(BPSM_REGISTER_ADDRESS_STATUS_1);
 	return status;
 }
-#endif
 
-#ifdef BPSM
 /*******************************************************************/
-NODE_status_t BPSM_mtrg_callback(ADC_status_t* adc_status) {
+NODE_status_t BPSM_mtrg_callback(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	POWER_status_t power_status = POWER_SUCCESS;
-	ADC_status_t adc1_status = ADC_SUCCESS;
-	uint32_t adc_data = 0;
+	ANALOG_status_t analog_status = ANALOG_SUCCESS;
+	int32_t adc_data = 0;
 	uint32_t reg_analog_data_1 = 0;
 	uint32_t reg_analog_data_1_mask = 0;
 	uint32_t reg_analog_data_2 = 0;
 	uint32_t reg_analog_data_2_mask = 0;
 	// Reset results.
 	_BPSM_reset_analog_data();
-	// Perform analog measurements.
-	power_status = POWER_enable(POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
-	POWER_exit_error(NODE_ERROR_BASE_POWER);
-	adc1_status = ADC1_perform_measurements();
-	ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-	power_status = POWER_disable(POWER_DOMAIN_ANALOG);
-	POWER_exit_error(NODE_ERROR_BASE_POWER);
-	// Check status.
-	if (adc1_status == ADC_SUCCESS) {
-		// Relay common voltage.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &adc_data);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), BPSM_REG_ANALOG_DATA_1_MASK_VSRC);
-		}
-		// Relay output voltage.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSTR_MV, &adc_data);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) DINFOX_convert_mv(adc_data), BPSM_REG_ANALOG_DATA_1_MASK_VSTR);
-		}
-		// Relay output current.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VBKP_MV, &adc_data);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
-		if (adc1_status == ADC_SUCCESS) {
-			DINFOX_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) DINFOX_convert_mv(adc_data), BPSM_REG_ANALOG_DATA_2_MASK_VBKP);
-		}
-		// Write registers.
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_1, reg_analog_data_1_mask, reg_analog_data_1);
-		NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_ANALOG_DATA_2, reg_analog_data_2_mask, reg_analog_data_2);
-	}
-	// Update ADC status.
-	if (adc_status != NULL) {
-		(*adc_status) = adc1_status;
-	}
-	return status;
+    // Relay common voltage.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &adc_data);
+    ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
+    // Relay output voltage.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &adc_data);
+    ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
+    // Relay output current.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VBKP_MV, &adc_data);
+    ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
+    // Write registers.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
 errors:
-	POWER_disable(POWER_DOMAIN_ANALOG);
-	// Update ADC status.
-	if (adc_status != NULL) {
-		(*adc_status) = adc1_status;
-	}
 	return status;
 }
-#endif
 
-#if (defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)
+#ifndef BPSM_CHEN_FORCED_HARDWARE
 /*******************************************************************/
 NODE_status_t BPSM_charge_process(uint32_t process_period_seconds) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
-	ADC_status_t adc1_status = ADC_SUCCESS;
+	ANALOG_status_t analog_status = ANALOG_SUCCESS;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_config_1 = 0;
-	uint32_t vsrc_mv = 0;
-	uint32_t vsrc_threshold_mv = 0;
+	int32_t vsrc_mv = 0;
+	int32_t vsrc_threshold_mv = 0;
 	uint32_t toggle_period_seconds = 0;
 	// Read control register.
-	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONTROL_1, &reg_control_1);
+	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
 	// Check mode.
-	if (DINFOX_read_field(reg_control_1, BPSM_REG_CONTROL_1_MASK_CHMD) == 0) {
+	if (SWREG_read_field(reg_control_1, BPSM_REGISTER_CONTROL_1_MASK_CHMD) == 0) {
 		// Check source voltage.
-		adc1_status = ADC1_get_data(ADC_DATA_INDEX_VSRC_MV, &vsrc_mv);
-		ADC1_exit_error(NODE_ERROR_BASE_ADC1);
+		analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &vsrc_mv);
+		ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 		// Read threshold and period.
-		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REG_ADDR_CONFIGURATION_1, &reg_config_1);
-		vsrc_threshold_mv = DINFOX_get_mv(DINFOX_read_field(reg_config_1, BPSM_REG_CONFIGURATION_1_MASK_CHEN_THRESHOLD));
-		toggle_period_seconds = DINFOX_get_seconds(DINFOX_read_field(reg_config_1, BPSM_REG_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
+		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
+		vsrc_threshold_mv = UNA_get_mv(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD));
+		toggle_period_seconds = UNA_get_seconds(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
 		// Check voltage.
 		if (vsrc_mv >= vsrc_threshold_mv) {
 			// Check toggle period.
@@ -362,3 +317,5 @@ errors:
 	return status;
 }
 #endif
+
+#endif /* BPSM */
