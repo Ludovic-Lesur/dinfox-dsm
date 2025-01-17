@@ -22,7 +22,6 @@
 #define ANALOG_ADC_CHANNEL_VSRC             ADC_CHANNEL_IN6
 #define ANALOG_DIVIDER_RATIO_VSRC           10
 #define ANALOG_ADC_CHANNEL_VSTR             ADC_CHANNEL_IN4
-#define ANALOG_DIVIDER_RATIO_VSTR           10
 #define ANALOG_ADC_CHANNEL_VBKP             ADC_CHANNEL_IN0
 #define ANALOG_DIVIDER_RATIO_VBKP           10
 #endif
@@ -191,7 +190,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         adc_status = ADC_convert_channel(ANALOG_ADC_CHANNEL_VSTR, &adc_data_12bits);
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Convert to mV.
-        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VSTR) / (ADC_FULL_SCALE);
+        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * BPSM_DIVIDER_RATIO_VSTR) / (ADC_FULL_SCALE);
         break;
     case ANALOG_CHANNEL_VBKP_MV:
         // Supercap voltage.

@@ -8,9 +8,10 @@
 #include "bpsm.h"
 
 #include "analog.h"
+#include "bpsm_registers.h"
 #include "error.h"
 #include "load.h"
-#include "bpsm_registers.h"
+#include "mode.h"
 #include "node.h"
 #include "swreg.h"
 #include "rtc.h"
@@ -46,7 +47,7 @@ static void _BPSM_load_fixed_configuration(void) {
 	uint32_t reg_value = 0;
 	uint32_t reg_mask = 0;
 	// Voltage divider ratio.
-	SWREG_write_field(&reg_value, &reg_mask, BPSM_VSTR_VOLTAGE_DIVIDER_RATIO, BPSM_REGISTER_CONFIGURATION_0_MASK_VSTR_RATIO);
+	SWREG_write_field(&reg_value, &reg_mask, BPSM_DIVIDER_RATIO_VSTR, BPSM_REGISTER_CONFIGURATION_0_MASK_VSTR_RATIO);
 	// Backup output control mode.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
 	SWREG_write_field(&reg_value, &reg_mask, 0b1, BPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
