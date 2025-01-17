@@ -195,7 +195,7 @@ NODE_status_t SM_mtrg_callback(void) {
 #endif
 #ifdef SM_DIO_ENABLE
     // Turn digital front-end on.
-	POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_DIGITAL, LPTIM_DELAY_MODE_SLEEP);
+	POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_DIGITAL, LPTIM_DELAY_MODE_SLEEP);
     // DIO0.
     digital_status = DIGITAL_read_channel(DIGITAL_CHANNEL_DIO0, &state);
     DIGITAL_exit_error(NODE_ERROR_BASE_DIGITAL);
@@ -217,7 +217,7 @@ NODE_status_t SM_mtrg_callback(void) {
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
     // Turn sensors on.
-	POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
+	POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
     // TAMB.
     sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_degrees, &hamb_percent);
     SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
@@ -228,10 +228,10 @@ NODE_status_t SM_mtrg_callback(void) {
 #endif
 errors:
 #ifdef SM_DIO_ENABLE
-	POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_DIGITAL);
+	POWER_disable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_DIGITAL);
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
-	POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_SENSORS);
+	POWER_disable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_SENSORS);
 #endif
 	return status;
 }

@@ -13,13 +13,16 @@
 #include "ddrm.h"
 #include "ddrm_registers.h"
 #include "error.h"
+#include "error_base.h"
 #include "gpsm.h"
 #include "gpsm_registers.h"
 #include "led.h"
 #include "lvrm.h"
 #include "lvrm_registers.h"
+#include "mode.h"
 #include "nvm.h"
 #include "nvm_address.h"
+#include "power.h"
 #include "rtc.h"
 #include "rrm.h"
 #include "rrm_registers.h"
@@ -53,7 +56,6 @@ typedef struct {
 typedef struct {
     volatile uint32_t registers[NODE_REGISTER_ADDRESS_LAST];
     NODE_state_t state;
-    uint32_t static_measurements_next_time_seconds;
 #ifdef XM_IOUT_INDICATOR
     uint32_t iout_indicator_next_time_seconds;
 #endif
@@ -76,19 +78,6 @@ static NODE_context_t node_ctx;
 
 /*** NODE local functions ***/
 
-/*******************************************************************/
-static NODE_status_t _NODE_static_measurements(void) {
-    // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-#if (defined XM_IOUT_INDICATOR) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-    // Perform analog measurements.
-    status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, COMMON_REGISTER_ADDRESS_CONTROL_0, COMMON_REGISTER_CONTROL_0_MASK_MTRG, COMMON_REGISTER_CONTROL_0_MASK_MTRG);
-    if (status != NODE_SUCCESS) goto errors;
-errors:
-#endif
-    return status;
-}
-
 #ifdef XM_IOUT_INDICATOR
 /*******************************************************************/
 static NODE_status_t _NODE_iout_indicator(void) {
@@ -100,6 +89,8 @@ static NODE_status_t _NODE_iout_indicator(void) {
     int32_t input_voltage_mv = 0;
     int32_t iout_ua;
     uint8_t idx = NODE_IOUT_INDICATOR_RANGE;
+    // Turn analog front-end on.
+    POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // Check input voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &input_voltage_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
@@ -121,6 +112,7 @@ static NODE_status_t _NODE_iout_indicator(void) {
         LED_exit_error(NODE_ERROR_BASE_LED);
     }
 errors:
+    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
     return status;
 }
 #endif
@@ -208,7 +200,6 @@ NODE_status_t NODE_init(void) {
 		node_ctx.registers[idx] = 0;
 	}
 	node_ctx.state = NODE_STATE_IDLE;
-	node_ctx.static_measurements_next_time_seconds = 0;
 #ifdef XM_IOUT_INDICATOR
 	node_ctx.iout_indicator_next_time_seconds = 0;
 #endif
@@ -245,9 +236,6 @@ NODE_status_t NODE_init(void) {
 	status = RRM_init_registers();
 #endif
 	if (status != NODE_SUCCESS) goto errors;
-	// Perform first measurements.
-	status = _NODE_static_measurements();
-	if (status != NODE_SUCCESS) goto errors;
 #ifdef XM_LOAD_CONTROL
     LOAD_init();
 #endif
@@ -276,23 +264,18 @@ errors:
 NODE_status_t NODE_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
+#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)))
+    NODE_status_t node_status = NODE_SUCCESS;
+#endif
     // Reset state to default.
     node_ctx.state = NODE_STATE_IDLE;
-    // Check static measurements period.
-    if (RTC_get_uptime_seconds() >= node_ctx.static_measurements_next_time_seconds) {
-        // Update next time.
-        node_ctx.static_measurements_next_time_seconds = RTC_get_uptime_seconds() + NODE_STATIC_MEASUREMENTS_PERIOD_SECONDS;
-        // Perform static measurements.
-        status = _NODE_static_measurements();
-        if (status != NODE_SUCCESS) goto errors;
 #if ((defined LVRM) && (defined LVRM_MODE_BMS))
-        status = LVRM_bms_process();
-        if (status != NODE_SUCCESS) goto errors;
+    status = LVRM_bms_process();
+    NODE_stack_error(ERROR_BASE_NODE);
 #endif
-    }
 #if ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
-    status = BPSM_charge_process(STM32L0XX_DRIVERS_RTC_WAKEUP_PERIOD_SECONDS);
-    if (status != NODE_SUCCESS) goto errors;
+    node_status = BPSM_charge_process();
+    NODE_stack_error(ERROR_BASE_NODE);
 #endif
 #ifdef XM_IOUT_INDICATOR
     // Check LED period.
@@ -303,9 +286,7 @@ NODE_status_t NODE_process(void) {
         status = _NODE_iout_indicator();
         if (status != NODE_SUCCESS) goto errors;
     }
-#endif
 errors:
-#ifdef XM_IOUT_INDICATOR
     // Check LED state.
     if (LED_is_single_blink_done() == 0) {
         node_ctx.state = NODE_STATE_RUNNING;

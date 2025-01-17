@@ -51,7 +51,7 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
 	// Common analog data.
 	_COMMON_reset_analog_data();
 	// Turn analog front-end on.
-	POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+	POWER_enable(POWER_REQUESTER_ID_COMMON, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	// MCU voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VMCU_MV, &vmcu_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
@@ -86,7 +86,7 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
 #endif
 	if (status != NODE_SUCCESS) goto errors;
 errors:
-    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
+    POWER_disable(POWER_REQUESTER_ID_COMMON, POWER_DOMAIN_ANALOG);
 	return status;
 }
 

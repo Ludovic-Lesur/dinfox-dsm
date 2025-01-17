@@ -197,7 +197,7 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				// Clear request.
 				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONTROL_1, 0b0, LVRM_REGISTER_CONTROL_1_MASK_ZCCT);
 				// Turn analog front-end on.
-				POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+				POWER_enable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 				// Get output current.
                 analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &output_current_ua);
                 ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
@@ -212,7 +212,7 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		break;
 	}
 errors:
-    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
+    POWER_disable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG);
 	LVRM_update_register(LVRM_REGISTER_ADDRESS_STATUS_1);
 	return status;
 }
@@ -269,28 +269,26 @@ NODE_status_t LVRM_bms_process(void) {
 	LOAD_status_t load_status = LOAD_SUCCESS;
 	uint32_t reg_config_1 = 0;
 	int32_t vbatt_mv = 0;
-	int32_t vbatt_low_threshold_mv = 0;
-	int32_t vbatt_high_threshold_mv = 0;
+	// Turn analog front-end on.
+    POWER_enable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 	// Check battery voltage.
 	analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vbatt_mv);
 	ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 	// Read thresholds in registers.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
-	// Convert thresholds in mV.
-	vbatt_low_threshold_mv =  UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD));
-	vbatt_high_threshold_mv = UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD));
 	// Check battery voltage.
-	if (vbatt_mv < vbatt_low_threshold_mv) {
+	if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD))) {
 		// Open relay.
 		load_status = LOAD_set_output_state(0);
 		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 	}
-	if (vbatt_mv > vbatt_high_threshold_mv) {
+	if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD))) {
 		// Close relay.
 		load_status = LOAD_set_output_state(1);
 		LOAD_exit_error(NODE_ERROR_BASE_LOAD);
 	}
 errors:
+    POWER_disable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG);
 	return status;
 }
 #endif

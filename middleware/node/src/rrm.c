@@ -172,7 +172,7 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 				// Clear request.
 				NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REGISTER_ADDRESS_CONTROL_1, 0b0, RRM_REGISTER_CONTROL_1_MASK_ZCCT);
 				// Turn analog front-end on.
-				POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+				POWER_enable(POWER_REQUESTER_ID_RRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 				// Get output current.
 				analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &output_current_ua);
                 ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
@@ -187,7 +187,7 @@ NODE_status_t RRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 		break;
 	}
 errors:
-    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
+    POWER_disable(POWER_REQUESTER_ID_RRM, POWER_DOMAIN_ANALOG);
 	RRM_update_register(RRM_REGISTER_ADDRESS_STATUS_1);
 	return status;
 }

@@ -61,13 +61,13 @@ NODE_status_t BPSM_mtrg_callback(void);
 
 #ifndef BPSM_CHEN_FORCED_HARDWARE
 /*!******************************************************************
- * \fn void BPSM_charge_process(void)
+ * \fn NODE_status_t BPSM_charge_process(void)
  * \brief BPSM automatic charge control process.
- * \param[in]  	process_period: Function call period in seconds.
+ * \param[in]  	none
  * \param[out] 	none
  * \retval		Function execution status.
  *******************************************************************/
-NODE_status_t BPSM_charge_process(uint32_t process_period_seconds);
+NODE_status_t BPSM_charge_process(void);
 #endif
 
 #endif /* BPSM */

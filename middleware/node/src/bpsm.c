@@ -13,9 +13,14 @@
 #include "bpsm_registers.h"
 #include "node.h"
 #include "swreg.h"
+#include "rtc.h"
 #include "una.h"
 
 #ifdef BPSM
+
+/*** BPSM local macros ***/
+
+#define BPSM_CHEN_TOGGLE_DURATION_SECONDS   1
 
 /*** BPSM local structures ***/
 
@@ -24,7 +29,8 @@ typedef struct {
 	UNA_bit_representation_t chenst;
 	UNA_bit_representation_t bkenst;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
-	uint32_t chen_on_seconds_count;
+	uint32_t chen_toggle_previous_time_seconds;
+	uint32_t chen_toggle_next_time_seconds;
 #endif
 } BPSM_context_t;
 
@@ -106,7 +112,8 @@ NODE_status_t BPSM_init_registers(void) {
     bpsm_ctx.chenst = UNA_BIT_ERROR;
     bpsm_ctx.bkenst = UNA_BIT_ERROR;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
-    bpsm_ctx.chen_on_seconds_count = 0;
+    bpsm_ctx.chen_toggle_previous_time_seconds = 0;
+    bpsm_ctx.chen_toggle_next_time_seconds = 0;
 #endif
 #ifdef XM_NVM_FACTORY_RESET
 	// CHEN toggle threshold and period.
@@ -273,47 +280,48 @@ errors:
 
 #ifndef BPSM_CHEN_FORCED_HARDWARE
 /*******************************************************************/
-NODE_status_t BPSM_charge_process(uint32_t process_period_seconds) {
+NODE_status_t BPSM_charge_process(void) {
 	// Local variables.
 	NODE_status_t status = NODE_SUCCESS;
 	ANALOG_status_t analog_status = ANALOG_SUCCESS;
 	uint32_t reg_control_1 = 0;
 	uint32_t reg_config_1 = 0;
 	int32_t vsrc_mv = 0;
-	int32_t vsrc_threshold_mv = 0;
-	uint32_t toggle_period_seconds = 0;
 	// Read control register.
 	NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
 	// Check mode.
 	if (SWREG_read_field(reg_control_1, BPSM_REGISTER_CONTROL_1_MASK_CHMD) == 0) {
+	    // Turn analog front-end on.
+        POWER_enable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
 		// Check source voltage.
 		analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &vsrc_mv);
 		ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 		// Read threshold and period.
 		NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
-		vsrc_threshold_mv = UNA_get_mv(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD));
-		toggle_period_seconds = UNA_get_seconds(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
 		// Check voltage.
-		if (vsrc_mv >= vsrc_threshold_mv) {
-			// Check toggle period.
-			if (bpsm_ctx.chen_on_seconds_count >= toggle_period_seconds) {
-				// Disable charge.
-				LOAD_set_charge_state(0);
-				bpsm_ctx.chen_on_seconds_count = 0;
-			}
-			else {
-				// Enable charge.
-				LOAD_set_charge_state(1);
-				bpsm_ctx.chen_on_seconds_count += process_period_seconds;
-			}
-		}
-		else {
-			// Disable charge.
-			LOAD_set_charge_state(0);
-			bpsm_ctx.chen_on_seconds_count = 0;
-		}
+        if (vsrc_mv >= UNA_get_mv(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD))) {
+            // Check toggle period.
+            if (RTC_get_uptime_seconds() >= bpsm_ctx.chen_toggle_next_time_seconds) {
+                // Update times.
+                bpsm_ctx.chen_toggle_previous_time_seconds = RTC_get_uptime_seconds();
+                bpsm_ctx.chen_toggle_next_time_seconds = RTC_get_uptime_seconds() + UNA_get_seconds(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
+                // Disable charge.
+                LOAD_set_charge_state(0);
+            }
+            else {
+                if (RTC_get_uptime_seconds() >= (bpsm_ctx.chen_toggle_previous_time_seconds + BPSM_CHEN_TOGGLE_DURATION_SECONDS)) {
+                    // Enable charge.
+                    LOAD_set_charge_state(1);
+                }
+            }
+        }
+        else {
+            // Disable charge.
+            LOAD_set_charge_state(0);
+        }
 	}
 errors:
+    POWER_disable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG);
 	return status;
 }
 #endif

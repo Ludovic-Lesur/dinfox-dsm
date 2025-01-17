@@ -101,12 +101,12 @@ static void _GPSM_power_control(uint8_t state) {
 	// Check on transition.
 	if ((state != 0) && (gpsm_ctx.flags.gps_power == 0)) {
 		// Turn GPS on.
-		POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_GPS, LPTIM_DELAY_MODE_STOP);
+		POWER_enable(POWER_REQUESTER_ID_GPSM, POWER_DOMAIN_GPS, LPTIM_DELAY_MODE_STOP);
 	}
 	// Check on transition.
 	if ((state == 0) && (gpsm_ctx.flags.gps_power != 0)) {
 		// Turn GPS off.
-		POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_GPS);
+		POWER_disable(POWER_REQUESTER_ID_GPSM, POWER_DOMAIN_GPS);
 	}
 	// Update local flag.
 	gpsm_ctx.flags.gps_power = (state == 0) ? 0 : 1;
