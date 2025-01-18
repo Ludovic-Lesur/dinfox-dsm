@@ -10,6 +10,9 @@
 #include "error.h"
 #include "gpio.h"
 #include "gpio_mapping.h"
+#ifndef S2LP_DRIVER_DISABLE_FLAGS_FILE
+#include "s2lp_driver_flags.h"
+#endif
 #include "s2lp.h"
 #include "types.h"
 
@@ -70,7 +73,7 @@ errors:
     return status;
 }
 
-#ifdef BIDIRECTIONAL
+#if ((defined BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
 /*******************************************************************/
 RFE_status_t RFE_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm) {
     // Local variables.

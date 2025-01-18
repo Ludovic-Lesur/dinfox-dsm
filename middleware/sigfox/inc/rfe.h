@@ -9,6 +9,9 @@
 #define __RFE_H__
 
 #include "types.h"
+#ifndef S2LP_DRIVER_DISABLE_FLAGS_FILE
+#include "s2lp_driver_flags.h"
+#endif
 #include "s2lp.h"
 
 /*** RFE structures ***/
@@ -69,7 +72,7 @@ RFE_status_t RFE_de_init(void);
  *******************************************************************/
 RFE_status_t RFE_set_path(RFE_path_t radio_path);
 
-#ifdef BIDIRECTIONAL
+#if ((defined BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
 /*!******************************************************************
  * \fn RFE_status_t RFE_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm)
  * \brief Get calibrated RSSI at board connector.
