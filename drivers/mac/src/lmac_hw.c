@@ -16,7 +16,6 @@
 #include "nvic_priority.h"
 #include "nvm.h"
 #include "nvm_address.h"
-#include "rtc.h"
 #include "types.h"
 #include "una.h"
 
@@ -93,12 +92,5 @@ LMAC_status_t LMAC_HW_write(uint8_t* data, uint32_t data_size_bytes) {
 errors:
     return status;
 }
-
-#ifdef LMAC_DRIVER_MODE_SLAVE
-/*******************************************************************/
-uint32_t LMAC_HW_get_uptime_seconds(void) {
-    return RTC_get_uptime_seconds();
-}
-#endif
 
 #endif /* LMAC_DRIVER_DISABLE */
