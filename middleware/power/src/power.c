@@ -102,15 +102,15 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
 		// Turn analog front-end on and init ADC.
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
 		GPIO_write(&GPIO_MNTR_EN, 1);
+		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)
 		GPIO_write(&GPIO_ANALOG_POWER_ENABLE, 1);
+		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
 		// Init attached drivers.
 		analog_status = ANALOG_init();
 		_POWER_stack_driver_error(analog_status, ANALOG_SUCCESS, ERROR_BASE_ANALOG, POWER_ERROR_DRIVER_ANALOG);
-		// Update delay.
-		delay_ms = POWER_ON_DELAY_MS_ANALOG;
 		break;
 #ifdef SM
 	case POWER_DOMAIN_DIGITAL:
