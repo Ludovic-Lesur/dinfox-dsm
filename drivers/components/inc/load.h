@@ -19,13 +19,13 @@
  * \brief LOAD driver error codes.
  *******************************************************************/
 typedef enum {
-	// Driver errors.
-	LOAD_SUCCESS = 0,
-	LOAD_ERROR_STATE,
-	// Low level drivers errors.
-	LOAD_ERROR_BASE_LPTIM = 0x0100,
-	// Last base value.
-	LOAD_ERROR_BASE_LAST = (LOAD_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
+    // Driver errors.
+    LOAD_SUCCESS = 0,
+    LOAD_ERROR_STATE,
+    // Low level drivers errors.
+    LOAD_ERROR_BASE_LPTIM = 0x0100,
+    // Last base value.
+    LOAD_ERROR_BASE_LAST = (LOAD_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } LOAD_status_t;
 
 #ifdef XM_LOAD_CONTROL
@@ -35,27 +35,27 @@ typedef enum {
 /*!******************************************************************
  * \fn void LOAD_init(void)
  * \brief Init load interface.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		none
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      none
  *******************************************************************/
 void LOAD_init(void);
 
 /*!******************************************************************
  * \fn LOAD_status_t LOAD_set_output_state(uint8_t state)
  * \brief Set load output state.
- * \param[in]  	state: New state to set.
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   state: New state to set.
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 LOAD_status_t LOAD_set_output_state(uint8_t state);
 
 /*!******************************************************************
  * \fn uint8_t LOAD_get_output_state(void)
  * \brief Read load output state.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Load state.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Load state.
  *******************************************************************/
 uint8_t LOAD_get_output_state(void);
 
@@ -63,9 +63,9 @@ uint8_t LOAD_get_output_state(void);
 /*!******************************************************************
  * \fn void LOAD_set_charge_state(uint8_t state)
  * \brief Set charge enable state.
- * \param[in]  	state: New state to set.
- * \param[out] 	none
- * \retval		none
+ * \param[in]   state: New state to set.
+ * \param[out]  none
+ * \retval      none
  *******************************************************************/
 void LOAD_set_charge_state(uint8_t state);
 #endif
@@ -74,9 +74,9 @@ void LOAD_set_charge_state(uint8_t state);
 /*!******************************************************************
  * \fn uint8_t LOAD_get_charge_state(void)
  * \brief Read charge enable state.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Charge enable state.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Charge enable state.
  *******************************************************************/
 uint8_t LOAD_get_charge_state(void);
 #endif
@@ -85,9 +85,9 @@ uint8_t LOAD_get_charge_state(void);
 /*!******************************************************************
  * \fn uint8_t LOAD_get_charge_status(void)
  * \brief Read charge status.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Charge status.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Charge status.
  *******************************************************************/
 uint8_t LOAD_get_charge_status(void);
 #endif

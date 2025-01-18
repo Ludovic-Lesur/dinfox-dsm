@@ -36,7 +36,7 @@ typedef enum {
  *******************************************************************/
 typedef enum {
     RFE_PATH_NONE = 0,
-	RFE_PATH_TX,
+    RFE_PATH_TX,
 #ifdef BIDIRECTIONAL
     RFE_PATH_RX,
 #endif

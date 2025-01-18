@@ -53,18 +53,7 @@ typedef enum {
 
 /*** LED local global variables ***/
 
-static const uint8_t LED_DIMMING_LUT[LED_DIMMING_LUT_SIZE] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 2, 2, 2, 2, 2, 2, 3, 3, 3,
-    3, 3, 3, 4, 4, 4, 4, 5, 5, 5,
-    5, 6, 6, 6, 7, 7, 8, 8, 8, 9,
-    9, 10, 10, 11, 11, 12, 13, 13, 14, 15,
-    15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-    25, 26, 28, 29, 30, 32, 34, 35, 37, 39,
-    41, 43, 45, 47, 49, 52, 54, 57, 59, 62,
-    65, 69, 72, 75, 79, 83, 87, 91, 95, 100,
-};
+static const uint8_t LED_DIMMING_LUT[LED_DIMMING_LUT_SIZE] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 8, 9, 9, 10, 10, 11, 11, 12, 13, 13, 14, 15, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 32, 34, 35, 37, 39, 41, 43, 45, 47, 49, 52, 54, 57, 59, 62, 65, 69, 72, 75, 79, 83, 87, 91, 95, 100, };
 
 static LED_context_t led_ctx;
 
@@ -87,9 +76,9 @@ static LED_status_t _LED_turn_off(void) {
     tim_status = TIM_PWM_set_waveform(LED_PWM_B_TIM_INSTANCE, (GPIO_LED_TIM_B.list[GPIO_TIM_B_CHANNEL_INDEX_LED_BLUE])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
     TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
 #else
-    for (idx=0 ; idx<GPIO_TIM_CHANNEL_INDEX_LAST ; idx++) {
-       tim_status = TIM_PWM_set_waveform(LED_PWM_TIM_INSTANCE, (GPIO_LED_TIM.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
-       TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
+    for (idx = 0; idx < GPIO_TIM_CHANNEL_INDEX_LAST; idx++) {
+        tim_status = TIM_PWM_set_waveform(LED_PWM_TIM_INSTANCE, (GPIO_LED_TIM.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
+        TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
     }
 #endif
 errors:
@@ -161,31 +150,31 @@ static void _LED_dimming_timer_irq_callback(void) {
 
 /*******************************************************************/
 LED_status_t LED_init(void) {
-	// Local variables.
-	LED_status_t status = LED_SUCCESS;
-	TIM_status_t tim_status = TIM_SUCCESS;
-	// Init context.
-	led_ctx.color = LED_COLOR_OFF;
-	led_ctx.dimming_lut_direction = 0;
-	led_ctx.dimming_lut_index = 0;
-	led_ctx.single_blink_done = 1;
-	// Init timers.
+    // Local variables.
+    LED_status_t status = LED_SUCCESS;
+    TIM_status_t tim_status = TIM_SUCCESS;
+    // Init context.
+    led_ctx.color = LED_COLOR_OFF;
+    led_ctx.dimming_lut_direction = 0;
+    led_ctx.dimming_lut_index = 0;
+    led_ctx.single_blink_done = 1;
+    // Init timers.
 #ifdef GPSM
-	tim_status = TIM_PWM_init(LED_PWM_RG_TIM_INSTANCE, (TIM_gpio_t*) &GPIO_LED_TIM_RG);
+    tim_status = TIM_PWM_init(LED_PWM_RG_TIM_INSTANCE, (TIM_gpio_t*) &GPIO_LED_TIM_RG);
     TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
     tim_status = TIM_PWM_init(LED_PWM_B_TIM_INSTANCE, (TIM_gpio_t*) &GPIO_LED_TIM_B);
     TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
 #else
-	tim_status = TIM_PWM_init(LED_PWM_TIM_INSTANCE, (TIM_gpio_t*) &GPIO_LED_TIM);
-	TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    tim_status = TIM_PWM_init(LED_PWM_TIM_INSTANCE, (TIM_gpio_t*) &GPIO_LED_TIM);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
 #endif
-	tim_status = TIM_STD_init(LED_DIMMING_TIM_INSTANCE, NVIC_PRIORITY_LED);
-	TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
-	// Turn LED off.
-	status = _LED_turn_off();
+    tim_status = TIM_STD_init(LED_DIMMING_TIM_INSTANCE, NVIC_PRIORITY_LED);
+    TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
+    // Turn LED off.
+    status = _LED_turn_off();
     if (status != LED_SUCCESS) goto errors;
 errors:
-	return status;
+    return status;
 }
 
 /*******************************************************************/
@@ -214,28 +203,28 @@ errors:
 
 /*******************************************************************/
 LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
-	// Local variables.
-	LED_status_t status = LED_SUCCESS;
-	TIM_status_t tim_status = TIM_SUCCESS;
-	// Check parameters.
-	if (blink_duration_ms == 0) {
-		status = LED_ERROR_NULL_DURATION;
-		goto errors;
-	}
-	if (color >= LED_COLOR_LAST) {
-		status = LED_ERROR_COLOR;
-		goto errors;
-	}
-	// Update context.
-	led_ctx.color = color;
-	led_ctx.dimming_lut_direction = 0;
-	led_ctx.dimming_lut_index = 0;
-	led_ctx.single_blink_done = 0;
-	// Start blink.
-	tim_status = TIM_STD_start(LED_DIMMING_TIM_INSTANCE, ((blink_duration_ms) / (LED_DIMMING_LUT_SIZE << 1)), TIM_UNIT_MS, &_LED_dimming_timer_irq_callback);
-	TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
+    // Local variables.
+    LED_status_t status = LED_SUCCESS;
+    TIM_status_t tim_status = TIM_SUCCESS;
+    // Check parameters.
+    if (blink_duration_ms == 0) {
+        status = LED_ERROR_NULL_DURATION;
+        goto errors;
+    }
+    if (color >= LED_COLOR_LAST) {
+        status = LED_ERROR_COLOR;
+        goto errors;
+    }
+    // Update context.
+    led_ctx.color = color;
+    led_ctx.dimming_lut_direction = 0;
+    led_ctx.dimming_lut_index = 0;
+    led_ctx.single_blink_done = 0;
+    // Start blink.
+    tim_status = TIM_STD_start(LED_DIMMING_TIM_INSTANCE, ((blink_duration_ms) / (LED_DIMMING_LUT_SIZE << 1)), TIM_UNIT_MS, &_LED_dimming_timer_irq_callback);
+    TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
 errors:
-	return status;
+    return status;
 }
 
 /*******************************************************************/
@@ -255,7 +244,7 @@ errors:
 
 /*******************************************************************/
 uint8_t LED_is_single_blink_done(void) {
-	return (led_ctx.single_blink_done);
+    return (led_ctx.single_blink_done);
 }
 
 #endif /* XM_RGB_LED */

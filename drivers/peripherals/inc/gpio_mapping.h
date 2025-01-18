@@ -19,7 +19,6 @@
 
 /*** GPIO MAPPING structures ***/
 
-
 #ifndef GPSM
 /*******************************************************************/
 typedef enum {

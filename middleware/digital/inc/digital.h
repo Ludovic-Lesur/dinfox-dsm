@@ -32,8 +32,7 @@ typedef enum {
  * \brief DIGITAL channels list.
  *******************************************************************/
 typedef enum {
-
-    DIGITAL_CHANNEL_DIO0,
+    DIGITAL_CHANNEL_DIO0 = 0,
     DIGITAL_CHANNEL_DIO1,
     DIGITAL_CHANNEL_DIO2,
     DIGITAL_CHANNEL_DIO3,

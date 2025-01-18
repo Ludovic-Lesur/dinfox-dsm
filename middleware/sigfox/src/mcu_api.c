@@ -77,7 +77,7 @@ typedef enum {
 
 #if (defined TIMER_REQUIRED) && (defined LATENCY_COMPENSATION) && (defined BIDIRECTIONAL)
 static sfx_u32 MCU_API_LATENCY_MS[MCU_API_LATENCY_LAST] = {
-	ADC_INIT_DELAY_MS // Get voltage and temperature function.
+    ADC_INIT_DELAY_MS // Get voltage and temperature function.
 };
 #endif
 

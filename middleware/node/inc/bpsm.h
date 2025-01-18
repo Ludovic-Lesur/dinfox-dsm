@@ -16,8 +16,8 @@
 
 /*** BPSM macros ***/
 
-#define NODE_BOARD_ID		        UNA_BOARD_ID_BPSM
-#define NODE_REGISTER_ADDRESS_LAST	BPSM_REGISTER_ADDRESS_LAST
+#define NODE_BOARD_ID               UNA_BOARD_ID_BPSM
+#define NODE_REGISTER_ADDRESS_LAST  BPSM_REGISTER_ADDRESS_LAST
 #define NODE_REGISTER_ACCESS        BPSM_REGISTER_ACCESS
 
 /*** BPSM functions ***/
@@ -25,37 +25,37 @@
 /*!******************************************************************
  * \fn NODE_status_t BPSM_init_registers(void)
  * \brief Init BPSM registers to their default value.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_init_registers(void);
 
 /*!******************************************************************
  * \fn NODE_status_t BPSM_update_register(uint8_t reg_addr)
  * \brief Update BPSM register.
- * \param[in]  	reg_addr: Address of the register to update.
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   reg_addr: Address of the register to update.
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_update_register(uint8_t reg_addr);
 
 /*!******************************************************************
  * \fn NODE_status_t BPSM_check_register(uint8_t reg_addr)
  * \brief Check BPSM register.
- * \param[in]  	reg_addr: Address of the register to check.
- * \param[in]	reg_mask: Mask of the bits to check.
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   reg_addr: Address of the register to check.
+ * \param[in]   reg_mask: Mask of the bits to check.
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask);
 
 /*!******************************************************************
  * \fn NODE_status_t BPSM_mtrg_callback(void)
  * \brief BPSM measurements callback.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_mtrg_callback(void);
 
@@ -63,9 +63,9 @@ NODE_status_t BPSM_mtrg_callback(void);
 /*!******************************************************************
  * \fn NODE_status_t BPSM_charge_process(void)
  * \brief BPSM automatic charge control process.
- * \param[in]  	none
- * \param[out] 	none
- * \retval		Function execution status.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
  *******************************************************************/
 NODE_status_t BPSM_charge_process(void);
 #endif

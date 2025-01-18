@@ -11,13 +11,13 @@
 /*** Board modes ***/
 
 //#define XM_DEBUG
-//#define XM_NVM_FACTORY_RESET
+#define XM_NVM_FACTORY_RESET
 //#define XM_MODE_CLI
 
 /*** Board options ***/
 
 #ifdef XM_NVM_FACTORY_RESET
-//#define XM_NODE_ADDRESS                   0x7F
+#define XM_NODE_ADDRESS                     0x7F
 #endif
 
 #ifdef LVRM
@@ -27,7 +27,7 @@
 #endif
 //#define LVRM_RLST_FORCED_HARDWARE
 #ifndef LVRM_RLST_FORCED_HARDWARE
-//#define LVRM_MODE_BMS
+#define LVRM_MODE_BMS
 #endif
 #endif
 
