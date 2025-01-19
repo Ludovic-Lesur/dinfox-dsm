@@ -11,8 +11,7 @@
 /*** Board modes ***/
 
 //#define XM_DEBUG
-#define XM_NVM_FACTORY_RESET
-//#define XM_MODE_CLI
+//#define XM_NVM_FACTORY_RESET
 
 /*** Board options ***/
 

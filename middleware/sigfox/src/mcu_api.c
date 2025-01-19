@@ -329,14 +329,10 @@ errors:
 MCU_API_status_t MCU_API_print_dl_payload(sfx_u8* dl_payload, sfx_u8 dl_payload_size, sfx_s16 rssi_dbm) {
     // Local variables.
     MCU_API_status_t status = MCU_API_SUCCESS;
-#ifdef TKFX_MODE_CLI
-    // Print data on bus.
-    CLI_print_dl_payload(dl_payload, dl_payload_size, rssi_dbm);
-#else
+    // Ignore unused parameters.
     UNUSED(dl_payload);
     UNUSED(dl_payload_size);
     UNUSED(rssi_dbm);
-#endif
     RETURN();
 }
 #endif
