@@ -26,7 +26,7 @@
 #endif
 //#define LVRM_RLST_FORCED_HARDWARE
 #ifndef LVRM_RLST_FORCED_HARDWARE
-#define LVRM_MODE_BMS
+//#define LVRM_MODE_BMS
 #endif
 #endif
 
