@@ -305,7 +305,7 @@ NODE_status_t BPSM_charge_process(void) {
             if (RTC_get_uptime_seconds() >= bpsm_ctx.chen_toggle_next_time_seconds) {
                 // Update times.
                 bpsm_ctx.chen_toggle_previous_time_seconds = RTC_get_uptime_seconds();
-                bpsm_ctx.chen_toggle_next_time_seconds = RTC_get_uptime_seconds() + UNA_get_seconds(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD));
+                bpsm_ctx.chen_toggle_next_time_seconds = RTC_get_uptime_seconds() + ((uint32_t) UNA_get_seconds(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD)));
                 // Disable charge.
                 LOAD_set_charge_state(0);
             }
