@@ -10,8 +10,8 @@
 #include "error.h"
 #include "gpio.h"
 #include "gpio_mapping.h"
-#include "mode.h"
 #include "types.h"
+#include "xm_flags.h"
 
 #ifdef SM
 

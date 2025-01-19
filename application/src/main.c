@@ -11,21 +11,21 @@
 #include "iwdg.h"
 #include "lptim.h"
 #include "gpio_mapping.h"
-#include "mode.h"
 #include "nvic.h"
 #include "nvic_priority.h"
 #include "pwr.h"
 #include "rcc.h"
 #include "rtc.h"
+#include "types.h"
 // Utils.
 #include "error.h"
-#include "types.h"
 // Middleware.
 #include "cli.h"
 #include "node.h"
 #include "power.h"
 // Applicative.
 #include "error_base.h"
+#include "xm_flags.h"
 
 /*** MAIN local functions ***/
 

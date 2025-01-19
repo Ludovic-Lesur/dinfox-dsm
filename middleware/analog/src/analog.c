@@ -10,8 +10,8 @@
 #include "adc.h"
 #include "error.h"
 #include "gpio_mapping.h"
-#include "mode.h"
 #include "types.h"
+#include "xm_flags.h"
 
 /*** ANALOG local macros ***/
 

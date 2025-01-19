@@ -11,11 +11,11 @@
 #include "bpsm_registers.h"
 #include "error.h"
 #include "load.h"
-#include "mode.h"
 #include "node.h"
 #include "swreg.h"
 #include "rtc.h"
 #include "una.h"
+#include "xm_flags.h"
 
 #ifdef BPSM
 

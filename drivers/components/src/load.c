@@ -11,8 +11,8 @@
 #include "gpio.h"
 #include "gpio_mapping.h"
 #include "lptim.h"
-#include "mode.h"
 #include "types.h"
+#include "xm_flags.h"
 
 #ifdef XM_LOAD_CONTROL
 

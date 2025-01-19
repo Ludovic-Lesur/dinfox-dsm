@@ -12,12 +12,12 @@
 #include "error.h"
 #include "i2c_address.h"
 #include "load.h"
-#include "mode.h"
 #include "node.h"
 #include "sht3x.h"
 #include "sm_registers.h"
 #include "swreg.h"
 #include "una.h"
+#include "xm_flags.h"
 
 #ifdef SM
 

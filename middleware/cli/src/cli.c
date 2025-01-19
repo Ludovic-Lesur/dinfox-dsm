@@ -28,7 +28,6 @@
 // Middleware.
 #include "analog.h"
 #include "power.h"
-#ifdef UHFM
 // Sigfox.
 #include "manuf/rf_api.h"
 #include "sigfox_ep_addon_rfp_api.h"
@@ -36,11 +35,10 @@
 #include "sigfox_error.h"
 #include "sigfox_rc.h"
 #include "sigfox_types.h"
-#endif
 // Applicative.
 #include "error_base.h"
-#include "mode.h"
 #include "version.h"
+#include "xm_flags.h"
 
 /*** CLI local macros ***/
 

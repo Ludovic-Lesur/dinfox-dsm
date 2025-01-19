@@ -9,8 +9,8 @@
 #define __LOAD_H__
 
 #include "lptim.h"
-#include "mode.h"
 #include "types.h"
+#include "xm_flags.h"
 
 /*** LOAD structures ***/
 

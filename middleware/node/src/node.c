@@ -19,7 +19,6 @@
 #include "led.h"
 #include "lvrm.h"
 #include "lvrm_registers.h"
-#include "mode.h"
 #include "nvm.h"
 #include "nvm_address.h"
 #include "power.h"
@@ -32,6 +31,7 @@
 #include "uhfm.h"
 #include "uhfm_registers.h"
 #include "una.h"
+#include "xm_flags.h"
 
 /*** NODE local macros ***/
 

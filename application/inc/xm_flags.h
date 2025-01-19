@@ -1,12 +1,12 @@
 /*
- * mode.h
+ * xm_flags.h
  *
  *  Created on: 18 apr. 2020
  *      Author: Ludo
  */
 
-#ifndef __MODE_H__
-#define __MODE_H__
+#ifndef __XM_FLAGS_H__
+#define __XM_FLAGS_H__
 
 /*** Board modes ***/
 
@@ -89,4 +89,4 @@
 #define XM_RGB_LED
 #endif
 
-#endif /* __MODE_H__ */
+#endif /* __XM_FLAGS_H__ */

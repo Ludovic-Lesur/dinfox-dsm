@@ -47,13 +47,13 @@
 #include "cli.h"
 #include "error.h"
 #include "error_base.h"
-#include "mode.h"
 #include "nvic_priority.h"
 #include "nvm.h"
 #include "nvm_address.h"
 #include "power.h"
 #include "tim.h"
 #include "types.h"
+#include "xm_flags.h"
 
 /*** MCU_API local macros ***/
 

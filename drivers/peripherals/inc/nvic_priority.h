@@ -8,7 +8,7 @@
 #ifndef __NVIC_PRIORITY_H__
 #define __NVIC_PRIORITY_H__
 
-#include "mode.h"
+#include "xm_flags.h"
 
 /*!******************************************************************
  * \enum NVIC_priority_list_t

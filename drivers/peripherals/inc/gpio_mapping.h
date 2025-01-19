@@ -12,10 +12,10 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "lpuart.h"
-#include "mode.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
+#include "xm_flags.h"
 
 /*** GPIO MAPPING structures ***/
 
