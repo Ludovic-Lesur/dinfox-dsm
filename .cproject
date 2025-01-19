@@ -55,9 +55,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.500552329" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1793051505" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1040487168" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="LVRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -77,6 +74,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1013112900" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -106,9 +104,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1811835522" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1542345402" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="LVRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -128,6 +123,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.272692611" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -159,15 +155,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.694943407" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.739390010" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1637191643" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="lvrm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l011x4xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1104573276" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1345163505" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.745364080" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -266,9 +261,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1168331596" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.789995779" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1942232286" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="BPSM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -288,6 +280,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.709510695" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -317,9 +310,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.781275457" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1966995117" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="BPSM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -339,6 +329,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1382692423" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -370,15 +361,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.144800525" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.426372235" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.2061111512" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="bpsm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l011x4xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1644426658" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1015661034" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.663854791" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -477,9 +467,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1301617839" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1486189140" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1122011304" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="DDRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -499,6 +486,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1869844246" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -528,9 +516,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1667580515" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.625155062" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="DDRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -550,6 +535,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.797544002" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -581,15 +567,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.2098964960" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1765690689" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1653481121" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="ddrm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l011x4xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.500548045" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.506660683" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.2111639643" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -688,9 +673,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.340898339" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.53261612" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.364926841" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="RRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -710,6 +692,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1733736819" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -739,9 +722,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.343444830" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1768901231" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="RRM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -761,6 +741,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.898599088" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -792,15 +773,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1643079054" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1531932242" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.482422289" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="rrm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l011x4xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.2140521454" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1230644112" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1359785949" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -899,9 +879,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.763300471" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1211971957" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.668069742" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="SM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -921,6 +898,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1075889361" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -950,9 +928,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.2011014542" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1176102997" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="SM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -972,6 +947,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2027627559" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1003,15 +979,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.870305136" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.289024594" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1132957988" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="sm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l031x6xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.203140265" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499403968" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.2051577763" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -1110,9 +1085,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.711487908" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.629038904" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.591859431" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1132,6 +1104,7 @@
 									<listOptionValue builtIn="false" value="RC1_ZONE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1396808884" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1161,9 +1134,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.165934728" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1651152513" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="UHFM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1183,6 +1153,7 @@
 									<listOptionValue builtIn="false" value="RC1_ZONE"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.715225220" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1214,15 +1185,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.80607255" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.1438215858" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1103728612" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="uhfm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l041x6xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.873768034" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.2134532020" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1670900566" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -1321,9 +1291,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.533167619" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1035479343" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.494102558" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="LVRM"/>
 									<listOptionValue builtIn="false" value="HW2_0"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1343,6 +1310,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.91086377" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1372,9 +1340,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.94035000" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1456350464" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="LVRM"/>
 									<listOptionValue builtIn="false" value="HW2_0"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1394,6 +1359,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.616952776" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1425,15 +1391,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.2012898681" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.527262830" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.271238494" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="lvrm_hw2-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l031x6xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.12676179" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.1530074900" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1083285899" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -1532,9 +1497,6 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1475902582" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1100037979" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1598148000" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="GPSM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1554,6 +1516,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.739704120" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1583,9 +1546,6 @@
 							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.27455450" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1687863736" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__NO_SYSTEM_INIT"/>
-									<listOptionValue builtIn="false" value="__STARTUP_CLEAR_BSS"/>
-									<listOptionValue builtIn="false" value="__START=main"/>
 									<listOptionValue builtIn="false" value="HW1_0"/>
 									<listOptionValue builtIn="false" value="GPSM"/>
 									<listOptionValue builtIn="false" value="APPLICATION_MESSAGES"/>
@@ -1605,6 +1565,7 @@
 									<listOptionValue builtIn="false" value="TX_POWER_DBM_EIRP=14"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.285344431" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
@@ -1636,15 +1597,14 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.364448315" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.872994192" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.152976000" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
-									<listOptionValue builtIn="false" value="gpsm_hw1-0.ld"/>
+									<listOptionValue builtIn="false" value="stm32l031x6xx.ld"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.1754468635" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.499023170" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/lib&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/linker&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.1038158426" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>

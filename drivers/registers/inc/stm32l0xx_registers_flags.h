@@ -10,10 +10,10 @@
 
 /*** STM32L0xx registers compilation flags ***/
 
-#if ((defined BPSM) || (defined DDRM) || (defined LVRM) || (defined RRM))
+#if ((defined BPSM) || (defined DDRM) || ((defined LVRM) && (defined HW1_0)) || (defined RRM))
 #define STM32L0XX_REGISTERS_MCU_CATEGORY    1
 #endif
-#if ((defined GPSM) || (defined SM) || (defined UHFM))
+#if (((defined LVRM) && (defined HW2_0)) || (defined GPSM) || (defined SM) || (defined UHFM))
 #define STM32L0XX_REGISTERS_MCU_CATEGORY    2
 #endif
 
