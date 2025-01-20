@@ -208,7 +208,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         break;
     case ANALOG_CHANNEL_VOUT_MV:
         // Bus voltage.
-        adc_status = ADC_convert_channel(ANALOG_ADC_CHANNEL_VIN, &adc_data_12bits);
+        adc_status = ADC_convert_channel(ANALOG_ADC_CHANNEL_VOUT, &adc_data_12bits);
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Convert to mV.
         (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VOUT) / (ADC_FULL_SCALE);
