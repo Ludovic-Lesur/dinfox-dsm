@@ -32,7 +32,6 @@
 #define UHFM_REGISTER_RADIO_TEST_1_DEFAULT_VALUE    0x000000BC
 
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ       830000000
-#define UHFM_ADC_MEASUREMENTS_TX_POWER_DBM          14
 #define UHFM_ADC_RADIO_STABILIZATION_DELAY_MS       100
 
 /*** UHFM local structures ***/
@@ -120,7 +119,9 @@ static NODE_status_t _UHFM_strg_callback(void) {
     MCU_API_status_t mcu_api_status = MCU_API_SUCCESS;
     SIGFOX_EP_API_config_t lib_config;
     SIGFOX_EP_API_application_message_t application_message;
+#ifdef CONTROL_KEEP_ALIVE_MESSAGE
     SIGFOX_EP_API_control_message_t control_message;
+#endif
     SIGFOX_EP_API_message_status_t message_status;
     uint32_t reg_status_1 = 0;
     uint32_t reg_status_1_mask = 0;
@@ -145,8 +146,10 @@ static NODE_status_t _UHFM_strg_callback(void) {
     lib_config.rc = &SIGFOX_RC1;
     sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
     SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
+#ifdef CONTROL_KEEP_ALIVE_MESSAGE
     // Check control message flag.
     if (SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_CMSG) == 0) {
+#endif
         // Get payload size.
         ul_payload_size = (sfx_u8) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_UL_PAYLOAD_SIZE);
         // Read UL payload.
@@ -184,6 +187,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
             NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
             SWREG_write_field(&reg_status_1, &reg_status_1_mask, UNA_convert_dbm(dl_rssi_dbm), UHFM_REGISTER_STATUS_1_MASK_DL_RSSI);
         }
+#ifdef CONTROL_KEEP_ALIVE_MESSAGE
     }
     else {
         control_message.common_parameters.number_of_frames = (sfx_u8) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_NFR);
@@ -196,6 +200,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
         // Read message status.
         message_status = SIGFOX_EP_API_get_message_status();
     }
+#endif
 errors:
     // Close library.
     SIGFOX_EP_API_close();
@@ -529,7 +534,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_1, &reg_radio_test_1_initial);
     // Configure frequency and TX power for measure.
     SWREG_write_field(&reg_radio_test_0, &reg_radio_test_0_mask, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_REGISTER_RADIO_TEST_0_MASK_RF_FREQUENCY);
-    SWREG_write_field(&reg_radio_test_1, &reg_radio_test_1_mask, UNA_convert_dbm(UHFM_ADC_MEASUREMENTS_TX_POWER_DBM), UHFM_REGISTER_RADIO_TEST_1_MASK_TX_POWER);
+    SWREG_write_field(&reg_radio_test_1, &reg_radio_test_1_mask, UNA_convert_dbm(TX_POWER_DBM_EIRP), UHFM_REGISTER_RADIO_TEST_1_MASK_TX_POWER);
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_0, reg_radio_test_0_mask, reg_radio_test_0);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_1, reg_radio_test_1_mask, reg_radio_test_1);
