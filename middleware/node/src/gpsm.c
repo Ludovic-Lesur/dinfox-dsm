@@ -509,11 +509,11 @@ NODE_status_t GPSM_mtrg_callback(void) {
     // GPS voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VGPS_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VGPS);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VGPS);
     // Active antenna voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VANT_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VANT);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VANT);
     // Write register.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
     // Turn GPS off is possible.

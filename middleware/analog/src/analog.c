@@ -31,8 +31,6 @@
 #define ANALOG_ADC_CHANNEL_VOUT             ADC_CHANNEL_IN4
 #define ANALOG_DIVIDER_RATIO_VOUT           10
 #define ANALOG_ADC_CHANNEL_IOUT             ADC_CHANNEL_IN0
-#define ANALOG_IOUT_VOLTAGE_GAIN            59
-#define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
 #endif
 #if ((defined LVRM) && (defined HW1_0))
 #define ANALOG_ADC_CHANNEL_VIN              ADC_CHANNEL_IN6
@@ -40,8 +38,6 @@
 #define ANALOG_ADC_CHANNEL_VOUT             ADC_CHANNEL_IN4
 #define ANALOG_DIVIDER_RATIO_VOUT           10
 #define ANALOG_ADC_CHANNEL_IOUT             ADC_CHANNEL_IN0
-#define ANALOG_IOUT_VOLTAGE_GAIN            59
-#define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
 #endif
 #if ((defined LVRM) && (defined HW2_0))
 #define ANALOG_ADC_CHANNEL_VIN              ADC_CHANNEL_IN0
@@ -49,8 +45,6 @@
 #define ANALOG_ADC_CHANNEL_VOUT             ADC_CHANNEL_IN6
 #define ANALOG_DIVIDER_RATIO_VOUT           10
 #define ANALOG_ADC_CHANNEL_IOUT             ADC_CHANNEL_IN1
-#define ANALOG_IOUT_VOLTAGE_GAIN            59
-#define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
 #endif
 #ifdef RRM
 #define ANALOG_ADC_CHANNEL_VIN              ADC_CHANNEL_IN7
@@ -58,8 +52,6 @@
 #define ANALOG_ADC_CHANNEL_VOUT             ADC_CHANNEL_IN6
 #define ANALOG_DIVIDER_RATIO_VOUT           10
 #define ANALOG_ADC_CHANNEL_IOUT             ADC_CHANNEL_IN4
-#define ANALOG_IOUT_VOLTAGE_GAIN            59
-#define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
 #endif
 #ifdef GPSM
 #define ANALOG_ADC_CHANNEL_VGPS             ADC_CHANNEL_IN0
@@ -77,6 +69,10 @@
 #define ANALOG_ADC_CHANNEL_VRF              ADC_CHANNEL_IN7
 #define ANALOG_DIVIDER_RATIO_VRF            2
 #endif
+
+#define ANALOG_IOUT_VOLTAGE_GAIN            59
+#define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
+#define ANALOG_IOUT_OFFSET_UA               25000
 
 #define ANALOG_ERROR_VALUE                  0xFFFF
 
@@ -146,6 +142,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
 #if (defined LVRM) || (defined DDRM) || (defined RRM)
     int64_t num = 0;
     int64_t den = 0;
+    int32_t iout_ua = 0;
 #endif
 #ifdef SM
     uint8_t ainx_index = 0;
@@ -224,8 +221,9 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         den = (int64_t) ADC_FULL_SCALE;
         den *= (int64_t) ANALOG_IOUT_VOLTAGE_GAIN;
         den *= (int64_t) ANALOG_IOUT_SHUNT_RESISTOR_MOHMS;
-        (*analog_data) = (den == 0) ? 0 : (int32_t) ((num) / (den));
-        // Convert to mV.
+        iout_ua = (den == 0) ? 0 : (int32_t) ((num) / (den));
+        // Remove offset.
+        (*analog_data) = (iout_ua < ANALOG_IOUT_OFFSET_UA) ? 0 : (iout_ua - ANALOG_IOUT_OFFSET_UA);
         break;
 #endif
 #ifdef GPSM

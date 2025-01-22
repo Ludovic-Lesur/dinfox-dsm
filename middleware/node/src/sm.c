@@ -221,7 +221,7 @@ NODE_status_t SM_mtrg_callback(void) {
     // TAMB.
     sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_degrees, &hamb_percent);
     SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
-    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, (uint32_t) UNA_convert_degrees(tamb_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
+    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, UNA_convert_degrees(tamb_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
     SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, (uint32_t) hamb_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HAMB);
     // Write register.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_3, reg_analog_data_3, reg_analog_data_3_mask);

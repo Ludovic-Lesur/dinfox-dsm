@@ -137,15 +137,11 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 NODE_status_t DDRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    ANALOG_status_t analog_status = ANALOG_SUCCESS;
+    uint32_t reg_value = 0;
 #ifndef DDRM_DDEN_FORCED_HARDWARE
     LOAD_status_t load_status = LOAD_SUCCESS;
     UNA_bit_representation_t dden = UNA_BIT_ERROR;
 #endif
-    int32_t output_current_ua = 0;
-    uint32_t reg_value = 0;
-    uint32_t reg_config_1 = 0;
-    uint32_t reg_config_1_mask = 0;
     // Read register.
     status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
     if (status != NODE_SUCCESS) goto errors;
@@ -175,22 +171,6 @@ NODE_status_t DDRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
             }
 #endif
         }
-        // ZCCT.
-        if ((reg_mask & DDRM_REGISTER_CONTROL_1_MASK_ZCCT) != 0) {
-            // Read bit.
-            if (SWREG_read_field(reg_value, DDRM_REGISTER_CONTROL_1_MASK_ZCCT) != 0) {
-                // Clear request.
-                NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REGISTER_ADDRESS_CONTROL_1, 0b0, DDRM_REGISTER_CONTROL_1_MASK_ZCCT);
-                // Turn analog front-end on.
-                POWER_enable(POWER_REQUESTER_ID_DDRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
-                // Get output current.
-                analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &output_current_ua);
-                ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-                // Write register and NVM.
-                SWREG_write_field(&reg_config_1, &reg_config_1_mask, UNA_convert_ua(output_current_ua), DDRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
-                NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_config_1, reg_config_1_mask);
-            }
-        }
         break;
     default:
         // Nothing to do for other registers.
@@ -209,8 +189,6 @@ NODE_status_t DDRM_mtrg_callback(void) {
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
     int32_t adc_data = 0;
     int32_t vsh_mv = 0;
-    int32_t lt6106_offset_current_ua = 0;
-    uint32_t reg_config_1 = 0;
     uint32_t reg_analog_data_1 = 0;
     uint32_t reg_analog_data_1_mask = 0;
     uint32_t reg_analog_data_2 = 0;
@@ -220,23 +198,18 @@ NODE_status_t DDRM_mtrg_callback(void) {
     // DC-DC input voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), DDRM_REGISTER_ANALOG_DATA_1_MASK_VIN);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), DDRM_REGISTER_ANALOG_DATA_1_MASK_VIN);
     // DC-DC output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VOUT_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, (uint32_t) UNA_convert_mv(adc_data), DDRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), DDRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
     vsh_mv = adc_data;
     // Check IOUT measurement validity.
     if (vsh_mv >= DDRM_IOUT_MEASUREMENT_VSH_MIN_MV) {
         // DC-DC output current.
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &adc_data);
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-        // Read IOUT offset.
-        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
-        lt6106_offset_current_ua = UNA_get_ua(SWREG_read_field(reg_config_1, DDRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET));
-        // Remove offset.
-        adc_data = (adc_data < lt6106_offset_current_ua) ? 0 : (adc_data - lt6106_offset_current_ua);
-        SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, (uint32_t) UNA_convert_ua(adc_data), DDRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
+        SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(adc_data), DDRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
     }
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
