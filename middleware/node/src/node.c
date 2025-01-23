@@ -35,11 +35,12 @@
 
 /*** NODE local macros ***/
 
-#define NODE_STATIC_MEASUREMENTS_PERIOD_SECONDS   60
 #ifdef XM_IOUT_INDICATOR
-#define NODE_IOUT_INDICATOR_PERIOD_SECONDS        10
-#define NODE_IOUT_INDICATOR_RANGE                 7
-#define NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV    6000
+#define NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS   60
+#define NODE_IOUT_INDICATOR_PERIOD_SECONDS      10
+#define NODE_IOUT_INDICATOR_RANGE               7
+#define NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV  6000
+#define NODE_IOUT_INDICATOR_BLINK_DURATION_MS   2000
 #endif
 
 /*** NODE local structures ***/
@@ -57,7 +58,10 @@ typedef struct {
     volatile uint32_t registers[NODE_REGISTER_ADDRESS_LAST];
     NODE_state_t state;
 #ifdef XM_IOUT_INDICATOR
+    uint32_t iout_measurements_next_time_seconds;
     uint32_t iout_indicator_next_time_seconds;
+    int32_t input_voltage_mv;
+    int32_t iout_ua;
 #endif
 } NODE_context_t;
 
@@ -80,39 +84,50 @@ static NODE_context_t node_ctx;
 
 #ifdef XM_IOUT_INDICATOR
 /*******************************************************************/
-static NODE_status_t _NODE_iout_indicator(void) {
+static NODE_status_t _NODE_iout_measurement(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    LED_status_t led_status = LED_SUCCESS;
-    LED_color_t led_color;
-    int32_t input_voltage_mv = 0;
-    int32_t iout_ua;
-    uint8_t idx = NODE_IOUT_INDICATOR_RANGE;
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // Check input voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &input_voltage_mv);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &(node_ctx.input_voltage_mv));
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Enable RGB LED only if power input supplies the board.
-    if (input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
+    if (node_ctx.input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
         // Read output current.
-        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &iout_ua);
+        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &(node_ctx.iout_ua));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+    }
+errors:
+    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
+    return status;
+}
+#endif
+
+#ifdef XM_IOUT_INDICATOR
+/*******************************************************************/
+static NODE_status_t _NODE_iout_indicator(void) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+    LED_status_t led_status = LED_SUCCESS;
+    LED_color_t led_color;
+    uint8_t idx = NODE_IOUT_INDICATOR_RANGE;
+    // Enable RGB LED only if power input supplies the board.
+    if (node_ctx.input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
         // Compute LED color according to output current..
         do {
             idx--;
             // Get range and corresponding color.
             led_color = LVRM_IOUT_INDICATOR[idx].led_color;
-            if (iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
+            if (node_ctx.iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
         }
         while (idx > 0);
         // Blink LED.
-        led_status = LED_start_single_blink(2000, led_color);
+        led_status = LED_start_single_blink(NODE_IOUT_INDICATOR_BLINK_DURATION_MS, led_color);
         LED_exit_error(NODE_ERROR_BASE_LED);
     }
 errors:
-    POWER_disable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG);
     return status;
 }
 #endif
@@ -201,7 +216,10 @@ NODE_status_t NODE_init(void) {
     }
     node_ctx.state = NODE_STATE_IDLE;
 #ifdef XM_IOUT_INDICATOR
+    node_ctx.iout_measurements_next_time_seconds = 0;
     node_ctx.iout_indicator_next_time_seconds = 0;
+    node_ctx.input_voltage_mv = 0;
+    node_ctx.iout_ua = 0;
 #endif
 #ifdef XM_NVM_FACTORY_RESET
     nvm_status = NVM_write_byte((NVM_address_t) NVM_ADDRESS_SELF_ADDRESS, XM_NODE_ADDRESS);
@@ -278,6 +296,14 @@ NODE_status_t NODE_process(void) {
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
 #ifdef XM_IOUT_INDICATOR
+    // Check measurements period.
+    if (RTC_get_uptime_seconds() >= node_ctx.iout_measurements_next_time_seconds) {
+        // Update next time.
+        node_ctx.iout_measurements_next_time_seconds = RTC_get_uptime_seconds() + NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS;
+        // Perform measurements.
+        status = _NODE_iout_measurement();
+        if (status != NODE_SUCCESS) goto errors;
+    }
     // Check LED period.
     if (RTC_get_uptime_seconds() >= node_ctx.iout_indicator_next_time_seconds) {
         // Update next time.
