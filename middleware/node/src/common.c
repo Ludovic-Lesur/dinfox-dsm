@@ -17,7 +17,6 @@
 #include "node.h"
 #include "nvm.h"
 #include "pwr.h"
-#include "rcc_registers.h"
 #include "rrm.h"
 #include "sm.h"
 #include "swreg.h"
@@ -126,7 +125,7 @@ NODE_status_t COMMON_init_registers(UNA_node_address_t self_address) {
     // SW version register 1.
     SWREG_write_field(&reg_sw_version_1, &reg_sw_version_1_mask, (uint32_t) GIT_COMMIT_ID, COMMON_REGISTER_SW_VERSION_1_MASK_COMMIT_ID);
     // Reset flags registers.
-    SWREG_write_field(&reg_status_0, &reg_status_0_mask, (uint32_t) (((RCC->CSR) >> 24) & 0xFF), COMMON_REGISTER_STATUS_0_MASK_RESET_FLAGS);
+    SWREG_write_field(&reg_status_0, &reg_status_0_mask, (uint32_t) PWR_get_reset_flags(), COMMON_REGISTER_STATUS_0_MASK_RESET_FLAGS);
     SWREG_write_field(&reg_status_0, &reg_status_0_mask, 0b1, COMMON_REGISTER_STATUS_0_MASK_BF);
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_NODE_ID, reg_node_id, reg_node_id_mask);
@@ -202,10 +201,11 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
         if ((reg_mask & COMMON_REGISTER_CONTROL_0_MASK_BFC) != 0) {
             // Read bit.
             if ((SWREG_read_field(reg_value, COMMON_REGISTER_CONTROL_0_MASK_BFC)) != 0) {
-                // Clear request.
+                // Clear request and boot flag.
                 NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_CONTROL_0, 0b0, COMMON_REGISTER_CONTROL_0_MASK_BFC);
-                // Clear boot flag.
                 NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_STATUS_0, 0b0, COMMON_REGISTER_STATUS_0_MASK_BF);
+                // Clear MCU reset flags.
+                PWR_clear_reset_flags();
             }
         }
         break;
