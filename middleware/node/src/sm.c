@@ -147,8 +147,8 @@ NODE_status_t SM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 NODE_status_t SM_mtrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    ANALOG_status_t analog_status = ANALOG_SUCCESS;
 #ifdef SM_AIN_ENABLE
+    ANALOG_status_t analog_status = ANALOG_SUCCESS;
     int32_t adc_data = 0;
     uint32_t reg_analog_data_1 = 0;
     uint32_t reg_analog_data_1_mask = 0;

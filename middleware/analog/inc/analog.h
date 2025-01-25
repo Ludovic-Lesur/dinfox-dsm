@@ -51,7 +51,7 @@ typedef enum {
     ANALOG_CHANNEL_VGPS_MV,
     ANALOG_CHANNEL_VANT_MV,
 #endif
-#ifdef SM
+#if ((defined SM) && (defined SM_AIN_ENABLE))
     ANALOG_CHANNEL_AIN0_MV,
     ANALOG_CHANNEL_AIN1_MV,
     ANALOG_CHANNEL_AIN2_MV,

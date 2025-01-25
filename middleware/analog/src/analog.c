@@ -94,7 +94,7 @@ typedef struct {
 
 /*** ANALOG local global variables ***/
 
-#ifdef SM
+#if ((defined SM) && (defined SM_AIN_ENABLE))
 static const ANALOG_channel_configuration_t ANALOG_CHANNEL_CONFIGURATION[ANALOG_CHANNEL_LAST] = {
     { ANALOG_ADC_CHANNEL_AIN0, SM_AIN0_GAIN_TYPE, SM_AIN0_GAIN },
     { ANALOG_ADC_CHANNEL_AIN1, SM_AIN1_GAIN_TYPE, SM_AIN1_GAIN },
@@ -144,7 +144,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
     int64_t den = 0;
     int32_t iout_ua = 0;
 #endif
-#ifdef SM
+#if ((defined SM) && (defined SM_AIN_ENABLE))
     uint8_t ainx_index = 0;
 #endif
     // Check parameter.
@@ -242,7 +242,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VANT) / (ADC_FULL_SCALE);
         break;
 #endif
-#ifdef SM
+#if ((defined SM) && (defined SM_AIN_ENABLE))
     case ANALOG_CHANNEL_AIN0_MV:
     case ANALOG_CHANNEL_AIN1_MV:
     case ANALOG_CHANNEL_AIN2_MV:
