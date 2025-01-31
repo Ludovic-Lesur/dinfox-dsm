@@ -7,14 +7,14 @@
 
 #include "power.h"
 
-#include "adc.h"
+#include "analog.h"
 #include "digital.h"
 #include "error.h"
 #include "error_base.h"
 #include "gpio.h"
-#include "lptim.h"
 #include "gpio_mapping.h"
-#include "neom8x.h"
+#include "gps.h"
+#include "lptim.h"
 #include "s2lp.h"
 #include "sht3x.h"
 #include "types.h"
@@ -74,7 +74,7 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 #endif
 #ifdef GPSM
-    NEOM8X_status_t neom8x_status = NEOM8X_SUCCESS;
+    GPS_status_t gps_status = GPS_SUCCESS;
 #endif
 #ifdef UHFM
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
@@ -99,7 +99,7 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     // Check domain.
     switch (domain) {
     case POWER_DOMAIN_ANALOG:
-        // Turn analog front-end on and init ADC.
+        // Turn analog front-end on.
 #if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
         GPIO_write(&GPIO_MNTR_EN, 1);
         delay_ms = POWER_ON_DELAY_MS_ANALOG;
@@ -116,20 +116,18 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     case POWER_DOMAIN_DIGITAL:
         // Turn digital front-end on.
         GPIO_write(&GPIO_DIGITAL_POWER_ENABLE, 1);
+        delay_ms = POWER_ON_DELAY_MS_DIGITAL;
         // Init attached drivers.
         digital_status = DIGITAL_init();
         _POWER_stack_driver_error(digital_status, DIGITAL_SUCCESS, ERROR_BASE_DIGITAL, POWER_ERROR_DRIVER_DIGITAL);
-        // Update delay.
-        delay_ms = POWER_ON_DELAY_MS_DIGITAL;
         break;
     case POWER_DOMAIN_SENSORS:
-        // Turn digital sensors on and init common I2C interface.
+        // Turn digital sensors.
         GPIO_write(&GPIO_SENSORS_POWER_ENABLE, 1);
+        delay_ms = POWER_ON_DELAY_MS_SENSORS;
         // Init attached drivers.
         sht3x_status = SHT3X_init();
         _POWER_stack_driver_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X, POWER_ERROR_DRIVER_SHT3X);
-        // Update delay.
-        delay_ms = POWER_ON_DELAY_MS_SENSORS;
         break;
 #endif
 #ifdef GPSM
@@ -139,11 +137,10 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
 #ifdef GPSM_ACTIVE_ANTENNA
         GPIO_write(&GPIO_ANT_POWER_ENABLE, 1);
 #endif
-        // Init attached drivers.
-        neom8x_status = NEOM8X_init();
-        _POWER_stack_driver_error(neom8x_status, NEOM8X_SUCCESS, ERROR_BASE_NEOM8N, POWER_ERROR_DRIVER_NEOM8N);
-        // Update delay.
         delay_ms = POWER_ON_DELAY_MS_GPS;
+        // Init attached drivers.
+        gps_status = GPS_init();
+        _POWER_stack_driver_error(gps_status, GPS_SUCCESS, ERROR_BASE_GPS, POWER_ERROR_DRIVER_GPS);
         break;
 #endif
 #ifdef UHFM
@@ -155,13 +152,12 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     case POWER_DOMAIN_RADIO:
         // Turn radio on.
         GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
+        delay_ms = POWER_ON_DELAY_MS_RADIO;
         // Init attached drivers.
         s2lp_status = S2LP_init();
         _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
         rfe_status = RFE_init();
         _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
-        // Update delay.
-        delay_ms = POWER_ON_DELAY_MS_RADIO;
         break;
 #endif
     default:
@@ -186,7 +182,7 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
     SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
 #endif
 #ifdef GPSM
-    NEOM8X_status_t neom8x_status = NEOM8X_SUCCESS;
+    GPS_status_t gps_status = GPS_SUCCESS;
 #endif
 #ifdef UHFM
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
@@ -239,8 +235,8 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
 #ifdef GPSM
     case POWER_DOMAIN_GPS:
         // Release attached drivers.
-        neom8x_status = NEOM8X_de_init();
-        _POWER_stack_driver_error(neom8x_status, NEOM8X_SUCCESS, ERROR_BASE_NEOM8N, POWER_ERROR_DRIVER_NEOM8N);
+        gps_status = GPS_de_init();
+        _POWER_stack_driver_error(gps_status, GPS_SUCCESS, ERROR_BASE_GPS, POWER_ERROR_DRIVER_GPS);
         // Turn GPS off.
 #ifdef GPSM_ACTIVE_ANTENNA
         GPIO_write(&GPIO_ANT_POWER_ENABLE, 0);

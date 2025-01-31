@@ -34,10 +34,10 @@ typedef enum {
     // Low level drivers errors.
     POWER_ERROR_DRIVER_ANALOG,
     POWER_ERROR_DRIVER_DIGITAL,
-    POWER_ERROR_DRIVER_SHT3X,
+    POWER_ERROR_DRIVER_GPS,
     POWER_ERROR_DRIVER_LPTIM,
-    POWER_ERROR_DRIVER_NEOM8N,
     POWER_ERROR_DRIVER_S2LP,
+    POWER_ERROR_DRIVER_SHT3X,
     POWER_ERROR_DRIVER_RFE,
     // Last base value.
     POWER_ERROR_BASE_LAST = 0x0100
@@ -93,7 +93,7 @@ typedef enum {
 void POWER_init(void);
 
 /*!******************************************************************
- * \fn void POWER_enable(POWER_domain_t domain, LPTIM_delay_mode_t delay_mode)
+ * \fn void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTIM_delay_mode_t delay_mode)
  * \brief Turn power domain on.
  * \param[in]   requester_id: Identifier of the calling driver.
  * \param[in]   domain: Power domain to enable.
@@ -104,7 +104,7 @@ void POWER_init(void);
 void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTIM_delay_mode_t delay_mode);
 
 /*!******************************************************************
- * \fn void POWER_disable(POWER_domain_t domain)
+ * \fn void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain)
  * \brief Turn power domain off.
  * \param[in]   requester_id: Identifier of the calling driver.
  * \param[in]   domain: Power domain to disable.

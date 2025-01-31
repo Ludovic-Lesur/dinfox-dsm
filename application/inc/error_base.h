@@ -27,18 +27,20 @@
 #include "parser.h"
 #include "string.h"
 // Components.
-#include "digital.h"
 #include "led.h"
 #include "load.h"
 #include "neom8x.h"
-#include "power.h"
+
 #include "s2lp.h"
 #include "sht3x.h"
 // Middleware.
-#include "rfe.h"
-// Nodes.
+#include "analog.h"
+#include "digital.h"
 #include "cli.h"
+#include "gps.h"
 #include "node.h"
+#include "power.h"
+#include "rfe.h"
 // Sigfox.
 #include "sigfox_error.h"
 
@@ -71,8 +73,7 @@ typedef enum {
     ERROR_BASE_PARSER = (ERROR_BASE_MATH + MATH_ERROR_BASE_LAST),
     ERROR_BASE_STRING = (ERROR_BASE_PARSER + PARSER_ERROR_BASE_LAST),
     // Components.
-    ERROR_BASE_DIGITAL = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
-    ERROR_BASE_LED = (ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
+    ERROR_BASE_LED = (ERROR_BASE_STRING + STRING_ERROR_BASE_LAST),
     ERROR_BASE_LOAD = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
     ERROR_BASE_NEOM8N = (ERROR_BASE_LOAD + LOAD_ERROR_BASE_LAST),
     ERROR_BASE_S2LP = (ERROR_BASE_NEOM8N + NEOM8X_ERROR_BASE_LAST),
@@ -80,7 +81,9 @@ typedef enum {
     // Middleware.
     ERROR_BASE_ANALOG = (ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
     ERROR_BASE_CLI = (ERROR_BASE_ANALOG + ANALOG_ERROR_BASE_LAST),
-    ERROR_BASE_NODE = (ERROR_BASE_CLI + CLI_ERROR_BASE_LAST),
+    ERROR_BASE_DIGITAL = (ERROR_BASE_CLI + CLI_ERROR_BASE_LAST),
+    ERROR_BASE_GPS = (ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
+    ERROR_BASE_NODE = (ERROR_BASE_GPS + GPS_ERROR_BASE_LAST),
     ERROR_BASE_POWER = (ERROR_BASE_NODE + NODE_ERROR_BASE_LAST),
     ERROR_BASE_RFE = (ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
     // Sigfox.

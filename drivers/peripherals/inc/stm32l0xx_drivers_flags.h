@@ -10,7 +10,7 @@
 
 #include "xm_flags.h"
 
-/*** STM32L0XX DRIVERS compilation flags ***/
+/*** STM32L0xx drivers compilation flags ***/
 
 #define STM32L0XX_DRIVERS_DMA_CHANNEL_MASK              0x00
 
