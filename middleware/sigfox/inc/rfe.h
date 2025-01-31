@@ -13,6 +13,9 @@
 #include "s2lp_driver_flags.h"
 #endif
 #include "s2lp.h"
+#ifndef SIGFOX_EP_DISABLE_FLAGS_FILE
+#include "sigfox_ep_flags.h"
+#endif
 
 /*** RFE structures ***/
 
@@ -37,7 +40,7 @@ typedef enum {
 typedef enum {
     RFE_PATH_NONE = 0,
     RFE_PATH_TX,
-#ifdef BIDIRECTIONAL
+#ifdef SIGFOX_EP_BIDIRECTIONAL
     RFE_PATH_RX,
 #endif
     RFE_PATH_LAST
@@ -72,7 +75,7 @@ RFE_status_t RFE_de_init(void);
  *******************************************************************/
 RFE_status_t RFE_set_path(RFE_path_t radio_path);
 
-#if ((defined BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
+#if ((defined SIGFOX_EP_BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
 /*!******************************************************************
  * \fn RFE_status_t RFE_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm)
  * \brief Get calibrated RSSI at board connector.

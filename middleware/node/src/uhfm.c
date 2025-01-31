@@ -76,14 +76,14 @@ static void _UHFM_load_dynamic_configuration(void) {
     // TX power and RC.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_dbm(TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_TX_POWER);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_dbm(SIGFOX_EP_TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_TX_POWER);
     SWREG_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REGISTER_CONFIGURATION_0_MASK_RC);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // TIFU and TCONF.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, T_IFU_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TIFU);
-    SWREG_write_field(&reg_value, &reg_mask, T_CONF_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TCONF);
+    SWREG_write_field(&reg_value, &reg_mask, SIGFOX_EP_T_IFU_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TIFU);
+    SWREG_write_field(&reg_value, &reg_mask, SIGFOX_EP_T_CONF_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TCONF);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
 }
 
@@ -119,7 +119,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
     MCU_API_status_t mcu_api_status = MCU_API_SUCCESS;
     SIGFOX_EP_API_config_t lib_config;
     SIGFOX_EP_API_application_message_t application_message;
-#ifdef CONTROL_KEEP_ALIVE_MESSAGE
+#ifdef SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
     SIGFOX_EP_API_control_message_t control_message;
 #endif
     SIGFOX_EP_API_message_status_t message_status;
@@ -146,7 +146,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
     lib_config.rc = &SIGFOX_RC1;
     sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
     SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
-#ifdef CONTROL_KEEP_ALIVE_MESSAGE
+#ifdef SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
     // Check control message flag.
     if (SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_CMSG) == 0) {
 #endif
@@ -157,7 +157,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
         // Update bidirectional flag.
         bidirectional_flag = (sfx_bool) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_BF);
         // Read current message counter.
-        if (bidirectional_flag == SFX_TRUE) {
+        if (bidirectional_flag == SIGFOX_TRUE) {
             // Read memory.
             mcu_api_status = MCU_API_get_nvm((sfx_u8*) nvm_data, SIGFOX_NVM_DATA_SIZE_BYTES);
             MCU_API_check_status(NODE_ERROR_SIGFOX_MCU_API);
@@ -168,7 +168,9 @@ static NODE_status_t _UHFM_strg_callback(void) {
         // Build message structure.
         application_message.common_parameters.number_of_frames = (sfx_u8) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_NFR);
         application_message.common_parameters.ul_bit_rate = (SIGFOX_ul_bit_rate_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_BR);
+#ifdef SIGFOX_EP_PUBLIC_KEY_CAPABLE
         application_message.common_parameters.ep_key_type = SIGFOX_EP_KEY_PRIVATE;
+#endif
         application_message.type = (SIGFOX_application_message_type_t) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_MSGT);
         application_message.bidirectional_flag = bidirectional_flag;
         application_message.ul_payload = (sfx_u8*) ul_payload;
@@ -187,7 +189,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
             NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_DL_PAYLOAD_0, (uint8_t*) dl_payload, SIGFOX_DL_PAYLOAD_SIZE_BYTES);
             SWREG_write_field(&reg_status_1, &reg_status_1_mask, UNA_convert_dbm(dl_rssi_dbm), UHFM_REGISTER_STATUS_1_MASK_DL_RSSI);
         }
-#ifdef CONTROL_KEEP_ALIVE_MESSAGE
+#ifdef SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
     }
     else {
         control_message.common_parameters.number_of_frames = (sfx_u8) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_NFR);
@@ -207,7 +209,7 @@ errors:
     // Update message status.
     SWREG_write_field(&reg_status_1, &reg_status_1_mask, (uint32_t) (message_status.all), UHFM_REGISTER_STATUS_1_MASK_MESSAGE_STATUS);
     // Update bidirectional message counter.
-    if ((bidirectional_flag == SFX_TRUE) && (message_status.all != 0)) {
+    if ((bidirectional_flag == SIGFOX_TRUE) && (message_status.all != 0)) {
         SWREG_write_field(&reg_status_1, &reg_status_1_mask, (message_counter + 1), UHFM_REGISTER_STATUS_1_MASK_BIDIRECTIONAL_MC);
     }
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_STATUS_1, reg_status_1, reg_status_1_mask);
@@ -363,7 +365,7 @@ NODE_status_t UHFM_init_registers(void) {
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // TX power, NFR, bit rate and RC.
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_dbm(TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_TX_POWER);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_dbm(SIGFOX_EP_TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_TX_POWER);
     SWREG_write_field(&reg_value, &reg_mask, 0b11, UHFM_REGISTER_CONFIGURATION_0_MASK_NFR);
     SWREG_write_field(&reg_value, &reg_mask, 0b01, UHFM_REGISTER_CONFIGURATION_0_MASK_BR);
     SWREG_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REGISTER_CONFIGURATION_0_MASK_RC);
@@ -371,8 +373,8 @@ NODE_status_t UHFM_init_registers(void) {
     // TCONF and TIFU.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, T_IFU_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TIFU);
-    SWREG_write_field(&reg_value, &reg_mask, T_CONF_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TCONF);
+    SWREG_write_field(&reg_value, &reg_mask, SIGFOX_EP_T_IFU_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TIFU);
+    SWREG_write_field(&reg_value, &reg_mask, SIGFOX_EP_T_CONF_MS, UHFM_REGISTER_CONFIGURATION_1_MASK_TCONF);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
 #endif
     // Init flags.
@@ -534,7 +536,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_1, &reg_radio_test_1_initial);
     // Configure frequency and TX power for measure.
     SWREG_write_field(&reg_radio_test_0, &reg_radio_test_0_mask, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_REGISTER_RADIO_TEST_0_MASK_RF_FREQUENCY);
-    SWREG_write_field(&reg_radio_test_1, &reg_radio_test_1_mask, UNA_convert_dbm(TX_POWER_DBM_EIRP), UHFM_REGISTER_RADIO_TEST_1_MASK_TX_POWER);
+    SWREG_write_field(&reg_radio_test_1, &reg_radio_test_1_mask, UNA_convert_dbm(SIGFOX_EP_TX_POWER_DBM_EIRP), UHFM_REGISTER_RADIO_TEST_1_MASK_TX_POWER);
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_0, reg_radio_test_0_mask, reg_radio_test_0);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_1, reg_radio_test_1_mask, reg_radio_test_1);

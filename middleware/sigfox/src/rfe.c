@@ -14,6 +14,9 @@
 #include "s2lp_driver_flags.h"
 #endif
 #include "s2lp.h"
+#ifndef SIGFOX_EP_DISABLE_FLAGS_FILE
+#include "sigfox_ep_flags.h"
+#endif
 #include "types.h"
 
 /*** RFE local macros ***/
@@ -60,7 +63,7 @@ RFE_status_t RFE_set_path(RFE_path_t radio_path) {
     case RFE_PATH_TX:
         GPIO_write(&GPIO_RF_TX_ENABLE, 1);
         break;
-#ifdef BIDIRECTIONAL
+#ifdef SIGFOX_EP_BIDIRECTIONAL
     case RFE_PATH_RX:
         GPIO_write(&GPIO_RF_RX_ENABLE, 1);
         break;
@@ -73,7 +76,7 @@ errors:
     return status;
 }
 
-#if ((defined BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
+#if ((defined SIGFOX_EP_BIDIRECTIONAL) && !(defined S2LP_DRIVER_DISABLE))
 /*******************************************************************/
 RFE_status_t RFE_get_rssi(S2LP_rssi_t rssi_type, int16_t* rssi_dbm) {
     // Local variables.
