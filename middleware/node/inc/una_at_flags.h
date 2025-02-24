@@ -5,7 +5,6 @@
  *      Author: Ludo
  */
 
-#include "lmac.h"
 #include "lptim.h"
 #include "terminal_instance.h"
 

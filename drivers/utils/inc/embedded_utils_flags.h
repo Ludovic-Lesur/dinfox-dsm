@@ -8,9 +8,6 @@
 #ifndef __EMBEDDED_UTILS_FLAGS_H__
 #define __EMBEDDED_UTILS_FLAGS_H__
 
-#include "lmac.h"
-#include "xm_flags.h"
-
 /*** Embedded utility functions compilation flags ***/
 
 #define EMBEDDED_UTILS_HW_INTERFACE_ERROR_BASE_LAST     0

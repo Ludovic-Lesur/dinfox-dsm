@@ -10,7 +10,6 @@
 
 #include "types.h"
 #include "una_at.h"
-#include "xm_flags.h"
 
 /*** CLI structures ***/
 
