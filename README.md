@@ -58,6 +58,12 @@ The embedded software is developed under **Eclipse IDE** version 2024-09 (4.33.0
 
 The boards are based on the **STM32L011F4U6**, **STM32L031G6U6** and **STM32L041K6U6** microcontrollers of the STMicroelectronics L0 family. Each hardware revision has a corresponding **build configuration** in the Eclipse project, which sets up the code for the selected board.
 
+## Architecture
+
+<p align="center">
+<img src="https://github.com/Ludovic-Lesur/xm/wiki/images/xm_sw_architecture.drawio.png" width="600"/>
+</p>
+
 ## Structure
 
 The project is organized as follow:
