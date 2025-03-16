@@ -11,16 +11,12 @@
 #include "neom8x_driver_flags.h"
 #endif
 #include "error.h"
-#include "gpio_mapping.h"
 #include "lptim.h"
+#include "mcu_mapping.h"
 #include "nvic_priority.h"
 #include "usart.h"
 
 #ifndef NEOM8X_DRIVER_DISABLE
-
-/*** NEOM8X HW local macros ***/
-
-#define NEOM8X_HW_USART_INSTANCE    USART_INSTANCE_USART2
 
 /*** NEOM8X HW functions ***/
 
@@ -36,7 +32,7 @@ NEOM8X_status_t NEOM8X_HW_init(NEOM8X_HW_configuration_t* configuration) {
     usart_config.baud_rate = (configuration->uart_baud_rate);
     usart_config.nvic_priority = NVIC_PRIORITY_GPS_UART;
     usart_config.rxne_callback = (USART_rx_irq_cb_t) (configuration->rx_irq_callback);
-    usart_status = USART_init(NEOM8X_HW_USART_INSTANCE, &GPIO_GPS_USART, &usart_config);
+    usart_status = USART_init(USART_INSTANCE_GPS, &USART_GPIO_GPS, &usart_config);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:
     return status;
@@ -48,7 +44,7 @@ NEOM8X_status_t NEOM8X_HW_de_init(void) {
     NEOM8X_status_t status = NEOM8X_SUCCESS;
     USART_status_t usart_status = USART_SUCCESS;
     // Release USART.
-    usart_status = USART_de_init(NEOM8X_HW_USART_INSTANCE, &GPIO_GPS_USART);
+    usart_status = USART_de_init(USART_INSTANCE_GPS, &USART_GPIO_GPS);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:
     return status;
@@ -60,7 +56,7 @@ NEOM8X_status_t NEOM8X_HW_send_message(uint8_t* message, uint32_t message_size_b
     NEOM8X_status_t status = NEOM8X_SUCCESS;
     USART_status_t usart_status = USART_SUCCESS;
     // Use USART.
-    usart_status = USART_write(NEOM8X_HW_USART_INSTANCE, message, message_size_bytes);
+    usart_status = USART_write(USART_INSTANCE_GPS, message, message_size_bytes);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:
     return status;
@@ -72,7 +68,7 @@ NEOM8X_status_t NEOM8X_HW_start_rx(void) {
     NEOM8X_status_t status = NEOM8X_SUCCESS;
     USART_status_t usart_status = USART_SUCCESS;
     // Start USART.
-    usart_status = USART_enable_rx(NEOM8X_HW_USART_INSTANCE);
+    usart_status = USART_enable_rx(USART_INSTANCE_GPS);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:
     return status;
@@ -84,7 +80,7 @@ NEOM8X_status_t NEOM8X_HW_stop_rx(void) {
     NEOM8X_status_t status = NEOM8X_SUCCESS;
     USART_status_t usart_status = USART_SUCCESS;
     // Stop USART.
-    usart_status = USART_disable_rx(NEOM8X_HW_USART_INSTANCE);
+    usart_status = USART_disable_rx(USART_INSTANCE_GPS);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:
     return status;

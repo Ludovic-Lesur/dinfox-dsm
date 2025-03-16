@@ -46,9 +46,9 @@
 #include "error_base.h"
 #include "exti.h"
 #include "gpio.h"
-#include "gpio_mapping.h"
 #include "iwdg.h"
 #include "manuf/mcu_api.h"
+#include "mcu_mapping.h"
 #include "nvic_priority.h"
 #include "power.h"
 #include "pwr.h"
@@ -587,11 +587,18 @@ RF_API_status_t RF_API_de_init(void) {
     RFE_status_t rfe_status = RFE_SUCCESS;
     // Turn transceiver off.
     s2lp_status = S2LP_shutdown(1);
-    S2LP_stack_exit_error(ERROR_BASE_S2LP, (RF_API_status_t) RF_API_ERROR_DRIVER_S2LP);
+    // Check status.
+    if (s2lp_status != S2LP_SUCCESS) {
+        S2LP_stack_error(ERROR_BASE_S2LP);
+        status = (RF_API_status_t) RF_API_ERROR_DRIVER_S2LP;
+    }
     // Disable front-end.
     rfe_status = RFE_set_path(RFE_PATH_NONE);
-    RFE_stack_exit_error(ERROR_BASE_RFE, (RF_API_status_t) RF_API_ERROR_DRIVER_RFE);
-errors:
+    // Check status.
+    if (rfe_status != RFE_SUCCESS) {
+        RFE_stack_error(ERROR_BASE_RFE);
+        status = (RF_API_status_t) RF_API_ERROR_DRIVER_RFE;
+    }
     POWER_disable(POWER_REQUESTER_ID_RF_API, POWER_DOMAIN_RADIO);
     SIGFOX_RETURN();
 }

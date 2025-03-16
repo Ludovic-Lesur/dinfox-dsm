@@ -10,7 +10,7 @@
 #include "gpio.h"
 #include "iwdg.h"
 #include "lptim.h"
-#include "gpio_mapping.h"
+#include "mcu_mapping.h"
 #include "nvic.h"
 #include "nvic_priority.h"
 #include "pwr.h"

@@ -10,6 +10,7 @@
 
 #include "adc.h"
 #include "types.h"
+#include "xm_flags.h"
 
 /*** ANALOG structures ***/
 

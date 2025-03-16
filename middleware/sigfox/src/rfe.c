@@ -9,7 +9,7 @@
 
 #include "error.h"
 #include "gpio.h"
-#include "gpio_mapping.h"
+#include "mcu_mapping.h"
 #ifndef S2LP_DRIVER_DISABLE_FLAGS_FILE
 #include "s2lp_driver_flags.h"
 #endif

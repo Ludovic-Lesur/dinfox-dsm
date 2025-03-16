@@ -9,8 +9,8 @@
 
 #include "error.h"
 #include "gpio.h"
-#include "gpio_mapping.h"
 #include "lptim.h"
+#include "mcu_mapping.h"
 #include "types.h"
 #include "xm_flags.h"
 
