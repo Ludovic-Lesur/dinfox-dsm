@@ -49,6 +49,7 @@ static void _XM_init_hw(void) {
     RCC_stack_error(ERROR_BASE_RCC);
     // Init GPIOs.
     GPIO_init();
+    POWER_init();
     EXTI_init();
 #ifndef XM_DEBUG
     // Start independent watchdog.
@@ -69,8 +70,6 @@ static void _XM_init_hw(void) {
     RTC_stack_error(ERROR_BASE_RTC);
     // Init delay timer.
     LPTIM_init(NVIC_PRIORITY_DELAY);
-    // Init components.
-    POWER_init();
     // Init node layer.
     node_status = NODE_init();
     NODE_stack_error(ERROR_BASE_NODE);

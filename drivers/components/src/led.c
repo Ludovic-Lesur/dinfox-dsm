@@ -74,15 +74,15 @@ static LED_status_t _LED_turn_off(void) {
     // Stop timers.
 #ifdef GPSM
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_RED])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
-    TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_GREEN])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
-    TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_B, (TIM_GPIO_LED_B.list[TIM_CHANNEL_INDEX_LED_B_BLUE])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
-    TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
 #else
     for (idx = 0; idx < TIM_CHANNEL_INDEX_LED_LAST; idx++) {
         tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED, (TIM_GPIO_LED.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), 0);
-        TIM_exit_error(ERROR_BASE_TIM_LED_PWM);
+        TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
     }
 #endif
 errors:
@@ -104,24 +104,24 @@ static void _LED_dimming_timer_irq_callback(void) {
     duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_RED)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
     // Set duty cycle.
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_RED])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
     // Apply color mask.
     duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_GREEN)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
     // Set duty cycle.
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_GREEN])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
     // Apply color mask.
     duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_BLUE)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
     // Set duty cycle.
     tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_B, (TIM_GPIO_LED_B.list[TIM_CHANNEL_INDEX_LED_B_BLUE])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_TIM_LED_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
 #else
     for (idx = 0; idx < TIM_CHANNEL_INDEX_LED_LAST; idx++) {
         // Apply color mask.
         duty_cycle_percent = ((led_ctx.color & (0b1 << idx)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
         // Set duty cycle.
         tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED, (TIM_GPIO_LED.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-        TIM_stack_error(ERROR_BASE_TIM_LED_PWM);
+        TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
     }
 #endif
     // Manage index and direction.
@@ -142,7 +142,7 @@ static void _LED_dimming_timer_irq_callback(void) {
             led_status = _LED_turn_off();
             LED_stack_error(ERROR_BASE_LED);
             tim_status = TIM_STD_stop(TIM_INSTANCE_LED_DIMMING);
-            TIM_stack_error(ERROR_BASE_TIM_LED_DIMMING);
+            TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_DIMMING);
             // Single blink done.
             led_ctx.dimming_lut_direction = 0;
             led_ctx.single_blink_done = 1;
@@ -185,23 +185,23 @@ errors:
 LED_status_t LED_de_init(void) {
     // Local variables.
     LED_status_t status = LED_SUCCESS;
+    LED_status_t led_status = LED_SUCCESS;
     TIM_status_t tim_status = TIM_SUCCESS;
     // Turn LED off.
-    status = LED_stop_blink();
-    if (status != LED_SUCCESS) goto errors;
+    led_status = LED_stop_blink();
+    LED_stack_error(ERROR_BASE_LED);
     // Release timers.
 #ifdef GPSM
     tim_status = TIM_PWM_de_init(TIM_INSTANCE_LED_RG, (TIM_gpio_t*) &TIM_GPIO_LED_RG);
-    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
     tim_status = TIM_PWM_de_init(TIM_INSTANCE_LED_B, (TIM_gpio_t*) &TIM_GPIO_LED_B);
-    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
 #else
     tim_status = TIM_PWM_de_init(TIM_INSTANCE_LED, (TIM_gpio_t*) &TIM_GPIO_LED);
-    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
 #endif
     tim_status = TIM_STD_de_init(TIM_INSTANCE_LED_DIMMING);
-    TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
-errors:
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_DIMMING);
     return status;
 }
 

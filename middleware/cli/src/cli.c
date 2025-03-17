@@ -99,8 +99,7 @@ CLI_status_t CLI_de_init(void) {
     UNA_AT_status_t una_at_status = UNA_AT_SUCCESS;
     // Release AT driver.
     una_at_status = UNA_AT_de_init();
-    UNA_AT_exit_error(CLI_ERROR_BASE_UNA_AT);
-errors:
+    UNA_AT_stack_error(ERROR_BASE_CLI + CLI_ERROR_BASE_UNA_AT);
     return status;
 }
 

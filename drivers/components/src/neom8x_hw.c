@@ -11,6 +11,7 @@
 #include "neom8x_driver_flags.h"
 #endif
 #include "error.h"
+#include "error_base.h"
 #include "lptim.h"
 #include "mcu_mapping.h"
 #include "nvic_priority.h"
@@ -45,8 +46,7 @@ NEOM8X_status_t NEOM8X_HW_de_init(void) {
     USART_status_t usart_status = USART_SUCCESS;
     // Release USART.
     usart_status = USART_de_init(USART_INSTANCE_GPS, &USART_GPIO_GPS);
-    USART_exit_error(NEOM8X_ERROR_BASE_UART);
-errors:
+    USART_stack_error(ERROR_BASE_NEOM8N + NEOM8X_ERROR_BASE_UART);
     return status;
 }
 

@@ -127,7 +127,7 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
         delay_ms = POWER_ON_DELAY_MS_SENSORS;
         // Init attached drivers.
         sht3x_status = SHT3X_init();
-        _POWER_stack_driver_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X, POWER_ERROR_DRIVER_SHT3X);
+        _POWER_stack_driver_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT30, POWER_ERROR_DRIVER_SHT3X);
         break;
 #endif
 #ifdef GPSM
@@ -227,7 +227,7 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
     case POWER_DOMAIN_SENSORS:
         // Release attached drivers.
         sht3x_status = SHT3X_de_init();
-        _POWER_stack_driver_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT3X, POWER_ERROR_DRIVER_SHT3X);
+        _POWER_stack_driver_error(sht3x_status, SHT3X_SUCCESS, ERROR_BASE_SHT30, POWER_ERROR_DRIVER_SHT3X);
         // Turn digital sensors off.
         GPIO_write(&GPIO_SENSORS_POWER_ENABLE, 0);
         break;

@@ -10,6 +10,7 @@
 #ifndef SHT3X_DRIVER_DISABLE_FLAGS_FILE
 #include "sht3x_driver_flags.h"
 #endif
+#include "error_base.h"
 #include "sensors_hw.h"
 
 #ifndef SHT3X_DRIVER_DISABLE
@@ -23,7 +24,7 @@ SHT3X_status_t SHT3X_HW_init(void) {
 
 /*******************************************************************/
 SHT3X_status_t SHT3X_HW_de_init(void) {
-    return ((SHT3X_status_t) SENSORS_HW_de_init(SHT3X_ERROR_BASE_I2C));
+    return ((SHT3X_status_t) SENSORS_HW_de_init(ERROR_BASE_SHT30 + SHT3X_ERROR_BASE_I2C));
 }
 
 /*******************************************************************/

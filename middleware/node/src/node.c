@@ -282,8 +282,7 @@ NODE_status_t NODE_de_init(void) {
 #ifdef XM_RGB_LED
     LED_status_t led_status = LED_SUCCESS;
     led_status = LED_de_init();
-    LED_exit_error(NODE_ERROR_BASE_LED);
-errors:
+    LED_stack_error(ERROR_BASE_NODE + NODE_ERROR_BASE_LED);
 #endif
     return status;
 }
