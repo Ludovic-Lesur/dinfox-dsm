@@ -30,9 +30,10 @@ NEOM8X_status_t NEOM8X_HW_init(NEOM8X_HW_configuration_t* configuration) {
     // Init backup pin.
     GPIO_configure(&GPIO_GPS_VBCKP, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
     // Init USART.
+    usart_config.clock = RCC_CLOCK_HSI;
     usart_config.baud_rate = (configuration->uart_baud_rate);
     usart_config.nvic_priority = NVIC_PRIORITY_GPS_UART;
-    usart_config.rxne_callback = (USART_rx_irq_cb_t) (configuration->rx_irq_callback);
+    usart_config.rxne_irq_callback = (USART_rx_irq_cb_t) (configuration->rx_irq_callback);
     usart_status = USART_init(USART_INSTANCE_GPS, &USART_GPIO_GPS, &usart_config);
     USART_exit_error(NEOM8X_ERROR_BASE_UART);
 errors:

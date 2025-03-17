@@ -13,6 +13,7 @@
 #include "error.h"
 #include "error_base.h"
 #include "lmac.h"
+#include "lpuart.h"
 #include "mcu_mapping.h"
 #include "nvic_priority.h"
 #include "nvm.h"
@@ -32,14 +33,14 @@ LMAC_status_t LMAC_HW_init(uint32_t baud_rate, LMAC_rx_irq_cb_t rx_irq_callback,
     LPUART_status_t lpuart_status = LPUART_SUCCESS;
     LPUART_configuration_t lpuart_config;
     // Read self address.
-    nvm_status = NVM_read_byte((NVM_address_t) NVM_ADDRESS_SELF_ADDRESS, self_address);
+    nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, self_address);
     NVM_exit_error(LMAC_ERROR_BASE_NVM);
     // Init LPUART.
     lpuart_config.baud_rate = baud_rate;
     lpuart_config.nvic_priority = NVIC_PRIORITY_RS485;
-    lpuart_config.rxne_callback = rx_irq_callback;
+    lpuart_config.rxne_irq_callback = rx_irq_callback;
     lpuart_config.self_address = (*self_address);
-    lpuart_config.rx_mode = LPUART_RX_MODE_ADDRESSED;
+    lpuart_config.rs485_mode = LPUART_RS485_MODE_ADDRESSED;
     lpuart_status = LPUART_init(&LPUART_GPIO_RS485, &lpuart_config);
     LPUART_exit_error(LMAC_ERROR_BASE_HW_INTERFACE);
 errors:

@@ -34,6 +34,7 @@ static void _XM_init_hw(void) {
     // Local variables.
     RCC_status_t rcc_status = RCC_SUCCESS;
     RTC_status_t rtc_status = RTC_SUCCESS;
+    LPTIM_status_t lptim_status = LPTIM_SUCCESS;
     NODE_status_t node_status = NODE_SUCCESS;
     CLI_status_t cli_status = CLI_SUCCESS;
 #ifndef XM_DEBUG
@@ -69,7 +70,8 @@ static void _XM_init_hw(void) {
     rtc_status = RTC_init(NULL, NVIC_PRIORITY_RTC);
     RTC_stack_error(ERROR_BASE_RTC);
     // Init delay timer.
-    LPTIM_init(NVIC_PRIORITY_DELAY);
+    lptim_status = LPTIM_init(NVIC_PRIORITY_DELAY);
+    LPTIM_stack_error(ERROR_BASE_LPTIM);
     // Init node layer.
     node_status = NODE_init();
     NODE_stack_error(ERROR_BASE_NODE);
@@ -92,10 +94,10 @@ int main(void) {
 #ifndef XM_DEBUG
         // Enter sleep or stop mode depending on node state.
         if (NODE_get_state() == NODE_STATE_IDLE) {
-            PWR_enter_stop_mode();
+            PWR_enter_deepsleep_mode(PWR_DEEPSLEEP_MODE_STOP);
         }
         else {
-            PWR_enter_sleep_mode();
+            PWR_enter_sleep_mode(PWR_SLEEP_MODE_NORMAL);
         }
         IWDG_reload();
 #endif

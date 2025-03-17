@@ -232,11 +232,11 @@ NODE_status_t NODE_init(void) {
     node_ctx.iout_ua = 0;
 #endif
 #ifdef XM_NVM_FACTORY_RESET
-    nvm_status = NVM_write_byte((NVM_address_t) NVM_ADDRESS_SELF_ADDRESS, XM_NODE_ADDRESS);
+    nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, XM_NODE_ADDRESS);
     NVM_exit_error(NODE_ERROR_BASE_NVM);
 #endif
     // Read self address in NVM.
-    nvm_status = NVM_read_byte((NVM_address_t) NVM_ADDRESS_SELF_ADDRESS, &self_address);
+    nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
     NVM_exit_error(NODE_ERROR_BASE_NVM);
     // Init common registers.
     status = COMMON_init_registers(self_address);
