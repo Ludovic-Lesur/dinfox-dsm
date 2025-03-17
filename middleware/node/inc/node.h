@@ -10,6 +10,7 @@
 
 #include "analog.h"
 #include "digital.h"
+#include "error.h"
 #include "gps.h"
 #include "led.h"
 #include "lptim.h"
@@ -42,7 +43,7 @@ typedef enum {
     NODE_ERROR_SIGFOX_RF_API,
     NODE_ERROR_SIGFOX_EP_API,
     // Low level drivers errors.
-    NODE_ERROR_BASE_NVM = 0x0100,
+    NODE_ERROR_BASE_NVM = ERROR_BASE_STEP,
     NODE_ERROR_BASE_LPTIM = (NODE_ERROR_BASE_NVM + NVM_ERROR_BASE_LAST),
     NODE_ERROR_BASE_DIGITAL = (NODE_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST),
     NODE_ERROR_BASE_LED = (NODE_ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
@@ -54,7 +55,7 @@ typedef enum {
     NODE_ERROR_BASE_ANALOG = (NODE_ERROR_BASE_SHT3X + SHT3X_ERROR_BASE_LAST),
     NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API = (NODE_ERROR_BASE_ANALOG + ANALOG_ERROR_BASE_LAST),
     // Last base value.
-    NODE_ERROR_BASE_LAST = (NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API + 0x0100)
+    NODE_ERROR_BASE_LAST = (NODE_ERROR_BASE_SIGFOX_EP_ADDON_RFP_API + ERROR_BASE_STEP)
 } NODE_status_t;
 
 /*!******************************************************************

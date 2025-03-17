@@ -8,6 +8,7 @@
 #ifndef __DIGITAL_H__
 #define __DIGITAL_H__
 
+#include "error.h"
 #include "types.h"
 
 /*** DIGITAL structures ***/
@@ -22,7 +23,7 @@ typedef enum {
     DIGITAL_ERROR_NULL_PARAMETER,
     DIGITAL_ERROR_CHANNEL,
     // Last base value.
-    DIGITAL_ERROR_BASE_LAST = 0x0100
+    DIGITAL_ERROR_BASE_LAST = ERROR_BASE_STEP
 } DIGITAL_status_t;
 
 #ifdef SM

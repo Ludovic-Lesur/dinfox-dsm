@@ -8,6 +8,7 @@
 #ifndef __LOAD_H__
 #define __LOAD_H__
 
+#include "error.h"
 #include "lptim.h"
 #include "types.h"
 #include "xm_flags.h"
@@ -23,7 +24,7 @@ typedef enum {
     LOAD_SUCCESS = 0,
     LOAD_ERROR_STATE,
     // Low level drivers errors.
-    LOAD_ERROR_BASE_LPTIM = 0x0100,
+    LOAD_ERROR_BASE_LPTIM = ERROR_BASE_STEP,
     // Last base value.
     LOAD_ERROR_BASE_LAST = (LOAD_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } LOAD_status_t;
