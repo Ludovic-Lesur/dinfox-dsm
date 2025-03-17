@@ -31,7 +31,9 @@ typedef struct {
 
 /*** LVRM local global variables ***/
 
-static LVRM_context_t lvrm_ctx;
+static LVRM_context_t lvrm_ctx = {
+    .rlstst = UNA_BIT_ERROR
+};
 
 /*** LVRM local functions ***/
 

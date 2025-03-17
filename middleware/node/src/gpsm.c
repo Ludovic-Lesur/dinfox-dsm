@@ -40,7 +40,10 @@ typedef struct {
 
 /*** GPSM local global variables ***/
 
-static GPSM_context_t gpsm_ctx;
+static GPSM_context_t gpsm_ctx = {
+    .flags.all = 0,
+    .bkenst = UNA_BIT_ERROR
+};
 
 /*** GPSM local functions ***/
 

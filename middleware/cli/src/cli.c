@@ -24,7 +24,9 @@ typedef struct {
 
 /*** CLI local global variables ***/
 
-static CLI_context_t cli_ctx;
+static CLI_context_t cli_ctx = {
+    .una_at_process_flag = 0
+};
 
 /*** CLI local functions ***/
 

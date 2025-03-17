@@ -79,7 +79,9 @@ static const ANALOG_channel_configuration_t ANALOG_CHANNEL_CONFIGURATION[ANALOG_
 };
 #endif
 
-static ANALOG_context_t analog_ctx = { .vmcu_mv = ANALOG_VMCU_MV_DEFAULT };
+static ANALOG_context_t analog_ctx = {
+    .vmcu_mv = ANALOG_VMCU_MV_DEFAULT
+};
 
 /*** ANALOG functions ***/
 

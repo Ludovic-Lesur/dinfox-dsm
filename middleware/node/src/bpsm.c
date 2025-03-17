@@ -37,7 +37,14 @@ typedef struct {
 
 /*** BPSM local global variables ***/
 
-static BPSM_context_t bpsm_ctx;
+static BPSM_context_t bpsm_ctx = {
+    .chenst = UNA_BIT_ERROR,
+    .bkenst = UNA_BIT_ERROR,
+#ifndef BPSM_CHEN_FORCED_HARDWARE
+    .chen_toggle_previous_time_seconds = 0,
+    .chen_toggle_next_time_seconds = 0,
+#endif
+};
 
 /*** BPSM local functions ***/
 

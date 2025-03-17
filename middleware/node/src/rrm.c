@@ -31,7 +31,9 @@ typedef union {
 
 /*** RRM local global variables ***/
 
-static RRM_context_t rrm_ctx;
+static RRM_context_t rrm_ctx = {
+    .renst = UNA_BIT_ERROR
+};
 
 /*** RRM local functions ***/
 

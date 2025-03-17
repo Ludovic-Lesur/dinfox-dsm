@@ -47,7 +47,9 @@ typedef union {
 
 /*** UHFM local global variables ***/
 
-static UHFM_flags_t uhfm_flags;
+static UHFM_flags_t uhfm_flags = {
+    .all = 0
+};
 
 /*** UHFM local functions ***/
 

@@ -17,7 +17,7 @@
 
 /*** DIGITAL local global variables ***/
 
-static const GPIO_pin_t* DIGITAL_CHANNEL_GPIO[DIGITAL_CHANNEL_LAST] = { &GPIO_DIO0, &GPIO_DIO1, &GPIO_DIO2, &GPIO_DIO3 };
+static const GPIO_pin_t* const DIGITAL_CHANNEL_GPIO[DIGITAL_CHANNEL_LAST] = { &GPIO_DIO0, &GPIO_DIO1, &GPIO_DIO2, &GPIO_DIO3 };
 
 /*** DIGITAL functions ***/
 

@@ -31,7 +31,9 @@ typedef struct {
 
 /*** DDRM local global variables ***/
 
-static DDRM_context_t ddrm_ctx;
+static DDRM_context_t ddrm_ctx = {
+    .ddenst = UNA_BIT_ERROR
+};
 
 /*** DDRM local functions ***/
 

@@ -78,7 +78,17 @@ static const NODE_iout_indicator_t LVRM_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE
     {4000000, LED_COLOR_WHITE}
 };
 #endif
-static NODE_context_t node_ctx;
+
+static NODE_context_t node_ctx = {
+    .registers = { [0 ... (NODE_REGISTER_ADDRESS_LAST - 1)] = 0x00000000 },
+    .state = NODE_STATE_IDLE,
+#ifdef XM_IOUT_INDICATOR
+    .iout_measurements_next_time_seconds = 0,
+    .iout_indicator_next_time_seconds = 0,
+    .input_voltage_mv = 0,
+    .iout_ua = 0,
+#endif
+};
 
 /*** NODE local functions ***/
 
