@@ -102,7 +102,10 @@
 
 /*** MCU MAPPING structures ***/
 
-/*******************************************************************/
+/*!******************************************************************
+ * \enum ADC_channel_index_t
+ * \brief ADC channels index.
+ *******************************************************************/
 typedef enum {
 #ifdef BPSM
     ADC_CHANNEL_INDEX_VSRC_MEASURE = 0,
@@ -131,7 +134,10 @@ typedef enum {
 } ADC_channel_index_t;
 
 #ifndef GPSM
-/*******************************************************************/
+/*!******************************************************************
+ * \enum TIM_channel_channel_led_t
+ * \brief TIM LED channels index.
+ *******************************************************************/
 typedef enum {
     TIM_CHANNEL_INDEX_LED_RED = 0,
     TIM_CHANNEL_INDEX_LED_GREEN,
@@ -141,7 +147,10 @@ typedef enum {
 #endif
 
 #ifdef GPSM
-/*******************************************************************/
+/*!******************************************************************
+ * \enum TIM_channel_channel_led_t
+ * \brief TIM LED channels index.
+ *******************************************************************/
 typedef enum {
     TIM_CHANNEL_INDEX_LED_RG_RED = 0,
     TIM_CHANNEL_INDEX_LED_RG_GREEN,
@@ -150,7 +159,10 @@ typedef enum {
 #endif
 
 #ifdef GPSM
-/*******************************************************************/
+/*!******************************************************************
+ * \enum TIM_channel_channel_led_t
+ * \brief TIM LED channels index.
+ *******************************************************************/
 typedef enum {
     TIM_CHANNEL_INDEX_LED_B_BLUE = 0,
     TIM_CHANNEL_INDEX_LED_B_LAST
