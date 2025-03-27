@@ -222,7 +222,7 @@ NODE_status_t NODE_init(void) {
     uint8_t idx = 0;
     // Init context.
     for (idx = 0; idx < NODE_REGISTER_ADDRESS_LAST; idx++) {
-        node_ctx.registers[idx] = 0;
+        node_ctx.registers[idx] = NODE_REGISTER_ERROR_VALUE[idx];
     }
     node_ctx.state = NODE_STATE_IDLE;
 #ifdef XM_IOUT_INDICATOR
