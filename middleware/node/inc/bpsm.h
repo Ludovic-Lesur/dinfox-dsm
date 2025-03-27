@@ -60,6 +60,15 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask);
  *******************************************************************/
 NODE_status_t BPSM_mtrg_callback(void);
 
+/*!******************************************************************
+ * \fn NODE_status_t BPSM_low_voltage_detector_process(void)
+ * \brief BPSM low voltage detector process.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t BPSM_low_voltage_detector_process(void);
+
 #ifndef BPSM_CHEN_FORCED_HARDWARE
 /*!******************************************************************
  * \fn NODE_status_t BPSM_charge_process(void)

@@ -38,6 +38,8 @@
 #ifdef XM_NVM_FACTORY_RESET
 #define BPSM_CHEN_VSRC_THRESHOLD_MV         6000
 #define BPSM_CHEN_TOGGLE_PERIOD_SECONDS     300
+#define BPSM_LVF_LOW_THRESHOLD_MV           1000
+#define BPSM_LVF_HIGH_THRESHOLD_MV          2000
 #endif
 #endif
 

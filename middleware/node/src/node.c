@@ -300,9 +300,13 @@ NODE_status_t NODE_process(void) {
     status = LVRM_bms_process();
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
-#if ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE))
+#ifdef BPSM
+    node_status = BPSM_low_voltage_detector_process();
+    NODE_stack_error(ERROR_BASE_NODE);
+#ifndef BPSM_CHEN_FORCED_HARDWARE
     node_status = BPSM_charge_process();
     NODE_stack_error(ERROR_BASE_NODE);
+#endif
 #endif
 #ifdef XM_IOUT_INDICATOR
     // Check measurements period.

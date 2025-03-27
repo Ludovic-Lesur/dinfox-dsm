@@ -128,6 +128,12 @@ NODE_status_t BPSM_init_registers(void) {
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS), BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    // Low voltage detector thresholds.
+    reg_value = 0;
+    reg_mask = 0;
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_LVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_LVF_LOW_THRESHOLD);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_LVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_LVF_HIGH_THRESHOLD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
 #endif
     // Load default values.
     _BPSM_load_fixed_configuration();
@@ -198,6 +204,7 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Check address.
     switch (reg_addr) {
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
+    case BPSM_REGISTER_ADDRESS_CONFIGURATION_2:
         // Store new value in NVM.
         if (reg_mask != 0) {
             status = NODE_write_nvm(reg_addr, reg_value);
@@ -267,15 +274,15 @@ NODE_status_t BPSM_mtrg_callback(void) {
     uint32_t reg_analog_data_2_mask = 0;
     // Reset results.
     _BPSM_reset_analog_data();
-    // Relay common voltage.
+    // Source voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
-    // Relay output voltage.
+    // Storage element voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
-    // Relay output current.
+    // Backup output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VBKP_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
@@ -283,6 +290,32 @@ NODE_status_t BPSM_mtrg_callback(void) {
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
 errors:
+    return status;
+}
+
+/*******************************************************************/
+NODE_status_t BPSM_low_voltage_detector_process(void) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+    ANALOG_status_t analog_status = ANALOG_SUCCESS;
+    uint32_t reg_config_2 = 0;
+    int32_t vstr_mv = 0;
+    // Turn analog front-end on.
+    POWER_enable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+    // Read source voltage.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &vstr_mv);
+    ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+    // Read thresholds.
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_config_2);
+    // Update LVF flag.
+    if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config_2, BPSM_REGISTER_CONFIGURATION_2_MASK_LVF_LOW_THRESHOLD))) {
+        NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, BPSM_REGISTER_STATUS_1_MASK_LVF, BPSM_REGISTER_STATUS_1_MASK_LVF);
+    }
+    if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config_2, BPSM_REGISTER_CONFIGURATION_2_MASK_LVF_HIGH_THRESHOLD))) {
+        NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, 0b0, BPSM_REGISTER_STATUS_1_MASK_LVF);
+    }
+errors:
+    POWER_disable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG);
     return status;
 }
 
