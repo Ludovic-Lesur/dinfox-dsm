@@ -30,11 +30,23 @@
 #endif
 #endif
 
+#ifdef BCM
+#define BCM_CHEN_FORCED_HARDWARE
+//#define BCM_CHST_FORCED_HARDWARE
+#define BCM_CHLD_FORCED_HARDWARE
+#define BCM_BKEN_FORCED_HARDWARE
+#ifdef XM_NVM_FACTORY_RESET
+#define BCM_CHEN_VSRC_THRESHOLD_MV         16000
+#define BCM_CHEN_TOGGLE_PERIOD_SECONDS     3600
+#define BCM_LVF_LOW_THRESHOLD_MV           10000
+#define BCM_LVF_HIGH_THRESHOLD_MV          12000
+#endif
+#endif
+
 #ifdef BPSM
 //#define BPSM_CHEN_FORCED_HARDWARE
 #define BPSM_CHST_FORCED_HARDWARE
 #define BPSM_BKEN_FORCED_HARDWARE
-#define BPSM_DIVIDER_RATIO_VSTR             2
 #ifdef XM_NVM_FACTORY_RESET
 #define BPSM_CHEN_VSRC_THRESHOLD_MV         6000
 #define BPSM_CHEN_TOGGLE_PERIOD_SECONDS     300
@@ -80,10 +92,10 @@
 
 /*** Second level compilation flags ***/
 
-#if ((defined BPSM) || (defined LVRM) || (defined DDRM) || (defined RRM))
+#if ((defined BCM) || (defined BPSM) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define XM_LOAD_CONTROL
 #endif
-#if ((defined LVRM) || (defined DDRM) || (defined RRM))
+#if (((defined BCM) && !(defined BCM_CHLD_FORCED_HARDWARE)) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define XM_IOUT_INDICATOR
 #endif
 #if ((defined XM_IOUT_INDICATOR) || (defined GPSM))

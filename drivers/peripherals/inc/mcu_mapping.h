@@ -19,6 +19,12 @@
 
 /*** MCU MAPPING macros ***/
 
+#ifdef BCM
+#define ADC_CHANNEL_VSRC            ADC_CHANNEL_IN8
+#define ADC_CHANNEL_VSTR            ADC_CHANNEL_IN7
+#define ADC_CHANNEL_ISTR            ADC_CHANNEL_IN1
+#define ADC_CHANNEL_VBKP            ADC_CHANNEL_IN6
+#endif
 #ifdef BPSM
 #define ADC_CHANNEL_VSRC            ADC_CHANNEL_IN6
 #define ADC_CHANNEL_VSTR            ADC_CHANNEL_IN4
@@ -64,6 +70,12 @@
 
 #define TIM_INSTANCE_LED_DIMMING    TIM_INSTANCE_TIM21
 
+#ifdef BCM
+#define TIM_INSTANCE_LED            TIM_INSTANCE_TIM2
+#define TIM_CHANNEL_LED_RED         TIM_CHANNEL_1
+#define TIM_CHANNEL_LED_GREEN       TIM_CHANNEL_2
+#define TIM_CHANNEL_LED_BLUE        TIM_CHANNEL_4
+#endif
 #if (defined LVRM) && (defined HW1_0)
 #define TIM_INSTANCE_LED            TIM_INSTANCE_TIM2
 #define TIM_CHANNEL_LED_RED         TIM_CHANNEL_3
@@ -107,6 +119,12 @@
  * \brief ADC channels index.
  *******************************************************************/
 typedef enum {
+#ifdef BCM
+    ADC_CHANNEL_INDEX_VSRC_MEASURE = 0,
+    ADC_CHANNEL_INDEX_VSTR_MEASURE,
+    ADC_CHANNEL_INDEX_ISTR_MEASURE,
+    ADC_CHANNEL_INDEX_VBKP_MEASURE,
+#endif
 #ifdef BPSM
     ADC_CHANNEL_INDEX_VSRC_MEASURE = 0,
     ADC_CHANNEL_INDEX_VSTR_MEASURE,
@@ -174,7 +192,7 @@ typedef enum {
 // RS485.
 extern const LPUART_gpio_t LPUART_GPIO_RS485;
 // Analog inputs.
-#if ((defined BPSM) || ((defined LVRM) && (defined HW2_0)))
+#if ((defined BCM) || (defined BPSM) || ((defined LVRM) && (defined HW2_0)))
 extern const GPIO_pin_t GPIO_MNTR_EN;
 #endif
 #ifdef SM
@@ -190,9 +208,15 @@ extern const TIM_gpio_t TIM_GPIO_LED_B;
 extern const TIM_gpio_t TIM_GPIO_LED;
 #endif
 #endif
-#if (((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM))
+#if (((defined LVRM) && (defined HW1_0)) || (defined BCM) || (defined BPSM) || (defined DDRM) || (defined RRM))
 // Load control.
 extern const GPIO_pin_t GPIO_OUT_EN;
+#endif
+#ifdef BCM
+// Charge control and status.
+extern const GPIO_pin_t GPIO_CHRG_ST0;
+extern const GPIO_pin_t GPIO_CHRG_ST1;
+extern const GPIO_pin_t GPIO_CHRG_EN;
 #endif
 #ifdef BPSM
 // Charge control and status.

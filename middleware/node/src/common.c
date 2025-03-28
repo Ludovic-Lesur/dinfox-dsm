@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include "adc.h"
+#include "bcm.h"
 #include "bpsm.h"
 #include "ddrm.h"
 #include "common_registers.h"
@@ -82,6 +83,9 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
 #endif
 #ifdef RRM
     status = RRM_mtrg_callback();
+#endif
+#ifdef BCM
+    status = BCM_mtrg_callback();
 #endif
     if (status != NODE_SUCCESS) goto errors;
 errors:

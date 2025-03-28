@@ -36,7 +36,7 @@
 #if ((defined BPSM) || (defined SM))
 #define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x00
 #endif
-#if ((defined LVRM) || (defined DDRM) || (defined RRM))
+#if ((defined BCM) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x09
 #endif
 #ifdef GPSM

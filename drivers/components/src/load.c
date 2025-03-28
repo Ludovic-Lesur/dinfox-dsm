@@ -44,6 +44,12 @@ void LOAD_init(void) {
     GPIO_configure(&GPIO_CHRG_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
     GPIO_configure(&GPIO_CHRG_ST, GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
+#ifdef BCM
+    // Charger interface.
+    GPIO_configure(&GPIO_CHRG_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+    GPIO_configure(&GPIO_CHRG_ST0, GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+    GPIO_configure(&GPIO_CHRG_ST1, GPIO_MODE_INPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
     // Open load by default.
     LOAD_set_output_state(0);
 }
@@ -93,7 +99,7 @@ uint8_t LOAD_get_output_state(void) {
     return load_state;
 }
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*******************************************************************/
 void LOAD_set_charge_state(uint8_t state) {
     // Set GPIO.
@@ -101,7 +107,7 @@ void LOAD_set_charge_state(uint8_t state) {
 }
 #endif
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*******************************************************************/
 uint8_t LOAD_get_charge_state(void) {
     // Read GPIO.
@@ -109,11 +115,19 @@ uint8_t LOAD_get_charge_state(void) {
 }
 #endif
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*******************************************************************/
 uint8_t LOAD_get_charge_status(void) {
+    // Local variables.
+    uint8_t charge_status = 0;
     // Read GPIO.
-    return (GPIO_read(&GPIO_CHRG_ST));
+#ifdef BPSM
+    charge_status = GPIO_read(&GPIO_CHRG_ST);
+#endif
+#ifdef BCM
+    charge_status = ((GPIO_read(&GPIO_CHRG_ST1) << 1) | (GPIO_read(&GPIO_CHRG_ST0)));
+#endif
+    return charge_status;
 }
 #endif
 

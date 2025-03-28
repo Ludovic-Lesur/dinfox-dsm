@@ -58,8 +58,6 @@ static void _BPSM_load_fixed_configuration(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
-    // Voltage divider ratio.
-    SWREG_write_field(&reg_value, &reg_mask, BPSM_DIVIDER_RATIO_VSTR, BPSM_REGISTER_CONFIGURATION_0_MASK_VSTR_RATIO);
     // Backup output control mode.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
     SWREG_write_field(&reg_value, &reg_mask, 0b1, BPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
@@ -369,7 +367,6 @@ NODE_status_t BPSM_charge_process(void) {
         }
     }
 errors:
-    POWER_disable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG);
     return status;
 }
 #endif

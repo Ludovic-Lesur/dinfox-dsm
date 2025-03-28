@@ -20,31 +20,38 @@
 /*** MCU MAPPING local global variables ***/
 
 // LPUART1.
-#if ((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM)
+#if (((defined LVRM) && (defined HW1_0)) || (defined BPSM) || (defined DDRM) || (defined RRM))
 static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOB, 1, 6, 6 };
 static const GPIO_pin_t GPIO_LPUART1_RX = { GPIOB, 1, 7, 6 };
 #endif
-#if ((defined LVRM) && (defined HW2_0)) || (defined SM) || (defined UHFM) || (defined GPSM)
+#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined SM) || (defined UHFM) || (defined GPSM))
 static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOA, 0, 2, 6 };
 static const GPIO_pin_t GPIO_LPUART1_RX = { GPIOA, 0, 3, 6 };
 #endif
 static const GPIO_pin_t GPIO_LPUART1_DE = { GPIOB, 1, 1, 4 };
-#if ((defined LVRM) && (defined HW1_0)) || (defined DDRM) || (defined RRM)
+#if (((defined LVRM) && (defined HW1_0)) || (defined DDRM) || (defined RRM))
 static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOA, 0, 9, 0 };
 #endif
 #ifdef BPSM
 static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOA, 0, 10, 0 };
 #endif
-#if (defined SM) || (defined GPSM)
+#if ((defined BCM) || (defined SM) || (defined GPSM))
 static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOA, 0, 4, 0 };
 #endif
 #ifdef UHFM
 static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOB, 1, 2, 0 };
 #endif
-#if (defined LVRM) && (defined HW2_0)
+#if ((defined LVRM) && (defined HW2_0))
 static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOA, 0, 7, 0 };
 #endif
 // ADC.
+#ifdef BCM
+static const GPIO_pin_t GPIO_ADC_VSRC_MEASURE = { GPIOB, 1, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_VSTR_MEASURE = { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_ISTR_MEASURE = { GPIOA, 0, 1, 0 };
+static const GPIO_pin_t GPIO_ADC_VBKP_MEASURE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VSRC_MEASURE, &GPIO_ADC_VSTR_MEASURE, &GPIO_ADC_ISTR_MEASURE, &GPIO_ADC_VBKP_MEASURE };
+#endif
 #ifdef BPSM
 static const GPIO_pin_t GPIO_ADC_VSRC_MEASURE = { GPIOA, 0, 6, 0 };
 static const GPIO_pin_t GPIO_ADC_VSTR_MEASURE = { GPIOA, 0, 4, 0 };
@@ -92,6 +99,11 @@ static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &G
 #endif
 #ifdef XM_RGB_LED
 // RGB LED.
+#ifdef BCM
+static const GPIO_pin_t GPIO_LED_RED =   { GPIOA, 0, 15, 5 };
+static const GPIO_pin_t GPIO_LED_GREEN = { GPIOB, 1, 3, 2 };
+static const GPIO_pin_t GPIO_LED_BLUE =  { GPIOB, 1, 7, 5 };
+#endif
 #ifdef DDRM
 static const GPIO_pin_t GPIO_LED_RED =   { GPIOA, 0, 10, 5 };
 static const GPIO_pin_t GPIO_LED_GREEN = { GPIOA, 0, 5, 5 };
@@ -151,6 +163,9 @@ static const GPIO_pin_t GPIO_SPI1_MOSI = { GPIOB, 1, 5, 0 };
 // RS485.
 const LPUART_gpio_t LPUART_GPIO_RS485 = { &GPIO_LPUART1_TX, &GPIO_LPUART1_RX, &GPIO_LPUART1_DE, &GPIO_LPUART1_NRE };
 // Analog inputs.
+#ifdef BCM
+const GPIO_pin_t GPIO_MNTR_EN = { GPIOA, 0, 5, 0 };
+#endif
 #ifdef BPSM
 const GPIO_pin_t GPIO_MNTR_EN = { GPIOA, 0, 1, 0 };
 #endif
@@ -170,6 +185,9 @@ const TIM_gpio_t TIM_GPIO_LED_B = { (const TIM_channel_gpio_t**) &TIM_CHANNEL_GP
 const TIM_gpio_t TIM_GPIO_LED = { (const TIM_channel_gpio_t**) &TIM_CHANNEL_GPIO_LIST_LED, TIM_CHANNEL_INDEX_LED_LAST };
 #endif
 #endif
+#ifdef BCM
+const GPIO_pin_t GPIO_OUT_EN = { GPIOA, 0, 10, 0 };
+#endif
 #ifdef BPSM
 const GPIO_pin_t GPIO_OUT_EN = { GPIOA, 0, 5, 0 };
 #endif
@@ -181,6 +199,12 @@ const GPIO_pin_t GPIO_OUT_EN = { GPIOA, 0, 7, 0 };
 #endif
 #ifdef RRM
 const GPIO_pin_t GPIO_OUT_EN = { GPIOA, 0, 0, 0 };
+#endif
+#ifdef BCM
+// Charge control and status.
+const GPIO_pin_t GPIO_CHRG_ST0 = { GPIOB, 1, 5, 0 };
+const GPIO_pin_t GPIO_CHRG_ST1 = { GPIOB, 1, 4, 0 };
+const GPIO_pin_t GPIO_CHRG_EN = { GPIOB, 1, 6, 0 };
 #endif
 #ifdef BPSM
 // Charge control and status.

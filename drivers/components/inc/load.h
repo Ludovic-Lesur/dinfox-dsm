@@ -60,7 +60,7 @@ LOAD_status_t LOAD_set_output_state(uint8_t state);
  *******************************************************************/
 uint8_t LOAD_get_output_state(void);
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*!******************************************************************
  * \fn void LOAD_set_charge_state(uint8_t state)
  * \brief Set charge enable state.
@@ -71,7 +71,7 @@ uint8_t LOAD_get_output_state(void);
 void LOAD_set_charge_state(uint8_t state);
 #endif
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*!******************************************************************
  * \fn uint8_t LOAD_get_charge_state(void)
  * \brief Read charge enable state.
@@ -82,7 +82,7 @@ void LOAD_set_charge_state(uint8_t state);
 uint8_t LOAD_get_charge_state(void);
 #endif
 
-#ifdef BPSM
+#if ((defined BCM) || (defined BPSM))
 /*!******************************************************************
  * \fn uint8_t LOAD_get_charge_status(void)
  * \brief Read charge status.

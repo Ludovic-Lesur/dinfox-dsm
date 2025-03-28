@@ -16,8 +16,14 @@
 
 /*** ANALOG local macros ***/
 
+#ifdef BCM
+#define ANALOG_DIVIDER_RATIO_VSRC           25
+#define ANALOG_DIVIDER_RATIO_VSTR           25
+#define ANALOG_DIVIDER_RATIO_VBKP           10
+#endif
 #ifdef BPSM
 #define ANALOG_DIVIDER_RATIO_VSRC           10
+#define ANALOG_DIVIDER_RATIO_VSTR           2
 #define ANALOG_DIVIDER_RATIO_VBKP           10
 #endif
 #ifdef DDRM
@@ -50,6 +56,9 @@
 #define ANALOG_IOUT_VOLTAGE_GAIN            59
 #define ANALOG_IOUT_SHUNT_RESISTOR_MOHMS    10
 #define ANALOG_IOUT_OFFSET_UA               25000
+
+#define ANALOG_ISTR_VOLTAGE_GAIN            20
+#define ANALOG_ISTR_SHUNT_RESISTOR_MOHMS    50
 
 #define ANALOG_ERROR_VALUE                  0xFFFF
 
@@ -117,7 +126,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
     ANALOG_status_t status = ANALOG_SUCCESS;
     ADC_status_t adc_status = ADC_SUCCESS;
     int32_t adc_data_12bits = 0;
-#if (defined LVRM) || (defined DDRM) || (defined RRM)
+#if ((defined BCM) || (defined LVRM) || (defined DDRM) || (defined RRM))
     int64_t num = 0;
     int64_t den = 0;
     int32_t iout_ua = 0;
@@ -150,6 +159,44 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         adc_status = ADC_compute_tmcu(analog_ctx.vmcu_mv, adc_data_12bits, analog_data);
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         break;
+#ifdef BCM
+    case ANALOG_CHANNEL_VSRC_MV:
+        // Bus voltage.
+        adc_status = ADC_convert_channel(ADC_CHANNEL_VSRC, &adc_data_12bits);
+        ADC_exit_error(ANALOG_ERROR_BASE_ADC);
+        // Convert to mV.
+        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VSRC) / (ADC_FULL_SCALE);
+        break;
+    case ANALOG_CHANNEL_VSTR_MV:
+        // Supercap voltage.
+        adc_status = ADC_convert_channel(ADC_CHANNEL_VSTR, &adc_data_12bits);
+        ADC_exit_error(ANALOG_ERROR_BASE_ADC);
+        // Convert to mV.
+        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VSTR) / (ADC_FULL_SCALE);
+        break;
+    case ANALOG_CHANNEL_ISTR_UA:
+        // Supercap voltage.
+        adc_status = ADC_convert_channel(ADC_CHANNEL_ISTR, &adc_data_12bits);
+        ADC_exit_error(ANALOG_ERROR_BASE_ADC);
+        // Convert to uA.
+        num = (int64_t) adc_data_12bits;
+        num *= (int64_t) analog_ctx.vmcu_mv;
+        num *= (int64_t) MATH_POWER_10[6];
+        den = (int64_t) ADC_FULL_SCALE;
+        den *= (int64_t) ANALOG_ISTR_VOLTAGE_GAIN;
+        den *= (int64_t) ANALOG_ISTR_SHUNT_RESISTOR_MOHMS;
+        iout_ua = (den == 0) ? 0 : (int32_t) ((num) / (den));
+        // Set result.
+        (*analog_data) = iout_ua;
+        break;
+    case ANALOG_CHANNEL_VBKP_MV:
+        // Supercap voltage.
+        adc_status = ADC_convert_channel(ADC_CHANNEL_VBKP, &adc_data_12bits);
+        ADC_exit_error(ANALOG_ERROR_BASE_ADC);
+        // Convert to mV.
+        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VBKP) / (ADC_FULL_SCALE);
+        break;
+#endif
 #ifdef BPSM
     case ANALOG_CHANNEL_VSRC_MV:
         // Bus voltage.
@@ -163,7 +210,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         adc_status = ADC_convert_channel(ADC_CHANNEL_VSTR, &adc_data_12bits);
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Convert to mV.
-        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * BPSM_DIVIDER_RATIO_VSTR) / (ADC_FULL_SCALE);
+        (*analog_data) = (adc_data_12bits * analog_ctx.vmcu_mv * ANALOG_DIVIDER_RATIO_VSTR) / (ADC_FULL_SCALE);
         break;
     case ANALOG_CHANNEL_VBKP_MV:
         // Supercap voltage.
@@ -195,7 +242,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         // Convert to uA.
         num = (int64_t) adc_data_12bits;
         num *= (int64_t) analog_ctx.vmcu_mv;
-        num *= (int64_t) 1000000;
+        num *= (int64_t) MATH_POWER_10[6];
         den = (int64_t) ADC_FULL_SCALE;
         den *= (int64_t) ANALOG_IOUT_VOLTAGE_GAIN;
         den *= (int64_t) ANALOG_IOUT_SHUNT_RESISTOR_MOHMS;

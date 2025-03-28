@@ -44,7 +44,7 @@ void POWER_init(void) {
         power_domain_state[idx] = 0;
     }
     // Init power control pins.
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
+#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined BPSM))
     GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 #ifdef GPSM
@@ -100,7 +100,7 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     switch (domain) {
     case POWER_DOMAIN_ANALOG:
         // Turn analog front-end on.
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
+#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined BPSM))
         GPIO_write(&GPIO_MNTR_EN, 1);
         delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
@@ -209,7 +209,7 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
         analog_status = ANALOG_de_init();
         _POWER_stack_driver_error(analog_status, ANALOG_SUCCESS, ERROR_BASE_ANALOG, POWER_ERROR_DRIVER_ANALOG);
         // Turn analog front-end off.
-#if ((defined LVRM) && (defined HW2_0)) || (defined BPSM)
+#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined BPSM))
         GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
 #if (defined SM) && (defined SM_AIN_ENABLE)

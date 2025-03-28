@@ -7,6 +7,8 @@
 
 #include "node.h"
 
+#include "bcm.h"
+#include "bcm_registers.h"
 #include "bpsm.h"
 #include "bpsm_registers.h"
 #include "common.h"
@@ -36,6 +38,13 @@
 /*** NODE local macros ***/
 
 #ifdef XM_IOUT_INDICATOR
+#ifdef BCM
+#define NODE_IOUT_CHANNEL_INPUT_VOLTAGE         ANALOG_CHANNEL_VSRC_MV
+#define NODE_IOUT_CHANNEL                       ANALOG_CHANNEL_ISTR_UA
+#else
+#define NODE_IOUT_CHANNEL_INPUT_VOLTAGE         ANALOG_CHANNEL_VIN_MV
+#define NODE_IOUT_CHANNEL                       ANALOG_CHANNEL_IOUT_UA
+#endif
 #define NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS   60
 #define NODE_IOUT_INDICATOR_PERIOD_SECONDS      10
 #define NODE_IOUT_INDICATOR_RANGE               7
@@ -101,12 +110,12 @@ static NODE_status_t _NODE_iout_measurement(void) {
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // Check input voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &(node_ctx.input_voltage_mv));
+    analog_status = ANALOG_convert_channel(NODE_IOUT_CHANNEL_INPUT_VOLTAGE, &(node_ctx.input_voltage_mv));
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Enable RGB LED only if power input supplies the board.
     if (node_ctx.input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
         // Read output current.
-        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &(node_ctx.iout_ua));
+        analog_status = ANALOG_convert_channel(NODE_IOUT_CHANNEL, &(node_ctx.iout_ua));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     }
 errors:
@@ -171,6 +180,9 @@ static NODE_status_t _NODE_update_register(uint8_t reg_addr) {
 #ifdef RRM
     status = RRM_update_register(reg_addr);
 #endif
+#ifdef BCM
+    status = BCM_update_register(reg_addr);
+#endif
 errors:
     return status;
 }
@@ -203,6 +215,9 @@ static NODE_status_t _NODE_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 #endif
 #ifdef RRM
     status = RRM_check_register(reg_addr, reg_mask);
+#endif
+#ifdef BCM
+    status = BCM_check_register(reg_addr, reg_mask);
 #endif
 errors:
     return status;
@@ -263,6 +278,9 @@ NODE_status_t NODE_init(void) {
 #ifdef RRM
     status = RRM_init_registers();
 #endif
+#ifdef BCM
+    status = BCM_init_registers();
+#endif
     if (status != NODE_SUCCESS) goto errors;
 #ifdef XM_LOAD_CONTROL
     LOAD_init();
@@ -291,7 +309,7 @@ NODE_status_t NODE_de_init(void) {
 NODE_status_t NODE_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || ((defined BPSM) && !(defined BPSM_CHEN_FORCED_HARDWARE)))
+#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM))
     NODE_status_t node_status = NODE_SUCCESS;
 #endif
     // Reset state to default.
@@ -299,6 +317,14 @@ NODE_status_t NODE_process(void) {
 #if ((defined LVRM) && (defined LVRM_MODE_BMS))
     status = LVRM_bms_process();
     NODE_stack_error(ERROR_BASE_NODE);
+#endif
+#ifdef BCM
+    node_status = BCM_low_voltage_detector_process();
+    NODE_stack_error(ERROR_BASE_NODE);
+#ifndef BCM_CHEN_FORCED_HARDWARE
+    node_status = BCM_charge_process();
+    NODE_stack_error(ERROR_BASE_NODE);
+#endif
 #endif
 #ifdef BPSM
     node_status = BPSM_low_voltage_detector_process();
