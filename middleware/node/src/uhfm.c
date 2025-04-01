@@ -128,7 +128,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
     uint32_t reg_status_1 = 0;
     uint32_t reg_status_1_mask = 0;
     uint32_t reg_config_0 = 0;
-    uint32_t reg_control_1 = 0;
     sfx_bool bidirectional_flag = 0;
     sfx_u8 ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
     sfx_u8 ul_payload_size = 0;
@@ -140,7 +139,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
     message_status.all = 0;
     // Read configuration registers.
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
     // Check radio state.
     status = _UHFM_is_radio_free();
     if (status != NODE_SUCCESS) goto errors;
@@ -150,14 +148,14 @@ static NODE_status_t _UHFM_strg_callback(void) {
     SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 #ifdef SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
     // Check control message flag.
-    if (SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_CMSG) == 0) {
+    if (SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_CMSG) == 0) {
 #endif
         // Get payload size.
-        ul_payload_size = (sfx_u8) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_UL_PAYLOAD_SIZE);
+        ul_payload_size = (sfx_u8) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_UL_PAYLOAD_SIZE);
         // Read UL payload.
         NODE_read_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_UL_PAYLOAD_0, (uint8_t*) ul_payload, ul_payload_size);
         // Update bidirectional flag.
-        bidirectional_flag = (sfx_bool) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_BF);
+        bidirectional_flag = (sfx_bool) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_BF);
         // Read current message counter.
         if (bidirectional_flag == SIGFOX_TRUE) {
             // Read memory.
@@ -173,7 +171,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
 #ifdef SIGFOX_EP_PUBLIC_KEY_CAPABLE
         application_message.common_parameters.ep_key_type = SIGFOX_EP_KEY_PRIVATE;
 #endif
-        application_message.type = (SIGFOX_application_message_type_t) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_MSGT);
+        application_message.type = (SIGFOX_application_message_type_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_MSGT);
         application_message.bidirectional_flag = bidirectional_flag;
         application_message.ul_payload = (sfx_u8*) ul_payload;
         application_message.ul_payload_size_bytes = ul_payload_size;
@@ -227,10 +225,8 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
     SIGFOX_EP_ADDON_RFP_API_config_t addon_config;
     SIGFOX_EP_ADDON_RFP_API_test_mode_t test_mode;
     uint32_t reg_config_0 = 0;
-    uint32_t reg_control_1 = 0;
     // Read configuration registers.
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
     // Check radio state.
     status = _UHFM_is_radio_free();
     if (status != NODE_SUCCESS) goto errors;
@@ -239,7 +235,7 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
     sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_open(&addon_config);
     _UHFM_sigfox_ep_addon_rfp_exit_error();
     // Call test mode function.
-    test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) SWREG_read_field(reg_control_1, UHFM_REGISTER_CONTROL_1_MASK_RFP_TEST_MODE);
+    test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_RFP_TEST_MODE);
     test_mode.ul_bit_rate = (SIGFOX_ul_bit_rate_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_BR);
     sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_test_mode(&test_mode);
     _UHFM_sigfox_ep_addon_rfp_exit_error();
@@ -366,11 +362,9 @@ NODE_status_t UHFM_init_registers(void) {
 #ifdef XM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
-    // TX power, NFR, bit rate and RC.
+    // Message parameters.
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_dbm(SIGFOX_EP_TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_TX_POWER);
     SWREG_write_field(&reg_value, &reg_mask, 0b11, UHFM_REGISTER_CONFIGURATION_0_MASK_NFR);
-    SWREG_write_field(&reg_value, &reg_mask, 0b01, UHFM_REGISTER_CONFIGURATION_0_MASK_BR);
-    SWREG_write_field(&reg_value, &reg_mask, 0b0000, UHFM_REGISTER_CONFIGURATION_0_MASK_RC);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, UHFM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // TCONF and TIFU.
     reg_value = 0;
