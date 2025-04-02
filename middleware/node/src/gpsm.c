@@ -83,13 +83,8 @@ static void _GPSM_load_dynamic_configuration(void) {
 
 /*******************************************************************/
 static void _GPSM_reset_analog_data(void) {
-    // Local variables.
-    uint32_t reg_analog_data_1 = 0;
-    uint32_t reg_analog_data_1_mask = 0;
-    // Reset fields to error value.
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, GPSM_REGISTER_ANALOG_DATA_1_MASK_VGPS);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, GPSM_REGISTER_ANALOG_DATA_1_MASK_VANT);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
+    // Reset analog registers.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_ANALOG_DATA_1, GPSM_REGISTER_ERROR_VALUE[GPSM_REGISTER_ADDRESS_ANALOG_DATA_1], UNA_REGISTER_MASK_ALL);
 }
 
 /*******************************************************************/

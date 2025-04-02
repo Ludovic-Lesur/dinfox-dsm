@@ -25,26 +25,10 @@
 
 /*******************************************************************/
 static void _SM_reset_analog_data(void) {
-    // Local variables.
-    uint32_t reg_analog_data_1 = 0;
-    uint32_t reg_analog_data_1_mask = 0;
-    uint32_t reg_analog_data_2 = 0;
-    uint32_t reg_analog_data_2_mask = 0;
-    uint32_t reg_analog_data_3 = 0;
-    uint32_t reg_analog_data_3_mask = 0;
-    // Reset fields to error value.
-    // AIN0 / AIN1.
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_1_MASK_VAIN0);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_1_MASK_VAIN1);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
-    // AIN2 / AIN3.
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_VOLTAGE_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_2_MASK_VAIN2);
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_VOLTAGE_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_2_MASK_VAIN3);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
-    // TAMB / HAMB.
-    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, UNA_TEMPERATURE_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
-    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, UNA_HUMIDITY_ERROR_VALUE, SM_REGISTER_ANALOG_DATA_3_MASK_HAMB);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_3, reg_analog_data_3, reg_analog_data_3_mask);
+    // Reset analog registers.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_1, SM_REGISTER_ERROR_VALUE[SM_REGISTER_ADDRESS_ANALOG_DATA_1], UNA_REGISTER_MASK_ALL);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_2, SM_REGISTER_ERROR_VALUE[SM_REGISTER_ADDRESS_ANALOG_DATA_2], UNA_REGISTER_MASK_ALL);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_3, SM_REGISTER_ERROR_VALUE[SM_REGISTER_ADDRESS_ANALOG_DATA_3], UNA_REGISTER_MASK_ALL);
 }
 
 /*******************************************************************/

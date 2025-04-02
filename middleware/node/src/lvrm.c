@@ -73,18 +73,9 @@ static void _LVRM_load_dynamic_configuration(void) {
 
 /*******************************************************************/
 static void _LVRM_reset_analog_data(void) {
-    // Local variables.
-    uint32_t reg_analog_data_1 = 0;
-    uint32_t reg_analog_data_1_mask = 0;
-    uint32_t reg_analog_data_2 = 0;
-    uint32_t reg_analog_data_2_mask = 0;
-    // VIN / VOUT.
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, LVRM_REGISTER_ANALOG_DATA_1_MASK_VCOM);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, LVRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
-    // IOUT.
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_VOLTAGE_ERROR_VALUE, LVRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
+    // Reset analog registers.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_ANALOG_DATA_1, LVRM_REGISTER_ERROR_VALUE[LVRM_REGISTER_ADDRESS_ANALOG_DATA_1], UNA_REGISTER_MASK_ALL);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_ANALOG_DATA_2, LVRM_REGISTER_ERROR_VALUE[LVRM_REGISTER_ADDRESS_ANALOG_DATA_2], UNA_REGISTER_MASK_ALL);
 }
 
 /*** LVRM functions ***/

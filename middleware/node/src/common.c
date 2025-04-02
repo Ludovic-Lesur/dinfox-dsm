@@ -29,17 +29,6 @@
 /*** COMMON local functions ***/
 
 /*******************************************************************/
-static void _COMMON_reset_analog_data(void) {
-    // Local variables.
-    uint32_t reg_analog_data_0 = 0;
-    uint32_t reg_analog_data_0_mask = 0;
-    // VMCU and TMCU.
-    SWREG_write_field(&reg_analog_data_0, &reg_analog_data_0_mask, UNA_VOLTAGE_ERROR_VALUE, COMMON_REGISTER_ANALOG_DATA_0_MASK_VMCU);
-    SWREG_write_field(&reg_analog_data_0, &reg_analog_data_0_mask, UNA_TEMPERATURE_ERROR_VALUE, COMMON_REGISTER_ANALOG_DATA_0_MASK_TMCU);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_ANALOG_DATA_0, reg_analog_data_0, reg_analog_data_0_mask);
-}
-
-/*******************************************************************/
 static NODE_status_t _COMMON_mtrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
@@ -48,8 +37,8 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
     int32_t tmcu_degrees = 0;
     uint32_t reg_analog_data_0 = 0;
     uint32_t reg_analog_data_0_mask = 0;
-    // Common analog data.
-    _COMMON_reset_analog_data();
+    // Reset analog register.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_ANALOG_DATA_0, NODE_REGISTER_ERROR_VALUE[COMMON_REGISTER_ADDRESS_ANALOG_DATA_0], UNA_REGISTER_MASK_ALL);
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_COMMON, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // MCU voltage.
@@ -138,7 +127,7 @@ NODE_status_t COMMON_init_registers(UNA_node_address_t self_address) {
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_SW_VERSION_1, reg_sw_version_1, reg_sw_version_1_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_STATUS_0, reg_status_0, reg_status_0_mask);
     // Load default values.
-    _COMMON_reset_analog_data();
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_ANALOG_DATA_0, NODE_REGISTER_ERROR_VALUE[COMMON_REGISTER_ADDRESS_ANALOG_DATA_0], UNA_REGISTER_MASK_ALL);
     return status;
 }
 

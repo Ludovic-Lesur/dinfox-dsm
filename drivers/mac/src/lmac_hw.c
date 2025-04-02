@@ -94,4 +94,9 @@ errors:
     return status;
 }
 
+/*******************************************************************/
+void LMAC_HW_stack_error(LMAC_status_t status) {
+    ERROR_stack_add(ERROR_BASE_LMAC + status);
+}
+
 #endif /* LMAC_DRIVER_DISABLE */

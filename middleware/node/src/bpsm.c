@@ -95,18 +95,9 @@ static void _BPSM_load_dynamic_configuration(void) {
 
 /*******************************************************************/
 static void _BPSM_reset_analog_data(void) {
-    // Local variables.
-    uint32_t reg_analog_data_1 = 0;
-    uint32_t reg_analog_data_1_mask = 0;
-    uint32_t reg_analog_data_2 = 0;
-    uint32_t reg_analog_data_2_mask = 0;
-    // VSRC / VSTR.
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
-    // VBKP.
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_VOLTAGE_ERROR_VALUE, BPSM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
+    // Reset analog registers.
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_1, BPSM_REGISTER_ERROR_VALUE[BPSM_REGISTER_ADDRESS_ANALOG_DATA_1], UNA_REGISTER_MASK_ALL);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_ANALOG_DATA_2, BPSM_REGISTER_ERROR_VALUE[BPSM_REGISTER_ADDRESS_ANALOG_DATA_2], UNA_REGISTER_MASK_ALL);
 }
 
 /*** BPSM functions ***/
