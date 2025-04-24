@@ -120,12 +120,12 @@ uint8_t LOAD_get_charge_state(void) {
 uint8_t LOAD_get_charge_status(void) {
     // Local variables.
     uint8_t charge_status = 0;
-    // Read GPIO.
+    // Read GPIO and invert open-drain logic.
 #ifdef BPSM
-    charge_status = GPIO_read(&GPIO_CHRG_ST);
+    charge_status = (GPIO_read(&GPIO_CHRG_ST) ^ 0x01);
 #endif
 #ifdef BCM
-    charge_status = ((GPIO_read(&GPIO_CHRG_ST1) << 1) | (GPIO_read(&GPIO_CHRG_ST0)));
+    charge_status = (((GPIO_read(&GPIO_CHRG_ST1) << 1) | (GPIO_read(&GPIO_CHRG_ST0))) ^ 0x03);
 #endif
     return charge_status;
 }

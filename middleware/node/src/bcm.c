@@ -177,8 +177,8 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
         }
         else {
             // Force status to not charging or terminated.
-            chrgst0 = UNA_BIT_1;
-            chrgst1 = UNA_BIT_1;
+            chrgst0 = UNA_BIT_0;
+            chrgst1 = UNA_BIT_0;
         }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst0), BCM_REGISTER_STATUS_1_MASK_CHRGST0);
