@@ -24,6 +24,8 @@
 #define BCM_LVF_UPDATE_PERIOD_SECONDS       5
 #define BCM_CHEN_TOGGLE_DURATION_SECONDS    1
 
+#define BCM_CHRGST_ISTR_MIN_UA              10000
+
 /*** BCM local structures ***/
 
 /*******************************************************************/
@@ -31,6 +33,7 @@ typedef struct {
     UNA_bit_representation_t chenst;
     UNA_bit_representation_t bkenst;
     uint32_t lvf_update_next_time_seconds;
+    int32_t istr_ua;
 #ifndef BCM_CHEN_FORCED_HARDWARE
     int32_t vsrc_mv;
     uint32_t chen_toggle_previous_time_seconds;
@@ -43,6 +46,7 @@ typedef struct {
 static BCM_context_t bcm_ctx = {
     .chenst = UNA_BIT_ERROR,
     .bkenst = UNA_BIT_ERROR,
+    .istr_ua = 0,
     .lvf_update_next_time_seconds = 0,
 #ifndef BCM_CHEN_FORCED_HARDWARE
     .vsrc_mv = 0,
@@ -119,6 +123,7 @@ NODE_status_t BCM_init_registers(void) {
     // Init context.
     bcm_ctx.chenst = UNA_BIT_ERROR;
     bcm_ctx.bkenst = UNA_BIT_ERROR;
+    bcm_ctx.istr_ua = 0;
     bcm_ctx.lvf_update_next_time_seconds = 0;
 #ifndef BCM_CHEN_FORCED_HARDWARE
     bcm_ctx.vsrc_mv = 0;
@@ -164,8 +169,17 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
         chrgst0 = UNA_BIT_FORCED_HARDWARE;
         chrgst1 = UNA_BIT_FORCED_HARDWARE;
 #else
-        chrgst0 = ((LOAD_get_charge_status() >> 0) & 0x01);
-        chrgst1 = ((LOAD_get_charge_status() >> 1) & 0x01);
+        // Check current.
+        if (bcm_ctx.istr_ua > BCM_CHRGST_ISTR_MIN_UA) {
+            // Read pins.
+            chrgst0 = ((LOAD_get_charge_status() >> 0) & 0x01);
+            chrgst1 = ((LOAD_get_charge_status() >> 1) & 0x01);
+        }
+        else {
+            // Force status to not charging or terminated.
+            chrgst0 = UNA_BIT_1;
+            chrgst1 = UNA_BIT_1;
+        }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst0), BCM_REGISTER_STATUS_1_MASK_CHRGST0);
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst1), BCM_REGISTER_STATUS_1_MASK_CHRGST1);
@@ -317,8 +331,11 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
         bcm_ctx.lvf_update_next_time_seconds = uptime_seconds + BCM_LVF_UPDATE_PERIOD_SECONDS;
         // Turn analog front-end on.
         POWER_enable(POWER_REQUESTER_ID_BCM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
-        // Read source voltage.
+        // Read battery voltage.
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &vstr_mv);
+        ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+        // Read charge current for status update.
+        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_ISTR_UA, &(bcm_ctx.istr_ua));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 #ifndef BCM_CHEN_FORCED_HARDWARE
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &(bcm_ctx.vsrc_mv));
