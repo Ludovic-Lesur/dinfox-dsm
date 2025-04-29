@@ -9,6 +9,7 @@
 
 #include "analog.h"
 #include "digital.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "i2c_address.h"
 #include "load.h"
@@ -17,7 +18,6 @@
 #include "sm_registers.h"
 #include "swreg.h"
 #include "una.h"
-#include "xm_flags.h"
 
 #ifdef SM
 

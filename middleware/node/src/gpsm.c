@@ -8,6 +8,7 @@
 #include "gpsm.h"
 
 #include "analog.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "gps.h"
 #include "gpsm_registers.h"
@@ -286,7 +287,7 @@ errors:
 NODE_status_t GPSM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Timeouts.

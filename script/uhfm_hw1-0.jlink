@@ -1,6 +1,6 @@
 r
-loadfile uhfm_hw1-0/xm.hex
-verifyfile uhfm_hw1-0/xm.hex
+loadfile uhfm_hw1-0/dsm.hex
+verifyfile uhfm_hw1-0/dsm.hex
 r
 g
 qc

@@ -24,20 +24,20 @@
 #include "node.h"
 #include "power.h"
 // Applicative.
+#include "dsm_flags.h"
 #include "error_base.h"
-#include "xm_flags.h"
 
 /*** MAIN local functions ***/
 
 /*******************************************************************/
-static void _XM_init_hw(void) {
+static void _DSM_init_hw(void) {
     // Local variables.
     RCC_status_t rcc_status = RCC_SUCCESS;
     RTC_status_t rtc_status = RTC_SUCCESS;
     LPTIM_status_t lptim_status = LPTIM_SUCCESS;
     NODE_status_t node_status = NODE_SUCCESS;
     CLI_status_t cli_status = CLI_SUCCESS;
-#ifndef XM_DEBUG
+#ifndef DSM_DEBUG
     IWDG_status_t iwdg_status = IWDG_SUCCESS;
 #endif
     // Init error stack
@@ -52,7 +52,7 @@ static void _XM_init_hw(void) {
     GPIO_init();
     POWER_init();
     EXTI_init();
-#ifndef XM_DEBUG
+#ifndef DSM_DEBUG
     // Start independent watchdog.
     iwdg_status = IWDG_init();
     IWDG_stack_error(ERROR_BASE_IWDG);
@@ -87,11 +87,11 @@ int main(void) {
     NODE_status_t node_status = NODE_SUCCESS;
     CLI_status_t cli_status = CLI_SUCCESS;
     // Init board.
-    _XM_init_hw();
+    _DSM_init_hw();
     // Main loop.
     while (1) {
         IWDG_reload();
-#ifndef XM_DEBUG
+#ifndef DSM_DEBUG
         // Enter sleep or stop mode depending on node state.
         if (NODE_get_state() == NODE_STATE_IDLE) {
             PWR_enter_deepsleep_mode(PWR_DEEPSLEEP_MODE_STOP);

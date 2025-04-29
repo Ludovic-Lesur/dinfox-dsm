@@ -1,26 +1,26 @@
 /*
- * xm_flags.h
+ * dsm_flags.h
  *
  *  Created on: 18 apr. 2020
  *      Author: Ludo
  */
 
-#ifndef __XM_FLAGS_H__
-#define __XM_FLAGS_H__
+#ifndef __DSM_FLAGS_H__
+#define __DSM_FLAGS_H__
 
 /*** Board modes ***/
 
-//#define XM_DEBUG
-//#define XM_NVM_FACTORY_RESET
+//#define DSM_DEBUG
+//#define DSM_NVM_FACTORY_RESET
 
 /*** Board options ***/
 
-#ifdef XM_NVM_FACTORY_RESET
-#define XM_NODE_ADDRESS                     0x7F
+#ifdef DSM_NVM_FACTORY_RESET
+#define DSM_NODE_ADDRESS                    0x7F
 #endif
 
 #ifdef LVRM
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
 #define LVRM_BMS_VBATT_LOW_THRESHOLD_MV     10000
 #define LVRM_BMS_VBATT_HIGH_THRESHOLD_MV    12000
 #endif
@@ -35,7 +35,7 @@
 //#define BCM_CHST_FORCED_HARDWARE
 #define BCM_CHLD_FORCED_HARDWARE
 #define BCM_BKEN_FORCED_HARDWARE
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
 #define BCM_CHEN_VSRC_THRESHOLD_MV         16000
 #define BCM_CHEN_TOGGLE_PERIOD_SECONDS     3600
 #define BCM_LVF_LOW_THRESHOLD_MV           10000
@@ -47,7 +47,7 @@
 //#define BPSM_CHEN_FORCED_HARDWARE
 #define BPSM_CHST_FORCED_HARDWARE
 #define BPSM_BKEN_FORCED_HARDWARE
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
 #define BPSM_CHEN_VSRC_THRESHOLD_MV         6000
 #define BPSM_CHEN_TOGGLE_PERIOD_SECONDS     300
 #define BPSM_LVF_LOW_THRESHOLD_MV           1000
@@ -62,7 +62,7 @@
 #ifdef GPSM
 #define GPSM_ACTIVE_ANTENNA
 //#define GPSM_BKEN_FORCED_HARDWARE
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
 #define GPSM_TIME_TIMEOUT_SECONDS           120
 #define GPSM_GEOLOC_TIMEOUT_SECONDS         180
 #define GPSM_TIMEPULSE_FREQUENCY_HZ         10000000
@@ -93,13 +93,13 @@
 /*** Second level compilation flags ***/
 
 #if ((defined BCM) || (defined BPSM) || (defined LVRM) || (defined DDRM) || (defined RRM))
-#define XM_LOAD_CONTROL
+#define DSM_LOAD_CONTROL
 #endif
 #if (((defined BCM) && !(defined BCM_CHLD_FORCED_HARDWARE)) || (defined LVRM) || (defined DDRM) || (defined RRM))
-#define XM_IOUT_INDICATOR
+#define DSM_IOUT_INDICATOR
 #endif
-#if ((defined XM_IOUT_INDICATOR) || (defined GPSM))
-#define XM_RGB_LED
+#if ((defined DSM_IOUT_INDICATOR) || (defined GPSM))
+#define DSM_RGB_LED
 #endif
 
-#endif /* __XM_FLAGS_H__ */
+#endif /* __DSM_FLAGS_H__ */

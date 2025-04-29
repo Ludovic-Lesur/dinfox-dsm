@@ -61,7 +61,7 @@ The boards are based on the **STM32L011F4U6**, **STM32L031G6U6** and **STM32L041
 ## Architecture
 
 <p align="center">
-<img src="https://github.com/Ludovic-Lesur/xm/wiki/images/xm_sw_architecture.drawio.png" width="600"/>
+<img src="https://github.com/Ludovic-Lesur/dsm/wiki/images/dsm_sw_architecture.drawio.png" width="600"/>
 </p>
 
 ## Structure

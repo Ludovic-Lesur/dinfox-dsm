@@ -30,7 +30,7 @@ typedef enum {
     LED_ERROR_BASE_LAST = (LED_ERROR_BASE_TIM_DIMMING + TIM_ERROR_BASE_LAST)
 } LED_status_t;
 
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
 
 /*!******************************************************************
  * \enum LED_color_t
@@ -106,6 +106,6 @@ uint8_t LED_is_single_blink_done(void);
 /*******************************************************************/
 #define LED_stack_exit_error(base, code) { ERROR_check_stack_exit(led_status, LED_SUCCESS, base, code) }
 
-#endif /* XM_RGB_LED */
+#endif /* DSM_RGB_LED */
 
 #endif /* LED_H */

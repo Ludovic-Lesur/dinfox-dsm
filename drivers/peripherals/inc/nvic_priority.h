@@ -8,7 +8,7 @@
 #ifndef __NVIC_PRIORITY_H__
 #define __NVIC_PRIORITY_H__
 
-#include "xm_flags.h"
+#include "dsm_flags.h"
 
 /*!******************************************************************
  * \enum NVIC_priority_list_t
@@ -22,7 +22,7 @@ typedef enum {
     NVIC_PRIORITY_RTC = 3,
     // RS485 interface.
     NVIC_PRIORITY_RS485 = 0,
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
     NVIC_PRIORITY_LED = 1,
 #endif
 #ifdef GPSM

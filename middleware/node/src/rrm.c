@@ -8,6 +8,7 @@
 #include "rrm.h"
 
 #include "analog.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
 #include "rrm_registers.h"
@@ -78,7 +79,7 @@ static void _RRM_reset_analog_data(void) {
 NODE_status_t RRM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // IOUT offset.

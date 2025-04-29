@@ -16,7 +16,7 @@
 #include "tim.h"
 #include "types.h"
 
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
 
 /*** LED local macros ***/
 
@@ -256,4 +256,4 @@ uint8_t LED_is_single_blink_done(void) {
     return (led_ctx.single_blink_done);
 }
 
-#endif /* XM_RGB_LED */
+#endif /* DSM_RGB_LED */

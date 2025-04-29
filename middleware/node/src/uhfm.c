@@ -9,20 +9,21 @@
 
 #include "analog.h"
 #include "aes.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
+#include "manuf/mcu_api.h"
+#include "manuf/rf_api.h"
 #include "node.h"
 #include "nvm.h"
 #include "nvm_address.h"
 #include "s2lp.h"
-#include "swreg.h"
-#include "una.h"
-#include "manuf/mcu_api.h"
-#include "manuf/rf_api.h"
 #include "sigfox_ep_addon_rfp_api.h"
 #include "sigfox_ep_api.h"
 #include "sigfox_rc.h"
 #include "sigfox_types.h"
+#include "swreg.h"
+#include "una.h"
 
 #ifdef UHFM
 
@@ -353,7 +354,7 @@ NODE_status_t UHFM_init_registers(void) {
     NODE_status_t status = NODE_SUCCESS;
     uint8_t idx = 0;
     uint8_t sigfox_ep_tab[SIGFOX_EP_KEY_SIZE_BYTES];
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Message parameters.

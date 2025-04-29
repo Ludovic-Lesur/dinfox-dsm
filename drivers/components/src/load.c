@@ -7,14 +7,14 @@
 
 #include "load.h"
 
+#include "dsm_flags.h"
 #include "error.h"
 #include "gpio.h"
 #include "lptim.h"
 #include "mcu_mapping.h"
 #include "types.h"
-#include "xm_flags.h"
 
-#ifdef XM_LOAD_CONTROL
+#ifdef DSM_LOAD_CONTROL
 
 /*** LOAD local macros ***/
 
@@ -131,4 +131,4 @@ uint8_t LOAD_get_charge_status(void) {
 }
 #endif
 
-#endif /* XM_LOAD_CONTROL */
+#endif /* DSM_LOAD_CONTROL */

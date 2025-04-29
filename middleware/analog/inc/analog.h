@@ -9,9 +9,9 @@
 #define __ANALOG_H__
 
 #include "adc.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "types.h"
-#include "xm_flags.h"
 
 /*** ANALOG structures ***/
 

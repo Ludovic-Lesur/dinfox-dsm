@@ -8,7 +8,7 @@
 #ifndef __STM32L0XX_DRIVERS_FLAGS_H__
 #define __STM32L0XX_DRIVERS_FLAGS_H__
 
-#include "xm_flags.h"
+#include "dsm_flags.h"
 
 /*** STM32L0xx drivers compilation flags ***/
 

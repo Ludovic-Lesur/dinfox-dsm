@@ -8,10 +8,10 @@
 #ifndef __LOAD_H__
 #define __LOAD_H__
 
+#include "dsm_flags.h"
 #include "error.h"
 #include "lptim.h"
 #include "types.h"
-#include "xm_flags.h"
 
 /*** LOAD structures ***/
 
@@ -29,7 +29,7 @@ typedef enum {
     LOAD_ERROR_BASE_LAST = (LOAD_ERROR_BASE_LPTIM + LPTIM_ERROR_BASE_LAST)
 } LOAD_status_t;
 
-#ifdef XM_LOAD_CONTROL
+#ifdef DSM_LOAD_CONTROL
 
 /*** LOAD functions ***/
 
@@ -102,6 +102,6 @@ uint8_t LOAD_get_charge_status(void);
 /*******************************************************************/
 #define LOAD_stack_exit_error(error_code) { if (load_status != LOAD_SUCCESS) { ERROR_stack_add(ERROR_BASE_LOAD + load_status); status = error_code; goto errors; } }
 
-#endif /* XM_LOAD_CONTROL */
+#endif /* DSM_LOAD_CONTROL */
 
 #endif /* __LOAD_H__ */

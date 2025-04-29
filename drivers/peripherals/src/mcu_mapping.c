@@ -8,6 +8,7 @@
 #include "mcu_mapping.h"
 
 #include "adc.h"
+#include "dsm_flags.h"
 #include "gpio.h"
 #include "gpio_registers.h"
 #include "i2c.h"
@@ -15,7 +16,6 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-#include "xm_flags.h"
 
 /*** MCU MAPPING local global variables ***/
 
@@ -97,7 +97,7 @@ static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &G
 static const GPIO_pin_t GPIO_ADC_VRF_MEASURE = { GPIOA, 0, 7, 0 };
 static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VRF_MEASURE };
 #endif
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
 // RGB LED.
 #ifdef BCM
 static const GPIO_pin_t GPIO_LED_RED =   { GPIOA, 0, 15, 5 };
@@ -176,7 +176,7 @@ const GPIO_pin_t GPIO_MNTR_EN = { GPIOB, 1, 7, 0 };
 const GPIO_pin_t GPIO_ANALOG_POWER_ENABLE = { GPIOA, 0, 8, 0 };
 #endif
 const ADC_gpio_t ADC_GPIO = { (const GPIO_pin_t**) &GPIO_ADC_PINS_LIST, ADC_CHANNEL_INDEX_LAST };
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
 // RGB LED.
 #ifdef GPSM
 const TIM_gpio_t TIM_GPIO_LED_RG = { (const TIM_channel_gpio_t**) &TIM_CHANNEL_GPIO_LIST_LED_RG, TIM_CHANNEL_INDEX_LED_RG_LAST };

@@ -9,13 +9,13 @@
 #define __MCU_MAPPING_H__
 
 #include "adc.h"
+#include "dsm_flags.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "lpuart.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-#include "xm_flags.h"
 
 /*** MCU MAPPING macros ***/
 
@@ -199,7 +199,7 @@ extern const GPIO_pin_t GPIO_MNTR_EN;
 extern const GPIO_pin_t GPIO_ANALOG_POWER_ENABLE;
 #endif
 extern const ADC_gpio_t ADC_GPIO;
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
 // RGB LED.
 #ifdef GPSM
 extern const TIM_gpio_t TIM_GPIO_LED_RG;

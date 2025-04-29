@@ -8,11 +8,11 @@
 #include "analog.h"
 
 #include "adc.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "error_base.h"
 #include "mcu_mapping.h"
 #include "types.h"
-#include "xm_flags.h"
 
 /*** ANALOG local macros ***/
 

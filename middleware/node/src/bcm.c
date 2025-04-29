@@ -9,13 +9,13 @@
 
 #include "analog.h"
 #include "bcm_registers.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
 #include "node.h"
 #include "swreg.h"
 #include "rtc.h"
 #include "una.h"
-#include "xm_flags.h"
 
 #ifdef BCM
 
@@ -116,7 +116,7 @@ static void _BCM_reset_analog_data(void) {
 NODE_status_t BCM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
 #endif
@@ -130,7 +130,7 @@ NODE_status_t BCM_init_registers(void) {
     bcm_ctx.chen_toggle_previous_time_seconds = 0;
     bcm_ctx.chen_toggle_next_time_seconds = 0;
 #endif
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     // CHEN toggle threshold and period.
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BCM_CHEN_TOGGLE_PERIOD_SECONDS), BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CHEN_VSRC_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD);

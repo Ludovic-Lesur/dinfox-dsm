@@ -14,6 +14,7 @@
 #include "common.h"
 #include "ddrm.h"
 #include "ddrm_registers.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "error_base.h"
 #include "gpsm.h"
@@ -33,11 +34,10 @@
 #include "uhfm.h"
 #include "uhfm_registers.h"
 #include "una.h"
-#include "xm_flags.h"
 
 /*** NODE local macros ***/
 
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
 #ifdef BCM
 #define NODE_IOUT_CHANNEL_INPUT_VOLTAGE         ANALOG_CHANNEL_VSRC_MV
 #define NODE_IOUT_CHANNEL                       ANALOG_CHANNEL_ISTR_UA
@@ -54,7 +54,7 @@
 
 /*** NODE local structures ***/
 
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
 /*******************************************************************/
 typedef struct {
     int32_t threshold_ua;
@@ -66,7 +66,7 @@ typedef struct {
 typedef struct {
     volatile uint32_t registers[NODE_REGISTER_ADDRESS_LAST];
     NODE_state_t state;
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
     uint32_t iout_measurements_next_time_seconds;
     uint32_t iout_indicator_next_time_seconds;
     int32_t input_voltage_mv;
@@ -76,7 +76,7 @@ typedef struct {
 
 /*** NODE local global variables ***/
 
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
 static const NODE_iout_indicator_t LVRM_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE] = {
     {0, LED_COLOR_GREEN},
     {50000, LED_COLOR_YELLOW},
@@ -91,7 +91,7 @@ static const NODE_iout_indicator_t LVRM_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE
 static NODE_context_t node_ctx = {
     .registers = { [0 ... (NODE_REGISTER_ADDRESS_LAST - 1)] = 0x00000000 },
     .state = NODE_STATE_IDLE,
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
     .iout_measurements_next_time_seconds = 0,
     .iout_indicator_next_time_seconds = 0,
     .input_voltage_mv = 0,
@@ -101,7 +101,7 @@ static NODE_context_t node_ctx = {
 
 /*** NODE local functions ***/
 
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
 /*******************************************************************/
 static NODE_status_t _NODE_iout_measurement(void) {
     // Local variables.
@@ -124,7 +124,7 @@ errors:
 }
 #endif
 
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
 /*******************************************************************/
 static NODE_status_t _NODE_iout_indicator(void) {
     // Local variables.
@@ -230,7 +230,7 @@ NODE_status_t NODE_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     NVM_status_t nvm_status = NVM_SUCCESS;
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
     LED_status_t led_status = LED_SUCCESS;
 #endif
     UNA_node_address_t self_address = 0;
@@ -240,14 +240,14 @@ NODE_status_t NODE_init(void) {
         node_ctx.registers[idx] = NODE_REGISTER_ERROR_VALUE[idx];
     }
     node_ctx.state = NODE_STATE_IDLE;
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
     node_ctx.iout_measurements_next_time_seconds = 0;
     node_ctx.iout_indicator_next_time_seconds = 0;
     node_ctx.input_voltage_mv = 0;
     node_ctx.iout_ua = 0;
 #endif
-#ifdef XM_NVM_FACTORY_RESET
-    nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, XM_NODE_ADDRESS);
+#ifdef DSM_NVM_FACTORY_RESET
+    nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, DSM_NODE_ADDRESS);
     NVM_exit_error(NODE_ERROR_BASE_NVM);
 #endif
     // Read self address in NVM.
@@ -282,10 +282,10 @@ NODE_status_t NODE_init(void) {
     status = BCM_init_registers();
 #endif
     if (status != NODE_SUCCESS) goto errors;
-#ifdef XM_LOAD_CONTROL
+#ifdef DSM_LOAD_CONTROL
     LOAD_init();
 #endif
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
     led_status = LED_init();
     LED_exit_error(NODE_ERROR_BASE_LED);
 #endif
@@ -297,7 +297,7 @@ errors:
 NODE_status_t NODE_de_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef XM_RGB_LED
+#ifdef DSM_RGB_LED
     LED_status_t led_status = LED_SUCCESS;
     led_status = LED_de_init();
     LED_stack_error(ERROR_BASE_NODE + NODE_ERROR_BASE_LED);
@@ -334,7 +334,7 @@ NODE_status_t NODE_process(void) {
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
 #endif
-#ifdef XM_IOUT_INDICATOR
+#ifdef DSM_IOUT_INDICATOR
     // Check measurements period.
     if (RTC_get_uptime_seconds() >= node_ctx.iout_measurements_next_time_seconds) {
         // Update next time.

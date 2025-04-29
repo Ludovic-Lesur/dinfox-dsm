@@ -8,6 +8,7 @@
 #include "lvrm.h"
 
 #include "adc.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
 #include "lvrm_registers.h"
@@ -84,7 +85,7 @@ static void _LVRM_reset_analog_data(void) {
 NODE_status_t LVRM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef XM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;

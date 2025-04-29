@@ -7,11 +7,11 @@
 
 #include "digital.h"
 
+#include "dsm_flags.h"
 #include "error.h"
 #include "gpio.h"
 #include "mcu_mapping.h"
 #include "types.h"
-#include "xm_flags.h"
 
 #ifdef SM
 
