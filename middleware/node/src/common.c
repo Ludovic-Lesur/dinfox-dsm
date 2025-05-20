@@ -140,14 +140,14 @@ NODE_status_t COMMON_update_register(uint8_t reg_addr) {
     // Check address.
     switch (reg_addr) {
     case COMMON_REGISTER_ADDRESS_ERROR_STACK:
-#ifdef UHFM
-        // Import Sigfox errors into MCU stack.
-        ERROR_import_sigfox_stack();
-#endif
         // Unstack error.
         SWREG_write_field(&reg_value, &reg_mask, (uint32_t) ERROR_stack_read(), COMMON_REGISTER_ERROR_STACK_MASK_ERROR);
         break;
     case COMMON_REGISTER_ADDRESS_STATUS_0:
+#ifdef UHFM
+        // Import Sigfox library error stack.
+        ERROR_import_sigfox_stack();
+#endif
         // Check error stack.
         SWREG_write_field(&reg_value, &reg_mask, ((ERROR_stack_is_empty() == 0) ? 0b1 : 0b0), COMMON_REGISTER_STATUS_0_MASK_ESF);
         break;
