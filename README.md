@@ -9,7 +9,8 @@ This repository contains the embedded software of the **DinFox slaves modules**:
 * RRM: **rectifier and regulator** with configurable output voltage and controlled by the MCU.
 * SM: **sensors module** with embedded temperature/humidity sensor, 4 analog inputs, 4 digital I/Os and external shield support (with I2C and I/Os).
 * GPSM: **GPS module** with active antenna support.
-* BCM: **battery charger** with configurable charge voltage and current. 
+* MPMCM: **Mains monitoring and controller module** with 4 independent channels (true RMS voltage, true RMS current, active power, apparent power, power factor and frequency), real time control of 4 loads (triac) and Linky TIC interface.
+* BCM: **battery charger** with configurable charge voltage and current.
 * Analog **measurements** such as input voltage, output voltage and output current.
 * **RS485** communication.
 
@@ -27,6 +28,7 @@ The boards were designed on **Circuit Maker V2.0**. Below is the list of hardwar
 | [RRM HW1.0](https://365.altium.com/files/F33BFE95-AA3E-4890-B685-3A09A36AE775) | Initial version. | :white_check_mark: |
 | [SM HW1.0](https://365.altium.com/files/73597AC1-81FF-471F-A80B-41D71904A039) | Initial version. | :white_check_mark: |
 | [GPSM HW1.0](https://365.altium.com/files/86BC5960-7B01-45BE-B7A5-BD8ADBCE5E8D) | Initial version. | :white_check_mark: |
+| [MPMCM HW1.0](https://365.altium.com/files/DD635FDD-1D00-456C-9219-78701675DC01) | Initial version. | :white_check_mark: |
 | [BCM HW1.0](https://365.altium.com/files/05D7821F-F16C-4190-8AAC-8EBAEC7074C2) | Initial version. | :white_check_mark: |
 
 # Embedded software
@@ -40,7 +42,7 @@ The embedded software is developed under **Eclipse IDE** version 2024-09 (4.33.0
 
 ## Target
 
-The boards are based on the **STM32L011F4U6**, **STM32L011G4U6**, **STM32L031G6U6** and **STM32L041K6U6** microcontrollers of the STMicroelectronics L0 family. Each hardware revision has a corresponding **build configuration** in the Eclipse project, which sets up the code for the selected board.
+The boards are based on the **STM32L011F4U6**, **STM32L011G4U6**, **STM32L031G6U6**, **STM32L041K6U6** and **STM32G441CBT6** microcontrollers of the STMicroelectronics L0/G4 families. Each hardware revision has a corresponding **build configuration** in the Eclipse project, which sets up the code for the selected board.
 
 ## Architecture
 
@@ -62,7 +64,7 @@ The project is organized as follow:
 * `middleware` :
     * `analog` : High level **analog measurements** driver.
     * `cli` : **AT commands** implementation.
-    * `digital` : High level **digital I/O** driver.
+    * `digital` : High level **digital I/O** driver (SM only).
     * `gps` : High level **GPS** driver (GPSM only).
     * `node` : **UNA** nodes interface implementation.
     * `power` : Board **power tree** manager.
