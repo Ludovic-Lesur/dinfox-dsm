@@ -10,10 +10,11 @@
 #ifndef SHT3X_DRIVER_DISABLE_FLAGS_FILE
 #include "sht3x_driver_flags.h"
 #endif
-#include "error_base.h"
-#include "sensors_hw.h"
 
 #ifndef SHT3X_DRIVER_DISABLE
+
+#include "error_base.h"
+#include "sensors_hw.h"
 
 /*** SHT3X HW functions ***/
 

@@ -14,6 +14,10 @@
 
 /*** STM32L0XX device compilation flags ***/
 
+#ifdef MPMCM
+#define STM32L0XX_DEVICE_DISABLE
+#endif
+
 #if (STM32L0XX_REGISTERS_MCU_CATEGORY == 1)
 #define STM32L0XX_DEVICE_STACK_SIZE     0x00000100
 #define STM32L0XX_DEVICE_HEAP_SIZE      0x00000400

@@ -7,14 +7,14 @@
 
 #include "sensors_hw.h"
 
+#ifdef SM
+
 #include "error.h"
 #include "error_base.h"
 #include "mcu_mapping.h"
 #include "i2c.h"
 #include "lptim.h"
 #include "types.h"
-
-#ifdef SM
 
 /*** SENSORS HW functions ***/
 

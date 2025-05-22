@@ -10,6 +10,9 @@
 #ifndef S2LP_DRIVER_DISABLE_FLAGS_FILE
 #include "s2lp_driver_flags.h"
 #endif
+
+#ifndef S2LP_DRIVER_DISABLE
+
 #include "error.h"
 #include "error_base.h"
 #include "gpio.h"
@@ -18,8 +21,6 @@
 #include "s2lp.h"
 #include "spi.h"
 #include "types.h"
-
-#ifndef S2LP_DRIVER_DISABLE
 
 /*** S2LP HW functions ***/
 

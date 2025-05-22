@@ -1,0 +1,6 @@
+r
+loadfile hw1-0/dsm.hex
+verifyfile hw1-0/dsm.hex
+r
+g
+qc

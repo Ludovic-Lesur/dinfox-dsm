@@ -7,6 +7,8 @@
 
 #include "bpsm.h"
 
+#ifdef BPSM
+
 #include "analog.h"
 #include "bpsm_registers.h"
 #include "dsm_flags.h"
@@ -16,8 +18,6 @@
 #include "swreg.h"
 #include "rtc.h"
 #include "una.h"
-
-#ifdef BPSM
 
 /*** BPSM local macros ***/
 

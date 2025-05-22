@@ -12,6 +12,10 @@
 
 /*** STM32L0xx drivers compilation flags ***/
 
+#ifdef MPMCM
+#define STM32L0XX_DRIVERS_DISABLE
+#endif
+
 #define STM32L0XX_DRIVERS_DMA_CHANNEL_MASK              0x00
 
 #ifdef UHFM

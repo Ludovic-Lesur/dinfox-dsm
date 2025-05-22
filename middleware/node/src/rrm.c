@@ -7,6 +7,8 @@
 
 #include "rrm.h"
 
+#ifdef RRM
+
 #include "analog.h"
 #include "dsm_flags.h"
 #include "error.h"
@@ -15,8 +17,6 @@
 #include "node.h"
 #include "swreg.h"
 #include "una.h"
-
-#ifdef RRM
 
 /*** RRM local macros ***/
 

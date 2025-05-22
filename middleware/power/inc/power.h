@@ -14,7 +14,11 @@
 
 /*** POWER macros ***/
 
+#ifdef MPMCM
+#define POWER_ON_DELAY_MS_ANALOG    0
+#else
 #define POWER_ON_DELAY_MS_ANALOG    50
+#endif
 #define POWER_ON_DELAY_MS_GPS       1000
 #define POWER_ON_DELAY_MS_DIGITAL   100
 #define POWER_ON_DELAY_MS_SENSORS   100
@@ -51,15 +55,17 @@ typedef enum {
 typedef enum {
     POWER_REQUESTER_ID_NODE = 0,
     POWER_REQUESTER_ID_COMMON,
-    POWER_REQUESTER_ID_BCM,
+    POWER_REQUESTER_ID_LVRM,
     POWER_REQUESTER_ID_BPSM,
     POWER_REQUESTER_ID_DDRM,
     POWER_REQUESTER_ID_GPSM,
-    POWER_REQUESTER_ID_LVRM,
-    POWER_REQUESTER_ID_RRM,
     POWER_REQUESTER_ID_SM,
+    POWER_REQUESTER_ID_RRM,
+    POWER_REQUESTER_ID_BCM,
     POWER_REQUESTER_ID_MCU_API,
     POWER_REQUESTER_ID_RF_API,
+    POWER_REQUESTER_ID_MEASURE,
+    POWER_REQUESTER_ID_TIC,
     POWER_REQUESTER_ID_LAST
 } POWER_requester_id_t;
 
@@ -69,6 +75,10 @@ typedef enum {
  *******************************************************************/
 typedef enum {
     POWER_DOMAIN_ANALOG = 0,
+#ifdef UHFM
+    POWER_DOMAIN_TCXO,
+    POWER_DOMAIN_RADIO,
+#endif
 #ifdef SM
     POWER_DOMAIN_DIGITAL,
     POWER_DOMAIN_SENSORS,
@@ -76,9 +86,9 @@ typedef enum {
 #ifdef GPSM
     POWER_DOMAIN_GPS,
 #endif
-#ifdef UHFM
-    POWER_DOMAIN_TCXO,
-    POWER_DOMAIN_RADIO,
+#ifdef MPMCM
+    POWER_DOMAIN_MCU_TCXO,
+    POWER_DOMAIN_TIC,
 #endif
     POWER_DOMAIN_LAST
 } POWER_domain_t;

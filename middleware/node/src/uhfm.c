@@ -7,6 +7,8 @@
 
 #include "uhfm.h"
 
+#ifdef UHFM
+
 #include "analog.h"
 #include "aes.h"
 #include "dsm_flags.h"
@@ -24,8 +26,6 @@
 #include "sigfox_types.h"
 #include "swreg.h"
 #include "una.h"
-
-#ifdef UHFM
 
 /*** UHFM local macros ***/
 

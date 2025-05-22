@@ -47,6 +47,10 @@ void POWER_init(void) {
 #if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined BPSM))
     GPIO_configure(&GPIO_MNTR_EN, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
+#ifdef UHFM
+    GPIO_configure(&GPIO_TCXO_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+    GPIO_configure(&GPIO_RF_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+#endif
 #ifdef GPSM
     GPIO_configure(&GPIO_GPS_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #ifdef GPSM_ACTIVE_ANTENNA
@@ -58,9 +62,10 @@ void POWER_init(void) {
     GPIO_configure(&GPIO_DIGITAL_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
     GPIO_configure(&GPIO_SENSORS_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
-#ifdef UHFM
+#ifdef MPMCM
     GPIO_configure(&GPIO_TCXO_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
-    GPIO_configure(&GPIO_RF_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+    GPIO_configure(&GPIO_ANALOG_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
+    GPIO_configure(&GPIO_TIC_POWER_ENABLE, GPIO_MODE_OUTPUT, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_NONE);
 #endif
 }
 
@@ -104,7 +109,7 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
         GPIO_write(&GPIO_MNTR_EN, 1);
         delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
-#if (defined SM) && (defined SM_AIN_ENABLE)
+#if (((defined SM) && (defined SM_AIN_ENABLE)) || (defined MPMCM))
         GPIO_write(&GPIO_ANALOG_POWER_ENABLE, 1);
         delay_ms = POWER_ON_DELAY_MS_ANALOG;
 #endif
@@ -112,6 +117,23 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
         analog_status = ANALOG_init();
         _POWER_stack_driver_error(analog_status, ANALOG_SUCCESS, ERROR_BASE_ANALOG, POWER_ERROR_DRIVER_ANALOG);
         break;
+#ifdef UHFM
+    case POWER_DOMAIN_TCXO:
+        // Turn TCXO on.
+        GPIO_write(&GPIO_TCXO_POWER_ENABLE, 1);
+        delay_ms = POWER_ON_DELAY_MS_TCXO;
+        break;
+    case POWER_DOMAIN_RADIO:
+        // Turn radio on.
+        GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
+        delay_ms = POWER_ON_DELAY_MS_RADIO;
+        // Init attached drivers.
+        s2lp_status = S2LP_init();
+        _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
+        rfe_status = RFE_init();
+        _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
+        break;
+#endif
 #ifdef SM
     case POWER_DOMAIN_DIGITAL:
         // Turn digital front-end on.
@@ -143,21 +165,14 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
         _POWER_stack_driver_error(gps_status, GPS_SUCCESS, ERROR_BASE_GPS, POWER_ERROR_DRIVER_GPS);
         break;
 #endif
-#ifdef UHFM
-    case POWER_DOMAIN_TCXO:
+#ifdef MPMCM
+    case POWER_DOMAIN_MCU_TCXO:
         // Turn TCXO on.
         GPIO_write(&GPIO_TCXO_POWER_ENABLE, 1);
-        delay_ms = POWER_ON_DELAY_MS_TCXO;
         break;
-    case POWER_DOMAIN_RADIO:
-        // Turn radio on.
-        GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
-        delay_ms = POWER_ON_DELAY_MS_RADIO;
-        // Init attached drivers.
-        s2lp_status = S2LP_init();
-        _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
-        rfe_status = RFE_init();
-        _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
+    case POWER_DOMAIN_TIC:
+        // Turn TIC interface on.
+        GPIO_write(&GPIO_TIC_POWER_ENABLE, 1);
         break;
 #endif
     default:
@@ -212,10 +227,25 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
 #if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined BPSM))
         GPIO_write(&GPIO_MNTR_EN, 0);
 #endif
-#if (defined SM) && (defined SM_AIN_ENABLE)
+#if (((defined SM) && (defined SM_AIN_ENABLE)) || (defined MPMCM))
         GPIO_write(&GPIO_ANALOG_POWER_ENABLE, 0);
 #endif
         break;
+#ifdef UHFM
+    case POWER_DOMAIN_TCXO:
+        // Turn TCXO off.
+        GPIO_write(&GPIO_TCXO_POWER_ENABLE, 0);
+        break;
+    case POWER_DOMAIN_RADIO:
+        // Release attached drivers.
+        s2lp_status = S2LP_de_init();
+        _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
+        rfe_status = RFE_de_init();
+        _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
+        // Turn radio off.
+        GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
+        break;
+#endif
 #ifdef SM
     case POWER_DOMAIN_DIGITAL:
         // Release attached drivers.
@@ -244,19 +274,14 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
         GPIO_write(&GPIO_GPS_POWER_ENABLE, 0);
         break;
 #endif
-#ifdef UHFM
-    case POWER_DOMAIN_TCXO:
+#ifdef MPMCM
+    case POWER_DOMAIN_MCU_TCXO:
         // Turn TCXO off.
         GPIO_write(&GPIO_TCXO_POWER_ENABLE, 0);
         break;
-    case POWER_DOMAIN_RADIO:
-        // Release attached drivers.
-        s2lp_status = S2LP_de_init();
-        _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
-        rfe_status = RFE_de_init();
-        _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
-        // Turn radio off.
-        GPIO_write(&GPIO_RF_POWER_ENABLE, 0);
+    case POWER_DOMAIN_TIC:
+        // Turn TIC interface off.
+        GPIO_write(&GPIO_TIC_POWER_ENABLE, 0);
         break;
 #endif
     default:

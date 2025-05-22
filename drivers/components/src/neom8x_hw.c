@@ -10,14 +10,15 @@
 #ifndef NEOM8X_DRIVER_DISABLE_FLAGS_FILE
 #include "neom8x_driver_flags.h"
 #endif
+
+#ifndef NEOM8X_DRIVER_DISABLE
+
 #include "error.h"
 #include "error_base.h"
 #include "lptim.h"
 #include "mcu_mapping.h"
 #include "nvic_priority.h"
 #include "usart.h"
-
-#ifndef NEOM8X_DRIVER_DISABLE
 
 /*** NEOM8X HW functions ***/
 

@@ -32,13 +32,25 @@ LMAC_status_t LMAC_HW_init(uint32_t baud_rate, LMAC_rx_irq_cb_t rx_irq_callback,
     NVM_status_t nvm_status = NVM_SUCCESS;
     LPUART_status_t lpuart_status = LPUART_SUCCESS;
     LPUART_configuration_t lpuart_config;
+#ifdef MPMCM
+    uint32_t tmp_u32 = 0;
+#endif
     // Read self address.
+#ifdef MPMCM
+    nvm_status = NVM_read_word(NVM_ADDRESS_SELF_ADDRESS, &tmp_u32);
+    (*self_address) = (UNA_node_address_t) tmp_u32;
+#else
     nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, self_address);
+#endif
     NVM_exit_error(LMAC_ERROR_BASE_NVM);
     // Init LPUART.
     lpuart_config.baud_rate = baud_rate;
     lpuart_config.nvic_priority = NVIC_PRIORITY_RS485;
+#ifdef MPMCM
+    lpuart_config.rxne_callback = rx_irq_callback;
+#else
     lpuart_config.rxne_irq_callback = rx_irq_callback;
+#endif
     lpuart_config.self_address = (*self_address);
     lpuart_config.rs485_mode = LPUART_RS485_MODE_ADDRESSED;
     lpuart_status = LPUART_init(&LPUART_GPIO_RS485, &lpuart_config);

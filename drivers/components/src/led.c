@@ -7,6 +7,7 @@
 
 #include "led.h"
 
+#include "dsm_flags.h"
 #include "error.h"
 #include "error_base.h"
 #include "gpio.h"
@@ -26,6 +27,7 @@
 
 /*** LED local structures ***/
 
+#ifndef MPMCM
 /*******************************************************************/
 typedef struct {
     LED_color_t color;
@@ -33,6 +35,7 @@ typedef struct {
     volatile uint32_t dimming_lut_index;
     volatile uint8_t single_blink_done;
 } LED_context_t;
+#endif
 
 #ifdef GPSM
 /*******************************************************************/
@@ -46,6 +49,7 @@ typedef enum {
 
 /*** LED local global variables ***/
 
+#ifndef MPMCM
 static const uint8_t LED_DIMMING_LUT[LED_DIMMING_LUT_SIZE] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -58,16 +62,20 @@ static const uint8_t LED_DIMMING_LUT[LED_DIMMING_LUT_SIZE] = {
     41, 43, 45, 47, 49, 52, 54, 57, 59, 62,
     65, 69, 72, 75, 79, 83, 87, 91, 95, 100
 };
+#endif
 
+#ifndef MPMCM
 static LED_context_t led_ctx = {
     .color = LED_COLOR_OFF,
     .dimming_lut_direction = 0,
     .dimming_lut_index = 0,
     .single_blink_done = 1
 };
+#endif
 
 /*** LED local functions ***/
 
+#ifndef MPMCM
 /*******************************************************************/
 static LED_status_t _LED_turn_off(void) {
     // Local variables.
@@ -93,7 +101,9 @@ static LED_status_t _LED_turn_off(void) {
 errors:
     return status;
 }
+#endif
 
+#ifndef MPMCM
 /*******************************************************************/
 static void _LED_dimming_timer_irq_callback(void) {
     // Local variables.
@@ -154,6 +164,7 @@ static void _LED_dimming_timer_irq_callback(void) {
         }
     }
 }
+#endif
 
 /*** LED functions ***/
 
@@ -162,12 +173,18 @@ LED_status_t LED_init(void) {
     // Local variables.
     LED_status_t status = LED_SUCCESS;
     TIM_status_t tim_status = TIM_SUCCESS;
+#ifndef MPMCM
     // Init context.
     led_ctx.color = LED_COLOR_OFF;
     led_ctx.dimming_lut_direction = 0;
     led_ctx.dimming_lut_index = 0;
     led_ctx.single_blink_done = 1;
+#endif
     // Init timers.
+#ifdef MPMCM
+    tim_status = TIM_OPM_init(TIM_INSTANCE_LED, (TIM_gpio_t*) &TIM_GPIO_LED);
+    TIM_exit_error(LED_ERROR_BASE_TIM_OPM);
+#else
 #ifdef GPSM
     tim_status = TIM_PWM_init(TIM_INSTANCE_LED_RG, (TIM_gpio_t*) &TIM_GPIO_LED_RG);
     TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
@@ -182,6 +199,7 @@ LED_status_t LED_init(void) {
     // Turn LED off.
     status = _LED_turn_off();
     if (status != LED_SUCCESS) goto errors;
+#endif
 errors:
     return status;
 }
@@ -190,12 +208,20 @@ errors:
 LED_status_t LED_de_init(void) {
     // Local variables.
     LED_status_t status = LED_SUCCESS;
-    LED_status_t led_status = LED_SUCCESS;
     TIM_status_t tim_status = TIM_SUCCESS;
+#ifndef MPMCM
+    LED_status_t led_status = LED_SUCCESS;
+#endif
+#ifndef MPMCM
     // Turn LED off.
     led_status = LED_stop_blink();
     LED_stack_error(ERROR_BASE_LED);
+#endif
     // Release timers.
+#ifdef MPMCM
+    tim_status = TIM_OPM_de_init(TIM_INSTANCE_LED, (TIM_gpio_t*) &TIM_GPIO_LED);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_OPM);
+#else
 #ifdef GPSM
     tim_status = TIM_PWM_de_init(TIM_INSTANCE_LED_RG, (TIM_gpio_t*) &TIM_GPIO_LED_RG);
     TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
@@ -207,9 +233,11 @@ LED_status_t LED_de_init(void) {
 #endif
     tim_status = TIM_STD_de_init(TIM_INSTANCE_LED_DIMMING);
     TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_DIMMING);
+#endif
     return status;
 }
 
+#ifndef MPMCM
 /*******************************************************************/
 LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
     // Local variables.
@@ -235,7 +263,9 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
 errors:
     return status;
 }
+#endif
 
+#ifndef MPMCM
 /*******************************************************************/
 LED_status_t LED_stop_blink(void) {
     // Local variables.
@@ -250,10 +280,56 @@ LED_status_t LED_stop_blink(void) {
 errors:
     return status;
 }
+#endif
+
+#ifdef MPMCM
+/*******************************************************************/
+LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color, uint8_t pulse_completion_event) {
+    // Local variables.
+    LED_status_t status = LED_SUCCESS;
+    TIM_status_t tim_status = TIM_SUCCESS;
+    uint8_t channels_mask = 0;
+    uint8_t idx = 0;
+    // Check parameters.
+    if (pulse_duration_ms == 0) {
+        status = LED_ERROR_NULL_DURATION;
+        goto errors;
+    }
+    if (color >= LED_COLOR_LAST) {
+        status = LED_ERROR_COLOR;
+        goto errors;
+    }
+    // Make pulse on required channels.
+    for (idx = 0; idx < TIM_CHANNEL_INDEX_LED_LAST; idx++) {
+        // Apply color mask.
+        channels_mask |= (((color >> idx) & 0x01) << ((TIM_GPIO_LED.list[idx])->channel));
+    }
+    // Make pulse on channel.
+    tim_status = TIM_OPM_make_pulse(TIM_INSTANCE_LED, channels_mask, 0, (pulse_duration_ms * MATH_POWER_10[6]), pulse_completion_event);
+    TIM_exit_error(LED_ERROR_BASE_TIM_OPM);
+errors:
+    return status;
+}
+#endif
 
 /*******************************************************************/
-uint8_t LED_is_single_blink_done(void) {
-    return (led_ctx.single_blink_done);
+LED_state_t LED_get_state(void) {
+    // Local variables.
+    LED_state_t state = LED_STATE_OFF;
+#ifdef MPMCM
+    TIM_status_t tim_status = TIM_SUCCESS;
+#endif
+    uint8_t pulse_is_done = 0;
+    // Get status.
+#ifdef MPMCM
+    tim_status = TIM_OPM_get_pulse_status(TIM_INSTANCE_LED, &pulse_is_done);
+    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_OPM);
+#else
+    pulse_is_done = led_ctx.single_blink_done;
+#endif
+    // Update state.
+    state = (pulse_is_done == 0) ? LED_STATE_ACTIVE : LED_STATE_OFF;
+    return state;
 }
 
 #endif /* DSM_RGB_LED */

@@ -9,7 +9,9 @@
 #define __ERROR_BASE_H__
 
 // Peripherals.
+#ifndef MPMCM
 #include "aes.h"
+#endif
 #include "iwdg.h"
 #include "lptim.h"
 #include "nvm.h"
@@ -27,16 +29,24 @@
 #include "neom8x.h"
 #include "s2lp.h"
 #include "sht3x.h"
+#include "tic.h"
 // Middleware.
 #include "analog.h"
 #include "digital.h"
 #include "cli.h"
 #include "gps.h"
+#include "measure.h"
 #include "node.h"
 #include "power.h"
 #include "rfe.h"
 // Sigfox.
 #include "sigfox_error.h"
+
+/*** ERROR local macros ***/
+
+#ifdef MPMCM
+#define AES_ERROR_BASE_LAST  ERROR_BASE_STEP
+#endif
 
 /*** ERROR structures ***/
 
@@ -63,12 +73,14 @@ typedef enum {
     ERROR_BASE_NEOM8N = (ERROR_BASE_LED + LED_ERROR_BASE_LAST),
     ERROR_BASE_S2LP = (ERROR_BASE_NEOM8N + NEOM8X_ERROR_BASE_LAST),
     ERROR_BASE_SHT30 = (ERROR_BASE_S2LP + S2LP_ERROR_BASE_LAST),
+    ERROR_BASE_TIC = (ERROR_BASE_SHT30 + SHT3X_ERROR_BASE_LAST),
     // Middleware.
-    ERROR_BASE_ANALOG = (ERROR_BASE_SHT30 + SHT3X_ERROR_BASE_LAST),
+    ERROR_BASE_ANALOG = (ERROR_BASE_TIC + TIC_ERROR_BASE_LAST),
     ERROR_BASE_CLI = (ERROR_BASE_ANALOG + ANALOG_ERROR_BASE_LAST),
     ERROR_BASE_DIGITAL = (ERROR_BASE_CLI + CLI_ERROR_BASE_LAST),
     ERROR_BASE_GPS = (ERROR_BASE_DIGITAL + DIGITAL_ERROR_BASE_LAST),
-    ERROR_BASE_NODE = (ERROR_BASE_GPS + GPS_ERROR_BASE_LAST),
+    ERROR_BASE_MEASURE = (ERROR_BASE_GPS + GPS_ERROR_BASE_LAST),
+    ERROR_BASE_NODE = (ERROR_BASE_MEASURE + MEASURE_ERROR_BASE_LAST),
     ERROR_BASE_POWER = (ERROR_BASE_NODE + NODE_ERROR_BASE_LAST),
     ERROR_BASE_RFE = (ERROR_BASE_POWER + POWER_ERROR_BASE_LAST),
     // Sigfox.

@@ -100,10 +100,21 @@ ANALOG_status_t ANALOG_init(void) {
     // Local variables.
     ANALOG_status_t status = ANALOG_SUCCESS;
     ADC_status_t adc_status = ADC_SUCCESS;
+#if ((defined MPMCM) && !(defined MPMCM_ANALOG_MEASURE_ENABLE))
+    ADC_SGL_configuration_t adc_config;
+#endif
     // Init context.
     analog_ctx.vmcu_mv = ANALOG_VMCU_MV_DEFAULT;
     // Init internal ADC.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+    adc_config.clock = ADC_CLOCK_SYSCLK;
+    adc_config.clock_prescaler = ADC_CLOCK_PRESCALER_NONE;
+    adc_status = ADC_SGL_init(ADC_INSTANCE_ANALOG, NULL, &adc_config);
+#endif
+#else
     adc_status = ADC_init(&ADC_GPIO);
+#endif
     ADC_exit_error(ANALOG_ERROR_BASE_ADC);
 errors:
     return status;
@@ -115,7 +126,13 @@ ANALOG_status_t ANALOG_de_init(void) {
     ANALOG_status_t status = ANALOG_SUCCESS;
     ADC_status_t adc_status = ADC_SUCCESS;
     // Release internal ADC.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+    adc_status = ADC_SGL_de_init(ADC_INSTANCE_ANALOG);
+#endif
+#else
     adc_status = ADC_de_init();
+#endif
     ADC_stack_error(ERROR_BASE_ANALOG + ANALOG_ERROR_BASE_ADC);
     return status;
 }
@@ -125,7 +142,9 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
     // Local variables.
     ANALOG_status_t status = ANALOG_SUCCESS;
     ADC_status_t adc_status = ADC_SUCCESS;
+#if (!(defined MPMCM) || ((defined MPMCM) && !(defined MPMCM_ANALOG_MEASURE_ENABLE)))
     int32_t adc_data_12bits = 0;
+#endif
 #if ((defined BCM) || (defined LVRM) || (defined DDRM) || (defined RRM))
     int64_t num = 0;
     int64_t den = 0;
@@ -143,20 +162,48 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
     switch (channel) {
     case ANALOG_CHANNEL_VMCU_MV:
         // MCU voltage.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+        adc_status = ADC_SGL_convert_channel(ADC_INSTANCE_ANALOG, ADC_CHANNEL_VBAT, &adc_data_12bits);
+#endif
+#else
         adc_status = ADC_convert_channel(ADC_CHANNEL_VREFINT, &adc_data_12bits);
+#endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Convert to mV.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+        adc_status = ADC_compute_vmcu(adc_data_12bits, analog_data);
+#else
+        (*analog_data) = ANALOG_VMCU_MV_DEFAULT;
+#endif
+#else
         adc_status = ADC_compute_vmcu(adc_data_12bits, ADC_get_vrefint_voltage_mv(), analog_data);
+#endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Update local value for temperature computation.
         analog_ctx.vmcu_mv = (*analog_data);
         break;
     case ANALOG_CHANNEL_TMCU_DEGREES:
         // MCU temperature.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+        adc_status = ADC_SGL_convert_channel(ADC_INSTANCE_ANALOG, ADC_CHANNEL_TEMPERATURE_SENSOR, &adc_data_12bits);
+#endif
+#else
         adc_status = ADC_convert_channel(ADC_CHANNEL_TEMPERATURE_SENSOR, &adc_data_12bits);
+#endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Convert to degrees.
+#ifdef MPMCM
+#ifndef MPMCM_ANALOG_MEASURE_ENABLE
+        adc_status = ADC_compute_tmcu(adc_data_12bits, analog_data);
+#else
+        (*analog_data) = ANALOG_TMCU_DEGREES_DEFAULT;
+#endif
+#else
         adc_status = ADC_compute_tmcu(analog_ctx.vmcu_mv, adc_data_12bits, analog_data);
+#endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         break;
 #ifdef BCM

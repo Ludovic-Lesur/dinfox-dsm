@@ -7,6 +7,8 @@
 
 #include "sm.h"
 
+#ifdef SM
+
 #include "analog.h"
 #include "digital.h"
 #include "dsm_flags.h"
@@ -18,8 +20,6 @@
 #include "sm_registers.h"
 #include "swreg.h"
 #include "una.h"
-
-#ifdef SM
 
 /*** SM local functions ***/
 

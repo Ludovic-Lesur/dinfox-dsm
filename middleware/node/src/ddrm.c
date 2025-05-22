@@ -7,6 +7,8 @@
 
 #include "ddrm.h"
 
+#ifdef DDRM
+
 #include "adc.h"
 #include "dsm_flags.h"
 #include "error.h"
@@ -15,8 +17,6 @@
 #include "node.h"
 #include "swreg.h"
 #include "una.h"
-
-#ifdef DDRM
 
 /*** DDRM local macros ***/
 

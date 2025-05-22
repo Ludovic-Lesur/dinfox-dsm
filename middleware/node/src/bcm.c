@@ -7,6 +7,8 @@
 
 #include "bcm.h"
 
+#ifdef BCM
+
 #include "analog.h"
 #include "bcm_registers.h"
 #include "dsm_flags.h"
@@ -16,8 +18,6 @@
 #include "swreg.h"
 #include "rtc.h"
 #include "una.h"
-
-#ifdef BCM
 
 /*** BCM local macros ***/
 

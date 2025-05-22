@@ -8,8 +8,14 @@
 #ifndef __SHT3X_DRIVER_FLAGS_H__
 #define __SHT3X_DRIVER_FLAGS_H__
 
+#ifndef MPMCM
 #include "i2c.h"
+#endif
 #include "lptim.h"
+
+#ifdef MPMCM
+#define I2C_ERROR_BASE_LAST                 0
+#endif
 
 /*** SHT3x driver compilation flags ***/
 

@@ -10,6 +10,10 @@
 
 /*** STM32L0xx registers compilation flags ***/
 
+#ifdef MPMCM
+#define STM32L0XX_REGISTERS_DISABLE
+#endif
+
 #if ((defined BCM) || (defined BPSM) || (defined DDRM) || ((defined LVRM) && (defined HW1_0)) || (defined RRM))
 #define STM32L0XX_REGISTERS_MCU_CATEGORY    1
 #endif

@@ -5,9 +5,10 @@
  *      Author: Ludo
  */
 
-#ifndef LED_H
-#define LED_H
+#ifndef __LED_H__
+#define __LED_H__
 
+#include "dsm_flags.h"
 #include "error.h"
 #include "tim.h"
 #include "types.h"
@@ -26,8 +27,9 @@ typedef enum {
     // Low level drivers errors.
     LED_ERROR_BASE_TIM_PWM = ERROR_BASE_STEP,
     LED_ERROR_BASE_TIM_DIMMING = (LED_ERROR_BASE_TIM_PWM + TIM_ERROR_BASE_LAST),
+    LED_ERROR_BASE_TIM_OPM = (LED_ERROR_BASE_TIM_DIMMING + TIM_ERROR_BASE_LAST),
     // Last base value.
-    LED_ERROR_BASE_LAST = (LED_ERROR_BASE_TIM_DIMMING + TIM_ERROR_BASE_LAST)
+    LED_ERROR_BASE_LAST = (LED_ERROR_BASE_TIM_OPM + TIM_ERROR_BASE_LAST)
 } LED_status_t;
 
 #ifdef DSM_RGB_LED
@@ -47,6 +49,16 @@ typedef enum {
     LED_COLOR_WHITE,
     LED_COLOR_LAST
 } LED_color_t;
+
+/*!******************************************************************
+ * \enum LED_state_t
+ * \brief LED states list.
+ *******************************************************************/
+typedef enum {
+    LED_STATE_OFF = 0,
+    LED_STATE_ACTIVE,
+    LED_STATE_LAST
+} LED_state_t;
 
 /*** LED functions ***/
 
@@ -68,6 +80,7 @@ LED_status_t LED_init(void);
  *******************************************************************/
 LED_status_t LED_de_init(void);
 
+#ifndef MPMCM
 /*!******************************************************************
  * \fn LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color)
  * \brief Start single blink.
@@ -77,7 +90,9 @@ LED_status_t LED_de_init(void);
  * \retval      Function execution status.
  *******************************************************************/
 LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color);
+#endif
 
+#ifndef MPMCM
 /*!******************************************************************
  * \fn LED_status_t LED_stop_blink(void)
  * \brief Stop LED blink.
@@ -86,16 +101,29 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
  * \retval      Function execution status.
  *******************************************************************/
 LED_status_t LED_stop_blink(void);
+#endif
+
+#ifdef MPMCM
+/*!******************************************************************
+ * \fn LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color)
+ * \brief Start single pulse.
+ * \param[in]   pulse_duration_ms: Pulse duration in ms.
+ * \param[in]   color: LED color.
+ * \param[in]   pulse_completion_event: Enable internal interrupt at the end of the pulse.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color, uint8_t pulse_completion_event);
+#endif
 
 /*!******************************************************************
- * \fn uint8_t LED_is_single_blink_done(void)
- * \brief Get blink status.
- * \param[in]   none
+ * \fn LED_state_t LED_get_state(void)
+ * \brief Read LED driver state.
  * \param[in]   none
  * \param[out]  none
- * \retval      1 of the LED blink is complete, 0 otherwise.
+ * \retval      LED driver state.
  *******************************************************************/
-uint8_t LED_is_single_blink_done(void);
+LED_state_t LED_get_state(void);
 
 /*******************************************************************/
 #define LED_exit_error(base) { ERROR_check_exit(led_status, LED_SUCCESS, base) }
@@ -108,4 +136,4 @@ uint8_t LED_is_single_blink_done(void);
 
 #endif /* DSM_RGB_LED */
 
-#endif /* LED_H */
+#endif /* __LED_H__ */

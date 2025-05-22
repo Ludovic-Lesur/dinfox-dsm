@@ -15,6 +15,7 @@
 #include "error.h"
 #include "gpsm.h"
 #include "lvrm.h"
+#include "mpmcm.h"
 #include "node.h"
 #include "nvm.h"
 #include "pwr.h"
@@ -72,6 +73,9 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
 #endif
 #ifdef RRM
     status = RRM_mtrg_callback();
+#endif
+#ifdef MPMCM
+    status = MPMCM_mtrg_callback();
 #endif
 #ifdef BCM
     status = BCM_mtrg_callback();

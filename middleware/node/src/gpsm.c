@@ -7,6 +7,8 @@
 
 #include "gpsm.h"
 
+#ifdef GPSM
+
 #include "analog.h"
 #include "dsm_flags.h"
 #include "error.h"
@@ -17,8 +19,6 @@
 #include "rtc.h"
 #include "swreg.h"
 #include "una.h"
-
-#ifdef GPSM
 
 /*** GPSM local structures ***/
 

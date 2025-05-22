@@ -12,7 +12,13 @@
 #ifndef SIGFOX_EP_DISABLE_FLAGS_FILE
 #include "sigfox_ep_flags.h"
 #endif
+#ifndef MPMCM
 #include "spi.h"
+#endif
+
+#ifdef MPMCM
+#define SPI_ERROR_BASE_LAST                 0
+#endif
 
 /*** S2LP driver compilation flags ***/
 
