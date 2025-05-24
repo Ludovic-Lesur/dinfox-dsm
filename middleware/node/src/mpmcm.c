@@ -18,54 +18,55 @@
 #include "mpmcm_registers.h"
 #include "node.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** MPMCM local functions ***/
 
 /*******************************************************************/
-static void _MPMCM_load_fixed_configuration(void) {
+static void _MPMCM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Analog measure enable flag.
 #ifdef MPMCM_ANALOG_MEASURE_ENABLE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_CONFIGURATION_0_MASK_AME);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_FLAGS_1_MASK_AME);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_CONFIGURATION_0_MASK_AME);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_FLAGS_1_MASK_AME);
 #endif
     // Linky TIC enable flag.
 #ifdef MPMCM_LINKY_TIC_ENABLE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_CONFIGURATION_0_MASK_LTE);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_FLAGS_1_MASK_LTE);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_CONFIGURATION_0_MASK_LTE);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_FLAGS_1_MASK_LTE);
 #endif
     // Linky TIC mode.
 #ifdef MPMCM_LINKY_TIC_MODE_HISTORIC
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_CONFIGURATION_0_MASK_LTM);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, MPMCM_REGISTER_FLAGS_1_MASK_LTM);
 #endif
 #ifdef MPMCM_LINKY_TIC_MODE_STANDARD
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_CONFIGURATION_0_MASK_LTM);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, MPMCM_REGISTER_FLAGS_1_MASK_LTM);
 #endif
     // Transformer attenuation ratio.
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MPMCM_TRANSFORMER_ATTEN, MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_ATTEN);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MPMCM_TRANSFORMER_ATTEN, MPMCM_REGISTER_FLAGS_1_MASK_TRANSFORMER_ATTEN);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
     // Current sensors attenuation ratio.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[0], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_ATTEN);
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[1], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_ATTEN);
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[2], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH3_CURRENT_SENSOR_ATTEN);
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[3], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH4_CURRENT_SENSOR_ATTEN);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[0], MPMCM_REGISTER_FLAGS_2_MASK_CH1_CURRENT_SENSOR_ATTEN);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[1], MPMCM_REGISTER_FLAGS_2_MASK_CH2_CURRENT_SENSOR_ATTEN);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[2], MPMCM_REGISTER_FLAGS_2_MASK_CH3_CURRENT_SENSOR_ATTEN);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MEASURE_SCT013_ATTEN[3], MPMCM_REGISTER_FLAGS_2_MASK_CH4_CURRENT_SENSOR_ATTEN);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_FLAGS_2, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _MPMCM_load_dynamic_configuration(void) {
+static void _MPMCM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = MPMCM_REGISTER_ADDRESS_CONFIGURATION_2; reg_addr < MPMCM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = MPMCM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < MPMCM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -77,21 +78,21 @@ static void _MPMCM_load_dynamic_configuration(void) {
 static void _MPMCM_set_analog_gains(void) {
     // Local variables.
     MEASURE_status_t measure_status = MEASURE_SUCCESS;
+    uint32_t reg_config_0 = 0;
+    uint32_t reg_config_1 = 0;
     uint32_t reg_config_2 = 0;
-    uint32_t reg_config_3 = 0;
-    uint32_t reg_config_4 = 0;
     uint16_t transformer_gain = 0;
     uint16_t current_sensors_gain[MEASURE_NUMBER_OF_ACI_CHANNELS];
     // Read registers.
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_config_2);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_3, &reg_config_3);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_4, &reg_config_4);
     // Compute gains.
-    transformer_gain = SWREG_read_field(reg_config_2, MPMCM_REGISTER_CONFIGURATION_2_MASK_TRANSFORMER_GAIN);
-    current_sensors_gain[0] = SWREG_read_field(reg_config_3, MPMCM_REGISTER_CONFIGURATION_3_MASK_CH1_CURRENT_SENSOR_GAIN);
-    current_sensors_gain[1] = SWREG_read_field(reg_config_3, MPMCM_REGISTER_CONFIGURATION_3_MASK_CH2_CURRENT_SENSOR_GAIN);
-    current_sensors_gain[2] = SWREG_read_field(reg_config_4, MPMCM_REGISTER_CONFIGURATION_4_MASK_CH3_CURRENT_SENSOR_GAIN);
-    current_sensors_gain[3] = SWREG_read_field(reg_config_4, MPMCM_REGISTER_CONFIGURATION_4_MASK_CH4_CURRENT_SENSOR_GAIN);
+    transformer_gain = SWREG_read_field(reg_config_0, MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN);
+    current_sensors_gain[0] = SWREG_read_field(reg_config_1, MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN);
+    current_sensors_gain[1] = SWREG_read_field(reg_config_1, MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN);
+    current_sensors_gain[2] = SWREG_read_field(reg_config_2, MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN);
+    current_sensors_gain[3] = SWREG_read_field(reg_config_2, MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN);
     // Set gains.
     measure_status = MEASURE_set_gains(transformer_gain, current_sensors_gain);
     MEASURE_stack_error(ERROR_BASE_MEASURE);
@@ -101,12 +102,12 @@ static void _MPMCM_set_analog_gains(void) {
 static void _MPMCM_set_tic_sampling_period(void) {
     // Local variables.
     TIC_status_t tic_status = TIC_SUCCESS;
-    uint32_t reg_config_5 = 0;
+    uint32_t reg_config_3 = 0;
     uint32_t period_seconds = 0;
     // Read register.
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_5, &reg_config_5);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_3, &reg_config_3);
     // Compute period.
-    period_seconds = UNA_get_seconds(SWREG_read_field(reg_config_5, MPMCM_REGISTER_CONFIGURATION_5_MASK_TIC_SAMPLING_PERIOD));
+    period_seconds = UNA_get_seconds(SWREG_read_field(reg_config_3, MPMCM_REGISTER_CONFIGURATION_3_MASK_TIC_SAMPLING_PERIOD));
     // Set period.
     tic_status = TIC_set_sampling_period(period_seconds);
     TIC_stack_error(ERROR_BASE_TIC);
@@ -123,28 +124,28 @@ NODE_status_t MPMCM_init_registers(void) {
     uint32_t reg_mask = 0;
     uint16_t mpmcm_sct013_gain[MEASURE_NUMBER_OF_ACI_CHANNELS] = MPMCM_SCT013_GAIN;
     // Transformer gain.
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MPMCM_TRANSFORMER_GAIN, MPMCM_REGISTER_CONFIGURATION_2_MASK_TRANSFORMER_GAIN);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) MPMCM_TRANSFORMER_GAIN, MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // Current sensors gain.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[0], MPMCM_REGISTER_CONFIGURATION_3_MASK_CH1_CURRENT_SENSOR_GAIN);
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[1], MPMCM_REGISTER_CONFIGURATION_3_MASK_CH2_CURRENT_SENSOR_GAIN);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_3, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[0], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[1], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[2], MPMCM_REGISTER_CONFIGURATION_4_MASK_CH3_CURRENT_SENSOR_GAIN);
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[3], MPMCM_REGISTER_CONFIGURATION_4_MASK_CH4_CURRENT_SENSOR_GAIN);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_4, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[2], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) mpmcm_sct013_gain[3], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
     // Linky TIC period.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) UNA_convert_seconds(TIC_SAMPLING_PERIOD_DEFAULT_SECONDS), MPMCM_REGISTER_CONFIGURATION_5_MASK_TIC_SAMPLING_PERIOD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_5, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, (uint32_t) UNA_convert_seconds(TIC_SAMPLING_PERIOD_DEFAULT_SECONDS), MPMCM_REGISTER_CONFIGURATION_3_MASK_TIC_SAMPLING_PERIOD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, MPMCM_REGISTER_ADDRESS_CONFIGURATION_3, reg_value, reg_mask);
 #endif
     // Load default values.
-    _MPMCM_load_fixed_configuration();
-    _MPMCM_load_dynamic_configuration();
+    _MPMCM_load_flags();
+    _MPMCM_load_configuration();
     _MPMCM_set_analog_gains();
     _MPMCM_set_tic_sampling_period();
     // Read init state.
@@ -216,9 +217,9 @@ NODE_status_t MPMCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
     // Check address.
     switch (reg_addr) {
+    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_0:
+    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_1:
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_2:
-    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_3:
-    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_4:
         // Check mask.
         if (reg_mask != 0) {
             // Store new value in NVM.
@@ -227,7 +228,7 @@ NODE_status_t MPMCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
             _MPMCM_set_analog_gains();
         }
         break;
-    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_5:
+    case MPMCM_REGISTER_ADDRESS_CONFIGURATION_3:
         // Check mask.
         if (reg_mask != 0) {
             // Store new value in NVM.

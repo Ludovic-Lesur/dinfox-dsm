@@ -18,6 +18,7 @@
 #include "power.h"
 #include "rtc.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** GPSM local structures ***/
@@ -49,32 +50,32 @@ static GPSM_context_t gpsm_ctx = {
 /*** GPSM local functions ***/
 
 /*******************************************************************/
-static void _GPSM_load_fixed_configuration(void) {
+static void _GPSM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Active antenna flag.
 #ifdef GPSM_ACTIVE_ANTENNA
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, GPSM_REGISTER_CONFIGURATION_0_MASK_AAF);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, GPSM_REGISTER_FLAGS_1_MASK_AAF);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, GPSM_REGISTER_CONFIGURATION_0_MASK_AAF);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, GPSM_REGISTER_FLAGS_1_MASK_AAF);
 #endif
     // Backup output control mode.
 #ifdef GPSM_BKEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, GPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, GPSM_REGISTER_FLAGS_1_MASK_BKFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, GPSM_REGISTER_CONFIGURATION_0_MASK_BKFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, GPSM_REGISTER_FLAGS_1_MASK_BKFH);
 #endif
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _GPSM_load_dynamic_configuration(void) {
+static void _GPSM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = GPSM_REGISTER_ADDRESS_CONFIGURATION_1; reg_addr < GPSM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = GPSM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < GPSM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -152,14 +153,14 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
     uint32_t reg_time_data_2_mask = 0;
     // Read status and timeout.
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_STATUS_1, &reg_status_1);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_timeout);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_timeout);
     // Reset status flag.
     SWREG_write_field(&reg_status_1, &reg_status_1_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_TFS);
     // Turn GPS on.
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
     // Perform time fix.
-    gps_status = GPS_get_time(&gps_time, SWREG_read_field(reg_timeout, GPSM_REGISTER_CONFIGURATION_1_MASK_TIME_TIMEOUT), &time_fix_duration, &gps_acquisition_status);
+    gps_status = GPS_get_time(&gps_time, SWREG_read_field(reg_timeout, GPSM_REGISTER_CONFIGURATION_0_MASK_TIME_TIMEOUT), &time_fix_duration, &gps_acquisition_status);
     GPS_exit_error(NODE_ERROR_BASE_GPS);
     // Check acquisition status.
     if (gps_acquisition_status == GPS_ACQUISITION_SUCCESS) {
@@ -210,14 +211,14 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
     uint32_t reg_geoloc_data_3_mask = 0;
     // Read status and timeout.
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_STATUS_1, &reg_status_1);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_timeout);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_timeout);
     // Reset status flag.
     SWREG_write_field(&reg_status_1, &reg_status_1_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_GFS);
     // Turn GPS on.
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
     // Perform time fix.
-    gps_status = GPS_get_position(&gps_position, SWREG_read_field(reg_timeout, GPSM_REGISTER_CONFIGURATION_1_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration, &gps_acquisition_status);
+    gps_status = GPS_get_position(&gps_position, SWREG_read_field(reg_timeout, GPSM_REGISTER_CONFIGURATION_0_MASK_GEOLOC_TIMEOUT), &geoloc_fix_duration, &gps_acquisition_status);
     GPS_exit_error(NODE_ERROR_BASE_GPS);
     // Check acquisition status.
     if (gps_acquisition_status == GPS_ACQUISITION_SUCCESS) {
@@ -263,12 +264,12 @@ static NODE_status_t _GPSM_tpen_callback(uint8_t state) {
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
     // Read registers.
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_timepulse_configuration_0);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_3, &reg_timepulse_configuration_1);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_timepulse_configuration_0);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_timepulse_configuration_1);
     // Set parameters.
     timepulse_config.active = state;
-    timepulse_config.frequency_hz = SWREG_read_field(reg_timepulse_configuration_0, GPSM_REGISTER_CONFIGURATION_2_MASK_TP_FREQUENCY);
-    timepulse_config.duty_cycle_percent = (uint8_t) SWREG_read_field(reg_timepulse_configuration_1, GPSM_REGISTER_CONFIGURATION_3_MASK_TP_DUTY_CYCLE);
+    timepulse_config.frequency_hz = SWREG_read_field(reg_timepulse_configuration_0, GPSM_REGISTER_CONFIGURATION_1_MASK_TP_FREQUENCY);
+    timepulse_config.duty_cycle_percent = (uint8_t) SWREG_read_field(reg_timepulse_configuration_1, GPSM_REGISTER_CONFIGURATION_2_MASK_TP_DUTY_CYCLE);
     // Set timepulse.
     gps_status = GPS_set_timepulse(&timepulse_config);
     GPS_exit_error(NODE_ERROR_BASE_GPS);
@@ -291,26 +292,26 @@ NODE_status_t GPSM_init_registers(void) {
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Timeouts.
-    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIME_TIMEOUT_SECONDS,   GPSM_REGISTER_CONFIGURATION_1_MASK_TIME_TIMEOUT);
-    SWREG_write_field(&reg_value, &reg_mask, GPSM_GEOLOC_TIMEOUT_SECONDS, GPSM_REGISTER_CONFIGURATION_1_MASK_GEOLOC_TIMEOUT);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIME_TIMEOUT_SECONDS,   GPSM_REGISTER_CONFIGURATION_0_MASK_TIME_TIMEOUT);
+    SWREG_write_field(&reg_value, &reg_mask, GPSM_GEOLOC_TIMEOUT_SECONDS, GPSM_REGISTER_CONFIGURATION_0_MASK_GEOLOC_TIMEOUT);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // Timepulse settings.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_FREQUENCY_HZ, GPSM_REGISTER_CONFIGURATION_2_MASK_TP_FREQUENCY);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_FREQUENCY_HZ, GPSM_REGISTER_CONFIGURATION_1_MASK_TP_FREQUENCY);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_DUTY_CYCLE, GPSM_REGISTER_CONFIGURATION_3_MASK_TP_DUTY_CYCLE);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_3, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, GPSM_TIMEPULSE_DUTY_CYCLE, GPSM_REGISTER_CONFIGURATION_2_MASK_TP_DUTY_CYCLE);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, GPSM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
 #endif
     // Init flags.
     gpsm_ctx.flags.all = 0;
     // Read init state.
     GPSM_update_register(GPSM_REGISTER_ADDRESS_STATUS_1);
     // Load default values.
-    _GPSM_load_fixed_configuration();
-    _GPSM_load_dynamic_configuration();
+    _GPSM_load_flags();
+    _GPSM_load_configuration();
     _GPSM_reset_analog_data();
     return status;
 }
@@ -364,14 +365,14 @@ NODE_status_t GPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     if (status != NODE_SUCCESS) goto errors;
     // Check address.
     switch (reg_addr) {
-    case GPSM_REGISTER_ADDRESS_CONFIGURATION_1:
+    case GPSM_REGISTER_ADDRESS_CONFIGURATION_0:
         // Store new value in NVM.
         if (reg_mask != 0) {
             NODE_write_nvm(reg_addr, reg_value);
         }
         break;
+    case GPSM_REGISTER_ADDRESS_CONFIGURATION_1:
     case GPSM_REGISTER_ADDRESS_CONFIGURATION_2:
-    case GPSM_REGISTER_ADDRESS_CONFIGURATION_3:
         // Store new value in NVM.
         if (reg_mask != 0) {
             NODE_write_nvm(reg_addr, reg_value);

@@ -16,6 +16,7 @@
 #include "ddrm_registers.h"
 #include "node.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** DDRM local macros ***/
@@ -39,26 +40,26 @@ static DDRM_context_t ddrm_ctx = {
 /*** DDRM local functions ***/
 
 /*******************************************************************/
-static void _DDRM_load_fixed_configuration(void) {
+static void _DDRM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // DC-DC control mode.
 #ifdef DDRM_DDEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, DDRM_REGISTER_CONFIGURATION_0_MASK_DDFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, DDRM_REGISTER_FLAGS_1_MASK_DDFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, DDRM_REGISTER_CONFIGURATION_0_MASK_DDFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, DDRM_REGISTER_FLAGS_1_MASK_DDFH);
 #endif
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, DDRM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _DDRM_load_dynamic_configuration(void) {
+static void _DDRM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = DDRM_REGISTER_ADDRESS_CONFIGURATION_1; reg_addr < DDRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = DDRM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < DDRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -87,12 +88,12 @@ NODE_status_t DDRM_init_registers(void) {
     ddrm_ctx.ddenst = UNA_BIT_ERROR;
 #ifdef DSM_NVM_FACTORY_RESET
     // IOUT offset.
-    SWREG_write_field(&reg_value, &reg_mask, 0, DDRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, 0, DDRM_REGISTER_CONFIGURATION_0_MASK_IOUT_OFFSET);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, DDRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
 #endif
     // Load default values.
-    _DDRM_load_fixed_configuration();
-    _DDRM_load_dynamic_configuration();
+    _DDRM_load_flags();
+    _DDRM_load_configuration();
     _DDRM_reset_analog_data();
     // Read init state.
     status = DDRM_update_register(DDRM_REGISTER_ADDRESS_STATUS_1);
@@ -141,7 +142,7 @@ NODE_status_t DDRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     if (status != NODE_SUCCESS) goto errors;
     // Check address.
     switch (reg_addr) {
-    case DDRM_REGISTER_ADDRESS_CONFIGURATION_1:
+    case DDRM_REGISTER_ADDRESS_CONFIGURATION_0:
         // Store new value in NVM.
         if (reg_mask != 0) {
             NODE_write_nvm(reg_addr, reg_value);

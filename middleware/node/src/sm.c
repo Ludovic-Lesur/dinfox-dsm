@@ -19,9 +19,52 @@
 #include "sht3x.h"
 #include "sm_registers.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** SM local functions ***/
+
+/*******************************************************************/
+static void _SM_load_flags(void) {
+    // Local variables.
+    uint32_t reg_value = 0;
+    uint32_t reg_mask = 0;
+#ifdef SM_AIN_ENABLE
+    // Analog inputs enable flag.
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_FLAGS_1_MASK_AINF);
+#else
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_FLAGS_1_MASK_AINF);
+#endif
+    // Digital inputs enable flag.
+#ifdef SM_DIO_ENABLE
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_FLAGS_1_MASK_DIOF);
+#else
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_FLAGS_1_MASK_DIOF);
+#endif
+    // Digital sensors enable flag.
+#ifdef SM_DIGITAL_SENSORS_ENABLE
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_FLAGS_1_MASK_DIGF);
+#else
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_FLAGS_1_MASK_DIGF);
+#endif
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
+    // Analog inputs type and gain.
+    reg_value = 0;
+    reg_mask = 0;
+    SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN0_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_FLAGS_2_MASK_AI0T);
+    SWREG_write_field(&reg_value, &reg_mask, SM_AIN0_GAIN, SM_REGISTER_FLAGS_2_MASK_AI0G);
+    SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN1_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_FLAGS_2_MASK_AI1T);
+    SWREG_write_field(&reg_value, &reg_mask, SM_AIN1_GAIN, SM_REGISTER_FLAGS_2_MASK_AI1G);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_FLAGS_2, reg_value, reg_mask);
+    // Analog inputs type and gain.
+    reg_value = 0;
+    reg_mask = 0;
+    SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN2_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_FLAGS_3_MASK_AI2T);
+    SWREG_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REGISTER_FLAGS_3_MASK_AI2G);
+    SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN2_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_FLAGS_3_MASK_AI3T);
+    SWREG_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REGISTER_FLAGS_3_MASK_AI3G);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_FLAGS_3, reg_value, reg_mask);
+}
 
 /*******************************************************************/
 static void _SM_reset_analog_data(void) {
@@ -52,16 +95,9 @@ NODE_status_t SM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     // Load default values.
+    _SM_load_flags();
     _SM_reset_analog_data();
     _SM_reset_digital_data();
-    // Read init state.
-    status = SM_update_register(SM_REGISTER_ADDRESS_CONFIGURATION_0);
-    if (status != NODE_SUCCESS) goto errors;
-    status = SM_update_register(SM_REGISTER_ADDRESS_CONFIGURATION_1);
-    if (status != NODE_SUCCESS) goto errors;
-    status = SM_update_register(SM_REGISTER_ADDRESS_CONFIGURATION_2);
-    if (status != NODE_SUCCESS) goto errors;
-errors:
     return status;
 }
 
@@ -69,51 +105,8 @@ errors:
 NODE_status_t SM_update_register(uint8_t reg_addr) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
-    // Check address.
-    switch (reg_addr) {
-    case SM_REGISTER_ADDRESS_CONFIGURATION_0:
-#ifdef SM_AIN_ENABLE
-        // Analog inputs enable flag.
-        SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_CONFIGURATION_0_MASK_AINF);
-#else
-        SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_CONFIGURATION_0_MASK_AINF);
-#endif
-        // Digital inputs enable flag.
-#ifdef SM_DIO_ENABLE
-        SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_CONFIGURATION_0_MASK_DIOF);
-#else
-        SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_CONFIGURATION_0_MASK_DIOF);
-#endif
-        // Digital sensors enable flag.
-#ifdef SM_DIGITAL_SENSORS_ENABLE
-        SWREG_write_field(&reg_value, &reg_mask, 0b1, SM_REGISTER_CONFIGURATION_0_MASK_DIGF);
-#else
-        SWREG_write_field(&reg_value, &reg_mask, 0b0, SM_REGISTER_CONFIGURATION_0_MASK_DIGF);
-#endif
-        break;
-#ifdef SM_AIN_ENABLE
-    case SM_REGISTER_ADDRESS_CONFIGURATION_1:
-        // Analog inputs type and gain.
-        SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN0_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_CONFIGURATION_1_MASK_AI0T);
-        SWREG_write_field(&reg_value, &reg_mask, SM_AIN0_GAIN, SM_REGISTER_CONFIGURATION_1_MASK_AI0G);
-        SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN1_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_CONFIGURATION_1_MASK_AI1T);
-        SWREG_write_field(&reg_value, &reg_mask, SM_AIN1_GAIN, SM_REGISTER_CONFIGURATION_1_MASK_AI1G);
-        break;
-    case SM_REGISTER_ADDRESS_CONFIGURATION_2:
-        // Analog inputs type and gain.
-        SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN2_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_CONFIGURATION_2_MASK_AI2T);
-        SWREG_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REGISTER_CONFIGURATION_2_MASK_AI2G);
-        SWREG_write_field(&reg_value, &reg_mask, ((SM_AIN2_GAIN_TYPE == ANALOG_GAIN_TYPE_AMPLIFICATION) ? 0b1 : 0b0), SM_REGISTER_CONFIGURATION_2_MASK_AI3T);
-        SWREG_write_field(&reg_value, &reg_mask, SM_AIN2_GAIN, SM_REGISTER_CONFIGURATION_2_MASK_AI3G);
-        break;
-#endif
-    default:
-        // Nothing to do for other registers.
-        break;
-    }
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_value, reg_mask);
+    // Neither configuration nor status register on SM node.
+    UNUSED(reg_addr);
     return status;
 }
 

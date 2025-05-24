@@ -10,8 +10,9 @@
 #include "adc.h"
 #include "bcm.h"
 #include "bpsm.h"
-#include "ddrm.h"
 #include "common_registers.h"
+#include "ddrm.h"
+#include "dsm_flags.h"
 #include "error.h"
 #include "gpsm.h"
 #include "lvrm.h"
@@ -100,6 +101,8 @@ NODE_status_t COMMON_init_registers(UNA_node_address_t self_address) {
     uint32_t reg_sw_version_0_mask = 0;
     uint32_t reg_sw_version_1 = 0;
     uint32_t reg_sw_version_1_mask = 0;
+    uint32_t reg_flags_0 = 0;
+    uint32_t reg_flags_0_mask = 0;
     uint32_t reg_status_0 = 0;
     uint32_t reg_status_0_mask = 0;
     // Node ID register.
@@ -121,7 +124,18 @@ NODE_status_t COMMON_init_registers(UNA_node_address_t self_address) {
     SWREG_write_field(&reg_sw_version_0, &reg_sw_version_0_mask, (uint32_t) GIT_DIRTY_FLAG, COMMON_REGISTER_SW_VERSION_0_MASK_DTYF);
     // SW version register 1.
     SWREG_write_field(&reg_sw_version_1, &reg_sw_version_1_mask, (uint32_t) GIT_COMMIT_ID, COMMON_REGISTER_SW_VERSION_1_MASK_COMMIT_ID);
-    // Reset flags registers.
+    // Flags register 0.
+#ifdef DSM_DEBUG
+    SWREG_write_field(&reg_flags_0, &reg_flags_0_mask, 0b1, COMMON_REGISTER_FLAGS_0_MASK_DF);
+#else
+    SWREG_write_field(&reg_flags_0, &reg_flags_0_mask, 0b0, COMMON_REGISTER_FLAGS_0_MASK_DF);
+#endif
+#ifdef DSM_NVM_FACTORY_RESET
+    SWREG_write_field(&reg_flags_0, &reg_flags_0_mask, 0b1, COMMON_REGISTER_FLAGS_0_MASK_NFRF);
+#else
+    SWREG_write_field(&reg_flags_0, &reg_flags_0_mask, 0b0, COMMON_REGISTER_FLAGS_0_MASK_NFRF);
+#endif
+    // Status register 0.
     SWREG_write_field(&reg_status_0, &reg_status_0_mask, (uint32_t) PWR_get_reset_flags(), COMMON_REGISTER_STATUS_0_MASK_RESET_FLAGS);
     SWREG_write_field(&reg_status_0, &reg_status_0_mask, 0b1, COMMON_REGISTER_STATUS_0_MASK_BF);
     // Write registers.
@@ -129,6 +143,7 @@ NODE_status_t COMMON_init_registers(UNA_node_address_t self_address) {
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_HW_VERSION, reg_hw_version, reg_hw_version_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_SW_VERSION_0, reg_sw_version_0, reg_sw_version_0_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_SW_VERSION_1, reg_sw_version_1, reg_sw_version_1_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_FLAGS_0, reg_flags_0, reg_flags_0_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_STATUS_0, reg_status_0, reg_status_0_mask);
     // Load default values.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_ANALOG_DATA_0, NODE_REGISTER_ERROR_VALUE[COMMON_REGISTER_ADDRESS_ANALOG_DATA_0], UNA_REGISTER_MASK_ALL);

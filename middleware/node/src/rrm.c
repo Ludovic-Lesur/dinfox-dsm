@@ -16,6 +16,7 @@
 #include "rrm_registers.h"
 #include "node.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** RRM local macros ***/
@@ -39,26 +40,26 @@ static RRM_context_t rrm_ctx = {
 /*** RRM local functions ***/
 
 /*******************************************************************/
-static void _RRM_load_fixed_configuration(void) {
+static void _RRM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Regulator control mode.
 #ifdef RRM_REN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, RRM_REGISTER_CONFIGURATION_0_MASK_RFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, RRM_REGISTER_FLAGS_1_MASK_RFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, RRM_REGISTER_CONFIGURATION_0_MASK_RFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, RRM_REGISTER_FLAGS_1_MASK_RFH);
 #endif
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _RRM_load_dynamic_configuration(void) {
+static void _RRM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = RRM_REGISTER_ADDRESS_CONFIGURATION_1; reg_addr < RRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = RRM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < RRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -83,12 +84,12 @@ NODE_status_t RRM_init_registers(void) {
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // IOUT offset.
-    SWREG_write_field(&reg_value, &reg_mask, 0, RRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, 0, RRM_REGISTER_CONFIGURATION_0_MASK_IOUT_OFFSET);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, RRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
 #endif
     // Load default values.
-    _RRM_load_fixed_configuration();
-    _RRM_load_dynamic_configuration();
+    _RRM_load_flags();
+    _RRM_load_configuration();
     _RRM_reset_analog_data();
     // Read init state.
     status = RRM_update_register(RRM_REGISTER_ADDRESS_STATUS_1);

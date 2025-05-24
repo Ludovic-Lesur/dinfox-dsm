@@ -16,6 +16,7 @@
 #include "lvrm_registers.h"
 #include "node.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** LVRM local macros ***/
@@ -39,32 +40,32 @@ static LVRM_context_t lvrm_ctx = {
 /*** LVRM local functions ***/
 
 /*******************************************************************/
-static void _LVRM_load_fixed_configuration(void) {
+static void _LVRM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // BMS flag.
 #ifdef LVRM_MODE_BMS
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, LVRM_REGISTER_CONFIGURATION_0_MASK_BMSF);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, LVRM_REGISTER_FLAGS_1_MASK_BMSF);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, LVRM_REGISTER_CONFIGURATION_0_MASK_BMSF);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, LVRM_REGISTER_FLAGS_1_MASK_BMSF);
 #endif
     // Relay control mode.
 #ifdef LVRM_RLST_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, LVRM_REGISTER_CONFIGURATION_0_MASK_RLFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, LVRM_REGISTER_FLAGS_1_MASK_RLFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, LVRM_REGISTER_CONFIGURATION_0_MASK_RLFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, LVRM_REGISTER_FLAGS_1_MASK_RLFH);
 #endif
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _LVRM_load_dynamic_configuration(void) {
+static void _LVRM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = LVRM_REGISTER_ADDRESS_CONFIGURATION_1; reg_addr < LVRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = LVRM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < LVRM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -90,18 +91,18 @@ NODE_status_t LVRM_init_registers(void) {
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // VBATT thresholds in BMS mode.
-    SWREG_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD);
-    SWREG_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD);
+    SWREG_write_field(&reg_value, &reg_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // IOUT offset.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, 0, LVRM_REGISTER_CONFIGURATION_2_MASK_IOUT_OFFSET);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, 0, LVRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
 #endif
     // Load defaults values.
-    _LVRM_load_fixed_configuration();
-    _LVRM_load_dynamic_configuration();
+    _LVRM_load_flags();
+    _LVRM_load_configuration();
     _LVRM_reset_analog_data();
     // Read init state.
     status = LVRM_update_register(LVRM_REGISTER_ADDRESS_STATUS_1);
@@ -150,8 +151,8 @@ NODE_status_t LVRM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     if (status != NODE_SUCCESS) goto errors;
     // Check address.
     switch (reg_addr) {
+    case LVRM_REGISTER_ADDRESS_CONFIGURATION_0:
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_1:
-    case LVRM_REGISTER_ADDRESS_CONFIGURATION_2:
         // Store new value in NVM.
         if (reg_mask != 0) {
             NODE_write_nvm(reg_addr, reg_value);
@@ -234,7 +235,7 @@ NODE_status_t LVRM_bms_process(void) {
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
     LOAD_status_t load_status = LOAD_SUCCESS;
-    uint32_t reg_config_1 = 0;
+    uint32_t reg_config_0 = 0;
     int32_t vbatt_mv = 0;
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
@@ -242,14 +243,14 @@ NODE_status_t LVRM_bms_process(void) {
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vbatt_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Read thresholds in registers.
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
     // Check battery voltage.
-    if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_LOW_THRESHOLD))) {
+    if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD))) {
         // Open relay.
         load_status = LOAD_set_output_state(0);
         LOAD_exit_error(NODE_ERROR_BASE_LOAD);
     }
-    if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_1, LVRM_REGISTER_CONFIGURATION_1_MASK_VBATT_HIGH_THRESHOLD))) {
+    if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD))) {
         // Close relay.
         load_status = LOAD_set_output_state(1);
         LOAD_exit_error(NODE_ERROR_BASE_LOAD);

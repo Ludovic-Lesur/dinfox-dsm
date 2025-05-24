@@ -17,6 +17,7 @@
 #include "node.h"
 #include "swreg.h"
 #include "rtc.h"
+#include "types.h"
 #include "una.h"
 
 /*** BCM local macros ***/
@@ -58,44 +59,44 @@ static BCM_context_t bcm_ctx = {
 /*** BCM local functions ***/
 
 /*******************************************************************/
-static void _BCM_load_fixed_configuration(void) {
+static void _BCM_load_flags(void) {
     // Local variables.
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     // Backup output control mode.
 #ifdef BCM_BKEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_CONFIGURATION_0_MASK_BKFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_BKFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_CONFIGURATION_0_MASK_BKFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_BKFH);
 #endif
     // Charge status mode.
 #ifdef BCM_CHST_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_CONFIGURATION_0_MASK_CSFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CSFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_CONFIGURATION_0_MASK_CSFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CSFH);
 #endif
     // Charge status LED control mode.
 #ifdef BCM_CHLD_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_CONFIGURATION_0_MASK_CLFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CLFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_CONFIGURATION_0_MASK_CLFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CLFH);
 #endif
     // Charge control mode.
 #ifdef BCM_CHEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_CONFIGURATION_0_MASK_CEFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CEFH);
 #else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_CONFIGURATION_0_MASK_CEFH);
+    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CEFH);
 #endif
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
+    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
 /*******************************************************************/
-static void _BCM_load_dynamic_configuration(void) {
+static void _BCM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
     // Load configuration registers from NVM.
-    for (reg_addr = BCM_REGISTER_ADDRESS_CONFIGURATION_1; reg_addr < BCM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
+    for (reg_addr = BCM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < BCM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
         // Read NVM.
         NODE_read_nvm(reg_addr, &reg_value);
         // Write register.
@@ -132,19 +133,19 @@ NODE_status_t BCM_init_registers(void) {
 #endif
 #ifdef DSM_NVM_FACTORY_RESET
     // CHEN toggle threshold and period.
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BCM_CHEN_TOGGLE_PERIOD_SECONDS), BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD);
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CHEN_VSRC_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BCM_CHEN_TOGGLE_PERIOD_SECONDS), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CHEN_VSRC_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
     // Low voltage detector thresholds.
     reg_value = 0;
     reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_LVF_LOW_THRESHOLD);
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_LVF_HIGH_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
 #endif
     // Load default values.
-    _BCM_load_fixed_configuration();
-    _BCM_load_dynamic_configuration();
+    _BCM_load_flags();
+    _BCM_load_configuration();
     _BCM_reset_analog_data();
     // Read init state.
     status = BCM_update_register(BCM_REGISTER_ADDRESS_STATUS_1);
@@ -223,8 +224,8 @@ NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     if (status != NODE_SUCCESS) goto errors;
     // Check address.
     switch (reg_addr) {
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_0:
     case BCM_REGISTER_ADDRESS_CONFIGURATION_1:
-    case BCM_REGISTER_ADDRESS_CONFIGURATION_2:
         // Store new value in NVM.
         if (reg_mask != 0) {
             status = NODE_write_nvm(reg_addr, reg_value);
@@ -322,7 +323,7 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    uint32_t reg_config_2 = 0;
+    uint32_t reg_config_1 = 0;
     int32_t vstr_mv = 0;
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
     // Check period.
@@ -342,12 +343,12 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 #endif
         // Read thresholds.
-        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_config_2);
+        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
         // Update LVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config_2, BCM_REGISTER_CONFIGURATION_2_MASK_LVF_LOW_THRESHOLD))) {
+        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config_1, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
             NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, BCM_REGISTER_STATUS_1_MASK_LVF, BCM_REGISTER_STATUS_1_MASK_LVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config_2, BCM_REGISTER_CONFIGURATION_2_MASK_LVF_HIGH_THRESHOLD))) {
+        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config_1, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
             NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, 0b0, BCM_REGISTER_STATUS_1_MASK_LVF);
         }
     }
@@ -362,24 +363,24 @@ NODE_status_t BCM_charge_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     uint32_t reg_control_1 = 0;
-    uint32_t reg_config_1 = 0;
+    uint32_t reg_config_0 = 0;
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
     // Read control mode, threshold and period.
     NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
+    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
     // Check mode.
     if (SWREG_read_field(reg_control_1, BCM_REGISTER_CONTROL_1_MASK_CHMD) != 0) goto errors;
     // Check toggle period.
     if (uptime_seconds >= bcm_ctx.chen_toggle_next_time_seconds) {
         // Update times.
         bcm_ctx.chen_toggle_previous_time_seconds = uptime_seconds;
-        bcm_ctx.chen_toggle_next_time_seconds = uptime_seconds + ((uint32_t) UNA_get_seconds(SWREG_read_field(reg_config_1, BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_TOGGLE_PERIOD)));
+        bcm_ctx.chen_toggle_next_time_seconds = uptime_seconds + ((uint32_t) UNA_get_seconds(SWREG_read_field(reg_config_0, BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD)));
         // Disable charge.
         LOAD_set_charge_state(0);
     }
     if (uptime_seconds >= (bcm_ctx.chen_toggle_previous_time_seconds + BCM_CHEN_TOGGLE_DURATION_SECONDS)) {
         // Check voltage.
-        if (bcm_ctx.vsrc_mv >= UNA_get_mv(SWREG_read_field(reg_config_1, BCM_REGISTER_CONFIGURATION_1_MASK_CHEN_THRESHOLD))) {
+        if (bcm_ctx.vsrc_mv >= UNA_get_mv(SWREG_read_field(reg_config_0, BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD))) {
             // Enable charge.
             LOAD_set_charge_state(1);
         }

@@ -25,6 +25,7 @@
 #include "sigfox_rc.h"
 #include "sigfox_types.h"
 #include "swreg.h"
+#include "types.h"
 #include "una.h"
 
 /*** UHFM local macros ***/
@@ -63,7 +64,7 @@ static UHFM_flags_t uhfm_flags = {
 }
 
 /*******************************************************************/
-static void _UHFM_load_dynamic_configuration(void) {
+static void _UHFM_load_configuration(void) {
     // Local variables.
     uint8_t reg_addr = 0;
     uint32_t reg_value = 0;
@@ -379,9 +380,8 @@ NODE_status_t UHFM_init_registers(void) {
     for (idx = 0; idx < SIGFOX_EP_KEY_SIZE_BYTES; idx++) {
         NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), &(sigfox_ep_tab[idx]));
     }
-    NODE_write_byte_array(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_EP_KEY_0, (uint8_t*) sigfox_ep_tab, SIGFOX_EP_KEY_SIZE_BYTES);
     // Load default values.
-    _UHFM_load_dynamic_configuration();
+    _UHFM_load_configuration();
     _UHFM_reset_analog_data();
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_0, UHFM_REGISTER_RADIO_TEST_0_DEFAULT_VALUE, UNA_REGISTER_MASK_ALL);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, UHFM_REGISTER_ADDRESS_RADIO_TEST_1, UHFM_REGISTER_RADIO_TEST_1_DEFAULT_VALUE, UNA_REGISTER_MASK_ALL);
