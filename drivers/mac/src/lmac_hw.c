@@ -46,11 +46,7 @@ LMAC_status_t LMAC_HW_init(uint32_t baud_rate, LMAC_rx_irq_cb_t rx_irq_callback,
     // Init LPUART.
     lpuart_config.baud_rate = baud_rate;
     lpuart_config.nvic_priority = NVIC_PRIORITY_RS485;
-#ifdef MPMCM
-    lpuart_config.rxne_callback = rx_irq_callback;
-#else
     lpuart_config.rxne_irq_callback = rx_irq_callback;
-#endif
     lpuart_config.self_address = (*self_address);
     lpuart_config.rs485_mode = LPUART_RS485_MODE_ADDRESSED;
     lpuart_status = LPUART_init(&LPUART_GPIO_RS485, &lpuart_config);
