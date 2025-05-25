@@ -119,7 +119,7 @@ static void _MPMCM_set_tic_sampling_period(void) {
 NODE_status_t MPMCM_init_registers(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef MPMCM_NVM_FACTORY_RESET
+#ifdef DSM_NVM_FACTORY_RESET
     uint32_t reg_value = 0;
     uint32_t reg_mask = 0;
     uint16_t mpmcm_sct013_gain[MEASURE_NUMBER_OF_ACI_CHANNELS] = MPMCM_SCT013_GAIN;

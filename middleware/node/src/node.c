@@ -242,8 +242,12 @@ NODE_status_t NODE_init(void) {
     LED_status_t led_status = LED_SUCCESS;
 #endif
 #ifdef MPMCM
+#ifdef MPMCM_ANALOG_MEASURE_ENABLE
     MEASURE_status_t measure_status = MEASURE_SUCCESS;
+#endif
+#ifdef MPMCM_LINKY_TIC_ENABLE
     TIC_status_t tic_status = TIC_SUCCESS;
+#endif
     uint32_t tmp_u32 = 0;
 #endif
     UNA_node_address_t self_address = 0;
@@ -314,10 +318,14 @@ NODE_status_t NODE_init(void) {
     LED_exit_error(NODE_ERROR_BASE_LED);
 #endif
 #ifdef MPMCM
+#ifdef MPMCM_ANALOG_MEASURE_ENABLE
     measure_status = MEASURE_init();
     MEASURE_stack_error(ERROR_BASE_MEASURE);
+#endif
+#ifdef MPMCM_LINKY_TIC_ENABLE
     tic_status = TIC_init();
     TIC_stack_error(ERROR_BASE_TIC);
+#endif
 #endif
 errors:
     return status;
@@ -328,14 +336,22 @@ NODE_status_t NODE_de_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
 #ifdef MPMCM
+#ifdef MPMCM_ANALOG_MEASURE_ENABLE
     MEASURE_status_t measure_status = MEASURE_SUCCESS;
+#endif
+#ifdef MPMCM_LINKY_TIC_ENABLE
     TIC_status_t tic_status = TIC_SUCCESS;
 #endif
+#endif
 #ifdef MPMCM
+#ifdef MPMCM_ANALOG_MEASURE_ENABLE
     measure_status = MEASURE_de_init();
     MEASURE_stack_error(ERROR_BASE_MEASURE);
+#endif
+#ifdef MPMCM_LINKY_TIC_ENABLE
     tic_status = TIC_de_init();
     TIC_stack_error(ERROR_BASE_TIC);
+#endif
 #endif
 #ifdef DSM_RGB_LED
     LED_status_t led_status = LED_SUCCESS;
