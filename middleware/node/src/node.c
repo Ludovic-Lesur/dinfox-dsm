@@ -12,6 +12,7 @@
 #include "bpsm.h"
 #include "bpsm_registers.h"
 #include "common.h"
+#include "common_registers.h"
 #include "ddrm.h"
 #include "ddrm_registers.h"
 #include "dsm_flags.h"
@@ -27,6 +28,7 @@
 #include "nvm.h"
 #include "nvm_address.h"
 #include "power.h"
+#include "pwr.h"
 #include "rtc.h"
 #include "rrm.h"
 #include "rrm_registers.h"
@@ -353,6 +355,11 @@ NODE_status_t NODE_process(void) {
 #if ((defined MPMCM) && (defined MPMCM_LINKY_TIC_ENABLE))
     TIC_status_t tic_status = TIC_SUCCESS;
 #endif
+    // Read RTRG bit.
+    if (SWREG_read_field(node_ctx.registers[COMMON_REGISTER_ADDRESS_CONTROL_0], COMMON_REGISTER_CONTROL_0_MASK_RTRG) != 0) {
+        // Reset MCU.
+        PWR_software_reset();
+    }
 #if ((defined LVRM) && (defined LVRM_MODE_BMS))
     status = LVRM_bms_process();
     NODE_stack_error(ERROR_BASE_NODE);

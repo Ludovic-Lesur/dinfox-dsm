@@ -190,14 +190,6 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Check address.
     switch (reg_addr) {
     case COMMON_REGISTER_ADDRESS_CONTROL_0:
-        // RTRG.
-        if ((reg_mask & COMMON_REGISTER_CONTROL_0_MASK_RTRG) != 0) {
-            // Read bit.
-            if ((SWREG_read_field(reg_value, COMMON_REGISTER_CONTROL_0_MASK_RTRG)) != 0) {
-                // Reset MCU.
-                PWR_software_reset();
-            }
-        }
         // MTRG.
         if ((reg_mask & COMMON_REGISTER_CONTROL_0_MASK_MTRG) != 0) {
             // Read bit.
@@ -220,6 +212,7 @@ NODE_status_t COMMON_check_register(uint8_t reg_addr, uint32_t reg_mask) {
                 PWR_clear_reset_flags();
             }
         }
+        // Note: RTRG bit is checked in the node process function in order to send the reply before resetting.
         break;
     default:
         // Nothing to do for other registers.

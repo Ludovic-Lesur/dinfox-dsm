@@ -152,11 +152,11 @@ int main(void) {
             NODE_stack_error(ERROR_BASE_NODE);
         }
 #endif
-        // Perform node tasks.
-        node_status = NODE_process();
-        NODE_stack_error(ERROR_BASE_NODE);
         // Perform command task.
         cli_status = CLI_process();
         CLI_stack_error(ERROR_BASE_CLI);
+        // Perform node tasks.
+        node_status = NODE_process();
+        NODE_stack_error(ERROR_BASE_NODE);
     }
 }
