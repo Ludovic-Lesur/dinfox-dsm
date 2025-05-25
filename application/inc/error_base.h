@@ -41,12 +41,8 @@
 #include "rfe.h"
 // Sigfox.
 #include "sigfox_error.h"
-
-/*** ERROR local macros ***/
-
-#ifdef MPMCM
-#define AES_ERROR_BASE_LAST  ERROR_BASE_STEP
-#endif
+// Applicative.
+#include "error_patch.h"
 
 /*** ERROR structures ***/
 
