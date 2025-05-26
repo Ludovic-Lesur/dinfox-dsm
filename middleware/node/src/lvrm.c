@@ -15,6 +15,7 @@
 #include "load.h"
 #include "lvrm_registers.h"
 #include "node.h"
+#include "rtc.h"
 #include "swreg.h"
 #include "types.h"
 #include "una.h"
@@ -23,18 +24,27 @@
 
 // Note: IOUT measurement uses LT6106, OPA187 and optionally TMUX7219 chips whose minimum operating voltage is 4.5V.
 #define LVRM_IOUT_MEASUREMENT_VCOM_MIN_MV   4500
+#ifdef LVRM_MODE_BMS
+#define LVRM_BMS_PROCESS_PERIOD_SECONDS     60
+#endif
 
 /*** LVRM local structures ***/
 
 /*******************************************************************/
 typedef struct {
     UNA_bit_representation_t rlstst;
+#ifdef LVRM_MODE_BMS
+    uint32_t bms_process_next_time_seconds;
+#endif
 } LVRM_context_t;
 
 /*** LVRM local global variables ***/
 
 static LVRM_context_t lvrm_ctx = {
-    .rlstst = UNA_BIT_ERROR
+    .rlstst = UNA_BIT_ERROR,
+#ifdef LVRM_MODE_BMS
+    .bms_process_next_time_seconds = 0,
+#endif
 };
 
 /*** LVRM local functions ***/
@@ -99,6 +109,11 @@ NODE_status_t LVRM_init_registers(void) {
     reg_mask = 0;
     SWREG_write_field(&reg_value, &reg_mask, 0, LVRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+#endif
+    // Init context.
+    lvrm_ctx.rlstst = UNA_BIT_ERROR;
+#ifdef LVRM_MODE_BMS
+    lvrm_ctx.bms_process_next_time_seconds = 0;
 #endif
     // Load defaults values.
     _LVRM_load_flags();
@@ -237,23 +252,29 @@ NODE_status_t LVRM_bms_process(void) {
     LOAD_status_t load_status = LOAD_SUCCESS;
     uint32_t reg_config_0 = 0;
     int32_t vbatt_mv = 0;
-    // Turn analog front-end on.
-    POWER_enable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
-    // Check battery voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vbatt_mv);
-    ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    // Read thresholds in registers.
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
-    // Check battery voltage.
-    if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD))) {
-        // Open relay.
-        load_status = LOAD_set_output_state(0);
-        LOAD_exit_error(NODE_ERROR_BASE_LOAD);
-    }
-    if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD))) {
-        // Close relay.
-        load_status = LOAD_set_output_state(1);
-        LOAD_exit_error(NODE_ERROR_BASE_LOAD);
+    uint32_t uptime_seconds = RTC_get_uptime_seconds();
+    // Check period.
+    if (uptime_seconds >= lvrm_ctx.bms_process_next_time_seconds) {
+        // Update next time.
+        lvrm_ctx.bms_process_next_time_seconds = uptime_seconds + LVRM_BMS_PROCESS_PERIOD_SECONDS;
+        // Turn analog front-end on.
+        POWER_enable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
+        // Check battery voltage.
+        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vbatt_mv);
+        ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+        // Read thresholds in registers.
+        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, LVRM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
+        // Check battery voltage.
+        if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD))) {
+            // Open relay.
+            load_status = LOAD_set_output_state(0);
+            LOAD_exit_error(NODE_ERROR_BASE_LOAD);
+        }
+        if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD))) {
+            // Close relay.
+            load_status = LOAD_set_output_state(1);
+            LOAD_exit_error(NODE_ERROR_BASE_LOAD);
+        }
     }
 errors:
     POWER_disable(POWER_REQUESTER_ID_LVRM, POWER_DOMAIN_ANALOG);
