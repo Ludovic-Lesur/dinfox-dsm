@@ -172,8 +172,9 @@ NODE_status_t RRM_mtrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    int32_t adc_data = 0;
-    int32_t vsh_mv = 0;
+    int32_t vin_mv = 0;
+    int32_t vout_mv = 0;
+    int32_t iout_ua = 0;
     uint32_t reg_analog_data_1 = 0;
     uint32_t reg_analog_data_1_mask = 0;
     uint32_t reg_analog_data_2 = 0;
@@ -181,21 +182,20 @@ NODE_status_t RRM_mtrg_callback(void) {
     // Reset result.
     _RRM_reset_analog_data();
     // Regulator input voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vin_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), RRM_REGISTER_ANALOG_DATA_1_MASK_VIN);
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(vin_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_VIN);
     // Regulator output voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VOUT_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VOUT_MV, &vout_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), RRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
-    vsh_mv = adc_data;
+    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(vout_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
     // Check IOUT measurement validity.
-    if (vsh_mv >= RRM_IOUT_MEASUREMENT_VSH_MIN_MV) {
+    if (vout_mv >= RRM_IOUT_MEASUREMENT_VSH_MIN_MV) {
         // Regulator output current.
-        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &adc_data);
+        analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &iout_ua);
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-        SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(adc_data), RRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
     }
+    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(iout_ua), RRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, RRM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
