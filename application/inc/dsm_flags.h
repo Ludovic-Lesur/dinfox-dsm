@@ -74,7 +74,6 @@
 #define SM_AIN_ENABLE
 #define SM_DIO_ENABLE
 #define SM_DIGITAL_SENSORS_ENABLE
-#ifdef SM_AIN_ENABLE
 #define SM_AIN0_GAIN_TYPE                   ANALOG_GAIN_TYPE_ATTENUATION
 #define SM_AIN0_GAIN                        1
 #define SM_AIN1_GAIN_TYPE                   ANALOG_GAIN_TYPE_ATTENUATION
@@ -83,7 +82,6 @@
 #define SM_AIN2_GAIN                        1
 #define SM_AIN3_GAIN_TYPE                   ANALOG_GAIN_TYPE_ATTENUATION
 #define SM_AIN3_GAIN                        1
-#endif
 #endif
 
 #ifdef RRM
