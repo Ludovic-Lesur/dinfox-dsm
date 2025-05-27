@@ -35,6 +35,7 @@ typedef struct {
     UNA_bit_representation_t bkenst;
     uint32_t lvf_update_next_time_seconds;
     int32_t istr_ua;
+    int32_t istr_max_ua;
 #ifndef BCM_CHEN_FORCED_HARDWARE
     int32_t vsrc_mv;
     uint32_t chen_toggle_previous_time_seconds;
@@ -48,6 +49,7 @@ static BCM_context_t bcm_ctx = {
     .chenst = UNA_BIT_ERROR,
     .bkenst = UNA_BIT_ERROR,
     .istr_ua = 0,
+    .istr_max_ua = 0,
     .lvf_update_next_time_seconds = 0,
 #ifndef BCM_CHEN_FORCED_HARDWARE
     .vsrc_mv = 0,
@@ -125,6 +127,7 @@ NODE_status_t BCM_init_registers(void) {
     bcm_ctx.chenst = UNA_BIT_ERROR;
     bcm_ctx.bkenst = UNA_BIT_ERROR;
     bcm_ctx.istr_ua = 0;
+    bcm_ctx.istr_max_ua = 0;
     bcm_ctx.lvf_update_next_time_seconds = 0;
 #ifndef BCM_CHEN_FORCED_HARDWARE
     bcm_ctx.vsrc_mv = 0;
@@ -310,7 +313,11 @@ NODE_status_t BCM_mtrg_callback(void) {
     // Battery charge current.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_ISTR_UA, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(adc_data), BCM_REGISTER_ANALOG_DATA_2_MASK_ISTR);
+    if (adc_data > bcm_ctx.istr_max_ua) {
+        bcm_ctx.istr_max_ua = adc_data;
+    }
+    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(bcm_ctx.istr_max_ua), BCM_REGISTER_ANALOG_DATA_2_MASK_ISTR);
+    bcm_ctx.istr_max_ua = 0;
     // Write registers.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
@@ -338,6 +345,10 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
         // Read charge current for status update.
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_ISTR_UA, &(bcm_ctx.istr_ua));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
+        // Update maximum value.
+        if (bcm_ctx.istr_ua > bcm_ctx.istr_max_ua) {
+            bcm_ctx.istr_max_ua = bcm_ctx.istr_ua;
+        }
 #ifndef BCM_CHEN_FORCED_HARDWARE
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &(bcm_ctx.vsrc_mv));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
