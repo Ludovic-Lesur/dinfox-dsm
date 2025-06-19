@@ -31,7 +31,7 @@
 typedef struct {
     UNA_bit_representation_t chenst;
     UNA_bit_representation_t bkenst;
-    uint32_t lvf_update_next_time_seconds;
+    uint32_t lvf_cvf_update_next_time_seconds;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     int32_t vsrc_mv;
     uint32_t chen_toggle_previous_time_seconds;
@@ -44,7 +44,7 @@ typedef struct {
 static BPSM_context_t bpsm_ctx = {
     .chenst = UNA_BIT_ERROR,
     .bkenst = UNA_BIT_ERROR,
-    .lvf_update_next_time_seconds = 0,
+    .lvf_cvf_update_next_time_seconds = 0,
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     .vsrc_mv = 0,
     .chen_toggle_previous_time_seconds = 0,
@@ -114,7 +114,7 @@ NODE_status_t BPSM_init_registers(void) {
     // Init context.
     bpsm_ctx.chenst = UNA_BIT_ERROR;
     bpsm_ctx.bkenst = UNA_BIT_ERROR;
-    bpsm_ctx.lvf_update_next_time_seconds = 0;
+    bpsm_ctx.lvf_cvf_update_next_time_seconds = 0;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     bpsm_ctx.vsrc_mv = 0;
     bpsm_ctx.chen_toggle_previous_time_seconds = 0;
@@ -131,6 +131,12 @@ NODE_status_t BPSM_init_registers(void) {
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_LVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD);
     SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_LVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD);
     NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
+    // Critical voltage detector thresholds.
+    reg_value = 0;
+    reg_mask = 0;
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_CVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD);
+    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BPSM_CVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD);
+    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
 #endif
     // Load default values.
     _BPSM_load_flags();
@@ -295,13 +301,13 @@ NODE_status_t BPSM_low_voltage_detector_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    uint32_t reg_config_1 = 0;
+    uint32_t reg_config = 0;
     int32_t vstr_mv = 0;
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
     // Check period.
-    if (uptime_seconds >= bpsm_ctx.lvf_update_next_time_seconds) {
+    if (uptime_seconds >= bpsm_ctx.lvf_cvf_update_next_time_seconds) {
         // Update next time.
-        bpsm_ctx.lvf_update_next_time_seconds = uptime_seconds + BPSM_LVF_UPDATE_PERIOD_SECONDS;
+        bpsm_ctx.lvf_cvf_update_next_time_seconds = uptime_seconds + BPSM_LVF_UPDATE_PERIOD_SECONDS;
         // Turn analog front-end on.
         POWER_enable(POWER_REQUESTER_ID_BPSM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
         // Read source voltage.
@@ -312,13 +318,22 @@ NODE_status_t BPSM_low_voltage_detector_process(void) {
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 #endif
         // Read thresholds.
-        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config_1);
+        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config);
         // Update LVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
+        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
             NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, BPSM_REGISTER_STATUS_1_MASK_LVF, BPSM_REGISTER_STATUS_1_MASK_LVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config_1, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
+        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
             NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, 0b0, BPSM_REGISTER_STATUS_1_MASK_LVF);
+        }
+        // Read thresholds.
+        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_config);
+        // Update LVF flag.
+        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD))) {
+            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, BPSM_REGISTER_STATUS_1_MASK_CVF, BPSM_REGISTER_STATUS_1_MASK_CVF);
+        }
+        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD))) {
+            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BPSM_REGISTER_ADDRESS_STATUS_1, 0b0, BPSM_REGISTER_STATUS_1_MASK_CVF);
         }
     }
 errors:

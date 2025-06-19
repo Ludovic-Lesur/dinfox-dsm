@@ -40,6 +40,8 @@
 #define BCM_CHEN_TOGGLE_PERIOD_SECONDS     3600
 #define BCM_LVF_LOW_THRESHOLD_MV           10000
 #define BCM_LVF_HIGH_THRESHOLD_MV          12000
+#define BCM_CVF_LOW_THRESHOLD_MV           8000
+#define BCM_CVF_HIGH_THRESHOLD_MV          10000
 #endif
 #endif
 
@@ -52,6 +54,8 @@
 #define BPSM_CHEN_TOGGLE_PERIOD_SECONDS     300
 #define BPSM_LVF_LOW_THRESHOLD_MV           1000
 #define BPSM_LVF_HIGH_THRESHOLD_MV          2000
+#define BPSM_CVF_LOW_THRESHOLD_MV           1000
+#define BPSM_CVF_HIGH_THRESHOLD_MV          2000
 #endif
 #endif
 
