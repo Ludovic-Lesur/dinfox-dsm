@@ -111,7 +111,17 @@ NODE_status_t RRM_update_register(uint8_t reg_addr) {
 #ifdef RRM_REN_FORCED_HARDWARE
         rrm_ctx.renst = UNA_BIT_FORCED_HARDWARE;
 #else
-        rrm_ctx.renst = (LOAD_get_output_state() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        switch (LOAD_get_output_state()) {
+        case 0:
+            rrm_ctx.renst = UNA_BIT_0;
+            break;
+        case 1:
+            rrm_ctx.renst = UNA_BIT_1;
+            break;
+        default:
+            rrm_ctx.renst = UNA_BIT_ERROR;
+            break;
+        }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) rrm_ctx.renst), RRM_REGISTER_STATUS_1_MASK_RENST);
         break;

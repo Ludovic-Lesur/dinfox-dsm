@@ -278,6 +278,23 @@ NODE_status_t NODE_init(void) {
     nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
 #endif
     NVM_exit_error(NODE_ERROR_BASE_NVM);
+#ifdef DSM_LOAD_CONTROL
+    LOAD_init();
+#endif
+#ifdef DSM_RGB_LED
+    led_status = LED_init();
+    LED_stack_error(ERROR_BASE_LED);
+#endif
+#ifdef MPMCM
+#ifdef MPMCM_ANALOG_MEASURE_ENABLE
+    measure_status = MEASURE_init();
+    MEASURE_stack_error(ERROR_BASE_MEASURE);
+#endif
+#ifdef MPMCM_LINKY_TIC_ENABLE
+    tic_status = TIC_init();
+    TIC_stack_error(ERROR_BASE_TIC);
+#endif
+#endif
     // Init common registers.
     status = COMMON_init_registers(self_address);
     if (status != NODE_SUCCESS) goto errors;
@@ -310,23 +327,6 @@ NODE_status_t NODE_init(void) {
     status = BCM_init_registers();
 #endif
     if (status != NODE_SUCCESS) goto errors;
-#ifdef DSM_LOAD_CONTROL
-    LOAD_init();
-#endif
-#ifdef DSM_RGB_LED
-    led_status = LED_init();
-    LED_exit_error(NODE_ERROR_BASE_LED);
-#endif
-#ifdef MPMCM
-#ifdef MPMCM_ANALOG_MEASURE_ENABLE
-    measure_status = MEASURE_init();
-    MEASURE_stack_error(ERROR_BASE_MEASURE);
-#endif
-#ifdef MPMCM_LINKY_TIC_ENABLE
-    tic_status = TIC_init();
-    TIC_stack_error(ERROR_BASE_TIC);
-#endif
-#endif
 errors:
     return status;
 }

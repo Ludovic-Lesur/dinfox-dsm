@@ -115,7 +115,17 @@ NODE_status_t DDRM_update_register(uint8_t reg_addr) {
 #ifdef DDRM_DDEN_FORCED_HARDWARE
         ddrm_ctx.ddenst = UNA_BIT_FORCED_HARDWARE;
 #else
-        ddrm_ctx.ddenst = (LOAD_get_output_state() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        switch (LOAD_get_output_state()) {
+        case 0:
+            ddrm_ctx.ddenst = UNA_BIT_0;
+            break;
+        case 1:
+            ddrm_ctx.ddenst = UNA_BIT_1;
+            break;
+        default:
+            ddrm_ctx.ddenst = UNA_BIT_ERROR;
+            break;
+        }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) ddrm_ctx.ddenst), DDRM_REGISTER_STATUS_1_MASK_DDENST);
         break;

@@ -177,7 +177,17 @@ NODE_status_t BPSM_update_register(uint8_t reg_addr) {
 #ifdef BPSM_BKEN_FORCED_HARDWARE
         bpsm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
 #else
-        bpsm_ctx.bkenst = (LOAD_get_output_state() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        switch (LOAD_get_output_state()) {
+        case 0:
+            bpsm_ctx.bkenst = UNA_BIT_0;
+            break;
+        case 1:
+            bpsm_ctx.bkenst = UNA_BIT_1;
+            break;
+        default:
+            bpsm_ctx.bkenst = UNA_BIT_ERROR;
+            break;
+        }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bpsm_ctx.bkenst), BPSM_REGISTER_STATUS_1_MASK_BKENST);
         break;

@@ -204,7 +204,17 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
 #ifdef BCM_BKEN_FORCED_HARDWARE
         bcm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
 #else
-        bcm_ctx.bkenst = (LOAD_get_output_state() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        switch (LOAD_get_output_state()) {
+        case 0:
+            bcm_ctx.bkenst = UNA_BIT_0;
+            break;
+        case 1:
+            bcm_ctx.bkenst = UNA_BIT_1;
+            break;
+        default:
+            bcm_ctx.bkenst = UNA_BIT_ERROR;
+            break;
+        }
 #endif
         SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bcm_ctx.bkenst), BCM_REGISTER_STATUS_1_MASK_BKENST);
         break;
