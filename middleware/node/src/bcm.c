@@ -25,8 +25,6 @@
 #define BCM_LVF_UPDATE_PERIOD_SECONDS       5
 #define BCM_CHEN_TOGGLE_DURATION_SECONDS    1
 
-#define BCM_CHRGST_ISTR_MIN_UA              10000
-
 /*** BCM local structures ***/
 
 /*******************************************************************/
@@ -180,7 +178,7 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
         chrgst1 = UNA_BIT_FORCED_HARDWARE;
 #else
         // Check current.
-        if (bcm_ctx.istr_ua > BCM_CHRGST_ISTR_MIN_UA) {
+        if (bcm_ctx.istr_ua > 0) {
             // Read pins.
             chrgst0 = ((LOAD_get_charge_status() >> 0) & 0x01);
             chrgst1 = ((LOAD_get_charge_status() >> 1) & 0x01);

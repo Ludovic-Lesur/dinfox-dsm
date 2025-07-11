@@ -58,6 +58,7 @@
 #define ANALOG_IOUT_OFFSET_UA               25000
 
 #define ANALOG_ISTR_VOLTAGE_GAIN            20
+#define ANALOG_ISTR_VOLTAGE_OFFSET_12BITS   15
 
 #define ANALOG_ERROR_VALUE                  0xFFFF
 
@@ -224,6 +225,8 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         // Supercap voltage.
         adc_status = ADC_convert_channel(ADC_CHANNEL_ISTR, &adc_data_12bits);
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
+        // Remove offset.
+        adc_data_12bits = ((adc_data_12bits < ANALOG_ISTR_VOLTAGE_OFFSET_12BITS) ? 0 : (adc_data_12bits - ANALOG_ISTR_VOLTAGE_OFFSET_12BITS));
         // Convert to uA.
         num = (int64_t) adc_data_12bits;
         num *= (int64_t) analog_ctx.vmcu_mv;
