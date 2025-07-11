@@ -58,7 +58,6 @@
 #define ANALOG_IOUT_OFFSET_UA               25000
 
 #define ANALOG_ISTR_VOLTAGE_GAIN            20
-#define ANALOG_ISTR_SHUNT_RESISTOR_MOHMS    50
 
 #define ANALOG_ERROR_VALUE                  0xFFFF
 
@@ -231,7 +230,7 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         num *= (int64_t) MATH_POWER_10[6];
         den = (int64_t) ADC_FULL_SCALE;
         den *= (int64_t) ANALOG_ISTR_VOLTAGE_GAIN;
-        den *= (int64_t) ANALOG_ISTR_SHUNT_RESISTOR_MOHMS;
+        den *= (int64_t) BCM_ISTR_SHUNT_RESISTOR_MOHMS;
         iout_ua = (den == 0) ? 0 : (int32_t) ((num) / (den));
         // Set result.
         (*analog_data) = iout_ua;
