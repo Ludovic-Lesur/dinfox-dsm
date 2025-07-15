@@ -87,6 +87,9 @@ static void _BCM_load_flags(void) {
 #else
     SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CEFH);
 #endif
+    // Shunt resistor value.
+    SWREG_write_field(&reg_value, &reg_mask, BCM_ISTR_SHUNT_RESISTOR_MOHMS, BCM_REGISTER_FLAGS_1_MASK_SHUNT_RESISTOR);
+    // Write register.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
 }
 
