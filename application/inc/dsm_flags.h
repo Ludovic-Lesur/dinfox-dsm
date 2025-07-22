@@ -128,7 +128,7 @@
 #if ((defined BCM) || (defined BPSM) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define DSM_LOAD_CONTROL
 #endif
-#if (((defined BCM) && !(defined BCM_CHLD_FORCED_HARDWARE)) || (defined LVRM) || (defined DDRM) || (defined RRM))
+#if (((defined BCM) && !(defined BCM_CHLD_FORCED_HARDWARE)) || ((defined LVRM) && !(defined LVRM_MODE_BMS)) || (defined DDRM) || (defined RRM))
 #define DSM_IOUT_INDICATOR
 #endif
 #if ((defined DSM_IOUT_INDICATOR) || (defined GPSM) || (defined MPMCM))
