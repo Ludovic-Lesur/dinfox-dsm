@@ -1,6 +1,6 @@
 r
-loadfile mpmcm_hw1-0/dsm.hex
-verifyfile mpmcm_hw1-0/dsm.hex
+loadfile mpmcm_hw1-0/mpmcm.hex
+verifyfile mpmcm_hw1-0/mpmcm.hex
 r
 g
 qc

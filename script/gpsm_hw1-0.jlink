@@ -1,6 +1,6 @@
 r
-loadfile gpsm_hw1-0/dsm.hex
-verifyfile gpsm_hw1-0/dsm.hex
+loadfile gpsm_hw1-0/gpsm.hex
+verifyfile gpsm_hw1-0/gpsm.hex
 r
 g
 qc

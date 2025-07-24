@@ -1,6 +1,6 @@
 r
-loadfile lvrm_hw1-0/dsm.hex
-verifyfile lvrm_hw1-0/dsm.hex
+loadfile lvrm_hw1-0/lvrm.hex
+verifyfile lvrm_hw1-0/lvrm.hex
 r
 g
 qc

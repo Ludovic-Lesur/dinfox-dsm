@@ -1,6 +1,6 @@
 r
-loadfile sm_hw1-0/dsm.hex
-verifyfile sm_hw1-0/dsm.hex
+loadfile sm_hw1-0/sm.hex
+verifyfile sm_hw1-0/sm.hex
 r
 g
 qc

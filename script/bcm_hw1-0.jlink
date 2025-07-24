@@ -1,6 +1,6 @@
 r
-loadfile bcm_hw1-0/dsm.hex
-verifyfile bcm_hw1-0/dsm.hex
+loadfile bcm_hw1-0/bcm.hex
+verifyfile bcm_hw1-0/bcm.hex
 r
 g
 qc
