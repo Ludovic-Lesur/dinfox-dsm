@@ -15,6 +15,8 @@
 
 #include "error_base.h"
 #include "sensors_hw.h"
+#include "sht3x.h"
+#include "types.h"
 
 /*** SHT3X HW functions ***/
 

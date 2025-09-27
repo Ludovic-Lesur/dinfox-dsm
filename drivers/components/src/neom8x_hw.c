@@ -17,7 +17,9 @@
 #include "error_base.h"
 #include "lptim.h"
 #include "mcu_mapping.h"
+#include "neom8x.h"
 #include "nvic_priority.h"
+#include "types.h"
 #include "usart.h"
 
 /*** NEOM8X HW functions ***/
