@@ -27,7 +27,7 @@
 /*** RRM local structures ***/
 
 /*******************************************************************/
-typedef union {
+typedef struct {
     UNA_bit_representation_t renst;
 } RRM_context_t;
 

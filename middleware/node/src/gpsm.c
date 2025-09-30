@@ -25,13 +25,13 @@
 
 /*******************************************************************/
 typedef union {
+    uint8_t all;
     struct {
         unsigned gps_power :1;
         unsigned tpen :1;
         unsigned pwmd :1;
         unsigned pwen :1;
-    };
-    uint8_t all;
+    } __attribute__((scalar_storage_order("big-endian"))) __attribute__((packed));
 } GPSM_flags_t;
 
 /*******************************************************************/

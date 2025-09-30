@@ -60,13 +60,13 @@ typedef struct {
 
 /*******************************************************************/
 typedef union {
-    struct {
-        unsigned fill_buffer0 :1;
-        unsigned irq_received :1;
-        unsigned frame_received :1;
-        unsigned decode_success :1;
-    };
     uint8_t all;
+    struct {
+        unsigned decode_success :1;
+        unsigned frame_received :1;
+        unsigned irq_received :1;
+        unsigned fill_buffer0 :1;
+    } __attribute__((scalar_storage_order("big-endian"))) __attribute__((packed));
 } TIC_flags_t;
 
 /*******************************************************************/

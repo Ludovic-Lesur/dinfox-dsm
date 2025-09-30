@@ -40,11 +40,11 @@
 
 /*******************************************************************/
 typedef union {
-    struct {
-        unsigned cwen :1;
-        unsigned rsen :1;
-    };
     uint8_t all;
+    struct {
+        unsigned rsen :1;
+        unsigned cwen :1;
+    } __attribute__((scalar_storage_order("big-endian"))) __attribute__((packed));
 } UHFM_flags_t;
 
 /*** UHFM local global variables ***/
