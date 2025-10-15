@@ -9,8 +9,9 @@
 
 #ifdef UHFM
 
-#include "analog.h"
 #include "aes.h"
+#include "analog.h"
+#include "at.h"
 #include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
@@ -214,6 +215,15 @@ errors:
 }
 
 /*******************************************************************/
+static void _UHFM_ttrg_downlink_completion_callback(sfx_u8 *dl_payload, sfx_u8 dl_payload_size, sfx_s16 rssi_dbm) {
+    AT_reply_add_string("+RX=");
+    AT_reply_add_byte_array(dl_payload, dl_payload_size, 0);
+    AT_reply_add_string(":");
+    AT_reply_add_integer((int32_t) rssi_dbm, STRING_FORMAT_DECIMAL, 0);
+    AT_send_reply();
+}
+
+/*******************************************************************/
 static NODE_status_t _UHFM_ttrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
@@ -233,6 +243,7 @@ static NODE_status_t _UHFM_ttrg_callback(void) {
     // Call test mode function.
     test_mode.test_mode_reference = (SIGFOX_EP_ADDON_RFP_API_test_mode_reference_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_RFP_TEST_MODE);
     test_mode.ul_bit_rate = (SIGFOX_ul_bit_rate_t) SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_BR);
+    test_mode.downlink_cplt_cb = &_UHFM_ttrg_downlink_completion_callback;
     sigfox_ep_addon_rfp_status = SIGFOX_EP_ADDON_RFP_API_test_mode(&test_mode);
     _UHFM_sigfox_ep_addon_rfp_exit_error();
 errors:
