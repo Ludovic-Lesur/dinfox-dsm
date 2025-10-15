@@ -22,7 +22,7 @@
 
 /*** RFE local macros ***/
 
-#define RFE_RX_GAIN_DB  12
+#define RFE_RX_GAIN_DB  15
 
 /*** RFE functions ***/
 
