@@ -140,7 +140,7 @@ NODE_status_t SM_mtrg_callback(void) {
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
     SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
-    int32_t tamb_degrees = 0;
+    int32_t tamb_tenth_degrees = 0;
     int32_t hamb_percent = 0;
     uint32_t reg_analog_data_3 = 0;
     uint32_t reg_analog_data_3_mask = 0;
@@ -196,9 +196,9 @@ NODE_status_t SM_mtrg_callback(void) {
     // Turn sensors on.
     POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
     // TAMB.
-    sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_degrees, &hamb_percent);
+    sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_tenth_degrees, &hamb_percent);
     SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
-    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, UNA_convert_degrees(tamb_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
+    SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, UNA_convert_tenth_degrees(tamb_tenth_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
     SWREG_write_field(&reg_analog_data_3, &reg_analog_data_3_mask, (uint32_t) hamb_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HAMB);
     // Write register.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, SM_REGISTER_ADDRESS_ANALOG_DATA_3, reg_analog_data_3, reg_analog_data_3_mask);

@@ -50,7 +50,7 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
     // MCU temperature.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_TMCU_DEGREES, &tmcu_degrees);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_0, &reg_analog_data_0_mask, (uint32_t) UNA_convert_degrees(tmcu_degrees), COMMON_REGISTER_ANALOG_DATA_0_MASK_TMCU);
+    SWREG_write_field(&reg_analog_data_0, &reg_analog_data_0_mask, (uint32_t) UNA_convert_tenth_degrees(tmcu_degrees * 10), COMMON_REGISTER_ANALOG_DATA_0_MASK_TMCU);
     // Write register.
     NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, COMMON_REGISTER_ADDRESS_ANALOG_DATA_0, reg_analog_data_0, reg_analog_data_0_mask);
     // Specific analog data.
