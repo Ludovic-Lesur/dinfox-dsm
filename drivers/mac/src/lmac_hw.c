@@ -43,6 +43,11 @@ LMAC_status_t LMAC_HW_init(uint32_t baud_rate, LMAC_rx_irq_cb_t rx_irq_callback,
     nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, self_address);
 #endif
     NVM_exit_error(LMAC_ERROR_BASE_NVM);
+    // Ensure address is in the allowed range.
+    if (((*self_address) <= UNA_NODE_ADDRESS_RS485_BRIDGE) || ((*self_address) >= UNA_NODE_ADDRESS_R4S8CR_START)) {
+        status = LMAC_ERROR_SELF_ADDRESS;
+        goto errors;
+    }
     // Init LPUART.
     lpuart_config.baud_rate = baud_rate;
     lpuart_config.nvic_priority = NVIC_PRIORITY_RS485;
