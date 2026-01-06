@@ -218,6 +218,7 @@ NODE_status_t BPSM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
     switch (reg_addr) {
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_0:
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
+    case BPSM_REGISTER_ADDRESS_CONFIGURATION_2:
         // Store new value in NVM.
         if (reg_mask != 0) {
             status = NODE_write_nvm(reg_addr, reg_value);
