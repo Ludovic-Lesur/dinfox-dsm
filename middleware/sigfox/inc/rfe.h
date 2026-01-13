@@ -18,6 +18,17 @@
 #include "sigfox_ep_flags.h"
 #endif
 
+/*** RFE macros ***/
+
+#ifdef HW1_0
+#define RFE_RF_FREQUENCY_HZ_MIN     S2LP_RF_FREQUENCY_HZ_MIN
+#define RFE_RF_FREQUENCY_HZ_MAX     S2LP_RF_FREQUENCY_HZ_MAX
+#endif
+#ifdef HW1_0
+#define RFE_RF_OUTPUT_POWER_MIN     S2LP_RF_OUTPUT_POWER_MIN
+#define RFE_RF_OUTPUT_POWER_MAX     S2LP_RF_OUTPUT_POWER_MAX
+#endif
+
 /*** RFE structures ***/
 
 /*!******************************************************************
