@@ -19,7 +19,9 @@
 
 /*** TIC macros ***/
 
-#define TIC_SAMPLING_PERIOD_DEFAULT_SECONDS     10
+#define TIC_SAMPLING_PERIOD_SECONDS_MIN         1
+#define TIC_SAMPLING_PERIOD_SECONDS_MAX         60
+#define TIC_SAMPLING_PERIOD_SECONDS_DEFAULT     10
 
 /*** TIC structures ***/
 

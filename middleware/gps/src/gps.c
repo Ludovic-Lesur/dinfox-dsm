@@ -17,6 +17,10 @@
 
 #ifdef GPSM
 
+/*** GPS local macros ***/
+
+#define GPS_ACQUISITION_LED_BLINK_DURATION_US   500000
+
 /*** GPS local structures ***/
 
 /*******************************************************************/
@@ -77,7 +81,7 @@ static GPS_status_t _GPS_perform_acquisition(NEOM8X_gps_data_t gps_data, NEOM8X_
             neom8x_status = NEOM8X_process();
             NEOM8X_exit_error(GPS_ERROR_BASE_NEOM8N);
             // Blink LED.
-            led_status = LED_start_single_blink(500, LED_COLOR_YELLOW);
+            led_status = LED_start_single_blink(GPS_ACQUISITION_LED_BLINK_DURATION_US, LED_COLOR_YELLOW);
             LED_exit_error(GPS_ERROR_BASE_LED);
         }
         // Check acquisition status.

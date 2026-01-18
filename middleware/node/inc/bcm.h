@@ -9,7 +9,7 @@
 #define __BCM_H__
 
 #include "bcm_registers.h"
-#include "node.h"
+#include "node_status.h"
 #include "una.h"
 
 #ifdef BCM
@@ -18,38 +18,64 @@
 
 #define NODE_BOARD_ID               UNA_BOARD_ID_BCM
 #define NODE_REGISTER_ADDRESS_LAST  BCM_REGISTER_ADDRESS_LAST
-#define NODE_REGISTER_ACCESS        BCM_REGISTER_ACCESS
-#define NODE_REGISTER_ERROR_VALUE   BCM_REGISTER_ERROR_VALUE
+#define NODE_REGISTER               BCM_REGISTER
+
+#define NODE_INIT                   BCM_init
+#define NODE_INIT_REGISTER          BCM_init_register
+#define NODE_SECURE_REGISTER        BCM_secure_register
+#define NODE_PROCESS_REGISTER       BCM_process_register
+#define NODE_REFRESH_REGISTER       BCM_refresh_register
+#define NODE_MTRG_CALLBACK          BCM_mtrg_callback
 
 /*** BCM functions ***/
 
 /*!******************************************************************
- * \fn NODE_status_t BCM_init_registers(void)
- * \brief Init BCM registers to their default value.
+ * \fn NODE_status_t BCM_init(void)
+ * \brief Init BCM driver.
  * \param[in]   none
  * \param[out]  none
  * \retval      Function execution status.
  *******************************************************************/
-NODE_status_t BCM_init_registers(void);
+NODE_status_t BCM_init(void);
 
 /*!******************************************************************
- * \fn NODE_status_t BCM_update_register(uint8_t reg_addr)
- * \brief Update BCM register.
+ * \fn void BCM_init_register(uint8_t reg_addr, uint32_t* reg_value)
+ * \brief Get BCM register initial value.
+ * \param[in]   reg_addr: Address of the register to initialize.
+ * \param[out]  reg_value: Pointer to the initial register value.
+ * \retval      none
+ *******************************************************************/
+void BCM_init_register(uint8_t reg_addr, uint32_t* reg_value);
+
+/*!******************************************************************
+ * \fn void BCM_refresh_register(uint8_t reg_addr)
+ * \brief Refresh BCM register.
  * \param[in]   reg_addr: Address of the register to update.
  * \param[out]  none
- * \retval      Function execution status.
+ * \retval      none
  *******************************************************************/
-NODE_status_t BCM_update_register(uint8_t reg_addr);
+void BCM_refresh_register(uint8_t reg_addr);
 
 /*!******************************************************************
- * \fn NODE_status_t BCM_check_register(uint8_t reg_addr)
- * \brief Check BCM register.
- * \param[in]   reg_addr: Address of the register to check.
- * \param[in]   reg_mask: Mask of the bits to check.
+ * \fn NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value)
+ * \brief Secure BCM register.
+ * \param[in]   reg_addr: Address of the register to secure.
+ * \param[in]   new_reg_value: Register value supposed to be written.
+ * \PARAM[out]  reg_mask: Pointer to the mask to secure.
+ * \param[out]  reg_value: Pointer to the secured register value.
+ * \retval      Function execution status.
+ *******************************************************************/
+NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value);
+
+/*!******************************************************************
+ * \fn NODE_status_t BCM_process_register(uint8_t reg_addr, uint32_t reg_mask)
+ * \brief Process BCM register.
+ * \param[in]   reg_addr: Address of the register to process.
+ * \param[in]   reg_mask: Mask of the bits to process.
  * \param[out]  none
  * \retval      Function execution status.
  *******************************************************************/
-NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask);
+NODE_status_t BCM_process_register(uint8_t reg_addr, uint32_t reg_mask);
 
 /*!******************************************************************
  * \fn NODE_status_t BCM_mtrg_callback(void)

@@ -239,12 +239,12 @@ LED_status_t LED_de_init(void) {
 
 #ifndef MPMCM
 /*******************************************************************/
-LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color) {
+LED_status_t LED_start_single_blink(uint32_t blink_duration_us, LED_color_t color) {
     // Local variables.
     LED_status_t status = LED_SUCCESS;
     TIM_status_t tim_status = TIM_SUCCESS;
     // Check parameters.
-    if (blink_duration_ms == 0) {
+    if (blink_duration_us == 0) {
         status = LED_ERROR_NULL_DURATION;
         goto errors;
     }
@@ -258,7 +258,7 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t colo
     led_ctx.dimming_lut_index = 0;
     led_ctx.single_blink_done = 0;
     // Start blink.
-    tim_status = TIM_STD_start(TIM_INSTANCE_LED_DIMMING, ((blink_duration_ms) / (LED_DIMMING_LUT_SIZE << 1)), TIM_UNIT_MS, &_LED_dimming_timer_irq_callback);
+    tim_status = TIM_STD_start(TIM_INSTANCE_LED_DIMMING, ((blink_duration_us) / (LED_DIMMING_LUT_SIZE << 1)), TIM_UNIT_US, &_LED_dimming_timer_irq_callback);
     TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
 errors:
     return status;
@@ -284,14 +284,14 @@ errors:
 
 #ifdef MPMCM
 /*******************************************************************/
-LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color, uint8_t pulse_completion_event) {
+LED_status_t LED_single_pulse(uint32_t pulse_duration_us, LED_color_t color, uint8_t pulse_completion_event) {
     // Local variables.
     LED_status_t status = LED_SUCCESS;
     TIM_status_t tim_status = TIM_SUCCESS;
     uint8_t channels_mask = 0;
     uint8_t idx = 0;
     // Check parameters.
-    if (pulse_duration_ms == 0) {
+    if (pulse_duration_us == 0) {
         status = LED_ERROR_NULL_DURATION;
         goto errors;
     }
@@ -305,7 +305,7 @@ LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color, uin
         channels_mask |= (((color >> idx) & 0x01) << ((TIM_GPIO_LED.list[idx])->channel));
     }
     // Make pulse on channel.
-    tim_status = TIM_OPM_make_pulse(TIM_INSTANCE_LED, channels_mask, 0, (pulse_duration_ms * MATH_POWER_10[6]), pulse_completion_event);
+    tim_status = TIM_OPM_make_pulse(TIM_INSTANCE_LED, channels_mask, 0, pulse_duration_us, pulse_completion_event);
     TIM_exit_error(LED_ERROR_BASE_TIM_OPM);
 errors:
     return status;

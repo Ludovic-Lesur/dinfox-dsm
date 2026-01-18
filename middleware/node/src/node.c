@@ -25,6 +25,8 @@
 #include "lvrm_registers.h"
 #include "mpmcm.h"
 #include "mpmcm_registers.h"
+#include "node_register.h"
+#include "node_status.h"
 #include "nvm.h"
 #include "nvm_address.h"
 #include "power.h"
@@ -53,7 +55,7 @@
 #define NODE_IOUT_INDICATOR_PERIOD_SECONDS      10
 #define NODE_IOUT_INDICATOR_RANGE               7
 #define NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV  6000
-#define NODE_IOUT_INDICATOR_BLINK_DURATION_MS   2000
+#define NODE_IOUT_INDICATOR_BLINK_DURATION_US   2000000
 #endif
 
 /*** NODE local structures ***/
@@ -66,9 +68,10 @@ typedef struct {
 } NODE_iout_indicator_t;
 #endif
 
+
 /*******************************************************************/
 typedef struct {
-    volatile uint32_t registers[NODE_REGISTER_ADDRESS_LAST];
+    uint8_t internal_access;
 #ifdef DSM_IOUT_INDICATOR
     uint32_t iout_measurements_next_time_seconds;
     uint32_t iout_indicator_next_time_seconds;
@@ -80,10 +83,10 @@ typedef struct {
 /*** NODE local global variables ***/
 
 #ifdef DSM_IOUT_INDICATOR
-static const NODE_iout_indicator_t LVRM_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE] = {
-    {0, LED_COLOR_GREEN},
-    {50000, LED_COLOR_YELLOW},
-    {500000, LED_COLOR_RED},
+static const NODE_iout_indicator_t NODE_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE] = {
+    {0,       LED_COLOR_GREEN},
+    {50000,   LED_COLOR_YELLOW},
+    {500000,  LED_COLOR_RED},
     {1000000, LED_COLOR_MAGENTA},
     {2000000, LED_COLOR_BLUE},
     {3000000, LED_COLOR_CYAN},
@@ -92,7 +95,7 @@ static const NODE_iout_indicator_t LVRM_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE
 #endif
 
 static NODE_context_t node_ctx = {
-    .registers = { [0 ... (NODE_REGISTER_ADDRESS_LAST - 1)] = 0x00000000 },
+    .internal_access = 0,
 #ifdef DSM_IOUT_INDICATOR
     .iout_measurements_next_time_seconds = 0,
     .iout_indicator_next_time_seconds = 0,
@@ -140,12 +143,12 @@ static NODE_status_t _NODE_iout_indicator(void) {
         do {
             idx--;
             // Get range and corresponding color.
-            led_color = LVRM_IOUT_INDICATOR[idx].led_color;
-            if (node_ctx.iout_ua >= LVRM_IOUT_INDICATOR[idx].threshold_ua) break;
+            led_color = NODE_IOUT_INDICATOR[idx].led_color;
+            if (node_ctx.iout_ua >= NODE_IOUT_INDICATOR[idx].threshold_ua) break;
         }
         while (idx > 0);
         // Blink LED.
-        led_status = LED_start_single_blink(NODE_IOUT_INDICATOR_BLINK_DURATION_MS, led_color);
+        led_status = LED_start_single_blink(NODE_IOUT_INDICATOR_BLINK_DURATION_US, led_color);
         LED_exit_error(NODE_ERROR_BASE_LED);
     }
 errors:
@@ -153,81 +156,82 @@ errors:
 }
 #endif
 
+#ifndef DSM_NVM_FACTORY_RESET
 /*******************************************************************/
-static NODE_status_t _NODE_update_register(uint8_t reg_addr) {
+static NODE_status_t _NODE_load_register(uint8_t reg_addr, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    // Update common registers.
-    status = COMMON_update_register(reg_addr);
-    if (status != NODE_SUCCESS) goto errors;
-    // Update specific registers.
-#ifdef LVRM
-    status = LVRM_update_register(reg_addr);
-#endif
-#ifdef BPSM
-    status = BPSM_update_register(reg_addr);
-#endif
-#ifdef DDRM
-    status = DDRM_update_register(reg_addr);
-#endif
-#ifdef UHFM
-    status = UHFM_update_register(reg_addr);
-#endif
-#ifdef GPSM
-    status = GPSM_update_register(reg_addr);
-#endif
-#ifdef SM
-    status = SM_update_register(reg_addr);
-#endif
-#ifdef RRM
-    status = RRM_update_register(reg_addr);
+    NVM_status_t nvm_status = NVM_SUCCESS;
+#ifndef MPMCM
+    uint8_t nvm_byte = 0;
+    uint8_t idx = 0;
 #endif
 #ifdef MPMCM
-    status = MPMCM_update_register(reg_addr);
+    nvm_status = NVM_read_word((NVM_ADDRESS_UNA_REGISTERS + reg_addr), reg_value);
+    NVM_exit_error(NODE_ERROR_BASE_NVM);
+#else
+    // Byte loop.
+    for (idx = 0; idx < UNA_REGISTER_SIZE_BYTES; idx++) {
+        // Read NVM.
+        nvm_status = NVM_read_byte((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2) + idx), &nvm_byte);
+        NVM_exit_error(NODE_ERROR_BASE_NVM);
+        // Update output value.
+        (*reg_value) |= ((uint32_t) nvm_byte) << (idx << 3);
+    }
 #endif
-#ifdef BCM
-    status = BCM_update_register(reg_addr);
+errors:
+    return status;
+}
+#endif
+
+/*******************************************************************/
+static NODE_status_t _NODE_store_register(uint8_t reg_addr) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+    NVM_status_t nvm_status = NVM_SUCCESS;
+#ifdef MPMCM
+    nvm_status = NVM_write_word((NVM_ADDRESS_UNA_REGISTERS + reg_addr), NODE_RAM_REGISTER[reg_addr]);
+    NVM_exit_error(NODE_ERROR_BASE_NVM);
+#else
+    uint8_t nvm_byte = 0;
+    uint8_t idx = 0;
+    // Byte loop.
+    for (idx = 0; idx < 4; idx++) {
+        // Compute byte.
+        nvm_byte = (uint8_t) (((NODE_RAM_REGISTER[reg_addr]) >> (idx << 3)) & 0x000000FF);
+        // Write NVM.
+        nvm_status = NVM_write_byte((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2) + idx), nvm_byte);
+        NVM_exit_error(NODE_ERROR_BASE_NVM);
+    }
 #endif
 errors:
     return status;
 }
 
 /*******************************************************************/
-static NODE_status_t _NODE_check_register(uint8_t reg_addr, uint32_t reg_mask) {
+static void _NODE_refresh_register(uint8_t reg_addr) {
+    // Refresh registers.
+    COMMON_refresh_register(reg_addr);
+    NODE_REFRESH_REGISTER(reg_addr);
+}
+
+/*******************************************************************/
+static NODE_status_t _NODE_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    // Check common registers.
-    status = COMMON_check_register(reg_addr, reg_mask);
-    if (status != NODE_SUCCESS) goto errors;
-    // Check specific registers.
-#ifdef LVRM
-    status = LVRM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef BPSM
-    status = BPSM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef DDRM
-    status = DDRM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef UHFM
-    status = UHFM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef GPSM
-    status = GPSM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef SM
-    status = SM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef RRM
-    status = RRM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef MPMCM
-    status = MPMCM_check_register(reg_addr, reg_mask);
-#endif
-#ifdef BCM
-    status = BCM_check_register(reg_addr, reg_mask);
-#endif
-errors:
+    // Secure register.
+    status = COMMON_secure_register(reg_addr, new_reg_value, reg_mask, reg_value);
+    status = NODE_SECURE_REGISTER(reg_addr, new_reg_value, reg_mask, reg_value);
+    return status;
+}
+
+/*******************************************************************/
+static NODE_status_t _NODE_process_register(uint8_t reg_addr, uint32_t reg_mask) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+    // Process register.
+    status = COMMON_process_register(reg_addr, reg_mask);
+    status = NODE_PROCESS_REGISTER(reg_addr, reg_mask);
     return status;
 }
 
@@ -237,7 +241,9 @@ errors:
 NODE_status_t NODE_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    NVM_status_t nvm_status = NVM_SUCCESS;
+    NODE_status_t node_status = NODE_SUCCESS;
+    uint32_t init_reg_value = 0;
+    uint8_t reg_addr = 0;
 #ifdef DSM_RGB_LED
     LED_status_t led_status = LED_SUCCESS;
 #endif
@@ -248,36 +254,42 @@ NODE_status_t NODE_init(void) {
 #ifdef MPMCM_LINKY_TIC_ENABLE
     TIC_status_t tic_status = TIC_SUCCESS;
 #endif
-    uint32_t tmp_u32 = 0;
 #endif
-    UNA_node_address_t self_address = 0;
-    uint8_t idx = 0;
     // Init context.
-    for (idx = 0; idx < NODE_REGISTER_ADDRESS_LAST; idx++) {
-        node_ctx.registers[idx] = NODE_REGISTER_ERROR_VALUE[idx];
-    }
+    node_ctx.internal_access = 1;
 #ifdef DSM_IOUT_INDICATOR
     node_ctx.iout_measurements_next_time_seconds = 0;
     node_ctx.iout_indicator_next_time_seconds = 0;
     node_ctx.input_voltage_mv = 0;
     node_ctx.iout_ua = 0;
 #endif
-#ifdef DSM_NVM_FACTORY_RESET
-#ifdef MPMCM
-    nvm_status = NVM_write_word(NVM_ADDRESS_SELF_ADDRESS, (uint32_t) DSM_NODE_ADDRESS);
-#else
-    nvm_status = NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, DSM_NODE_ADDRESS);
+    // Init registers.
+    for (reg_addr = 0; reg_addr < NODE_REGISTER_ADDRESS_LAST; reg_addr++) {
+        // Check reset value.
+        switch (NODE_REGISTER[reg_addr].reset_value) {
+        case UNA_REGISTER_RESET_VALUE_STATIC:
+            // Init to error value.
+            init_reg_value = NODE_REGISTER[reg_addr].error_value;
+            break;
+#ifndef DSM_NVM_FACTORY_RESET
+        case UNA_REGISTER_RESET_VALUE_NVM:
+            // Read NVM.
+            node_status = _NODE_load_register(reg_addr, &init_reg_value);
+            NODE_stack_error(ERROR_BASE_NODE);
+            break;
 #endif
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
-#endif
-    // Read self address in NVM.
-#ifdef MPMCM
-    nvm_status = NVM_read_word(NVM_ADDRESS_SELF_ADDRESS, &tmp_u32);
-    self_address = (UNA_node_address_t) tmp_u32;
-#else
-    nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
-#endif
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
+        default:
+            // Init to default value.
+            init_reg_value = 0x00000000;
+            break;
+        }
+        // Override with specific initialization value.
+        COMMON_init_register(reg_addr, &init_reg_value);
+        NODE_INIT_REGISTER(reg_addr, &init_reg_value);
+        // Write initial value.
+        node_status = NODE_write_register(reg_addr, init_reg_value, UNA_REGISTER_MASK_ALL);
+        NODE_stack_error(ERROR_BASE_NODE);
+    }
 #ifdef DSM_LOAD_CONTROL
     LOAD_init();
 #endif
@@ -295,39 +307,10 @@ NODE_status_t NODE_init(void) {
     TIC_stack_error(ERROR_BASE_TIC);
 #endif
 #endif
-    // Init common registers.
-    status = COMMON_init_registers(self_address);
-    if (status != NODE_SUCCESS) goto errors;
-    // Init specific registers.
-#ifdef LVRM
-    status = LVRM_init_registers();
-#endif
-#ifdef BPSM
-    status = BPSM_init_registers();
-#endif
-#ifdef DDRM
-    status = DDRM_init_registers();
-#endif
-#ifdef UHFM
-    status = UHFM_init_registers();
-#endif
-#ifdef GPSM
-    status = GPSM_init_registers();
-#endif
-#ifdef SM
-    status = SM_init_registers();
-#endif
-#ifdef RRM
-    status = RRM_init_registers();
-#endif
-#ifdef MPMCM
-    status = MPMCM_init_registers();
-#endif
-#ifdef BCM
-    status = BCM_init_registers();
-#endif
-    if (status != NODE_SUCCESS) goto errors;
-errors:
+    // Init specific driver.
+    status = NODE_INIT();
+    // Disable internal access.
+    node_ctx.internal_access = 0;
     return status;
 }
 
@@ -365,14 +348,14 @@ NODE_status_t NODE_de_init(void) {
 NODE_status_t NODE_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM))
+#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM) || (defined DSM_IOUT_INDICATOR))
     NODE_status_t node_status = NODE_SUCCESS;
 #endif
 #if ((defined MPMCM) && (defined MPMCM_LINKY_TIC_ENABLE))
     TIC_status_t tic_status = TIC_SUCCESS;
 #endif
     // Read RTRG bit.
-    if (SWREG_read_field(node_ctx.registers[COMMON_REGISTER_ADDRESS_CONTROL_0], COMMON_REGISTER_CONTROL_0_MASK_RTRG) != 0) {
+    if (SWREG_read_field(NODE_RAM_REGISTER[COMMON_REGISTER_ADDRESS_CONTROL_0], COMMON_REGISTER_CONTROL_0_MASK_RTRG) != 0) {
         // Reset MCU.
         PWR_software_reset();
     }
@@ -407,18 +390,17 @@ NODE_status_t NODE_process(void) {
         // Update next time.
         node_ctx.iout_measurements_next_time_seconds = RTC_get_uptime_seconds() + NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS;
         // Perform measurements.
-        status = _NODE_iout_measurement();
-        if (status != NODE_SUCCESS) goto errors;
+        node_status = _NODE_iout_measurement();
+        NODE_stack_error(ERROR_BASE_NODE);
     }
     // Check LED period.
     if (RTC_get_uptime_seconds() >= node_ctx.iout_indicator_next_time_seconds) {
         // Update next time.
         node_ctx.iout_indicator_next_time_seconds = RTC_get_uptime_seconds() + NODE_IOUT_INDICATOR_PERIOD_SECONDS;
         // Perform LED task.
-        status = _NODE_iout_indicator();
-        if (status != NODE_SUCCESS) goto errors;
+        node_status = _NODE_iout_indicator();
+        NODE_stack_error(ERROR_BASE_NODE);
     }
-errors:
 #endif
     return status;
 }
@@ -462,88 +444,46 @@ NODE_state_t NODE_get_state(void) {
 }
 
 /*******************************************************************/
-NODE_status_t NODE_write_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t reg_value, uint32_t reg_mask) {
+NODE_status_t NODE_write_register(uint8_t reg_addr, uint32_t reg_value, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
+    NODE_status_t node_status = NODE_SUCCESS;
+    uint32_t safe_reg_mask = reg_mask;
+    uint32_t safe_reg_value = reg_value;
     // Check address.
     if (reg_addr >= NODE_REGISTER_ADDRESS_LAST) {
         status = NODE_ERROR_REGISTER_ADDRESS;
         goto errors;
     }
     // Check access.
-    if ((request_source == NODE_REQUEST_SOURCE_EXTERNAL) && (NODE_REGISTER_ACCESS[reg_addr] == UNA_REGISTER_ACCESS_READ_ONLY)) {
+    if ((node_ctx.internal_access == 0) && (NODE_REGISTER[reg_addr].access == UNA_REGISTER_ACCESS_READ_ONLY)) {
         status = NODE_ERROR_REGISTER_READ_ONLY;
         goto errors;
     }
-    // Write register.
-    SWREG_modify_register((uint32_t*) &(node_ctx.registers[reg_addr]), reg_value, reg_mask);
+    // Check input value.
+    node_status = _NODE_secure_register(reg_addr, reg_value, &safe_reg_mask, &safe_reg_value);
+    NODE_stack_error(ERROR_BASE_NODE);
+    // Write RAM register.
+    SWREG_modify_register((uint32_t*) &(NODE_RAM_REGISTER[reg_addr]), reg_value, safe_reg_mask);
+    // Secure register.
+    node_status = _NODE_secure_register(reg_addr, NODE_RAM_REGISTER[reg_addr], &safe_reg_mask, &(NODE_RAM_REGISTER[reg_addr]));
+    NODE_stack_error(ERROR_BASE_NODE);
+    // Store value in NVM if needed.
+    if (NODE_REGISTER[reg_addr].reset_value == UNA_REGISTER_RESET_VALUE_NVM) {
+        node_status = _NODE_store_register(reg_addr);
+        NODE_stack_error(ERROR_BASE_NODE);
+    }
     // Check actions.
-    if (request_source == NODE_REQUEST_SOURCE_EXTERNAL) {
-        // Check control bits.
-        status = _NODE_check_register(reg_addr, reg_mask);
-        if (status != NODE_SUCCESS) goto errors;
+    if (node_ctx.internal_access == 0) {
+        node_status = _NODE_process_register(reg_addr, reg_mask);
+        NODE_stack_error(ERROR_BASE_NODE);
     }
 errors:
     return status;
 }
 
 /*******************************************************************/
-NODE_status_t NODE_write_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte) {
-    // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-    uint8_t idx = 0;
-    uint8_t shift = 0;
-    uint8_t reg_addr = 0;
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
-    // Check parameters.
-    if (data == NULL) {
-        status = NODE_ERROR_NULL_PARAMETER;
-        goto errors;
-    }
-    // Byte loop.
-    for (idx = 0; idx < data_size_byte; idx++) {
-        // Compute address, mask and value.
-        reg_addr = (reg_addr_base + (idx >> 2));
-        shift = ((idx % 4) << 3);
-        reg_mask = (0xFF << shift);
-        reg_value = (data[idx] << shift);
-        // Write register.
-        status = NODE_write_register(request_source, reg_addr, reg_value, reg_mask);
-        if (status != NODE_SUCCESS) goto errors;
-    }
-errors:
-    return status;
-}
-
-/*******************************************************************/
-NODE_status_t NODE_write_nvm(uint8_t reg_addr, uint32_t reg_value) {
-    // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-    NVM_status_t nvm_status = NVM_SUCCESS;
-#ifndef MPMCM
-    uint8_t nvm_byte = 0;
-    uint8_t idx = 0;
-#endif
-#ifdef MPMCM
-    nvm_status = NVM_write_word((NVM_ADDRESS_REGISTERS + reg_addr), reg_value);
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
-#else
-    // Byte loop.
-    for (idx = 0; idx < 4; idx++) {
-        // Compute byte.
-        nvm_byte = (uint8_t) (((reg_value) >> (idx << 3)) & 0x000000FF);
-        // Write NVM.
-        nvm_status = NVM_write_byte((NVM_ADDRESS_REGISTERS + (reg_addr << 2) + idx), nvm_byte);
-        NVM_exit_error(NODE_ERROR_BASE_NVM);
-    }
-#endif
-errors:
-    return status;
-}
-
-/*******************************************************************/
-NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t reg_addr, uint32_t* reg_value) {
+NODE_status_t NODE_read_register(uint8_t reg_addr, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     // Check parameters.
@@ -555,74 +495,9 @@ NODE_status_t NODE_read_register(NODE_request_source_t request_source, uint8_t r
         status = NODE_ERROR_NULL_PARAMETER;
         goto errors;
     }
-    // Check update type.
-    if (request_source == NODE_REQUEST_SOURCE_EXTERNAL) {
-        // Update register.
-        status = _NODE_update_register(reg_addr);
-        if (status != NODE_SUCCESS) goto errors;
-    }
+    _NODE_refresh_register(reg_addr);
     // Read register.
-    (*reg_value) = node_ctx.registers[reg_addr];
-errors:
-    return status;
-}
-
-/*******************************************************************/
-NODE_status_t NODE_read_byte_array(NODE_request_source_t request_source, uint8_t reg_addr_base, uint8_t* data, uint8_t data_size_byte) {
-    // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-    uint8_t idx = 0;
-    uint8_t reg_addr = 0;
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
-    // Check parameters.
-    if (data == NULL) {
-        status = NODE_ERROR_NULL_PARAMETER;
-        goto errors;
-    }
-    // Byte loop.
-    for (idx = 0; idx < data_size_byte; idx++) {
-        // Compute address and mask.
-        reg_addr = (reg_addr_base + (idx >> 2));
-        reg_mask = (0xFF << ((idx % 4) << 3));
-        // Read byte.
-        status = NODE_read_register(request_source, reg_addr, &reg_value);
-        // Fill data.
-        data[idx] = (uint8_t) SWREG_read_field(reg_value, reg_mask);
-    }
-errors:
-    return status;
-}
-
-/*******************************************************************/
-NODE_status_t NODE_read_nvm(uint8_t reg_addr, uint32_t* reg_value) {
-    // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-    NVM_status_t nvm_status = NVM_SUCCESS;
-#ifndef MPMCM
-    uint8_t nvm_byte = 0;
-    uint8_t idx = 0;
-#endif
-    // Check parameter.
-    if (reg_value == NULL) {
-        status = NODE_ERROR_NULL_PARAMETER;
-        goto errors;
-    }
-    // Reset output value.
-    (*reg_value) = 0;
-#ifdef MPMCM
-    nvm_status = NVM_read_word((NVM_ADDRESS_REGISTERS + reg_addr), reg_value);
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
-#else
-    // Byte loop.
-    for (idx = 0; idx < 4; idx++) {
-        // Read NVM.
-        nvm_status = NVM_read_byte((NVM_ADDRESS_REGISTERS + (reg_addr << 2) + idx), &nvm_byte);
-        NVM_exit_error(NODE_ERROR_BASE_NVM);
-        // Update output value.
-        (*reg_value) |= ((uint32_t) nvm_byte) << (idx << 3);
-    }
-#endif
+    (*reg_value) = NODE_RAM_REGISTER[reg_addr];
 errors:
     return status;
 }

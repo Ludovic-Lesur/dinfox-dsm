@@ -39,16 +39,21 @@
 
 #if ((defined BPSM) || (defined SM))
 #define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x00
+#define STM32L0XX_DRIVERS_TIM_PRECISION                 0
 #endif
 #if ((defined BCM) || (defined LVRM) || (defined DDRM) || (defined RRM))
 #define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x09
+#define STM32L0XX_DRIVERS_TIM_PRECISION                 0
 #endif
 #ifdef GPSM
 #define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x0D
+#define STM32L0XX_DRIVERS_TIM_PRECISION                 1
 #endif
 #ifdef UHFM
-#define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x06
+#define STM32L0XX_DRIVERS_TIM_MODE_MASK                 0x02
+#define STM32L0XX_DRIVERS_TIM_PRECISION                 0
 #endif
+
 
 //#define STM32L0XX_DRIVERS_USART_DISABLE_TX_0
 

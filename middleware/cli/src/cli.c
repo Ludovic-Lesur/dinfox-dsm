@@ -54,7 +54,7 @@ static AT_status_t _CLI_write_register_callback(uint8_t reg_addr, uint32_t reg_v
     AT_status_t status = AT_SUCCESS;
     NODE_status_t node_status = NODE_SUCCESS;
     // Write register.
-    node_status = NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, reg_value, reg_mask);
+    node_status = NODE_write_register(reg_addr, reg_value, reg_mask);
     _CLI_check_driver_status(node_status, NODE_SUCCESS, ERROR_BASE_NODE);
 errors:
     return status;
@@ -66,7 +66,7 @@ static AT_status_t _CLI_read_register_callback(uint8_t reg_addr, uint32_t* reg_v
     AT_status_t status = AT_SUCCESS;
     NODE_status_t node_status = NODE_SUCCESS;
     // Write register.
-    node_status = NODE_read_register(NODE_REQUEST_SOURCE_EXTERNAL, reg_addr, reg_value);
+    node_status = NODE_read_register(reg_addr, reg_value);
     _CLI_check_driver_status(node_status, NODE_SUCCESS, ERROR_BASE_NODE);
 errors:
     return status;

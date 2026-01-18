@@ -65,7 +65,7 @@
 
 #define MEASURE_POWER_FACTOR_MULTIPLIER                 100
 
-#define MEASURE_LED_PULSE_DURATION_MS                   50
+#define MEASURE_LED_PULSE_DURATION_US                   50000
 #define MEASURE_LED_PULSE_PERIOD_SECONDS                5
 
 #define MEASURE_ANALOG_POWER_DELAY_SECONDS              1
@@ -323,6 +323,7 @@ static MEASURE_status_t _MEASURE_start(void) {
     DMA_configuration_t dma_config;
     RCC_pll_configuration_t pll_config;
     ADC_SQC_configuration_t adc_config;
+    uint32_t dma_register_address = 0;
     // Turn TCXO on.
     POWER_enable(POWER_REQUESTER_ID_MEASURE, POWER_DOMAIN_MCU_TCXO, LPTIM_DELAY_MODE_SLEEP);
     // Switch to PLL (system clock 120MHz, ADC clock 8MHz).
@@ -336,12 +337,14 @@ static MEASURE_status_t _MEASURE_start(void) {
     rcc_status = RCC_switch_to_pll(&pll_config);
     RCC_exit_error(MEASURE_ERROR_BASE_RCC);
     // Init DMA for master ADC.
+    adc_status = ADC_get_master_dr_register_address(ADC_INSTANCE_ACX_SAMPLING, &dma_register_address);
+    ADC_exit_error(MEASURE_ERROR_BASE_ADC);
     dma_config.direction = DMA_DIRECTION_PERIPHERAL_TO_MEMORY;
     dma_config.flags.all = 0;
     dma_config.flags.memory_increment = 1;
     dma_config.memory_address = (uint32_t) &(measure_sampling.acv[measure_sampling.acv_write_idx].data);
     dma_config.memory_data_size = DMA_DATA_SIZE_16_BITS;
-    dma_config.peripheral_address = ADC_get_master_dr_register_address(ADC_INSTANCE_ACX_SAMPLING);
+    dma_config.peripheral_address = dma_register_address;
     dma_config.peripheral_data_size = DMA_DATA_SIZE_16_BITS;
     dma_config.number_of_data = MEASURE_PERIOD_ADCX_DMA_BUFFER_SIZE;
     dma_config.priority = DMA_PRIORITY_VERY_HIGH;
@@ -351,8 +354,10 @@ static MEASURE_status_t _MEASURE_start(void) {
     dma_status = DMA_init(DMA_INSTANCE_ACV_SAMPLING, DMA_CHANNEL_ACV_SAMPLING, &dma_config);
     DMA_exit_error(MEASURE_ERROR_BASE_DMA_ACV_SAMPLING);
     // Init DMA for slave ADC.
+    adc_status = ADC_get_slave_dr_register_address(ADC_INSTANCE_ACX_SAMPLING, &dma_register_address);
+    ADC_exit_error(MEASURE_ERROR_BASE_ADC);
     dma_config.memory_address = (uint32_t) &(measure_sampling.aci[measure_sampling.aci_write_idx].data);
-    dma_config.peripheral_address = ADC_get_slave_dr_register_address(ADC_INSTANCE_ACX_SAMPLING);
+    dma_config.peripheral_address = dma_register_address;
     dma_config.number_of_data = MEASURE_PERIOD_ADCX_DMA_BUFFER_SIZE;
     dma_config.priority = DMA_PRIORITY_HIGH;
     dma_config.request_id = DMAMUX_PERIPHERAL_REQUEST_ADC2;
@@ -360,12 +365,14 @@ static MEASURE_status_t _MEASURE_start(void) {
     dma_status = DMA_init(DMA_INSTANCE_ACI_SAMPLING, DMA_CHANNEL_ACI_SAMPLING, &dma_config);
     DMA_exit_error(MEASURE_ERROR_BASE_DMA_ACI_SAMPLING);
     // Init DMA for ACV frequency capture timer.
+    tim_status = TIM_get_ccr_register_address(TIM_INSTANCE_ACV_FREQUENCY, TIM_CHANNEL_ACV_FREQUENCY, &dma_register_address);
+    TIM_exit_error(MEASURE_ERROR_BASE_TIM_ACV_FREQUENCY);
     dma_config.flags.all = 0;
     dma_config.flags.memory_increment = 1;
     dma_config.flags.circular_mode = 1;
     dma_config.memory_address = (uint32_t) &(measure_sampling.acv_frequency_capture);
     dma_config.memory_data_size = DMA_DATA_SIZE_32_BITS;
-    dma_config.peripheral_address = TIM_get_ccr_register_address(TIM_INSTANCE_ACV_FREQUENCY, TIM_CHANNEL_ACV_FREQUENCY);
+    dma_config.peripheral_address = dma_register_address;
     dma_config.peripheral_data_size = DMA_DATA_SIZE_32_BITS;
     dma_config.number_of_data = MEASURE_PERIOD_TIMX_DMA_BUFFER_SIZE;
     dma_config.priority = DMA_PRIORITY_MEDIUM;
@@ -704,7 +711,7 @@ static void _MEASURE_led_single_pulse(void) {
             pulse_completion_event = 1;
         }
         // Perform LED pulse.
-        led_status = LED_single_pulse(MEASURE_LED_PULSE_DURATION_MS, led_color, pulse_completion_event);
+        led_status = LED_single_pulse(MEASURE_LED_PULSE_DURATION_US, led_color, pulse_completion_event);
         LED_stack_error(ERROR_BASE_MEASURE + MEASURE_ERROR_BASE_LED);
     }
 }

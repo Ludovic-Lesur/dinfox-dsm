@@ -35,7 +35,7 @@
 #define TIC_SAMPLING_PERIOD_MIN_SECONDS     (TIC_SAMPLING_TIMEOUT_SECONDS + 1)
 #define TIC_SAMPLING_PERIOD_MAX_SECONDS     3600
 
-#define TIC_LED_PULSE_DURATION_MS           50
+#define TIC_LED_PULSE_DURATION_US           50000
 
 #ifdef MPMCM_LINKY_TIC_MODE_HISTORIC
 #define TIC_BAUD_RATE                       1200
@@ -283,7 +283,7 @@ TIC_status_t TIC_init(void) {
     uint32_t idx = 0;
     // Init context.
     tic_ctx.state = TIC_STATE_OFF;
-    tic_ctx.sampling_period_seconds = TIC_SAMPLING_PERIOD_DEFAULT_SECONDS;
+    tic_ctx.sampling_period_seconds = TIC_SAMPLING_PERIOD_SECONDS_DEFAULT;
     tic_ctx.second_count_sampling = 0;
     tic_ctx.second_count_period = 0;
     tic_ctx.second_count_inactivity = (TIC_INACTIVITY_TIMER_SECONDS << 1);
@@ -398,7 +398,7 @@ TIC_status_t TIC_process(void) {
             else {
                 led_color = (tic_ctx.flags.decode_success) ? LED_COLOR_GREEN : LED_COLOR_YELLOW;
             }
-            led_status = LED_single_pulse(TIC_LED_PULSE_DURATION_MS, led_color, 1);
+            led_status = LED_single_pulse(TIC_LED_PULSE_DURATION_US, led_color, 1);
             LED_exit_error(TIC_ERROR_BASE_LED);
 #endif
         }

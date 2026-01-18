@@ -14,7 +14,8 @@
 #include "dsm_flags.h"
 #include "error.h"
 #include "load.h"
-#include "node.h"
+#include "node_register.h"
+#include "node_status.h"
 #include "swreg.h"
 #include "rtc.h"
 #include "types.h"
@@ -22,8 +23,37 @@
 
 /*** BCM local macros ***/
 
-#define BCM_LVF_UPDATE_PERIOD_SECONDS       5
-#define BCM_CHEN_TOGGLE_DURATION_SECONDS    1
+#define BCM_CHEN_THRESHOLD_MV_MAX               60000
+#define BCM_CHEN_THRESHOLD_MV_DEFAULT           16000
+
+#define BCM_CHEN_TOGGLE_PERIOD_SECONDS_MIN      60
+#define BCM_CHEN_TOGGLE_PERIOD_SECONDS_MAX      86400
+#define BCM_CHEN_TOGGLE_PERIOD_SECONDS_DEFAULT  3600
+#define BCM_CHEN_TOGGLE_DURATION_SECONDS        1
+
+#define BCM_XVF_THRESHOLD_MV_MAX                60000
+#define BCM_XVF_UPDATE_PERIOD_SECONDS           5
+
+#ifdef BCM_BKEN_FORCED_HARDWARE
+#define BCM_FLAG_BKFH                           0b1
+#else
+#define BCM_FLAG_BKFH                           0b0
+#endif
+#ifdef BCM_CHST_FORCED_HARDWARE
+#define BCM_FLAG_CSFH                           0b1
+#else
+#define BCM_FLAG_CSFH                           0b0
+#endif
+#ifdef BCM_CHLD_FORCED_HARDWARE
+#define BCM_FLAG_CLFH                           0b1
+#else
+#define BCM_FLAG_CLFH                           0b0
+#endif
+#ifdef BCM_CHEN_FORCED_HARDWARE
+#define BCM_FLAG_CEFH                           0b1
+#else
+#define BCM_FLAG_CEFH                           0b0
+#endif
 
 /*** BCM local structures ***/
 
@@ -31,7 +61,7 @@
 typedef struct {
     UNA_bit_representation_t chenst;
     UNA_bit_representation_t bkenst;
-    uint32_t lvf_cvf_update_next_time_seconds;
+    uint32_t xvf_update_next_time_seconds;
     int32_t istr_ua;
     int32_t istr_max_ua;
 #ifndef BCM_CHEN_FORCED_HARDWARE
@@ -48,7 +78,7 @@ static BCM_context_t bcm_ctx = {
     .bkenst = UNA_BIT_ERROR,
     .istr_ua = 0,
     .istr_max_ua = 0,
-    .lvf_cvf_update_next_time_seconds = 0,
+    .xvf_update_next_time_seconds = 0,
 #ifndef BCM_CHEN_FORCED_HARDWARE
     .vsrc_mv = 0,
     .chen_toggle_previous_time_seconds = 0,
@@ -56,122 +86,64 @@ static BCM_context_t bcm_ctx = {
 #endif
 };
 
-/*** BCM local functions ***/
-
-/*******************************************************************/
-static void _BCM_load_flags(void) {
-    // Local variables.
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
-    // Backup output control mode.
-#ifdef BCM_BKEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_BKFH);
-#else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_BKFH);
-#endif
-    // Charge status mode.
-#ifdef BCM_CHST_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CSFH);
-#else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CSFH);
-#endif
-    // Charge status LED control mode.
-#ifdef BCM_CHLD_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CLFH);
-#else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CLFH);
-#endif
-    // Charge control mode.
-#ifdef BCM_CHEN_FORCED_HARDWARE
-    SWREG_write_field(&reg_value, &reg_mask, 0b1, BCM_REGISTER_FLAGS_1_MASK_CEFH);
-#else
-    SWREG_write_field(&reg_value, &reg_mask, 0b0, BCM_REGISTER_FLAGS_1_MASK_CEFH);
-#endif
-    // Shunt resistor value.
-    SWREG_write_field(&reg_value, &reg_mask, BCM_ISTR_SHUNT_RESISTOR_MOHMS, BCM_REGISTER_FLAGS_1_MASK_SHUNT_RESISTOR);
-    // Write register.
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_FLAGS_1, reg_value, reg_mask);
-}
-
-/*******************************************************************/
-static void _BCM_load_configuration(void) {
-    // Local variables.
-    uint8_t reg_addr = 0;
-    uint32_t reg_value = 0;
-    // Load configuration registers from NVM.
-    for (reg_addr = BCM_REGISTER_ADDRESS_CONFIGURATION_0; reg_addr < BCM_REGISTER_ADDRESS_STATUS_1; reg_addr++) {
-        // Read NVM.
-        NODE_read_nvm(reg_addr, &reg_value);
-        // Write register.
-        NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_value, UNA_REGISTER_MASK_ALL);
-    }
-}
-
-/*******************************************************************/
-static void _BCM_reset_analog_data(void) {
-    // Reset analog registers.
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_1, BCM_REGISTER_ERROR_VALUE[BCM_REGISTER_ADDRESS_ANALOG_DATA_1], UNA_REGISTER_MASK_ALL);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_2, BCM_REGISTER_ERROR_VALUE[BCM_REGISTER_ADDRESS_ANALOG_DATA_2], UNA_REGISTER_MASK_ALL);
-}
-
 /*** BCM functions ***/
 
 /*******************************************************************/
-NODE_status_t BCM_init_registers(void) {
+NODE_status_t BCM_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#ifdef DSM_NVM_FACTORY_RESET
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
-#endif
     // Init context.
     bcm_ctx.chenst = UNA_BIT_ERROR;
     bcm_ctx.bkenst = UNA_BIT_ERROR;
     bcm_ctx.istr_ua = 0;
     bcm_ctx.istr_max_ua = 0;
-    bcm_ctx.lvf_cvf_update_next_time_seconds = 0;
+    bcm_ctx.xvf_update_next_time_seconds = 0;
 #ifndef BCM_CHEN_FORCED_HARDWARE
     bcm_ctx.vsrc_mv = 0;
     bcm_ctx.chen_toggle_previous_time_seconds = 0;
     bcm_ctx.chen_toggle_next_time_seconds = 0;
 #endif
-#ifdef DSM_NVM_FACTORY_RESET
-    // CHEN toggle threshold and period.
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_seconds(BCM_CHEN_TOGGLE_PERIOD_SECONDS), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD);
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CHEN_VSRC_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_0, reg_value, reg_mask);
-    // Low voltage detector thresholds.
-    reg_value = 0;
-    reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD);
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_LVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, reg_value, reg_mask);
-    // Critical voltage detector thresholds.
-    reg_value = 0;
-    reg_mask = 0;
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD);
-    SWREG_write_field(&reg_value, &reg_mask, UNA_convert_mv(BCM_CVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD);
-    NODE_write_register(NODE_REQUEST_SOURCE_EXTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_2, reg_value, reg_mask);
-#endif
-    // Load default values.
-    _BCM_load_flags();
-    _BCM_load_configuration();
-    _BCM_reset_analog_data();
-    // Read init state.
-    status = BCM_update_register(BCM_REGISTER_ADDRESS_STATUS_1);
-    if (status != NODE_SUCCESS) goto errors;
-errors:
     return status;
 }
 
 /*******************************************************************/
-NODE_status_t BCM_update_register(uint8_t reg_addr) {
+void BCM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     // Local variables.
-    NODE_status_t status = NODE_SUCCESS;
-    uint32_t reg_value = 0;
-    uint32_t reg_mask = 0;
+    uint32_t unused_mask = 0;
+    // Check address.
+    switch (reg_addr) {
+    case BCM_REGISTER_ADDRESS_FLAGS_1:
+        SWREG_write_field(reg_value, &unused_mask, BCM_FLAG_BKFH, BCM_REGISTER_FLAGS_1_MASK_BKFH);
+        SWREG_write_field(reg_value, &unused_mask, BCM_FLAG_CSFH, BCM_REGISTER_FLAGS_1_MASK_CSFH);
+        SWREG_write_field(reg_value, &unused_mask, BCM_FLAG_CLFH, BCM_REGISTER_FLAGS_1_MASK_CLFH);
+        SWREG_write_field(reg_value, &unused_mask, BCM_FLAG_CEFH, BCM_REGISTER_FLAGS_1_MASK_CEFH);
+        break;
+#ifdef DSM_NVM_FACTORY_RESET
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_0:
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_seconds(BCM_CHEN_TOGGLE_PERIOD_SECONDS), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BCM_CHEN_VSRC_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD);
+        break;
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_1:
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BCM_LVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BCM_LVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD);
+        break;
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_2:
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BCM_CVF_LOW_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BCM_CVF_HIGH_THRESHOLD_MV), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD);
+        break;
+#endif
+    default:
+        break;
+    }
+}
+
+/*******************************************************************/
+void BCM_refresh_register(uint8_t reg_addr) {
+    // Local variables.
+    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
     UNA_bit_representation_t chrgst0 = UNA_BIT_ERROR;
     UNA_bit_representation_t chrgst1 = UNA_BIT_ERROR;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case BCM_REGISTER_ADDRESS_STATUS_1:
@@ -192,15 +164,12 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
             chrgst1 = UNA_BIT_0;
         }
 #endif
-        SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst0), BCM_REGISTER_STATUS_1_MASK_CHRGST0);
-        SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) chrgst1), BCM_REGISTER_STATUS_1_MASK_CHRGST1);
         // Charge state.
 #ifdef BCM_CHEN_FORCED_HARDWARE
         bcm_ctx.chenst = UNA_BIT_FORCED_HARDWARE;
 #else
         bcm_ctx.chenst = LOAD_get_charge_state();
 #endif
-        SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bcm_ctx.chenst), BCM_REGISTER_STATUS_1_MASK_CHENST);
         // Backup_output state.
 #ifdef BCM_BKEN_FORCED_HARDWARE
         bcm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
@@ -217,20 +186,100 @@ NODE_status_t BCM_update_register(uint8_t reg_addr) {
             break;
         }
 #endif
-        SWREG_write_field(&reg_value, &reg_mask, ((uint32_t) bcm_ctx.bkenst), BCM_REGISTER_STATUS_1_MASK_BKENST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) chrgst0), BCM_REGISTER_STATUS_1_MASK_CHRGST0);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) chrgst1), BCM_REGISTER_STATUS_1_MASK_CHRGST1);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bcm_ctx.chenst), BCM_REGISTER_STATUS_1_MASK_CHENST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bcm_ctx.bkenst), BCM_REGISTER_STATUS_1_MASK_BKENST);
         break;
     default:
-        // Nothing to do for other registers.
         break;
     }
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, reg_value, reg_mask);
+}
+
+/*******************************************************************/
+NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+    // Local variables.
+    NODE_status_t status = NODE_SUCCESS;
+    uint32_t low_threshold_mv = 0;
+    uint32_t high_threshold_mv = 0;
+    uint32_t generic_u32 = 0;
+    // Check address.
+    switch (reg_addr) {
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_0:
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD,
+            UNA_get_mv,
+            UNA_convert_mv,
+            > BCM_CHEN_THRESHOLD_MV_MAX,
+            > BCM_CHEN_THRESHOLD_MV_MAX,
+            BCM_CHEN_THRESHOLD_MV_DEFAULT,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD,
+            UNA_get_seconds,
+            UNA_convert_seconds,
+            < BCM_CHEN_TOGGLE_PERIOD_SECONDS_MIN,
+            > BCM_CHEN_TOGGLE_PERIOD_SECONDS_MAX,
+            BCM_CHEN_TOGGLE_PERIOD_SECONDS_DEFAULT,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        break;
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_1:
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD));
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD,
+            UNA_get_mv,
+            UNA_convert_mv,
+            > BCM_XVF_THRESHOLD_MV_MAX,
+            > high_threshold_mv,
+            0,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD,
+            UNA_get_mv,
+            UNA_convert_mv,
+            > BCM_XVF_THRESHOLD_MV_MAX,
+            < low_threshold_mv,
+            0,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        break;
+    case BCM_REGISTER_ADDRESS_CONFIGURATION_2:
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD));
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD,
+            UNA_get_mv,
+            UNA_convert_mv,
+            > BCM_XVF_THRESHOLD_MV_MAX,
+            > high_threshold_mv,
+            0,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        SWREG_secure_field(
+            BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD,
+            UNA_get_mv,
+            UNA_convert_mv,
+            > BCM_XVF_THRESHOLD_MV_MAX,
+            < low_threshold_mv,
+            0,
+            status = NODE_ERROR_REGISTER_FIELD_VALUE
+        );
+        break;
+    default:
+        break;
+    }
     return status;
 }
 
 /*******************************************************************/
-NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
+NODE_status_t BCM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
+    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
 #ifndef BCM_BKEN_FORCED_HARDWARE
     LOAD_status_t load_status = LOAD_SUCCESS;
     UNA_bit_representation_t bken = UNA_BIT_ERROR;
@@ -238,21 +287,8 @@ NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
 #ifndef BCM_CHEN_FORCED_HARDWARE
     UNA_bit_representation_t chen = UNA_BIT_ERROR;
 #endif
-    uint32_t reg_value = 0;
-    // Read register.
-    status = NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, reg_addr, &reg_value);
-    if (status != NODE_SUCCESS) goto errors;
     // Check address.
     switch (reg_addr) {
-    case BCM_REGISTER_ADDRESS_CONFIGURATION_0:
-    case BCM_REGISTER_ADDRESS_CONFIGURATION_1:
-    case BCM_REGISTER_ADDRESS_CONFIGURATION_2:
-        // Store new value in NVM.
-        if (reg_mask != 0) {
-            status = NODE_write_nvm(reg_addr, reg_value);
-            if (status != NODE_SUCCESS) goto errors;
-        }
-        break;
     case BCM_REGISTER_ADDRESS_CONTROL_1:
         // CHEN.
         if ((reg_mask & BCM_REGISTER_CONTROL_1_MASK_CHEN) != 0) {
@@ -261,9 +297,9 @@ NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
             goto errors;
 #else
             // Check control mode.
-            if (SWREG_read_field(reg_value, BCM_REGISTER_CONTROL_1_MASK_CHMD) != 0) {
+            if (SWREG_read_field((*reg_ptr), BCM_REGISTER_CONTROL_1_MASK_CHMD) != 0) {
                 // Read bit.
-                chen = SWREG_read_field(reg_value, BCM_REGISTER_CONTROL_1_MASK_CHEN);
+                chen = SWREG_read_field((*reg_ptr), BCM_REGISTER_CONTROL_1_MASK_CHEN);
                 // Compare to current state.
                 if (chen != bcm_ctx.chenst) {
                     // Set charge state.
@@ -284,7 +320,7 @@ NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
             goto errors;
 #else
             // Read bit.
-            bken = SWREG_read_field(reg_value, BCM_REGISTER_CONTROL_1_MASK_BKEN);
+            bken = SWREG_read_field((*reg_ptr), BCM_REGISTER_CONTROL_1_MASK_BKEN);
             // Compare to current state.
             if (bken != bcm_ctx.bkenst) {
                 // Set output state.
@@ -295,12 +331,11 @@ NODE_status_t BCM_check_register(uint8_t reg_addr, uint32_t reg_mask) {
         }
         break;
     default:
-        // Nothing to do for other registers.
+        UNUSED(reg_ptr);
         break;
     }
 errors:
-    // Update status register.
-    BCM_update_register(BCM_REGISTER_ADDRESS_STATUS_1);
+    BCM_refresh_register(BCM_REGISTER_ADDRESS_STATUS_1);
     return status;
 }
 
@@ -309,36 +344,33 @@ NODE_status_t BCM_mtrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
+    uint32_t* reg_analog_data_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_1]);
+    uint32_t* reg_analog_data_2_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_2]);
     int32_t adc_data = 0;
-    uint32_t reg_analog_data_1 = 0;
-    uint32_t reg_analog_data_1_mask = 0;
-    uint32_t reg_analog_data_2 = 0;
-    uint32_t reg_analog_data_2_mask = 0;
-    // Reset results.
-    _BCM_reset_analog_data();
+    uint32_t unused_mask = 0;
+    // Reset data.
+    (*reg_analog_data_1_ptr) = NODE_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_1].error_value;
+    (*reg_analog_data_2_ptr) = NODE_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_2].error_value;
     // Source voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
     // Storage element voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_1, &reg_analog_data_1_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
     // Backup output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VBKP_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), BCM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
     // Battery charge current.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_ISTR_UA, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     if (adc_data > bcm_ctx.istr_max_ua) {
         bcm_ctx.istr_max_ua = adc_data;
     }
-    SWREG_write_field(&reg_analog_data_2, &reg_analog_data_2_mask, UNA_convert_ua(bcm_ctx.istr_max_ua), BCM_REGISTER_ANALOG_DATA_2_MASK_ISTR);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_ua(bcm_ctx.istr_max_ua), BCM_REGISTER_ANALOG_DATA_2_MASK_ISTR);
     bcm_ctx.istr_max_ua = 0;
-    // Write registers.
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_1, reg_analog_data_1, reg_analog_data_1_mask);
-    NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_ANALOG_DATA_2, reg_analog_data_2, reg_analog_data_2_mask);
 errors:
     return status;
 }
@@ -348,13 +380,16 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    uint32_t reg_config = 0;
-    int32_t vstr_mv = 0;
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
+    uint32_t* reg_config_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_1]);
+    uint32_t* reg_config_2_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_2]);
+    uint32_t* reg_status_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_STATUS_1]);
+    int32_t vstr_mv = 0;
+    uint32_t unused_mask = 0;
     // Check period.
-    if (uptime_seconds >= bcm_ctx.lvf_cvf_update_next_time_seconds) {
+    if (uptime_seconds >= bcm_ctx.xvf_update_next_time_seconds) {
         // Update next time.
-        bcm_ctx.lvf_cvf_update_next_time_seconds = uptime_seconds + BCM_LVF_UPDATE_PERIOD_SECONDS;
+        bcm_ctx.xvf_update_next_time_seconds = uptime_seconds + BCM_XVF_UPDATE_PERIOD_SECONDS;
         // Turn analog front-end on.
         POWER_enable(POWER_REQUESTER_ID_BCM, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
         // Read battery voltage.
@@ -371,23 +406,19 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &(bcm_ctx.vsrc_mv));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 #endif
-        // Read thresholds.
-        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_1, &reg_config);
         // Update LVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
-            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, BCM_REGISTER_STATUS_1_MASK_LVF, BCM_REGISTER_STATUS_1_MASK_LVF);
+        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
+            SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, BCM_REGISTER_STATUS_1_MASK_LVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
-            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, 0b0, BCM_REGISTER_STATUS_1_MASK_LVF);
+        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
+            SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, BCM_REGISTER_STATUS_1_MASK_LVF);
         }
-        // Read thresholds.
-        NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_2, &reg_config);
         // Update CVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field(reg_config, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD))) {
-            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, BCM_REGISTER_STATUS_1_MASK_CVF, BCM_REGISTER_STATUS_1_MASK_CVF);
+        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD))) {
+            SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, BCM_REGISTER_STATUS_1_MASK_CVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field(reg_config, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD))) {
-            NODE_write_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_STATUS_1, 0b0, BCM_REGISTER_STATUS_1_MASK_CVF);
+        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD))) {
+            SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, BCM_REGISTER_STATUS_1_MASK_CVF);
         }
     }
 errors:
@@ -400,12 +431,9 @@ errors:
 NODE_status_t BCM_charge_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    uint32_t reg_control_1 = 0;
-    uint32_t reg_config_0 = 0;
+    uint32_t reg_control_1 = NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_CONTROL_1];
+    uint32_t reg_config_0 = NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_CONFIGURATION_0];
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
-    // Read control mode, threshold and period.
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONTROL_1, &reg_control_1);
-    NODE_read_register(NODE_REQUEST_SOURCE_INTERNAL, BCM_REGISTER_ADDRESS_CONFIGURATION_0, &reg_config_0);
     // Check mode.
     if (SWREG_read_field(reg_control_1, BCM_REGISTER_CONTROL_1_MASK_CHMD) != 0) goto errors;
     // Check toggle period.

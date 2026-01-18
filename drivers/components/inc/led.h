@@ -82,14 +82,14 @@ LED_status_t LED_de_init(void);
 
 #ifndef MPMCM
 /*!******************************************************************
- * \fn LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color)
+ * \fn LED_status_t LED_start_single_blink(uint32_t blink_duration_us, LED_color_t color)
  * \brief Start single blink.
- * \param[in]   blink_duration_ms: Blink duration in ms.
+ * \param[in]   blink_duration_us: Blink duration in microsecond.
  * \param[in]   color: LED color.
  * \param[out]  none
  * \retval      Function execution status.
  *******************************************************************/
-LED_status_t LED_start_single_blink(uint32_t blink_duration_ms, LED_color_t color);
+LED_status_t LED_start_single_blink(uint32_t blink_duration_us, LED_color_t color);
 #endif
 
 #ifndef MPMCM
@@ -105,15 +105,15 @@ LED_status_t LED_stop_blink(void);
 
 #ifdef MPMCM
 /*!******************************************************************
- * \fn LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color)
+ * \fn LED_status_t LED_single_pulse(uint32_t pulse_duration_us, LED_color_t color)
  * \brief Start single pulse.
- * \param[in]   pulse_duration_ms: Pulse duration in ms.
+ * \param[in]   pulse_duration_us: Pulse duration in microsecond.
  * \param[in]   color: LED color.
  * \param[in]   pulse_completion_event: Enable internal interrupt at the end of the pulse.
  * \param[out]  none
  * \retval      Function execution status.
  *******************************************************************/
-LED_status_t LED_single_pulse(uint32_t pulse_duration_ms, LED_color_t color, uint8_t pulse_completion_event);
+LED_status_t LED_single_pulse(uint32_t pulse_duration_us, LED_color_t color, uint8_t pulse_completion_event);
 #endif
 
 /*!******************************************************************
