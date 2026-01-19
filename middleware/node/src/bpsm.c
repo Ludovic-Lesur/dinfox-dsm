@@ -202,8 +202,8 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
         );
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD));
+        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD));
+        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD));
         SWREG_secure_field(
             BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD,
             UNA_get_mv,
@@ -224,8 +224,8 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
         );
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_2:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD));
+        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD));
+        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD));
         SWREG_secure_field(
             BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD,
             UNA_get_mv,

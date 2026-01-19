@@ -170,6 +170,7 @@ static NODE_status_t _NODE_load_register(uint8_t reg_addr, uint32_t* reg_value) 
     nvm_status = NVM_read_word((NVM_ADDRESS_UNA_REGISTERS + reg_addr), reg_value);
     NVM_exit_error(NODE_ERROR_BASE_NVM);
 #else
+    (*reg_value) = 0;
     // Byte loop.
     for (idx = 0; idx < UNA_REGISTER_SIZE_BYTES; idx++) {
         // Read NVM.
@@ -196,7 +197,7 @@ static NODE_status_t _NODE_store_register(uint8_t reg_addr) {
     uint8_t nvm_byte = 0;
     uint8_t idx = 0;
     // Byte loop.
-    for (idx = 0; idx < 4; idx++) {
+    for (idx = 0; idx < UNA_REGISTER_SIZE_BYTES; idx++) {
         // Compute byte.
         nvm_byte = (uint8_t) (((NODE_RAM_REGISTER[reg_addr]) >> (idx << 3)) & 0x000000FF);
         // Write NVM.
