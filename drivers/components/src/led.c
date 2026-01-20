@@ -30,10 +30,11 @@
 #ifndef MPMCM
 /*******************************************************************/
 typedef struct {
+    volatile uint8_t process_flag;
     LED_color_t color;
-    volatile uint8_t dimming_lut_direction;
-    volatile uint32_t dimming_lut_index;
-    volatile uint8_t single_blink_done;
+    uint8_t dimming_lut_direction;
+    uint32_t dimming_lut_index;
+    uint8_t single_blink_done;
 } LED_context_t;
 #endif
 
@@ -66,6 +67,7 @@ static const uint8_t LED_DIMMING_LUT[LED_DIMMING_LUT_SIZE] = {
 
 #ifndef MPMCM
 static LED_context_t led_ctx = {
+    .process_flag = 0,
     .color = LED_COLOR_OFF,
     .dimming_lut_direction = 0,
     .dimming_lut_index = 0,
@@ -106,63 +108,8 @@ errors:
 #ifndef MPMCM
 /*******************************************************************/
 static void _LED_dimming_timer_irq_callback(void) {
-    // Local variables.
-    LED_status_t led_status = LED_SUCCESS;
-    TIM_status_t tim_status = TIM_SUCCESS;
-    uint8_t duty_cycle_percent = 0;
-#ifndef GPSM
-    uint8_t idx = 0;
-#endif
-    // Update duty cycles.
-#ifdef GPSM
-    // Apply color mask.
-    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_RED)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
-    // Set duty cycle.
-    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_RED])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
-    // Apply color mask.
-    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_GREEN)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
-    // Set duty cycle.
-    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_GREEN])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
-    // Apply color mask.
-    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_BLUE)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
-    // Set duty cycle.
-    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_B, (TIM_GPIO_LED_B.list[TIM_CHANNEL_INDEX_LED_B_BLUE])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-    TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
-#else
-    for (idx = 0; idx < TIM_CHANNEL_INDEX_LED_LAST; idx++) {
-        // Apply color mask.
-        duty_cycle_percent = ((led_ctx.color & (0b1 << idx)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
-        // Set duty cycle.
-        tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED, (TIM_GPIO_LED.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
-        TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_PWM);
-    }
-#endif
-    // Manage index and direction.
-    if (led_ctx.dimming_lut_direction == 0) {
-        // Increment index.
-        led_ctx.dimming_lut_index++;
-        // Invert direction at end of table.
-        if (led_ctx.dimming_lut_index >= (LED_DIMMING_LUT_SIZE - 1)) {
-            led_ctx.dimming_lut_direction = 1;
-        }
-    }
-    else {
-        // Decrement index.
-        led_ctx.dimming_lut_index--;
-        // Invert direction at the beginning of table.
-        if (led_ctx.dimming_lut_index == 0) {
-            // Stop timers.
-            led_status = _LED_turn_off();
-            LED_stack_error(ERROR_BASE_LED);
-            tim_status = TIM_STD_stop(TIM_INSTANCE_LED_DIMMING);
-            TIM_stack_error(ERROR_BASE_LED + LED_ERROR_BASE_TIM_DIMMING);
-            // Single blink done.
-            led_ctx.dimming_lut_direction = 0;
-            led_ctx.single_blink_done = 1;
-        }
-    }
+    // Set process flag.
+    led_ctx.process_flag = 1;
 }
 #endif
 
@@ -175,6 +122,7 @@ LED_status_t LED_init(void) {
     TIM_status_t tim_status = TIM_SUCCESS;
 #ifndef MPMCM
     // Init context.
+    led_ctx.process_flag = 0;
     led_ctx.color = LED_COLOR_OFF;
     led_ctx.dimming_lut_direction = 0;
     led_ctx.dimming_lut_index = 0;
@@ -253,6 +201,7 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_us, LED_color_t colo
         goto errors;
     }
     // Update context.
+    led_ctx.process_flag = 0;
     led_ctx.color = color;
     led_ctx.dimming_lut_direction = 0;
     led_ctx.dimming_lut_index = 0;
@@ -278,6 +227,72 @@ LED_status_t LED_stop_blink(void) {
     tim_status = TIM_STD_stop(TIM_INSTANCE_LED_DIMMING);
     TIM_exit_error(LED_ERROR_BASE_TIM_DIMMING);
 errors:
+    return status;
+}
+#endif
+
+#ifndef MPMCM
+/*******************************************************************/
+LED_status_t LED_process(void) {
+    // Local variables.
+    LED_status_t status = LED_SUCCESS;
+    TIM_status_t tim_status = TIM_SUCCESS;
+    uint8_t duty_cycle_percent = 0;
+#ifndef GPSM
+    uint8_t idx = 0;
+#endif
+    // Check process flag.
+    if ((led_ctx.process_flag == 0) || (led_ctx.single_blink_done != 0)) goto errors;
+    // Update duty cycles.
+#ifdef GPSM
+    // Apply color mask.
+    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_RED)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
+    // Set duty cycle.
+    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_RED])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    // Apply color mask.
+    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_GREEN)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
+    // Set duty cycle.
+    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_RG, (TIM_GPIO_LED_RG.list[TIM_CHANNEL_INDEX_LED_RG_GREEN])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    // Apply color mask.
+    duty_cycle_percent = ((led_ctx.color & (0b1 << LED_COLOR_INDEX_BLUE)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
+    // Set duty cycle.
+    tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED_B, (TIM_GPIO_LED_B.list[TIM_CHANNEL_INDEX_LED_B_BLUE])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
+    TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+#else
+    for (idx = 0; idx < TIM_CHANNEL_INDEX_LED_LAST; idx++) {
+        // Apply color mask.
+        duty_cycle_percent = ((led_ctx.color & (0b1 << idx)) != 0) ? LED_DIMMING_LUT[led_ctx.dimming_lut_index] : 0;
+        // Set duty cycle.
+        tim_status = TIM_PWM_set_waveform(TIM_INSTANCE_LED, (TIM_GPIO_LED.list[idx])->channel, (LED_PWM_FREQUENCY_HZ * 1000), duty_cycle_percent);
+        TIM_exit_error(LED_ERROR_BASE_TIM_PWM);
+    }
+#endif
+    // Manage index and direction.
+    if (led_ctx.dimming_lut_direction == 0) {
+        // Increment index.
+        led_ctx.dimming_lut_index++;
+        // Invert direction at end of table.
+        if (led_ctx.dimming_lut_index >= (LED_DIMMING_LUT_SIZE - 1)) {
+            led_ctx.dimming_lut_direction = 1;
+        }
+    }
+    else {
+        // Decrement index.
+        led_ctx.dimming_lut_index--;
+        // Invert direction at the beginning of table.
+        if (led_ctx.dimming_lut_index == 0) {
+            // Single blink done.
+            led_ctx.dimming_lut_direction = 0;
+            led_ctx.single_blink_done = 1;
+            // Stop timers.
+            status = LED_stop_blink();
+            if (status != LED_SUCCESS) goto errors;
+        }
+    }
+errors:
+    led_ctx.process_flag = 0;
     return status;
 }
 #endif

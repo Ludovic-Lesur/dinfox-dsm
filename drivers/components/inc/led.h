@@ -103,6 +103,17 @@ LED_status_t LED_start_single_blink(uint32_t blink_duration_us, LED_color_t colo
 LED_status_t LED_stop_blink(void);
 #endif
 
+#ifndef MPMCM
+/*!******************************************************************
+ * \fn LED_status_t LED_process(void)
+ * \brief Process LED blink.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+LED_status_t LED_process(void);
+#endif
+
 #ifdef MPMCM
 /*!******************************************************************
  * \fn LED_status_t LED_single_pulse(uint32_t pulse_duration_us, LED_color_t color)
