@@ -28,9 +28,13 @@
 static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOB, 1, 6, 6 };
 static const GPIO_pin_t GPIO_LPUART1_RX = { GPIOB, 1, 7, 6 };
 #endif
-#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined SM) || (defined UHFM) || (defined GPSM))
+#if (((defined LVRM) && (defined HW2_0)) || (defined BCM) || (defined SM) || ((defined UHFM) && (defined HW1_0)) || (defined GPSM))
 static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOA, 0, 2, 6 };
 static const GPIO_pin_t GPIO_LPUART1_RX = { GPIOA, 0, 3, 6 };
+#endif
+#if ((defined UHFM) && (defined HW2_0))
+static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOB, 1, 10, 4 };
+static const GPIO_pin_t GPIO_LPUART1_RX = { GPIOB, 1, 11, 4 };
 #endif
 #ifdef MPMCM
 static const GPIO_pin_t GPIO_LPUART1_TX = { GPIOB, 1, 11, 8 };
@@ -90,7 +94,12 @@ static const GPIO_pin_t GPIO_ADC_VBKP_MEASURE = { GPIOA, 0, 0, 0 };
 static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VSRC_MEASURE, &GPIO_ADC_VSTR_MEASURE, &GPIO_ADC_VBKP_MEASURE };
 #endif
 #ifdef UHFM
+#ifdef HW1_0
 static const GPIO_pin_t GPIO_ADC_VRF_MEASURE = { GPIOA, 0, 7, 0 };
+#endif
+#ifdef HW2_0
+static const GPIO_pin_t GPIO_ADC_VRF_MEASURE = { GPIOA, 0, 3, 0 };
+#endif
 static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VRF_MEASURE };
 #endif
 #ifdef GPSM
@@ -255,22 +264,57 @@ const GPIO_pin_t GPIO_CHRG_ST = { GPIOA, 0, 8, 0 };
 const GPIO_pin_t GPIO_CHRG_EN = { GPIOA, 0, 9, 0 };
 #endif
 #ifdef UHFM
-// RF power enable.
+// RF front-end control.
+#ifdef HW1_0
 const GPIO_pin_t GPIO_RF_POWER_ENABLE = { GPIOB, 1, 8, 0 };
 const GPIO_pin_t GPIO_RF_TX_ENABLE = { GPIOB, 1, 7, 0 };
 const GPIO_pin_t GPIO_RF_RX_ENABLE = { GPIOB, 1, 6, 0 };
+#endif
+#ifdef HW2_0
+const GPIO_pin_t GPIO_RF_POWER_ENABLE = { GPIOA, 0, 4, 0 };
+const GPIO_pin_t GPIO_RF_TX_ENABLE = { GPIOA, 0, 12, 0 };
+const GPIO_pin_t GPIO_RF_PA_ENABLE = { GPIOA, 0, 11, 0 };
+const GPIO_pin_t GPIO_RF_FLT_DISABLE = { GPIOB, 1, 13, 0 };
+const GPIO_pin_t GPIO_RF_SKY_CTX = { GPIOA, 0, 8, 0 };
+const GPIO_pin_t GPIO_RF_SKY_CPS = { GPIOA, 0, 9, 0 };
+const GPIO_pin_t GPIO_RF_SKY_PATH = { GPIOA, 0, 10, 0 };
+const GPIO_pin_t GPIO_RF_SW_V1 = { GPIOB, 1, 14, 0 };
+const GPIO_pin_t GPIO_RF_SW_V2 = { GPIOB, 1, 15, 0 };
+const GPIO_pin_t GPIO_LED_TX = { GPIOB, 1, 12, 0 };
+const GPIO_pin_t GPIO_LED_RX = { GPIOA, 0, 5, 0 };
+#endif
 // TCXO power control.
+#ifdef HW1_0
 const GPIO_pin_t GPIO_TCXO_POWER_ENABLE = { GPIOA, 0, 8, 0 };
+#endif
+#ifdef HW2_0
+const GPIO_pin_t GPIO_TCXO_POWER_ENABLE = { GPIOB, 1, 9, 0 };
+#endif
 // Radio SPI.
+#ifdef HW1_0
 const GPIO_pin_t GPIO_S2LP_CS = { GPIOA, 0, 15, 0 };
 const SPI_gpio_t SPI_GPIO_S2LP = { &GPIO_SPI1_SCK, &GPIO_SPI1_MOSI, &GPIO_SPI1_MISO };
-// S2LP GPIOs.
+#endif
+#ifdef HW2_0
+const GPIO_pin_t GPIO_SX1261_CS = { GPIOA, 0, 15, 0 };
+const SPI_gpio_t SPI_GPIO_SX1261 = { &GPIO_SPI1_SCK, &GPIO_SPI1_MOSI, &GPIO_SPI1_MISO };
+#endif
+// Radio GPIOs.
+#ifdef HW1_0
 const GPIO_pin_t GPIO_S2LP_SDN = { GPIOA, 0, 9, 0 };
 const GPIO_pin_t GPIO_S2LP_GPIO0 = { GPIOA, 0, 11, 0 };
+#endif
+#ifdef HW2_0
+const GPIO_pin_t GPIO_SX1261_NRESET = { GPIOB, 1, 6, 0 };
+const GPIO_pin_t GPIO_SX1261_BUSY = { GPIOB, 1, 7, 0 };
+const GPIO_pin_t GPIO_SX1261_DIO1 = { GPIOB, 1, 8, 0 };
+#endif
 // Test points.
 const GPIO_pin_t GPIO_TP1 = { GPIOA, 0, 0, 0 };
+#ifdef HW1_0
 const GPIO_pin_t GPIO_TP2 = { GPIOA, 0, 5, 0 };
 const GPIO_pin_t GPIO_TP3 = { GPIOA, 0, 12, 0 };
+#endif
 #endif
 #ifdef GPSM
 // GPS.

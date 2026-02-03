@@ -22,7 +22,6 @@
 #include "nvm.h"
 #include "nvm_address.h"
 #include "rfe.h"
-#include "s2lp.h"
 #include "sigfox_ep_addon_rfp_api.h"
 #include "sigfox_ep_api.h"
 #include "sigfox_rc.h"
@@ -31,6 +30,12 @@
 #include "types.h"
 #include "uhfm_registers.h"
 #include "una.h"
+#ifdef HW1_0
+#include "s2lp.h"
+#endif
+#ifdef HW2_0
+#include "sx126x.h"
+#endif
 
 /*** UHFM local macros ***/
 
@@ -212,7 +217,12 @@ static NODE_status_t _UHFM_set_continuous_reception(uint8_t state, uint32_t rf_f
     NODE_status_t status = NODE_SUCCESS;
     RF_API_status_t rf_api_status = RF_API_SUCCESS;
     RF_API_radio_parameters_t radio_params;
+#ifdef HW1_0
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
+#endif
+#ifdef HW2_0
+    SX126X_status_t sx126x_status = SX126X_SUCCESS;
+#endif
     // Radio configuration.
     radio_params.rf_mode = RF_API_MODE_RX;
     radio_params.frequency_hz = rf_frequency_hz;
@@ -238,12 +248,18 @@ static NODE_status_t _UHFM_set_continuous_reception(uint8_t state, uint32_t rf_f
         rf_api_status = RF_API_init(&radio_params);
         RF_API_check_status(NODE_ERROR_SIGFOX_RF_API);
         // Start continuous listening.
+#ifdef HW1_0
         s2lp_status = S2LP_send_command(S2LP_COMMAND_READY);
         S2LP_exit_error(NODE_ERROR_BASE_S2LP);
         s2lp_status = S2LP_wait_for_state(S2LP_STATE_READY);
         S2LP_exit_error(NODE_ERROR_BASE_S2LP);
         s2lp_status = S2LP_send_command(S2LP_COMMAND_RX);
         S2LP_exit_error(NODE_ERROR_BASE_S2LP);
+#endif
+#ifdef HW2_0
+        sx126x_status = SX126X_set_mode(SX126X_MODE_RX);
+        SX126X_exit_error(NODE_ERROR_BASE_SX126X);
+#endif
     }
     return status;
 errors:
@@ -486,6 +502,7 @@ NODE_status_t UHFM_refresh_register(uint8_t reg_addr) {
 NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
+    int32_t generic_s32 = 0;
     uint32_t generic_u32 = 0;
     uint8_t rc_valid = 1;
     // Check address.

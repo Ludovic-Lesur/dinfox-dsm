@@ -8,21 +8,15 @@
 #ifndef __S2LP_DRIVER_FLAGS_H__
 #define __S2LP_DRIVER_FLAGS_H__
 
+#include "error_patch.h"
 #include "lptim.h"
-#ifndef SIGFOX_EP_DISABLE_FLAGS_FILE
-#include "sigfox_ep_flags.h"
-#endif
 #ifndef MPMCM
 #include "spi.h"
 #endif
 
-#ifdef MPMCM
-#define SPI_ERROR_BASE_LAST                 0
-#endif
-
 /*** S2LP driver compilation flags ***/
 
-#ifndef UHFM
+#if (!(defined UHFM) || ((defined UHFM) && (defined HW2_0)))
 #define S2LP_DRIVER_DISABLE
 #endif
 
@@ -32,8 +26,6 @@
 #define S2LP_DRIVER_XO_FREQUENCY_HZ         49152000
 
 #define S2LP_DRIVER_TX_ENABLE
-#ifdef SIGFOX_EP_BIDIRECTIONAL
 #define S2LP_DRIVER_RX_ENABLE
-#endif
 
 #endif /* __S2LP_DRIVER_FLAGS_H__ */

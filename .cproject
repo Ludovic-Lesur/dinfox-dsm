@@ -67,6 +67,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -102,6 +103,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -159,7 +161,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -245,6 +247,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -280,6 +283,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -337,7 +341,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -423,6 +427,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -458,6 +463,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -515,7 +521,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -601,6 +607,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -636,6 +643,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -693,7 +701,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -779,6 +787,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -814,6 +823,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -871,7 +881,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -957,6 +967,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -992,6 +1003,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1051,7 +1063,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/sigfox-ep-lib/src/manuf|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1137,6 +1149,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1172,6 +1185,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1229,7 +1243,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1315,6 +1329,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1350,6 +1365,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1407,7 +1423,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1493,6 +1509,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1528,6 +1545,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1585,7 +1603,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1675,6 +1693,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1714,6 +1733,7 @@
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
@@ -1773,7 +1793,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|middleware/sigfox/sigfox-ep-lib/src/manuf|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|middleware/sigfox/src|lib|src/sigfox|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -1791,6 +1811,188 @@
 				<option id="cmsis.compiler.define" value="STM32L011xx"/>
 				<memory section="IRAM1" size="0x00000800" start="0x20000000" startup="0"/>
 				<memory section="IROM1" size="0x00004000" start="0x08000000" startup="1"/>
+			</storageModule>
+		</cconfiguration>
+		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575" moduleId="org.eclipse.cdt.core.settings" name="uhfm_hw2-0">
+				<externalSettings>
+					<externalSetting/>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="elf" artifactName="uhfm" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575" name="uhfm_hw2-0" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release" postannouncebuildStep="ARM GCC version" postbuildStep="arm-none-eabi-gcc -dumpversion" preannouncebuildStep="Updating git version" prebuildStep="bash ../script/git_version.sh">
+					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575." name="/" resourcePath="">
+						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1646373803" name="Arm Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.531701079" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting.203285201" name="Create extended listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.97901217" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.1437226858" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.optimize" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.751378964" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength" useByScannerDiscovery="true" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.406215878" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar" useByScannerDiscovery="true" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.1275825567" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections" useByScannerDiscovery="true" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.1925556662" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections" useByScannerDiscovery="true" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.230543163" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.max" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.1932977739" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format" useByScannerDiscovery="true"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.1520841147" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" useByScannerDiscovery="false" value="Custom" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.87094077" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" useByScannerDiscovery="false" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.1431167130" name="Arm family (-mcpu)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" useByScannerDiscovery="false" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m0plus" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.882438353" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" useByScannerDiscovery="false" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.2121441024" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix" useByScannerDiscovery="false" value="arm-none-eabi-" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.669036912" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c" useByScannerDiscovery="false" value="gcc" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.1872160627" name="C++ compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp" useByScannerDiscovery="false" value="g++" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.1814321886" name="Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar" useByScannerDiscovery="false" value="ar" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.1255764234" name="Hex/Bin converter" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy" useByScannerDiscovery="false" value="objcopy" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.1351177712" name="Listing generator" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump" useByScannerDiscovery="false" value="objdump" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.1302659389" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size" useByScannerDiscovery="false" value="size" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.233458759" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" useByScannerDiscovery="false" value="make" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.356270475" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" useByScannerDiscovery="false" value="rm" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1729049851" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" useByScannerDiscovery="false" value="2029746065" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn.167970200" name="Enable all common warnings (-Wall)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.allwarn" useByScannerDiscovery="true" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn.1070114090" name="Enable extra warnings (-Wextra)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.extrawarn" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.other.902108730" name="Other warning flags" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.other" value="-Wno-scalar-storage-order" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.unused.1453016300" name="Warn on various unused elements (-Wunused)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.unused" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.uninitialized.592601580" name="Warn on uninitialized variables (-Wuninitialised)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.uninitialized" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.missingdeclaration.1010211586" name="Warn on undeclared global function (-Wmissing-declaration)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.missingdeclaration" value="false" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.conversion.2008908362" name="Warn on implicit conversions (-Wconversion)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.warnings.conversion" value="false" valueType="boolean"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.645008675" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
+							<builder buildPath="${workspace_loc:/dinfox-dsm}/uhfm_hw1-0" id="ilg.gnuarmeclipse.managedbuild.cross.builder.1811466870" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1917335725" name="GNU Arm Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.2082586237" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.1682168693" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="UHFM"/>
+									<listOptionValue builtIn="false" value="HW2_0"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1863837556" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/stm32l0xx-drivers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/mac/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/mac/lmac-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/analog/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/cli/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/digital/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/gps/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/dinfox-registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/una-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/una-at/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/power/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/sigfox-ep-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/sigfox-ep-addon-rfp/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/application/inc&quot;"/>
+								</option>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1898287194" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1704329134" name="GNU Arm Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1667750018" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="UHFM"/>
+									<listOptionValue builtIn="false" value="HW2_0"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.502307857" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/registers/stm32l0xx-registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/peripherals/stm32l0xx-drivers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/neom8x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/s2lp-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sx126x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/components/sht3x-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/utils/embedded-utils/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/mac/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/mac/lmac-driver/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/analog/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/cli/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/digital/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/gps/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/dinfox-registers/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/una-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/node/una-at/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/power/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/sigfox-ep-lib/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/middleware/sigfox/sigfox-ep-addon-rfp/inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/application/inc&quot;"/>
+								</option>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1784285484" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1776988725" name="GNU Arm Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.2128916210" name="GNU Arm Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.688074607" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile.1155426506" name="Script files (-T)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.scriptfile" useByScannerDiscovery="false" valueType="stringList">
+									<listOptionValue builtIn="false" value="stm32l051x8xx.ld"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs.820275211" name="Libraries (-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="gcc"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="c_nano"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths.907371867" name="Library search path (-L)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/drivers/device/stm32l0xx-device/linker&quot;"/>
+								</option>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.printmap.714457027" name="Print link map (-Xlinker --print-map)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.printmap" value="false" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.printgcsections.1609498461" name="Print removed sections (-Xlinker --print-gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.printgcsections" value="false" valueType="boolean"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input.804959177" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.1290011304" name="GNU Arm Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections.2114053457" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections" value="true" valueType="boolean"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1452612789" name="GNU Arm Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.269741031" name="GNU Arm Cross Create Flash Image" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.97507088" name="GNU Arm Cross Create Listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source.2116022968" name="Display source (--source|-S)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders.943124032" name="Display all headers (--all-headers|-x)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle.2064056745" name="Demangle names (--demangle|-C)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers.1514378553" name="Display line numbers (--line-numbers|-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide.475103523" name="Wide lines (--wide|-w)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.1019374366" name="GNU Arm Cross Print Size" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format.2081263756" name="Size format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format" useByScannerDiscovery="false"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="drivers/utils/CMSIS_6|drivers/utils/CMSIS-DSP|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/StatisticsFunctions/StatisticsFunctions.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTablesF16.c|drivers/utils/CMSIS-DSP/Source/CommonTables/CommonTables.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctionsF16.c|drivers/utils/CMSIS-DSP/Source/BasicMathFunctions/BasicMathFunctions.c|drivers/utils/CMSIS-DSP/Source/WindowFunctions|drivers/utils/CMSIS-DSP/Source/TransformFunctions|drivers/utils/CMSIS-DSP/Source/SVMFunctions|drivers/utils/CMSIS-DSP/Source/SupportFunctions|drivers/utils/CMSIS-DSP/Source/QuaternionMathFunctions|drivers/utils/CMSIS-DSP/Source/MatrixFunctions|drivers/utils/CMSIS-DSP/Source/InterpolationFunctions|drivers/utils/CMSIS-DSP/Source/FilteringFunctions|drivers/utils/CMSIS-DSP/Source/FastMathFunctions|drivers/utils/CMSIS-DSP/Source/DistanceFunctions|drivers/utils/CMSIS-DSP/Source/ControllerFunctions|drivers/utils/CMSIS-DSP/Source/ComplexMathFunctions|drivers/utils/CMSIS-DSP/Source/BayesFunctions|drivers/utils/CMSIS-DSP/Testing|drivers/utils/CMSIS-DSP/Scripts|drivers/utils/CMSIS-DSP/PythonWrapper|drivers/utils/CMSIS-DSP/PrivateInclude|drivers/utils/CMSIS-DSP/Ne10|drivers/utils/CMSIS-DSP/Examples|drivers/utils/CMSIS-DSP/dsppp|drivers/utils/CMSIS-DSP/Documentation|drivers/utils/CMSIS-DSP/ComputeLibrary|drivers/utils/CMSIS-DSP/cmsisdsp|drivers/utils/CMSIS_6/CMSIS/Core/Template|drivers/utils/CMSIS_6/CMSIS/Core/Test|drivers/utils/CMSIS_6/CMSIS/Core/Source|drivers/utils/CMSIS_6/CMSIS/CoreValidation|drivers/utils/CMSIS_6/CMSIS/Documentation|drivers/utils/CMSIS_6/CMSIS/Driver|drivers/utils/CMSIS_6/CMSIS/RTOS2|lib/sigfox-ep-lib/src/manuf" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs">
+				<option id="cmsis.device.name" value="STM32L041K6"/>
+				<option id="cmsis.subfamily.name" value="STM32L041"/>
+				<option id="cmsis.family.name" value="STM32L0 Series"/>
+				<option id="cmsis.device.vendor.name" value="STMicroelectronics"/>
+				<option id="cmsis.device.vendor.id" value="13"/>
+				<option id="cmsis.device.pack.vendor" value="Keil"/>
+				<option id="cmsis.device.pack.name" value="STM32L0xx_DFP"/>
+				<option id="cmsis.device.pack.version" value="2.0.1"/>
+				<option id="cmsis.core.name" value="Cortex-M0+"/>
+				<option id="cmsis.compiler.define" value="STM32L041xx"/>
+				<memory section="IRAM1" size="0x00002000" start="0x20000000" startup="0"/>
+				<memory section="IROM1" size="0x00008000" start="0x08000000" startup="1"/>
 			</storageModule>
 		</cconfiguration>
 	</storageModule>
@@ -1816,6 +2018,12 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.660847908;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.660847908.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1928438050;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1165946748">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.180695038.19708575.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1704329134;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1784285484">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635.388944715;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635.388944715.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.679746487;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2065744985">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -1828,22 +2036,19 @@
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1811835522;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.918790426">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.781275457;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1180765651">
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1490077473;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1490077473.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.94035000;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.674598278">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.2011014542;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1318930829">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.343444830;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2009446075">
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1596037635.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.781275457;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1180765651">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.2076787372;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.902720649.2076787372.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.27455450;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.989546261">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.660847908;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.660847908.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1928438050;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1165946748">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1490077473;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1490077473.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.94035000;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.674598278">
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.805691651.1563566759.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.343444830;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2009446075">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>

@@ -56,6 +56,8 @@
 #include "s2lp.h"
 #include "types.h"
 
+#if ((defined UHFM) && (defined HW1_0))
+
 /*** RF API local macros ***/
 
 #define RF_API_SYMBOL_PROFILE_SIZE_BYTES        40
@@ -377,7 +379,7 @@ static RF_API_status_t _RF_API_internal_process(void) {
             // Read FIFO and RSSI.
             s2lp_status = S2LP_read_fifo((sfx_u8*) rf_api_ctx.dl_phy_content, SIGFOX_DL_PHY_CONTENT_SIZE_BYTES);
             S2LP_stack_exit_error(ERROR_BASE_S2LP, (RF_API_status_t) RF_API_ERROR_DRIVER_S2LP);
-            rfe_status = RFE_get_rssi(S2LP_RSSI_TYPE_SYNC_WORD, &rf_api_ctx.dl_rssi_dbm);
+            rfe_status = RFE_get_rssi(RFE_RSSI_TYPE_SYNC_WORD, &rf_api_ctx.dl_rssi_dbm);
             RFE_stack_exit_error(ERROR_BASE_RFE, (RF_API_status_t) RF_API_ERROR_DRIVER_RFE);
             // Stop radio.
             s2lp_status = S2LP_send_command(S2LP_COMMAND_SABORT);
@@ -456,9 +458,11 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t* radio_parameters) {
     RF_API_status_t status = RF_API_SUCCESS;
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
     RFE_status_t rfe_status = RFE_SUCCESS;
+    RFE_configuration_t rfe_config;
     S2LP_modulation_t modulation = S2LP_MODULATION_NONE;
     sfx_u32 datarate_bps = 0;
     sfx_u32 deviation_hz = 0;
+    sfx_s8 transceiver_tx_power_dbm = 0;
 #ifdef SIGFOX_EP_PARAMETERS_CHECK
     // Check parameter.
     if (radio_parameters == SIGFOX_NULL) {
@@ -547,7 +551,9 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t* radio_parameters) {
         RF_API_LATENCY_MS[RF_API_LATENCY_SEND_STOP] = ((1500) / ((sfx_u32) (radio_parameters->bit_rate_bps)));
 #endif
         // Switch to TX.
-        rfe_status = RFE_set_path(RFE_PATH_TX);
+        rfe_config.path = RFE_PATH_TX;
+        rfe_config.expected_tx_power_dbm = (radio_parameters->tx_power_dbm_eirp);
+        rfe_status = RFE_set_path(&rfe_config, &transceiver_tx_power_dbm);
         RFE_stack_exit_error(ERROR_BASE_RFE, (RF_API_status_t) RF_API_ERROR_DRIVER_RFE);
         break;
 #ifdef SIGFOX_EP_BIDIRECTIONAL
@@ -575,7 +581,9 @@ RF_API_status_t RF_API_init(RF_API_radio_parameters_t* radio_parameters) {
         s2lp_status = S2LP_set_packet_format(SIGFOX_DL_PHY_CONTENT_SIZE_BYTES, S2LP_CRC_MODE_DISABLED);
         S2LP_stack_exit_error(ERROR_BASE_S2LP, (RF_API_status_t) RF_API_ERROR_DRIVER_S2LP);
         // Switch to RX.
-        rfe_status = RFE_set_path(RFE_PATH_RX);
+        rfe_config.path = RFE_PATH_RX;
+        rfe_config.expected_tx_power_dbm = 0;
+        rfe_status = RFE_set_path(&rfe_config, NULL);
         RFE_stack_exit_error(ERROR_BASE_RFE, (RF_API_status_t) RF_API_ERROR_DRIVER_RFE);
         break;
 #endif
@@ -593,6 +601,7 @@ RF_API_status_t RF_API_de_init(void) {
     RF_API_status_t status = RF_API_SUCCESS;
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
     RFE_status_t rfe_status = RFE_SUCCESS;
+    RFE_configuration_t rfe_config;
     // Turn transceiver off.
     s2lp_status = S2LP_shutdown(1);
     // Check status.
@@ -601,7 +610,9 @@ RF_API_status_t RF_API_de_init(void) {
         status = (RF_API_status_t) RF_API_ERROR_DRIVER_S2LP;
     }
     // Disable front-end.
-    rfe_status = RFE_set_path(RFE_PATH_NONE);
+    rfe_config.path = RFE_PATH_NONE;
+    rfe_config.expected_tx_power_dbm = 0;
+    rfe_status = RFE_set_path(&rfe_config, NULL);
     // Check status.
     if (rfe_status != RFE_SUCCESS) {
         RFE_stack_error(ERROR_BASE_RFE);
@@ -809,8 +820,9 @@ RF_API_status_t RF_API_get_version(sfx_u8 **version, sfx_u8 *version_size_char) 
 /*******************************************************************/
 void RF_API_error(void) {
     // Force all front-end off.
-    S2LP_shutdown(1);
-    RFE_set_path(RFE_PATH_NONE);
-    POWER_disable(POWER_REQUESTER_ID_RF_API, POWER_DOMAIN_RADIO);
+    RF_API_de_init();
+    RF_API_sleep();
 }
 #endif
+
+#endif /* UHFM HW1.0 */

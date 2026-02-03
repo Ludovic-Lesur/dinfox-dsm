@@ -49,43 +49,57 @@
  * \def SIGFOX_EP_RC2_ZONE
  * \brief Support radio configuration zone 2 (Brazil, Canada, Mexico, Puerto Rico and USA).
  *******************************************************************/
-//#define SIGFOX_EP_RC2_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC2_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC3_LBT_ZONE
  * \brief Support radio configuration zone 3 (Japan) with LBT.
  *******************************************************************/
-//#define SIGFOX_EP_RC3_LBT_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC3_LBT_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC3_LDC_ZONE
  * \brief Support radio configuration zone 3 (Japan) with LDC.
  *******************************************************************/
-//#define SIGFOX_EP_RC3_LDC_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC3_LDC_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC4_ZONE
  * \brief Support radio configuration zone 4 (Latin America and Asia Pacific).
  *******************************************************************/
-//#define SIGFOX_EP_RC4_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC4_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC5_ZONE
  * \brief Support radio configuration zone 5 (South-Corea).
  *******************************************************************/
-//#define SIGFOX_EP_RC5_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC5_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC6_ZONE
  * \brief Support radio configuration zone 6 (India).
  *******************************************************************/
-//#define SIGFOX_EP_RC6_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC6_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_RC7_ZONE
  * \brief Support radio configuration zone 7 (Russia).
  *******************************************************************/
-//#define SIGFOX_EP_RC7_ZONE
+#ifdef HW2_0
+#define SIGFOX_EP_RC7_ZONE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_APPLICATION_MESSAGES
@@ -97,7 +111,9 @@
  * \def SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
  * \brief Support uplink control keep alive message if defined.
  *******************************************************************/
-//#define SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
+#ifdef HW2_0
+#define SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_BIDIRECTIONAL
@@ -145,20 +161,26 @@
  * \def SIGFOX_EP_TX_POWER_DBM_EIRP
  * \brief If defined, give the only TX power supported by the radio. Otherwise the value is dynamically given when sending a message.
  *******************************************************************/
+#ifdef HW1_0
 #define SIGFOX_EP_TX_POWER_DBM_EIRP             14
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_T_IFU_MS
  * \brief If defined, give the fixed inter-frame delay used between uplink frames of a same message (0 to 2000ms). Otherwise value is dynamically given when sending a message.
  * \brief Value 0 disables the delay and associated timers to optimize memory space.
  *******************************************************************/
+#ifdef HW1_0
 #define SIGFOX_EP_T_IFU_MS                      1000
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_T_CONF_MS
  * \brief If defined, give the fixed delay between downlink frame reception and uplink confirmation message (1400 to 4000ms). Otherwise value is dynamically given when sending a message.
  *******************************************************************/
+#ifdef HW1_0
 #define SIGFOX_EP_T_CONF_MS                     2000
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_UL_PAYLOAD_SIZE
@@ -171,7 +193,9 @@
  * \def SIGFOX_EP_AES_HW
  * \brief If defined, enable hardware AES through MCU API function. Otherwise the embedded driver from TI is used.
  *******************************************************************/
+#ifdef HW1_0
 #define SIGFOX_EP_AES_HW
+#endif
 
 /*!******************************************************************
  * \def SIGFOX_EP_CRC_HW

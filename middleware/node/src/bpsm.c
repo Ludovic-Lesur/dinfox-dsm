@@ -176,8 +176,9 @@ void BPSM_refresh_register(uint8_t reg_addr) {
 NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    uint32_t low_threshold_mv = 0;
-    uint32_t high_threshold_mv = 0;
+    int32_t low_threshold_mv = 0;
+    int32_t high_threshold_mv = 0;
+    int32_t generic_s32 = 0;
     uint32_t generic_u32 = 0;
     // Check address.
     switch (reg_addr) {

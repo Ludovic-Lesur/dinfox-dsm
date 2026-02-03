@@ -353,7 +353,7 @@ NODE_status_t NODE_process(void) {
 #if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM) || (defined DSM_IOUT_INDICATOR))
     NODE_status_t node_status = NODE_SUCCESS;
 #endif
-#ifdef DSM_RGB_LED
+#if ((defined DSM_RGB_LED) && !(defined MPMCM))
     LED_status_t led_status = LED_SUCCESS;
 #endif
 #if ((defined MPMCM) && (defined MPMCM_LINKY_TIC_ENABLE))
@@ -389,7 +389,7 @@ NODE_status_t NODE_process(void) {
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
 #endif
-#ifdef DSM_RGB_LED
+#if ((defined DSM_RGB_LED) && !(defined MPMCM))
     led_status = LED_process();
     LED_stack_error(ERROR_BASE_LED);
 #endif

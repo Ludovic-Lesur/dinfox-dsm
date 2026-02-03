@@ -44,7 +44,12 @@
 #define ADC_CHANNEL_IOUT            ADC_CHANNEL_IN0
 #endif
 #ifdef UHFM
+#ifdef HW1_0
 #define ADC_CHANNEL_VRF             ADC_CHANNEL_IN7
+#endif
+#ifdef HW2_0
+#define ADC_CHANNEL_VRF             ADC_CHANNEL_IN3
+#endif
 #endif
 #ifdef GPSM
 #define ADC_CHANNEL_VGPS            ADC_CHANNEL_IN0
@@ -283,22 +288,51 @@ extern const GPIO_pin_t GPIO_CHRG_ST;
 extern const GPIO_pin_t GPIO_CHRG_EN;
 #endif
 #ifdef UHFM
-// RF power enable.
+// RF front-end control.
 extern const GPIO_pin_t GPIO_RF_POWER_ENABLE;
+#ifdef HW1_0
 extern const GPIO_pin_t GPIO_RF_TX_ENABLE;
 extern const GPIO_pin_t GPIO_RF_RX_ENABLE;
+#endif
+#ifdef HW2_0
+extern const GPIO_pin_t GPIO_RF_TX_ENABLE;
+extern const GPIO_pin_t GPIO_RF_PA_ENABLE;
+extern const GPIO_pin_t GPIO_RF_FLT_DISABLE;
+extern const GPIO_pin_t GPIO_RF_SKY_CTX;
+extern const GPIO_pin_t GPIO_RF_SKY_CPS;
+extern const GPIO_pin_t GPIO_RF_SKY_PATH;
+extern const GPIO_pin_t GPIO_RF_SW_V1;
+extern const GPIO_pin_t GPIO_RF_SW_V2;
+extern const GPIO_pin_t GPIO_LED_TX;
+extern const GPIO_pin_t GPIO_LED_RX;
+#endif
 // TCXO power control.
 extern const GPIO_pin_t GPIO_TCXO_POWER_ENABLE;
 // Radio SPI.
+#ifdef HW1_0
 extern const GPIO_pin_t GPIO_S2LP_CS;
 extern const SPI_gpio_t SPI_GPIO_S2LP;
-// S2LP GPIOs.
+#endif
+#ifdef HW2_0
+extern const GPIO_pin_t GPIO_SX1261_CS;
+extern const SPI_gpio_t SPI_GPIO_SX1261;
+#endif
+// Radio GPIOs.
+#ifdef HW1_0
 extern const GPIO_pin_t GPIO_S2LP_SDN;
 extern const GPIO_pin_t GPIO_S2LP_GPIO0;
+#endif
+#ifdef HW2_0
+extern const GPIO_pin_t GPIO_SX1261_NRESET;
+extern const GPIO_pin_t GPIO_SX1261_BUSY;
+extern const GPIO_pin_t GPIO_SX1261_DIO1;
+#endif
 // Test points.
 extern const GPIO_pin_t GPIO_TP1;
+#ifdef HW1_0
 extern const GPIO_pin_t GPIO_TP2;
 extern const GPIO_pin_t GPIO_TP3;
+#endif
 #endif
 #ifdef GPSM
 // GPS.

@@ -18,8 +18,10 @@
 
 #define STM32L0XX_DRIVERS_DMA_CHANNEL_MASK              0x00
 
-#ifdef UHFM
+#if ((defined UHFM) && (defined HW1_0))
 #define STM32L0XX_DRIVERS_EXTI_GPIO_MASK                0x0800
+#elif ((defined UHFM) && (defined HW2_0))
+#define STM32L0XX_DRIVERS_EXTI_GPIO_MASK                0x0100
 #else
 #define STM32L0XX_DRIVERS_EXTI_GPIO_MASK                0x0000
 #endif

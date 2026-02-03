@@ -17,6 +17,7 @@
 #include "mcu_mapping.h"
 #include "s2lp.h"
 #include "sht3x.h"
+#include "sx126x.h"
 #include "types.h"
 
 /*** POWER local global variables ***/
@@ -82,7 +83,12 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
     GPS_status_t gps_status = GPS_SUCCESS;
 #endif
 #ifdef UHFM
+#ifdef HW1_0
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
+#endif
+#ifdef HW2_0
+    SX126X_status_t sx126x_status = SX126X_SUCCESS;
+#endif
     RFE_status_t rfe_status = RFE_SUCCESS;
 #endif
     uint32_t delay_ms = 0;
@@ -128,8 +134,14 @@ void POWER_enable(POWER_requester_id_t requester_id, POWER_domain_t domain, LPTI
         GPIO_write(&GPIO_RF_POWER_ENABLE, 1);
         delay_ms = POWER_ON_DELAY_MS_RADIO;
         // Init attached drivers.
+#ifdef HW1_0
         s2lp_status = S2LP_init();
         _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
+#endif
+#ifdef HW2_0
+        sx126x_status = SX126X_init();
+        _POWER_stack_driver_error(sx126x_status, SX126X_SUCCESS, ERROR_BASE_SX1261, POWER_ERROR_DRIVER_SX126X);
+#endif
         rfe_status = RFE_init();
         _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
         break;
@@ -200,7 +212,12 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
     GPS_status_t gps_status = GPS_SUCCESS;
 #endif
 #ifdef UHFM
+#ifdef HW1_0
     S2LP_status_t s2lp_status = S2LP_SUCCESS;
+#endif
+#ifdef HW2_0
+    SX126X_status_t sx126x_status = SX126X_SUCCESS;
+#endif
     RFE_status_t rfe_status = RFE_SUCCESS;
 #endif
     // Check parameters.
@@ -238,8 +255,14 @@ void POWER_disable(POWER_requester_id_t requester_id, POWER_domain_t domain) {
         break;
     case POWER_DOMAIN_RADIO:
         // Release attached drivers.
+#ifdef HW1_0
         s2lp_status = S2LP_de_init();
         _POWER_stack_driver_error(s2lp_status, S2LP_SUCCESS, ERROR_BASE_S2LP, POWER_ERROR_DRIVER_S2LP);
+#endif
+#ifdef HW2_0
+        sx126x_status = SX126X_de_init();
+        _POWER_stack_driver_error(sx126x_status, SX126X_SUCCESS, ERROR_BASE_SX1261, POWER_ERROR_DRIVER_SX126X);
+#endif
         rfe_status = RFE_de_init();
         _POWER_stack_driver_error(rfe_status, RFE_SUCCESS, ERROR_BASE_RFE, POWER_ERROR_DRIVER_RFE);
         // Turn radio off.

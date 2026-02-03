@@ -112,6 +112,7 @@ void DDRM_refresh_register(uint8_t reg_addr) {
 NODE_status_t DDRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
+    int32_t generic_s32 = 0;
     uint32_t generic_u32 = 0;
     // Check address.
     switch (reg_addr) {
