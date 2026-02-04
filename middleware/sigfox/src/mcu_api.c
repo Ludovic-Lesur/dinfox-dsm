@@ -283,8 +283,14 @@ errors:
 MCU_API_status_t MCU_API_get_ep_key(sfx_u8 *ep_key, sfx_u8 ep_key_size_bytes) {
     // Local variables.
     MCU_API_status_t status = MCU_API_SUCCESS;
-    SIGFOX_UNUSED(ep_key);
-    SIGFOX_UNUSED(ep_key_size_bytes);
+    NVM_status_t nvm_status = NVM_SUCCESS;
+    uint8_t idx = 0;
+    // Get device key.
+    for (idx = 0; idx < ep_key_size_bytes; idx++) {
+       nvm_status = NVM_read_byte((NVM_ADDRESS_SIGFOX_EP_KEY + idx), &(ep_key[idx]));
+       NVM_stack_exit_error(ERROR_BASE_NVM, (MCU_API_status_t) MCU_API_ERROR_DRIVER_NVM);
+    }
+errors:
     SIGFOX_RETURN();
 }
 #endif
