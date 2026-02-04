@@ -46,7 +46,7 @@ static RFE_context_t rfe_ctx;
 #endif
 
 #ifdef HW2_0
-static const int8_t RFE_TRANSCEIVER_TX_POWER_DBM[RFE_TX_POWER_TABLE_SIZE] = { (-13), (-12), (-11), (-10), (-9), (-8), (-7), (-6), (-5), (-4), (-3), (-2) };
+static const int8_t RFE_TRANSCEIVER_TX_POWER_DBM[RFE_TX_POWER_TABLE_SIZE] = { (-10), (-9), (-8), (-7), (-6), (-4), (-2), (0), (3), (3), (3), (3) };
 #endif
 
 /*** RFE functions ***/
@@ -182,35 +182,35 @@ RFE_status_t RFE_set_path(RFE_configuration_t* configuration, int8_t* transceive
 #endif
 #ifdef HW2_0
         // Check LNA configuration.
-        if ((configuration->rx_lna_enable) == 0) {
+        if ((configuration->rx_lna_enable) != 0) {
             // Check LNA frequency range.
             if (((configuration->rf_frequency_hz) < SKY66423_RF_FREQUENCY_HZ_MIN) || ((configuration->rf_frequency_hz) > SKY66423_RF_FREQUENCY_HZ_MAX)) {
                 status = RFE_ERROR_LNA_FREQUENCY_RANGE;
                 goto errors;
             }
-            // Bypass LNA.
-            GPIO_write(&GPIO_RF_SKY_CTX, 1);
-            GPIO_write(&GPIO_RF_SKY_CPS, 0);
-            GPIO_write(&GPIO_RF_SKY_PATH, 1);
-        }
-        else {
             // Enable LNA.
             GPIO_write(&GPIO_RF_SKY_CTX, 0);
             GPIO_write(&GPIO_RF_SKY_CPS, 0);
             GPIO_write(&GPIO_RF_SKY_PATH, 0);
         }
-        // Check filter configuration.
-        if ((configuration->rx_filter_enable) == 0) {
-            // Bypass filter.
-            GPIO_write(&GPIO_RF_FLT_DISABLE, 1);
-            GPIO_write(&GPIO_RF_SW_V1, 1);
-            GPIO_write(&GPIO_RF_SW_V2, 0);
-        }
         else {
+            // Bypass LNA.
+            GPIO_write(&GPIO_RF_SKY_CTX, 1);
+            GPIO_write(&GPIO_RF_SKY_CPS, 0);
+            GPIO_write(&GPIO_RF_SKY_PATH, 1);
+        }
+        // Check filter configuration.
+        if ((configuration->rx_filter_enable) != 0) {
             // Enable filter.
             GPIO_write(&GPIO_RF_FLT_DISABLE, 0);
             GPIO_write(&GPIO_RF_SW_V1, 1);
             GPIO_write(&GPIO_RF_SW_V2, 1);
+        }
+        else {
+            // Bypass filter.
+            GPIO_write(&GPIO_RF_FLT_DISABLE, 1);
+            GPIO_write(&GPIO_RF_SW_V1, 1);
+            GPIO_write(&GPIO_RF_SW_V2, 0);
         }
         // Enable RX.
         GPIO_write(&GPIO_RF_TX_ENABLE, 0);
