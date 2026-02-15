@@ -5,7 +5,7 @@ This repository contains the embedded software of the **DinFox slaves modules**:
 * LVRM: **relay** with configurable coil voltage and controlled by the MCU.
 * BPSM: **backup power supply** for the DINFox system.
 * DDRM: **DC-DC converter** with configurable output voltage and controlled by the MCU.
-* UHFM: **433 / 868 MHz modem** for radio monitoring and remote control.
+* UHFM: **Sub-GHz modem** for radio monitoring and remote control.
 * RRM: **rectifier and regulator** with configurable output voltage and controlled by the MCU.
 * SM: **sensors module** with embedded temperature/humidity sensor, 4 analog inputs, 4 digital I/Os and external shield support (with I2C and I/Os).
 * GPSM: **GPS module** with active antenna support.
@@ -24,7 +24,8 @@ The boards were designed on **Circuit Maker V2.0**. Below is the list of hardwar
 | [LVRM HW2.0](https://365.altium.com/files/5F3B7EA9-DD07-4C07-B750-9D2D3ABDA776) | Initial version with bistable relay. | :white_check_mark: |
 | [BPSM HW1.0](https://365.altium.com/files/BAC116F3-F512-4102-9D47-53DF0FB6E9C0) | Initial version. | :white_check_mark: |
 | [DDRM HW1.0](https://365.altium.com/files/1BA47FD8-3599-4BA0-8A3B-857EFF1E8E58) | Initial version. | :white_check_mark: |
-| [UHFM HW1.0](https://365.altium.com/files/C3D2D8A0-D05C-40FD-AE3A-D0FEBA8A509F) | Initial version. | :white_check_mark: |
+| [UHFM HW1.0](https://365.altium.com/files/C3D2D8A0-D05C-40FD-AE3A-D0FEBA8A509F) | Initial version. | :x: |
+| [UHFM HW2.0](https://365.altium.com/files/022E57D6-9B88-414B-A520-93281961BF8E) | New radio front-end with extended features. | :white_check_mark: |
 | [RRM HW1.0](https://365.altium.com/files/F33BFE95-AA3E-4890-B685-3A09A36AE775) | Initial version. | :white_check_mark: |
 | [SM HW1.0](https://365.altium.com/files/73597AC1-81FF-471F-A80B-41D71904A039) | Initial version. | :white_check_mark: |
 | [GPSM HW1.0](https://365.altium.com/files/86BC5960-7B01-45BE-B7A5-BD8ADBCE5E8D) | Initial version. | :white_check_mark: |
