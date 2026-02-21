@@ -124,12 +124,10 @@ NODE_status_t SM_mtrg_callback(void) {
 #if ((defined SM_AIN_ENABLE) || (defined SM_DIO_ENABLE) ||  (defined SM_DIGITAL_SENSORS_ENABLE))
     uint32_t unused_mask = 0;
 #endif
+#ifdef SM_AIN_ENABLE
     // Reset data.
     (*reg_analog_data_1_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_1].error_value;
     (*reg_analog_data_2_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_2].error_value;
-    (*reg_analog_data_2_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_3].error_value;
-    (*reg_digital_data_1_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_DIGITAL_DATA].error_value;
-#ifdef SM_AIN_ENABLE
     // AIN0.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN0_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
@@ -148,6 +146,8 @@ NODE_status_t SM_mtrg_callback(void) {
     SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_VAIN3);
 #endif
 #ifdef SM_DIO_ENABLE
+    // Reset data.
+    (*reg_digital_data_1_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_DIGITAL_DATA].error_value;
     // Turn digital front-end on.
     POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_DIGITAL, LPTIM_DELAY_MODE_SLEEP);
     // DIO0.
@@ -168,6 +168,8 @@ NODE_status_t SM_mtrg_callback(void) {
     SWREG_write_field(reg_digital_data_1_ptr, &unused_mask, (uint32_t) state, SM_REGISTER_DIGITAL_DATA_MASK_DIO3);
 #endif
 #ifdef SM_DIGITAL_SENSORS_ENABLE
+    // Reset data.
+    (*reg_analog_data_3_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_3].error_value;
     // Turn sensors on.
     POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
     // TAMB.
