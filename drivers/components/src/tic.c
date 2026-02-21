@@ -303,6 +303,7 @@ TIC_status_t TIC_init(void) {
     // Init USART interface.
     usart_config.clock = RCC_CLOCK_HSI;
     usart_config.baud_rate = TIC_BAUD_RATE;
+    usart_config.auto_baud_rate_mode = USART_AUTO_BAUD_RATE_MODE_DISABLED;
     usart_config.parity = USART_PARITY_EVEN;
     usart_config.nvic_priority = NVIC_PRIORITY_TIC;
     usart_config.rxne_irq_callback = NULL;
