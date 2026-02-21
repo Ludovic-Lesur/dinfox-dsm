@@ -382,8 +382,8 @@ NODE_status_t BCM_low_voltage_detector_process(void) {
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
     uint32_t uptime_seconds = RTC_get_uptime_seconds();
-    uint32_t* reg_config_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_1]);
-    uint32_t* reg_config_2_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_ANALOG_DATA_2]);
+    uint32_t* reg_config_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_CONFIGURATION_1]);
+    uint32_t* reg_config_2_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_CONFIGURATION_2]);
     uint32_t* reg_status_1_ptr = &(NODE_RAM_REGISTER[BCM_REGISTER_ADDRESS_STATUS_1]);
     int32_t vstr_mv = 0;
     uint32_t unused_mask = 0;
