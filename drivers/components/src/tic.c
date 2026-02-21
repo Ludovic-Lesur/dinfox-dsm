@@ -279,6 +279,7 @@ TIC_status_t TIC_init(void) {
     USART_status_t usart_status = USART_SUCCESS;
     DMA_configuration_t dma_config;
     USART_configuration_t usart_config;
+    uint32_t usart_rdr_register_address = 0;
 #endif
     uint32_t idx = 0;
     // Init context.
@@ -309,13 +310,15 @@ TIC_status_t TIC_init(void) {
     usart_config.match_character = TIC_FRAME_END_CHAR;
     usart_status = USART_init(USART_INSTANCE_TIC, &USART_GPIO_TIC, &usart_config);
     USART_exit_error(TIC_ERROR_BASE_USART);
+    usart_status = USART_get_rdr_register_address(USART_INSTANCE_TIC, &usart_rdr_register_address);
+    USART_exit_error(TIC_ERROR_BASE_USART);
     // Init DMA.
     dma_config.direction = DMA_DIRECTION_PERIPHERAL_TO_MEMORY;
     dma_config.flags.all = 0;
     dma_config.flags.memory_increment = 1;
     dma_config.memory_address = (uint32_t) &(tic_ctx.dma_buffer0);
     dma_config.memory_data_size = DMA_DATA_SIZE_8_BITS;
-    dma_config.peripheral_address = USART_get_rdr_register_address(USART_INSTANCE_TIC);
+    dma_config.peripheral_address = usart_rdr_register_address;
     dma_config.peripheral_data_size = DMA_DATA_SIZE_8_BITS;
     dma_config.number_of_data = TIC_RX_BUFFER_SIZE;
     dma_config.priority = DMA_PRIORITY_VERY_HIGH;
