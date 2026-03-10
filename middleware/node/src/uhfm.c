@@ -513,8 +513,8 @@ NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_TX_POWER,
             UNA_get_dbm,
             UNA_convert_dbm,
-            < RFE_RF_OUTPUT_POWER_MIN,
-            > RFE_RF_OUTPUT_POWER_MAX,
+            < RFE_RF_OUTPUT_POWER_DBM_MIN,
+            > RFE_RF_OUTPUT_POWER_DBM_MAX,
             UHFM_DEFAULT_TX_POWER_DBM_EIRP,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -640,7 +640,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VRF_MV, &vrf_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Write field.
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_VRF_TX);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_TX_VOLTAGE);
     // Stop CW.
     status = _UHFM_set_continuous_transmission(0, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_DEFAULT_TX_POWER_DBM_EIRP);
     if (status != NODE_SUCCESS) goto errors;
@@ -654,7 +654,7 @@ NODE_status_t UHFM_mtrg_callback(void) {
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VRF_MV, &vrf_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Write field.
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_VRF_RX);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_RX_VOLTAGE);
     // Stop RX.
     status = _UHFM_set_continuous_reception(0, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
     if (status != NODE_SUCCESS) goto errors;

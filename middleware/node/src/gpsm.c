@@ -67,14 +67,14 @@ typedef union {
 /*******************************************************************/
 typedef struct {
     GPSM_flags_t flags;
-    UNA_bit_representation_t bkenst;
+    UNA_bit_representation_t backup_control_state;
 } GPSM_context_t;
 
 /*** GPSM local global variables ***/
 
 static GPSM_context_t gpsm_ctx = {
     .flags.all = 0,
-    .bkenst = UNA_BIT_ERROR
+    .backup_control_state = UNA_BIT_ERROR
 };
 
 /*** GPSM local functions ***/
@@ -137,7 +137,7 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
     uint32_t* reg_time_data_2_ptr = &(NODE_RAM_REGISTER[GPSM_REGISTER_ADDRESS_TIME_DATA_2]);
     uint32_t unused_mask = 0;
     // Reset status flag.
-    SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_TFS);
+    SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_TFST);
     // Turn GPS on.
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
@@ -147,7 +147,7 @@ static NODE_status_t _GPSM_ttrg_callback(void) {
     // Check acquisition status.
     if (gps_acquisition_status == GPS_ACQUISITION_SUCCESS) {
         // Update status flag.
-        SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, GPSM_REGISTER_STATUS_1_MASK_TFS);
+        SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, GPSM_REGISTER_STATUS_1_MASK_TFST);
         // Fill registers with time data.
         SWREG_write_field(reg_time_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_year(gps_time.year), GPSM_REGISTER_TIME_DATA_0_MASK_YEAR);
         SWREG_write_field(reg_time_data_0_ptr, &unused_mask, (uint32_t) gps_time.month, GPSM_REGISTER_TIME_DATA_0_MASK_MONTH);
@@ -182,7 +182,7 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
     uint32_t* reg_geoloc_data_3_ptr = &(NODE_RAM_REGISTER[GPSM_REGISTER_ADDRESS_GEOLOC_DATA_3]);
     uint32_t unused_mask = 0;
     // Reset status flag.
-    SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_GFS);
+    SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, GPSM_REGISTER_STATUS_1_MASK_GFST);
     // Turn GPS on.
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
@@ -192,7 +192,7 @@ static NODE_status_t _GPSM_gtrg_callback(void) {
     // Check acquisition status.
     if (gps_acquisition_status == GPS_ACQUISITION_SUCCESS) {
         // Update status flag.
-        SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, GPSM_REGISTER_STATUS_1_MASK_GFS);
+        SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, GPSM_REGISTER_STATUS_1_MASK_GFST);
         // Fill registers with geoloc data.
         SWREG_write_field(reg_geoloc_data_0_ptr, &unused_mask, (uint32_t) gps_position.lat_north_flag, GPSM_REGISTER_GEOLOC_DATA_0_MASK_NF);
         SWREG_write_field(reg_geoloc_data_0_ptr, &unused_mask, gps_position.lat_seconds, GPSM_REGISTER_GEOLOC_DATA_0_MASK_SECOND);
@@ -249,7 +249,7 @@ NODE_status_t GPSM_init(void) {
     NODE_status_t status = NODE_SUCCESS;
     // Init context.
     gpsm_ctx.flags.all = 0;
-    gpsm_ctx.bkenst = UNA_BIT_ERROR;
+    gpsm_ctx.backup_control_state = UNA_BIT_ERROR;
     return status;
 }
 
@@ -289,13 +289,13 @@ void GPSM_refresh_register(uint8_t reg_addr) {
     switch (reg_addr) {
     case GPSM_REGISTER_ADDRESS_STATUS_1:
 #ifdef GPSM_BKEN_FORCED_HARDWARE
-        gpsm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
+        gpsm_ctx.backup_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
-        gpsm_ctx.bkenst = (GPS_get_backup_voltage() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        gpsm_ctx.backup_control_state = (GPS_get_backup_voltage() == 0) ? UNA_BIT_0 : UNA_BIT_1;
 #endif
         SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.flags.tpen), GPSM_REGISTER_STATUS_1_MASK_TPST);
         SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.flags.pwen), GPSM_REGISTER_STATUS_1_MASK_PWST);
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.bkenst), GPSM_REGISTER_STATUS_1_MASK_BKENST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.backup_control_state), GPSM_REGISTER_STATUS_1_MASK_BKCS);
         break;
     default:
         // Nothing to do for other registers.
@@ -464,7 +464,7 @@ NODE_status_t GPSM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
             // Read bit.
             bken = SWREG_read_field((*reg_ptr), GPSM_REGISTER_CONTROL_1_MASK_BKEN);
             // Compare to current state.
-            if (bken != gpsm_ctx.bkenst) {
+            if (bken != gpsm_ctx.backup_control_state) {
                 // Set backup voltage.
                 gps_status = GPS_set_backup_voltage(bken);
                 GPS_exit_error(NODE_ERROR_BASE_GPS);
@@ -497,11 +497,11 @@ NODE_status_t GPSM_mtrg_callback(void) {
     // GPS voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VGPS_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VGPS);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_GPS_VOLTAGE);
     // Active antenna voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VANT_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_VANT);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_ANTENNA_VOLTAGE);
     // Turn GPS off is possible.
     status = _GPSM_power_request(0);
     if (status != NODE_SUCCESS) goto errors;

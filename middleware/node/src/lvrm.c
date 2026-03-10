@@ -38,16 +38,16 @@
 #define LVRM_FLAG_BMSF                      0b0
 #endif
 #ifdef LVRM_RLST_FORCED_HARDWARE
-#define LVRM_FLAG_RLFH                      0b1
+#define LVRM_FLAG_RCFH                      0b1
 #else
-#define LVRM_FLAG_RLFH                      0b0
+#define LVRM_FLAG_RCFH                      0b0
 #endif
 
 /*** LVRM local structures ***/
 
 /*******************************************************************/
 typedef struct {
-    UNA_bit_representation_t rlstst;
+    UNA_bit_representation_t regulator_control_state;
 #ifdef LVRM_MODE_BMS
     uint32_t bms_process_next_time_seconds;
 #endif
@@ -56,7 +56,7 @@ typedef struct {
 /*** LVRM local global variables ***/
 
 static LVRM_context_t lvrm_ctx = {
-    .rlstst = UNA_BIT_ERROR,
+    .regulator_control_state = UNA_BIT_ERROR,
 #ifdef LVRM_MODE_BMS
     .bms_process_next_time_seconds = 0,
 #endif
@@ -69,7 +69,7 @@ NODE_status_t LVRM_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     // Init context.
-    lvrm_ctx.rlstst = UNA_BIT_ERROR;
+    lvrm_ctx.regulator_control_state = UNA_BIT_ERROR;
 #ifdef LVRM_MODE_BMS
     lvrm_ctx.bms_process_next_time_seconds = 0;
 #endif
@@ -84,15 +84,15 @@ void LVRM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     switch (reg_addr) {
     case LVRM_REGISTER_ADDRESS_FLAGS_1:
         SWREG_write_field(reg_value, &unused_mask, LVRM_FLAG_BMSF, LVRM_REGISTER_FLAGS_1_MASK_BMSF);
-        SWREG_write_field(reg_value, &unused_mask, LVRM_FLAG_RLFH, LVRM_REGISTER_FLAGS_1_MASK_RLFH);
+        SWREG_write_field(reg_value, &unused_mask, LVRM_FLAG_RCFH, LVRM_REGISTER_FLAGS_1_MASK_RCFH);
         break;
 #ifdef DSM_NVM_FACTORY_RESET
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_write_field(reg_value, &unused_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD);
-        SWREG_write_field(reg_value, &unused_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, LVRM_BMS_VBATT_LOW_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL);
+        SWREG_write_field(reg_value, &unused_mask, LVRM_BMS_VBATT_HIGH_THRESHOLD_MV, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH);
         break;
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_1:
-        SWREG_write_field(reg_value, &unused_mask, LVRM_IOUT_OFFSET_UA_DEFAULT, LVRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET);
+        SWREG_write_field(reg_value, &unused_mask, LVRM_IOUT_OFFSET_UA_DEFAULT, LVRM_REGISTER_CONFIGURATION_1_MASK_OUTPUT_CURRENT_OFFSET);
         break;
 #endif
     default:
@@ -110,21 +110,21 @@ void LVRM_refresh_register(uint8_t reg_addr) {
     case LVRM_REGISTER_ADDRESS_STATUS_1:
         // Relay state.
 #ifdef LVRM_RLST_FORCED_HARDWARE
-        lvrm_ctx.rlstst = UNA_BIT_FORCED_HARDWARE;
+        lvrm_ctx.regulator_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
         switch (LOAD_get_output_state()) {
         case 0:
-            lvrm_ctx.rlstst = UNA_BIT_0;
+            lvrm_ctx.regulator_control_state = UNA_BIT_0;
             break;
         case 1:
-            lvrm_ctx.rlstst = UNA_BIT_1;
+            lvrm_ctx.regulator_control_state = UNA_BIT_1;
             break;
         default:
-            lvrm_ctx.rlstst = UNA_BIT_ERROR;
+            lvrm_ctx.regulator_control_state = UNA_BIT_ERROR;
             break;
         }
 #endif
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) lvrm_ctx.rlstst), LVRM_REGISTER_STATUS_1_MASK_RLSTST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) lvrm_ctx.regulator_control_state), LVRM_REGISTER_STATUS_1_MASK_RCS);
         break;
     default:
         break;
@@ -145,10 +145,10 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
     switch (reg_addr) {
 #ifdef LVRM_MODE_BMS
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_0:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD));
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH));
         SWREG_secure_field(
-            LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD,
+            LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
             > LVRM_VBATT_THRESHOLD_MV_MAX,
@@ -157,7 +157,7 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
-            LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD,
+            LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
             > LVRM_VBATT_THRESHOLD_MV_MAX,
@@ -169,7 +169,7 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
 #endif
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_1:
         SWREG_secure_field(
-            LVRM_REGISTER_CONFIGURATION_1_MASK_IOUT_OFFSET,
+            LVRM_REGISTER_CONFIGURATION_1_MASK_OUTPUT_CURRENT_OFFSET,
             UNA_get_ua,
             UNA_convert_ua,
             > LVRM_IOUT_OFFSET_UA_MAX,
@@ -188,8 +188,8 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
 NODE_status_t LVRM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
 #if !(defined LVRM_RLST_FORCED_HARDWARE) && !(defined LVRM_MODE_BMS)
+    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
     LOAD_status_t load_status = LOAD_SUCCESS;
     UNA_bit_representation_t rlst = UNA_BIT_ERROR;
 #endif
@@ -197,7 +197,7 @@ NODE_status_t LVRM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
     switch (reg_addr) {
     case LVRM_REGISTER_ADDRESS_CONTROL_1:
         // RLST.
-        if ((reg_mask & LVRM_REGISTER_CONTROL_1_MASK_RLST) != 0) {
+        if ((reg_mask & LVRM_REGISTER_CONTROL_1_MASK_RC) != 0) {
             // Check pin mode.
 #ifdef LVRM_RLST_FORCED_HARDWARE
             status = NODE_ERROR_FORCED_HARDWARE;
@@ -208,9 +208,9 @@ NODE_status_t LVRM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
             goto errors;
 #else
             // Read bit.
-            rlst = SWREG_read_field((*reg_ptr), LVRM_REGISTER_CONTROL_1_MASK_RLST);
+            rlst = SWREG_read_field((*reg_ptr), LVRM_REGISTER_CONTROL_1_MASK_RC);
             // Compare to current state.
-            if (rlst != lvrm_ctx.rlstst) {
+            if (rlst != lvrm_ctx.regulator_control_state) {
                 // Set relay state.
                 load_status = LOAD_set_output_state(rlst);
                 LOAD_exit_error(NODE_ERROR_BASE_LOAD);
@@ -244,18 +244,18 @@ NODE_status_t LVRM_mtrg_callback(void) {
     // Relay common voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vcom_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vcom_mv), LVRM_REGISTER_ANALOG_DATA_1_MASK_VCOM);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vcom_mv), LVRM_REGISTER_ANALOG_DATA_1_MASK_INPUT_VOLTAGE);
     // Relay output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VOUT_MV, &vout_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vout_mv), LVRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vout_mv), LVRM_REGISTER_ANALOG_DATA_1_MASK_OUTPUT_VOLTAGE);
     // Check IOUT measurement validity.
     if (vcom_mv >= LVRM_IOUT_MEASUREMENT_VCOM_MIN_MV) {
         // Relay output current.
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &iout_ua);
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     }
-    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_ua(iout_ua), LVRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_ua(iout_ua), LVRM_REGISTER_ANALOG_DATA_2_MASK_OUTPUT_CURRENT);
 errors:
     return status;
 }
@@ -280,12 +280,12 @@ NODE_status_t LVRM_bms_process(void) {
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vbatt_mv);
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
         // Check battery voltage.
-        if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_LOW_THRESHOLD))) {
+        if (vbatt_mv < UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL))) {
             // Open relay.
             load_status = LOAD_set_output_state(0);
             LOAD_exit_error(NODE_ERROR_BASE_LOAD);
         }
-        if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_VBATT_HIGH_THRESHOLD))) {
+        if (vbatt_mv > UNA_get_mv(SWREG_read_field(reg_config_0, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH))) {
             // Close relay.
             load_status = LOAD_set_output_state(1);
             LOAD_exit_error(NODE_ERROR_BASE_LOAD);

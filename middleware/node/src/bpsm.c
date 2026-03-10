@@ -45,17 +45,17 @@
 #define BPSM_FLAG_CHST                              0b0
 #endif
 #ifdef BPSM_CHEN_FORCED_HARDWARE
-#define BPSM_FLAG_CHEN                              0b1
+#define BPSM_FLAG_CCFH                              0b1
 #else
-#define BPSM_FLAG_CHEN                              0b0
+#define BPSM_FLAG_CCFH                              0b0
 #endif
 
 /*** BPSM local structures ***/
 
 /*******************************************************************/
 typedef struct {
-    UNA_bit_representation_t chenst;
-    UNA_bit_representation_t bkenst;
+    UNA_bit_representation_t charge_control_state;
+    UNA_bit_representation_t backup_control_state;
     uint32_t lvf_cvf_update_next_time_seconds;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     int32_t vsrc_mv;
@@ -67,8 +67,8 @@ typedef struct {
 /*** BPSM local global variables ***/
 
 static BPSM_context_t bpsm_ctx = {
-    .chenst = UNA_BIT_ERROR,
-    .bkenst = UNA_BIT_ERROR,
+    .charge_control_state = UNA_BIT_ERROR,
+    .backup_control_state = UNA_BIT_ERROR,
     .lvf_cvf_update_next_time_seconds = 0,
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     .vsrc_mv = 0,
@@ -84,8 +84,8 @@ NODE_status_t BPSM_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     // Init context.
-    bpsm_ctx.chenst = UNA_BIT_ERROR;
-    bpsm_ctx.bkenst = UNA_BIT_ERROR;
+    bpsm_ctx.charge_control_state = UNA_BIT_ERROR;
+    bpsm_ctx.backup_control_state = UNA_BIT_ERROR;
     bpsm_ctx.lvf_cvf_update_next_time_seconds = 0;
 #ifndef BPSM_CHEN_FORCED_HARDWARE
     bpsm_ctx.vsrc_mv = 0;
@@ -104,20 +104,20 @@ void BPSM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     case BPSM_REGISTER_ADDRESS_FLAGS_1:
         SWREG_write_field(reg_value, &unused_mask, BPSM_FLAG_BKFH, BPSM_REGISTER_FLAGS_1_MASK_BKFH);
         SWREG_write_field(reg_value, &unused_mask, BPSM_FLAG_CHST, BPSM_REGISTER_FLAGS_1_MASK_CSFH);
-        SWREG_write_field(reg_value, &unused_mask, BPSM_FLAG_CHEN, BPSM_REGISTER_FLAGS_1_MASK_CEFH);
+        SWREG_write_field(reg_value, &unused_mask, BPSM_FLAG_CCFH, BPSM_REGISTER_FLAGS_1_MASK_CCFH);
         break;
 #ifdef DSM_NVM_FACTORY_RESET
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS), BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD);
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_seconds(BPSM_CHEN_TOGGLE_PERIOD_SECONDS), BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_TOGGLE_PERIOD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CHEN_VSRC_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_SOURCE_VOLTAGE_TH);
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_LVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD);
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_LVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_LVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_LVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH);
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_2:
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD);
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CVF_LOW_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_mv(BPSM_CVF_HIGH_THRESHOLD_MV), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH);
         break;
 #endif
     default:
@@ -142,29 +142,29 @@ void BPSM_refresh_register(uint8_t reg_addr) {
 #endif
         // Charge state.
 #ifdef BPSM_CHEN_FORCED_HARDWARE
-        bpsm_ctx.chenst = UNA_BIT_FORCED_HARDWARE;
+        bpsm_ctx.charge_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
-        bpsm_ctx.chenst = LOAD_get_charge_state();
+        bpsm_ctx.charge_control_state = LOAD_get_charge_state();
 #endif
         // Backup_output state.
 #ifdef BPSM_BKEN_FORCED_HARDWARE
-        bpsm_ctx.bkenst = UNA_BIT_FORCED_HARDWARE;
+        bpsm_ctx.backup_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
         switch (LOAD_get_output_state()) {
         case 0:
-            bpsm_ctx.bkenst = UNA_BIT_0;
+            bpsm_ctx.backup_control_state = UNA_BIT_0;
             break;
         case 1:
-            bpsm_ctx.bkenst = UNA_BIT_1;
+            bpsm_ctx.backup_control_state = UNA_BIT_1;
             break;
         default:
-            bpsm_ctx.bkenst = UNA_BIT_ERROR;
+            bpsm_ctx.backup_control_state = UNA_BIT_ERROR;
             break;
         }
 #endif
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) chrgst), BPSM_REGISTER_STATUS_1_MASK_CHRGST);
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bpsm_ctx.chenst), BPSM_REGISTER_STATUS_1_MASK_CHENST);
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bpsm_ctx.bkenst), BPSM_REGISTER_STATUS_1_MASK_BKENST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) chrgst), BPSM_REGISTER_STATUS_1_MASK_CHST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bpsm_ctx.charge_control_state), BPSM_REGISTER_STATUS_1_MASK_CHCS);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) bpsm_ctx.backup_control_state), BPSM_REGISTER_STATUS_1_MASK_BKCS);
         break;
     default:
         // Nothing to do for other registers.
@@ -184,7 +184,7 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
     switch (reg_addr) {
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_0:
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD,
+            BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_SOURCE_VOLTAGE_TH,
             UNA_get_mv,
             UNA_convert_mv,
             > BPSM_CHEN_THRESHOLD_MV_MAX,
@@ -193,7 +193,7 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD,
+            BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_TOGGLE_PERIOD,
             UNA_get_seconds,
             UNA_convert_seconds,
             < BPSM_CHEN_TOGGLE_PERIOD_SECONDS_MIN,
@@ -203,10 +203,10 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
         );
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_1:
-        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD));
-        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD));
+        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL));
+        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH));
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD,
+            BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
             > BPSM_XVF_THRESHOLD_MV_MAX,
@@ -215,7 +215,7 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD,
+            BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
             > BPSM_XVF_THRESHOLD_MV_MAX,
@@ -225,10 +225,10 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
         );
         break;
     case BPSM_REGISTER_ADDRESS_CONFIGURATION_2:
-        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD));
-        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD));
+        low_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL));
+        high_threshold_mv = UNA_get_mv(SWREG_read_field(new_reg_value, BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH));
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD,
+            BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
             > BPSM_XVF_THRESHOLD_MV_MAX,
@@ -237,7 +237,7 @@ NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
-            BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD,
+            BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
             > BPSM_XVF_THRESHOLD_MV_MAX,
@@ -279,7 +279,7 @@ NODE_status_t BPSM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
                 // Read bit.
                 chen = SWREG_read_field((*reg_ptr), BPSM_REGISTER_CONTROL_1_MASK_CHEN);
                 // Compare to current state.
-                if (chen != bpsm_ctx.chenst) {
+                if (chen != bpsm_ctx.charge_control_state) {
                     // Set charge state.
                     LOAD_set_charge_state(chen);
                 }
@@ -300,7 +300,7 @@ NODE_status_t BPSM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
             // Read bit.
             bken = SWREG_read_field((*reg_ptr), BPSM_REGISTER_CONTROL_1_MASK_BKEN);
             // Compare to current state.
-            if (bken != bpsm_ctx.bkenst) {
+            if (bken != bpsm_ctx.backup_control_state) {
                 // Set output state.
                 load_status = LOAD_set_output_state(bken);
                 LOAD_exit_error(NODE_ERROR_BASE_LOAD);
@@ -331,15 +331,15 @@ NODE_status_t BPSM_mtrg_callback(void) {
     // Source voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSRC_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSRC);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_SOURCE_VOLTAGE);
     // Storage element voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VSTR_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_VSTR);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_1_MASK_STORAGE_VOLTAGE);
     // Backup output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VBKP_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_2_MASK_VBKP);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), BPSM_REGISTER_ANALOG_DATA_2_MASK_BACKUP_VOLTAGE);
 errors:
     return status;
 }
@@ -369,17 +369,17 @@ NODE_status_t BPSM_low_voltage_detector_process(void) {
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
 #endif
         // Update LVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_LOW_THRESHOLD))) {
+        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL))) {
             SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, BPSM_REGISTER_STATUS_1_MASK_LVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_HIGH_THRESHOLD))) {
+        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_1_ptr), BPSM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH))) {
             SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, BPSM_REGISTER_STATUS_1_MASK_LVF);
         }
         // Update CVF flag.
-        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_LOW_THRESHOLD))) {
+        if (vstr_mv < UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL))) {
             SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b1, BPSM_REGISTER_STATUS_1_MASK_CVF);
         }
-        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_HIGH_THRESHOLD))) {
+        if (vstr_mv > UNA_get_mv(SWREG_read_field((*reg_config_2_ptr), BPSM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH))) {
             SWREG_write_field(reg_status_1_ptr, &unused_mask, 0b0, BPSM_REGISTER_STATUS_1_MASK_CVF);
         }
     }
@@ -402,13 +402,13 @@ NODE_status_t BPSM_charge_process(void) {
     if (uptime_seconds >= bpsm_ctx.chen_toggle_next_time_seconds) {
         // Update times.
         bpsm_ctx.chen_toggle_previous_time_seconds = uptime_seconds;
-        bpsm_ctx.chen_toggle_next_time_seconds = uptime_seconds + ((uint32_t) UNA_get_seconds(SWREG_read_field(reg_config_0, BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_TOGGLE_PERIOD)));
+        bpsm_ctx.chen_toggle_next_time_seconds = uptime_seconds + ((uint32_t) UNA_get_seconds(SWREG_read_field(reg_config_0, BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_TOGGLE_PERIOD)));
         // Disable charge.
         LOAD_set_charge_state(0);
     }
     if (uptime_seconds >= (bpsm_ctx.chen_toggle_previous_time_seconds + BPSM_CHEN_TOGGLE_DURATION_SECONDS)) {
         // Check voltage.
-        if (bpsm_ctx.vsrc_mv >= UNA_get_mv(SWREG_read_field(reg_config_0, BPSM_REGISTER_CONFIGURATION_0_MASK_CHEN_THRESHOLD))) {
+        if (bpsm_ctx.vsrc_mv >= UNA_get_mv(SWREG_read_field(reg_config_0, BPSM_REGISTER_CONFIGURATION_0_MASK_CHARGE_SOURCE_VOLTAGE_TH))) {
             // Enable charge.
             LOAD_set_charge_state(1);
         }

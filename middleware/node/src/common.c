@@ -69,11 +69,11 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
     // MCU voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VMCU_MV, &vmcu_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_mv(vmcu_mv), COMMON_REGISTER_ANALOG_DATA_0_MASK_VMCU);
+    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_mv(vmcu_mv), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_VOLTAGE);
     // MCU temperature.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_TMCU_DEGREES, &tmcu_degrees);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_tenth_degrees(tmcu_degrees * 10), COMMON_REGISTER_ANALOG_DATA_0_MASK_TMCU);
+    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_tenth_degrees(tmcu_degrees * 10), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_TEMPERATURE);
     // Specific analog data.
     status = NODE_MTRG_CALLBACK();
     if (status != NODE_SUCCESS) goto errors;

@@ -173,12 +173,12 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         // Convert to mV.
 #ifdef MPMCM
 #ifndef MPMCM_ANALOG_MEASURE_ENABLE
-        adc_status = ADC_compute_vmcu(adc_data_12bits, analog_data);
+        adc_status = ADC_compute_mcu_voltage(adc_data_12bits, analog_data);
 #else
         (*analog_data) = ANALOG_VMCU_MV_DEFAULT;
 #endif
 #else
-        adc_status = ADC_compute_vmcu(adc_data_12bits, ADC_get_vrefint_voltage_mv(), analog_data);
+        adc_status = ADC_compute_mcu_voltage(adc_data_12bits, ADC_get_vrefint_voltage_mv(), analog_data);
 #endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         // Update local value for temperature computation.
@@ -197,12 +197,12 @@ ANALOG_status_t ANALOG_convert_channel(ANALOG_channel_t channel, int32_t* analog
         // Convert to degrees.
 #ifdef MPMCM
 #ifndef MPMCM_ANALOG_MEASURE_ENABLE
-        adc_status = ADC_compute_tmcu(adc_data_12bits, analog_data);
+        adc_status = ADC_compute_mcu_temperature(adc_data_12bits, analog_data);
 #else
         (*analog_data) = ANALOG_TMCU_DEGREES_DEFAULT;
 #endif
 #else
-        adc_status = ADC_compute_tmcu(analog_ctx.vmcu_mv, adc_data_12bits, analog_data);
+        adc_status = ADC_compute_mcu_temperature(analog_ctx.vmcu_mv, adc_data_12bits, analog_data);
 #endif
         ADC_exit_error(ANALOG_ERROR_BASE_ADC);
         break;

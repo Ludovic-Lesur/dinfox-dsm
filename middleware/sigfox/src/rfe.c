@@ -26,7 +26,7 @@
 #ifdef HW2_0
 #define RFE_RX_LNA_GAIN_DB          SKY66423_RX_LNA_GAIN_DB
 #define RFE_RX_FILTER_LOSS_DB       3
-#define RFE_TX_POWER_TABLE_SIZE     (RFE_RF_OUTPUT_POWER_MAX - SX126X_OUTPUT_POWER_MAX)
+#define RFE_TX_POWER_TABLE_SIZE     (RFE_RF_OUTPUT_POWER_DBM_MAX - SX126X_RF_OUTPUT_POWER_DBM_MAX)
 #endif
 
 /*** RFE local structures ***/
@@ -107,7 +107,7 @@ RFE_status_t RFE_set_path(RFE_configuration_t* configuration, int8_t* transceive
         status = RFE_ERROR_NULL_PARAMETER;
         goto errors;
     }
-    if (((configuration->expected_tx_power_dbm) < RFE_RF_OUTPUT_POWER_MIN) || ((configuration->expected_tx_power_dbm) > RFE_RF_OUTPUT_POWER_MAX)) {
+    if (((configuration->expected_tx_power_dbm) < RFE_RF_OUTPUT_POWER_DBM_MIN) || ((configuration->expected_tx_power_dbm) > RFE_RF_OUTPUT_POWER_DBM_MAX)) {
         status = RFE_ERROR_TX_POWER_RANGE;
         goto errors;
     }
@@ -144,7 +144,7 @@ RFE_status_t RFE_set_path(RFE_configuration_t* configuration, int8_t* transceive
 #endif
 #ifdef HW2_0
         // Check expected power.
-        if ((configuration->expected_tx_power_dbm) > SX126X_OUTPUT_POWER_MAX) {
+        if ((configuration->expected_tx_power_dbm) > SX126X_RF_OUTPUT_POWER_DBM_MAX) {
             // Check PA frequency range.
             if (((configuration->rf_frequency_hz) < SKY66423_RF_FREQUENCY_HZ_MIN) || ((configuration->rf_frequency_hz) > SKY66423_RF_FREQUENCY_HZ_MAX)) {
                 status = RFE_ERROR_PA_FREQUENCY_RANGE;
@@ -157,7 +157,7 @@ RFE_status_t RFE_set_path(RFE_configuration_t* configuration, int8_t* transceive
             GPIO_write(&GPIO_RF_SW_V2, 0);
             // Update transceiver output power.
             if (transceiver_tx_power_dbm != NULL) {
-               (*transceiver_tx_power_dbm) = RFE_TRANSCEIVER_TX_POWER_DBM[(configuration->expected_tx_power_dbm) - SX126X_OUTPUT_POWER_MAX - 1];
+               (*transceiver_tx_power_dbm) = RFE_TRANSCEIVER_TX_POWER_DBM[(configuration->expected_tx_power_dbm) - SX126X_RF_OUTPUT_POWER_DBM_MAX - 1];
             }
         }
         else {

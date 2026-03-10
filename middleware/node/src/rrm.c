@@ -29,22 +29,22 @@
 #define RRM_IOUT_OFFSET_UA_DEFAULT          0
 
 #ifdef RRM_REN_FORCED_HARDWARE
-#define RRM_FLAG_RFH                        0b1
+#define RRM_FLAG_RCFH                       0b1
 #else
-#define RRM_FLAG_RFH                        0b0
+#define RRM_FLAG_RCFH                       0b0
 #endif
 
 /*** RRM local structures ***/
 
 /*******************************************************************/
 typedef struct {
-    UNA_bit_representation_t renst;
+    UNA_bit_representation_t regulator_control_state;
 } RRM_context_t;
 
 /*** RRM local global variables ***/
 
 static RRM_context_t rrm_ctx = {
-    .renst = UNA_BIT_ERROR
+    .regulator_control_state = UNA_BIT_ERROR
 };
 
 /*** RRM functions ***/
@@ -54,7 +54,7 @@ NODE_status_t RRM_init(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     // Init context.
-    rrm_ctx.renst = UNA_BIT_ERROR;
+    rrm_ctx.regulator_control_state = UNA_BIT_ERROR;
     return status;
 }
 
@@ -65,11 +65,11 @@ void RRM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     // Check address.
     switch (reg_addr) {
     case RRM_REGISTER_ADDRESS_FLAGS_1:
-        SWREG_write_field(reg_value, &unused_mask, RRM_FLAG_RFH, RRM_REGISTER_FLAGS_1_MASK_RFH);
+        SWREG_write_field(reg_value, &unused_mask, RRM_FLAG_RCFH, RRM_REGISTER_FLAGS_1_MASK_RCFH);
         break;
 #ifdef DSM_NVM_FACTORY_RESET
     case RRM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_write_field(reg_value, &unused_mask, RRM_IOUT_OFFSET_UA_DEFAULT, RRM_REGISTER_CONFIGURATION_0_MASK_IOUT_OFFSET);
+        SWREG_write_field(reg_value, &unused_mask, RRM_IOUT_OFFSET_UA_DEFAULT, RRM_REGISTER_CONFIGURATION_0_MASK_OUTPUT_CURRENT_OFFSET);
         break;
 #endif
     default:
@@ -87,21 +87,21 @@ void RRM_refresh_register(uint8_t reg_addr) {
     case RRM_REGISTER_ADDRESS_STATUS_1:
         // Regulator state.
 #ifdef RRM_REN_FORCED_HARDWARE
-        rrm_ctx.renst = UNA_BIT_FORCED_HARDWARE;
+        rrm_ctx.regulator_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
         switch (LOAD_get_output_state()) {
         case 0:
-            rrm_ctx.renst = UNA_BIT_0;
+            rrm_ctx.regulator_control_state = UNA_BIT_0;
             break;
         case 1:
-            rrm_ctx.renst = UNA_BIT_1;
+            rrm_ctx.regulator_control_state = UNA_BIT_1;
             break;
         default:
-            rrm_ctx.renst = UNA_BIT_ERROR;
+            rrm_ctx.regulator_control_state = UNA_BIT_ERROR;
             break;
         }
 #endif
-        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) rrm_ctx.renst), RRM_REGISTER_STATUS_1_MASK_RENST);
+        SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) rrm_ctx.regulator_control_state), RRM_REGISTER_STATUS_1_MASK_RCS);
         break;
     default:
         break;
@@ -118,7 +118,7 @@ NODE_status_t RRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint
     switch (reg_addr) {
     case RRM_REGISTER_ADDRESS_CONFIGURATION_0:
         SWREG_secure_field(
-            RRM_REGISTER_CONFIGURATION_0_MASK_IOUT_OFFSET,
+            RRM_REGISTER_CONFIGURATION_0_MASK_OUTPUT_CURRENT_OFFSET,
             UNA_get_ua,
             UNA_convert_ua,
             > RRM_IOUT_OFFSET_UA_MAX,
@@ -155,7 +155,7 @@ NODE_status_t RRM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
             // Read bit.
             ren = SWREG_read_field((*reg_ptr), RRM_REGISTER_CONTROL_1_MASK_REN);
             // Compare to current state.
-            if (ren != rrm_ctx.renst) {
+            if (ren != rrm_ctx.regulator_control_state) {
                 // Set regulator state.
                 load_status = LOAD_set_output_state(ren);
                 LOAD_exit_error(NODE_ERROR_BASE_LOAD);
@@ -188,18 +188,18 @@ NODE_status_t RRM_mtrg_callback(void) {
     // Regulator input voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VIN_MV, &vin_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vin_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_VIN);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vin_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_INPUT_VOLTAGE);
     // Regulator output voltage.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VOUT_MV, &vout_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vout_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_VOUT);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vout_mv), RRM_REGISTER_ANALOG_DATA_1_MASK_OUTPUT_VOLTAGE);
     // Check IOUT measurement validity.
     if (vout_mv >= RRM_IOUT_MEASUREMENT_VSH_MIN_MV) {
         // Regulator output current.
         analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_IOUT_UA, &iout_ua);
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     }
-    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_ua(iout_ua), RRM_REGISTER_ANALOG_DATA_2_MASK_IOUT);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_ua(iout_ua), RRM_REGISTER_ANALOG_DATA_2_MASK_OUTPUT_CURRENT);
 errors:
     return status;
 }

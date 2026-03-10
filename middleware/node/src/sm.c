@@ -131,19 +131,19 @@ NODE_status_t SM_mtrg_callback(void) {
     // AIN0.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN0_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_VAIN0);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_AIN0_VOLTAGE);
     // AIN0.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN1_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_VAIN1);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_AIN1_VOLTAGE);
     // AIN2.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN2_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_VAIN2);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_AIN2_VOLTAGE);
     // AIN3.
     analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN3_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_VAIN3);
+    SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_AIN3_VOLTAGE);
 #endif
 #ifdef SM_DIO_ENABLE
     // Reset data.
@@ -175,8 +175,8 @@ NODE_status_t SM_mtrg_callback(void) {
     // TAMB.
     sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_tenth_degrees, &hamb_percent);
     SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
-    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, UNA_convert_tenth_degrees(tamb_tenth_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TAMB);
-    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, (uint32_t) hamb_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HAMB);
+    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, UNA_convert_tenth_degrees(tamb_tenth_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TEMPERATURE);
+    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, (uint32_t) hamb_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HUMIDITY);
 #endif
 errors:
 #ifdef SM_DIO_ENABLE
