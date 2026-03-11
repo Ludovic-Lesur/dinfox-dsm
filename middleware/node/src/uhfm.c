@@ -39,31 +39,31 @@
 
 /*** UHFM local macros ***/
 
-#define UHFM_DEFAULT_RF_FREQUENCY_HZ            868130000
+#define UHFM_RF_FREQUENCY_HZ_DEFAULT            868130000
 #ifdef SIGFOX_EP_TX_POWER_DBM_EIRP
-#define UHFM_DEFAULT_TX_POWER_DBM_EIRP          SIGFOX_EP_TX_POWER_DBM_EIRP
+#define UHFM_RF_OUTPUT_POWER_DBM_DEFAULT        SIGFOX_EP_TX_POWER_DBM_EIRP
 #else
-#define UHFM_DEFAULT_TX_POWER_DBM_EIRP          14
+#define UHFM_RF_OUTPUT_POWER_DBM_DEFAULT        14
 #endif
 #define UHFM_DEFAULT_RLBY                       0b0
 #define UHFM_DEFAULT_RFBY                       0b0
 #if (defined SIGFOX_EP_RC1_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC1
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC1
 #elif (defined SIGFOX_EP_RC2_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC2
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC2
 #elif (defined SIGFOX_EP_RC3_LDC_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC3
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC3
 #elif (defined SIGFOX_EP_RC4_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC4
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC4
 #elif (defined SIGFOX_EP_RC5_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC5
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC5
 #elif (defined SIGFOX_EP_RC6_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC6
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC6
 #elif (defined SIGFOX_EP_RC7_ZONE)
-#define UHFM_DEFAULT_SIGFOX_RC                  UHFM_SIGFOX_RC_RC7
+#define UHFM_SIGFOX_RC_DEFAULT                  UHFM_SIGFOX_RC_RC7
 #endif
-#define UHFM_DEFAULT_BR                         0b1
-#define UHFM_DEFAULT_NFR                        0b11
+#define UHFM_BR_DEFAULT                         0b1
+#define UHFM_NFR_DEFAULT                        0b11
 #ifdef SIGFOX_EP_T_IFU_MS
 #define UHFM_T_IFU_MS_MIN                       SIGFOX_EP_T_IFU_MS
 #define UHFM_T_IFU_MS_MAX                       SIGFOX_EP_T_IFU_MS
@@ -466,12 +466,12 @@ NODE_status_t UHFM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     switch (reg_addr) {
 #ifdef DSM_NVM_FACTORY_RESET
     case UHFM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_write_field(reg_value, &unused_mask, UNA_convert_dbm(UHFM_DEFAULT_TX_POWER_DBM_EIRP), UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_TX_POWER);
+        SWREG_write_field(reg_value, &unused_mask, UNA_convert_dbm(UHFM_RF_OUTPUT_POWER_DBM_DEFAULT), UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_TX_POWER);
         SWREG_write_field(reg_value, &unused_mask, UHFM_DEFAULT_RLBY, UHFM_REGISTER_CONFIGURATION_0_MASK_RLBY);
         SWREG_write_field(reg_value, &unused_mask, UHFM_DEFAULT_RFBY, UHFM_REGISTER_CONFIGURATION_0_MASK_RFBY);
-        SWREG_write_field(reg_value, &unused_mask, UHFM_DEFAULT_SIGFOX_RC, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
-        SWREG_write_field(reg_value, &unused_mask, UHFM_DEFAULT_BR, UHFM_REGISTER_CONFIGURATION_0_MASK_SBR);
-        SWREG_write_field(reg_value, &unused_mask, UHFM_DEFAULT_NFR, UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR);
+        SWREG_write_field(reg_value, &unused_mask, UHFM_SIGFOX_RC_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
+        SWREG_write_field(reg_value, &unused_mask, UHFM_BR_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SBR);
+        SWREG_write_field(reg_value, &unused_mask, UHFM_NFR_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR);
         break;
     case UHFM_REGISTER_ADDRESS_CONFIGURATION_1:
         SWREG_write_field(reg_value, &unused_mask, UHFM_T_IFU_MS_DEFAULT, UHFM_REGISTER_CONFIGURATION_1_MASK_SIGFOX_T_IFU);
@@ -515,7 +515,7 @@ NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             UNA_convert_dbm,
             < RFE_RF_OUTPUT_POWER_DBM_MIN,
             > RFE_RF_OUTPUT_POWER_DBM_MAX,
-            UHFM_DEFAULT_TX_POWER_DBM_EIRP,
+            UHFM_RF_OUTPUT_POWER_DBM_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
 #ifdef HW1_0
@@ -534,11 +534,11 @@ NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
         if (rc_valid == 0) {
             // Force default.
             (*reg_mask) &= (~UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
-            SWREG_write_field(reg_value, &generic_u32, UHFM_DEFAULT_SIGFOX_RC, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
+            SWREG_write_field(reg_value, &generic_u32, UHFM_SIGFOX_RC_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
             status = NODE_ERROR_REGISTER_FIELD_VALUE;
         }
         // Check number of frame(s).
-        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR,,, == 0b00, > 0b11, UHFM_DEFAULT_NFR, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR,,, == 0b00, > 0b11, UHFM_NFR_DEFAULT, status = NODE_ERROR_REGISTER_FIELD_VALUE);
         break;
     case UHFM_REGISTER_ADDRESS_CONFIGURATION_1:
         // Check T_IFU.
@@ -626,23 +626,23 @@ NODE_status_t UHFM_mtrg_callback(void) {
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
     LPTIM_status_t lptim_status = LPTIM_SUCCESS;
     uint32_t* reg_analog_data_1_ptr = &(NODE_RAM_REGISTER[UHFM_REGISTER_ADDRESS_ANALOG_DATA_1]);
-    int32_t vrf_mv = 0;
+    int32_t radio_voltage_mv = 0;
     uint32_t unused_mask = 0;
     // Reset data.
     (*reg_analog_data_1_ptr) = NODE_REGISTER[UHFM_REGISTER_ADDRESS_ANALOG_DATA_1].error_value;
     // Start CW.
-    status = _UHFM_set_continuous_transmission(1, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_DEFAULT_TX_POWER_DBM_EIRP);
+    status = _UHFM_set_continuous_transmission(1, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_RF_OUTPUT_POWER_DBM_DEFAULT);
     if (status != NODE_SUCCESS) goto errors;
     // Stabilization delay.
     lptim_status = LPTIM_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
     LPTIM_exit_error(NODE_ERROR_BASE_LPTIM);
-    // VRF_TX.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VRF_MV, &vrf_mv);
+    // Radio TX voltage.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_RADIO_VOLTAGE_MV, &radio_voltage_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Write field.
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_TX_VOLTAGE);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(radio_voltage_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_TX_VOLTAGE);
     // Stop CW.
-    status = _UHFM_set_continuous_transmission(0, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_DEFAULT_TX_POWER_DBM_EIRP);
+    status = _UHFM_set_continuous_transmission(0, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ, UHFM_RF_OUTPUT_POWER_DBM_DEFAULT);
     if (status != NODE_SUCCESS) goto errors;
     // Start RX.
     status = _UHFM_set_continuous_reception(1, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
@@ -650,11 +650,11 @@ NODE_status_t UHFM_mtrg_callback(void) {
     // Stabilization delay.
     lptim_status = LPTIM_delay_milliseconds(UHFM_ADC_RADIO_STABILIZATION_DELAY_MS, LPTIM_DELAY_MODE_SLEEP);
     LPTIM_exit_error(NODE_ERROR_BASE_LPTIM);
-    // VRF_RX.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VRF_MV, &vrf_mv);
+    // Radio RX voltage.
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_RADIO_VOLTAGE_MV, &radio_voltage_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Write field.
-    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(vrf_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_RX_VOLTAGE);
+    SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(radio_voltage_mv), UHFM_REGISTER_ANALOG_DATA_1_MASK_RADIO_RX_VOLTAGE);
     // Stop RX.
     status = _UHFM_set_continuous_reception(0, UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ);
     if (status != NODE_SUCCESS) goto errors;

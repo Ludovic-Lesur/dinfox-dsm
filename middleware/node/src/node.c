@@ -43,47 +43,47 @@
 
 /*** NODE local macros ***/
 
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
 #ifdef BCM
-#define NODE_IOUT_CHANNEL_INPUT_VOLTAGE         ANALOG_CHANNEL_VSRC_MV
-#define NODE_IOUT_CHANNEL                       ANALOG_CHANNEL_ISTR_UA
+#define NODE_OUTPUT_CURRENT_CHANNEL_INPUT_VOLTAGE           ANALOG_CHANNEL_SOURCE_VOLTAGE_MV
+#define NODE_OUTPUT_CURRENT_CHANNEL                         ANALOG_CHANNEL_CHARGE_CURRENT_UA
 #else
-#define NODE_IOUT_CHANNEL_INPUT_VOLTAGE         ANALOG_CHANNEL_VIN_MV
-#define NODE_IOUT_CHANNEL                       ANALOG_CHANNEL_IOUT_UA
+#define NODE_OUTPUT_CURRENT_CHANNEL_INPUT_VOLTAGE           ANALOG_CHANNEL_INPUT_VOLTAGE_MV
+#define NODE_OUTPUT_CURRENT_CHANNEL                         ANALOG_CHANNEL_OUTPUT_CURRENT_UA
 #endif
-#define NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS   60
-#define NODE_IOUT_INDICATOR_PERIOD_SECONDS      10
-#define NODE_IOUT_INDICATOR_RANGE               7
-#define NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV  6000
-#define NODE_IOUT_INDICATOR_BLINK_DURATION_US   2000000
+#define NODE_OUTPUT_CURRENT_MEASUREMENT_PERIOD_SECONDS      60
+#define NODE_OUTPUT_CURRENT_INDICATOR_PERIOD_SECONDS        10
+#define NODE_OUTPUT_CURRENT_INDICATOR_RANGE                 7
+#define NODE_OUTPUT_CURRENT_INDICATOR_POWER_TH_MV           000
+#define NODE_OUTPUT_CURRENT_INDICATOR_BLINK_DURATION_US     2000000
 #endif
 
 /*** NODE local structures ***/
 
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
 /*******************************************************************/
 typedef struct {
     int32_t threshold_ua;
     LED_color_t led_color;
-} NODE_iout_indicator_t;
+} NODE_output_current_indicator_t;
 #endif
 
 
 /*******************************************************************/
 typedef struct {
     uint8_t internal_access;
-#ifdef DSM_IOUT_INDICATOR
-    uint32_t iout_measurements_next_time_seconds;
-    uint32_t iout_indicator_next_time_seconds;
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
+    uint32_t output_current_measurement_next_time_seconds;
+    uint32_t output_current_indicator_next_time_seconds;
     int32_t input_voltage_mv;
-    int32_t iout_ua;
+    int32_t output_current_ua;
 #endif
 } NODE_context_t;
 
 /*** NODE local global variables ***/
 
-#ifdef DSM_IOUT_INDICATOR
-static const NODE_iout_indicator_t NODE_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE] = {
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
+static const NODE_output_current_indicator_t NODE_OUTPUT_CURRENT_INDICATOR[NODE_OUTPUT_CURRENT_INDICATOR_RANGE] = {
     {0,       LED_COLOR_GREEN},
     {50000,   LED_COLOR_YELLOW},
     {500000,  LED_COLOR_RED},
@@ -96,31 +96,31 @@ static const NODE_iout_indicator_t NODE_IOUT_INDICATOR[NODE_IOUT_INDICATOR_RANGE
 
 static NODE_context_t node_ctx = {
     .internal_access = 0,
-#ifdef DSM_IOUT_INDICATOR
-    .iout_measurements_next_time_seconds = 0,
-    .iout_indicator_next_time_seconds = 0,
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
+    .output_current_measurement_next_time_seconds = 0,
+    .output_current_indicator_next_time_seconds = 0,
     .input_voltage_mv = 0,
-    .iout_ua = 0,
+    .output_current_ua = 0,
 #endif
 };
 
 /*** NODE local functions ***/
 
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
 /*******************************************************************/
-static NODE_status_t _NODE_iout_measurement(void) {
+static NODE_status_t _NODE_output_current_measurement(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_NODE, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // Check input voltage.
-    analog_status = ANALOG_convert_channel(NODE_IOUT_CHANNEL_INPUT_VOLTAGE, &(node_ctx.input_voltage_mv));
+    analog_status = ANALOG_convert_channel(NODE_OUTPUT_CURRENT_CHANNEL_INPUT_VOLTAGE, &(node_ctx.input_voltage_mv));
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     // Enable RGB LED only if power input supplies the board.
-    if (node_ctx.input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
+    if (node_ctx.input_voltage_mv > NODE_OUTPUT_CURRENT_INDICATOR_POWER_TH_MV) {
         // Read output current.
-        analog_status = ANALOG_convert_channel(NODE_IOUT_CHANNEL, &(node_ctx.iout_ua));
+        analog_status = ANALOG_convert_channel(NODE_OUTPUT_CURRENT_CHANNEL, &(node_ctx.output_current_ua));
         ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     }
 errors:
@@ -129,26 +129,26 @@ errors:
 }
 #endif
 
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
 /*******************************************************************/
-static NODE_status_t _NODE_iout_indicator(void) {
+static NODE_status_t _NODE_output_current_indicator(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     LED_status_t led_status = LED_SUCCESS;
     LED_color_t led_color;
-    uint8_t idx = NODE_IOUT_INDICATOR_RANGE;
+    uint8_t idx = NODE_OUTPUT_CURRENT_INDICATOR_RANGE;
     // Enable RGB LED only if power input supplies the board.
-    if (node_ctx.input_voltage_mv > NODE_IOUT_INDICATOR_POWER_THRESHOLD_MV) {
+    if (node_ctx.input_voltage_mv > NODE_OUTPUT_CURRENT_INDICATOR_POWER_TH_MV) {
         // Compute LED color according to output current..
         do {
             idx--;
             // Get range and corresponding color.
-            led_color = NODE_IOUT_INDICATOR[idx].led_color;
-            if (node_ctx.iout_ua >= NODE_IOUT_INDICATOR[idx].threshold_ua) break;
+            led_color = NODE_OUTPUT_CURRENT_INDICATOR[idx].led_color;
+            if (node_ctx.output_current_ua >= NODE_OUTPUT_CURRENT_INDICATOR[idx].threshold_ua) break;
         }
         while (idx > 0);
         // Blink LED.
-        led_status = LED_start_single_blink(NODE_IOUT_INDICATOR_BLINK_DURATION_US, led_color);
+        led_status = LED_start_single_blink(NODE_OUTPUT_CURRENT_INDICATOR_BLINK_DURATION_US, led_color);
         LED_exit_error(NODE_ERROR_BASE_LED);
     }
 errors:
@@ -259,11 +259,11 @@ NODE_status_t NODE_init(void) {
 #endif
     // Init context.
     node_ctx.internal_access = 1;
-#ifdef DSM_IOUT_INDICATOR
-    node_ctx.iout_measurements_next_time_seconds = 0;
-    node_ctx.iout_indicator_next_time_seconds = 0;
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
+    node_ctx.output_current_measurement_next_time_seconds = 0;
+    node_ctx.output_current_indicator_next_time_seconds = 0;
     node_ctx.input_voltage_mv = 0;
-    node_ctx.iout_ua = 0;
+    node_ctx.output_current_ua = 0;
 #endif
     // Init registers.
     for (reg_addr = 0; reg_addr < NODE_REGISTER_ADDRESS_LAST; reg_addr++) {
@@ -350,7 +350,7 @@ NODE_status_t NODE_de_init(void) {
 NODE_status_t NODE_process(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM) || (defined DSM_IOUT_INDICATOR))
+#if (((defined LVRM) && (defined LVRM_MODE_BMS)) || (defined BPSM) || (defined BCM) || (defined DSM_OUTPUT_CURRENT_INDICATOR))
     NODE_status_t node_status = NODE_SUCCESS;
 #endif
 #if ((defined DSM_RGB_LED) && !(defined MPMCM))
@@ -371,7 +371,7 @@ NODE_status_t NODE_process(void) {
 #ifdef BPSM
     node_status = BPSM_low_voltage_detector_process();
     NODE_stack_error(ERROR_BASE_NODE);
-#ifndef BPSM_CHEN_FORCED_HARDWARE
+#ifndef BPSM_CHARGE_CONTROL_FORCED_HARDWARE
     node_status = BPSM_charge_process();
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
@@ -384,7 +384,7 @@ NODE_status_t NODE_process(void) {
 #ifdef BCM
     node_status = BCM_low_voltage_detector_process();
     NODE_stack_error(ERROR_BASE_NODE);
-#ifndef BCM_CHEN_FORCED_HARDWARE
+#ifndef BCM_CHARGE_CONTROL_FORCED_HARDWARE
     node_status = BCM_charge_process();
     NODE_stack_error(ERROR_BASE_NODE);
 #endif
@@ -393,21 +393,21 @@ NODE_status_t NODE_process(void) {
     led_status = LED_process();
     LED_stack_error(ERROR_BASE_LED);
 #endif
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
     // Check measurements period.
-    if (RTC_get_uptime_seconds() >= node_ctx.iout_measurements_next_time_seconds) {
+    if (RTC_get_uptime_seconds() >= node_ctx.output_current_measurement_next_time_seconds) {
         // Update next time.
-        node_ctx.iout_measurements_next_time_seconds = RTC_get_uptime_seconds() + NODE_IOUT_MEASUREMENTS_PERIOD_SECONDS;
+        node_ctx.output_current_measurement_next_time_seconds = RTC_get_uptime_seconds() + NODE_OUTPUT_CURRENT_MEASUREMENT_PERIOD_SECONDS;
         // Perform measurements.
-        node_status = _NODE_iout_measurement();
+        node_status = _NODE_output_current_measurement();
         NODE_stack_error(ERROR_BASE_NODE);
     }
     // Check LED period.
-    if (RTC_get_uptime_seconds() >= node_ctx.iout_indicator_next_time_seconds) {
+    if (RTC_get_uptime_seconds() >= node_ctx.output_current_indicator_next_time_seconds) {
         // Update next time.
-        node_ctx.iout_indicator_next_time_seconds = RTC_get_uptime_seconds() + NODE_IOUT_INDICATOR_PERIOD_SECONDS;
+        node_ctx.output_current_indicator_next_time_seconds = RTC_get_uptime_seconds() + NODE_OUTPUT_CURRENT_INDICATOR_PERIOD_SECONDS;
         // Perform LED task.
-        node_status = _NODE_iout_indicator();
+        node_status = _NODE_output_current_indicator();
         NODE_stack_error(ERROR_BASE_NODE);
     }
 #endif
@@ -445,7 +445,7 @@ NODE_state_t NODE_get_state(void) {
 #ifdef MPMCM
     state = ((TIC_get_state() == TIC_STATE_OFF) && (MEASURE_get_state() == MEASURE_STATE_OFF) && (LED_get_state() == LED_STATE_OFF)) ? NODE_STATE_IDLE : NODE_STATE_RUNNING;
 #else
-#ifdef DSM_IOUT_INDICATOR
+#ifdef DSM_OUTPUT_CURRENT_INDICATOR
     state = (LED_get_state() == LED_STATE_OFF) ? NODE_STATE_IDLE : NODE_STATE_RUNNING;
 #endif
 #endif

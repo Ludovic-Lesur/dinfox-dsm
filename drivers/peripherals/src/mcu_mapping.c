@@ -66,53 +66,53 @@ static const GPIO_pin_t GPIO_LPUART1_NRE = { GPIOB, 1, 13, 0 };
 // ADC.
 #if ((defined LVRM) || (defined DDRM) || (defined RRM))
 #if ((defined LVRM) && (defined HW1_0))
-static const GPIO_pin_t GPIO_ADC_VIN_MEASURE =  { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t GPIO_ADC_VOUT_MEASURE = { GPIOA, 0, 4, 0 };
-static const GPIO_pin_t GPIO_ADC_IOUT_MEASURE = { GPIOA, 0, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_INPUT_VOLTAGE =  { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_VOLTAGE = { GPIOA, 0, 4, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_CURRENT = { GPIOA, 0, 0, 0 };
 #endif
 #if ((defined LVRM) && (defined HW2_0))
-static const GPIO_pin_t GPIO_ADC_VIN_MEASURE =  { GPIOA, 0, 0, 0 };
-static const GPIO_pin_t GPIO_ADC_VOUT_MEASURE = { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t GPIO_ADC_IOUT_MEASURE = { GPIOA, 0, 1, 0 };
+static const GPIO_pin_t GPIO_ADC_INPUT_VOLTAGE =  { GPIOA, 0, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_VOLTAGE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_CURRENT = { GPIOA, 0, 1, 0 };
 #endif
 #ifdef DDRM
-static const GPIO_pin_t GPIO_ADC_VIN_MEASURE =  { GPIOA, 0, 7, 0 };
-static const GPIO_pin_t GPIO_ADC_VOUT_MEASURE = { GPIOA, 0, 4, 0 };
-static const GPIO_pin_t GPIO_ADC_IOUT_MEASURE = { GPIOA, 0, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_INPUT_VOLTAGE =  { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_VOLTAGE = { GPIOA, 0, 4, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_CURRENT = { GPIOA, 0, 0, 0 };
 #endif
 #ifdef RRM
-static const GPIO_pin_t GPIO_ADC_VIN_MEASURE =  { GPIOA, 0, 7, 0 };
-static const GPIO_pin_t GPIO_ADC_VOUT_MEASURE = { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t GPIO_ADC_IOUT_MEASURE = { GPIOA, 0, 4, 0 };
+static const GPIO_pin_t GPIO_ADC_INPUT_VOLTAGE =  { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_VOLTAGE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t GPIO_ADC_OUTPUT_CURRENT = { GPIOA, 0, 4, 0 };
 #endif
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VIN_MEASURE, &GPIO_ADC_VOUT_MEASURE, &GPIO_ADC_IOUT_MEASURE };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_INPUT_VOLTAGE, &GPIO_ADC_OUTPUT_VOLTAGE, &GPIO_ADC_OUTPUT_CURRENT };
 #endif
 #ifdef BPSM
-static const GPIO_pin_t GPIO_ADC_VSRC_MEASURE = { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t GPIO_ADC_VSTR_MEASURE = { GPIOA, 0, 4, 0 };
-static const GPIO_pin_t GPIO_ADC_VBKP_MEASURE = { GPIOA, 0, 0, 0 };
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VSRC_MEASURE, &GPIO_ADC_VSTR_MEASURE, &GPIO_ADC_VBKP_MEASURE };
+static const GPIO_pin_t GPIO_ADC_SOURCE_VOLTAGE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t GPIO_ADC_STORAGE_VOLTAGE = { GPIOA, 0, 4, 0 };
+static const GPIO_pin_t GPIO_ADC_BACKUP_VOLTAGE = { GPIOA, 0, 0, 0 };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_SOURCE_VOLTAGE, &GPIO_ADC_STORAGE_VOLTAGE, &GPIO_ADC_BACKUP_VOLTAGE };
 #endif
 #ifdef UHFM
 #ifdef HW1_0
-static const GPIO_pin_t GPIO_ADC_VRF_MEASURE = { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_RADIO_VOLTAGE = { GPIOA, 0, 7, 0 };
 #endif
 #ifdef HW2_0
-static const GPIO_pin_t GPIO_ADC_VRF_MEASURE = { GPIOA, 0, 3, 0 };
+static const GPIO_pin_t GPIO_ADC_RADIO_VOLTAGE = { GPIOA, 0, 3, 0 };
 #endif
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VRF_MEASURE };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_RADIO_VOLTAGE };
 #endif
 #ifdef GPSM
-static const GPIO_pin_t GPIO_ADC_VGPS_MEASURE = { GPIOA, 0, 0, 0 };
-static const GPIO_pin_t GPIO_ADC_VANT_MEASURE = { GPIOA, 0, 1, 0 };
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VGPS_MEASURE, &GPIO_ADC_VANT_MEASURE };
+static const GPIO_pin_t GPIO_ADC_GPS_VOLTAGE = { GPIOA, 0, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_ANTENNA_VOLTAGE = { GPIOA, 0, 1, 0 };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_GPS_VOLTAGE, &GPIO_ADC_ANTENNA_VOLTAGE };
 #endif
 #ifdef SM
-static const GPIO_pin_t GPIO_ADC_AIN0 = { GPIOA, 0, 5, 0 };
-static const GPIO_pin_t GPIO_ADC_AIN1 = { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t GPIO_ADC_AIN2 = { GPIOA, 0, 7, 0 };
-static const GPIO_pin_t GPIO_ADC_AIN3 = { GPIOB, 1, 0, 0 };
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_AIN0, &GPIO_ADC_AIN1, &GPIO_ADC_AIN2, &GPIO_ADC_AIN3 };
+static const GPIO_pin_t GPIO_ADC_AIN0_VOLTAGE = { GPIOA, 0, 5, 0 };
+static const GPIO_pin_t GPIO_ADC_AIN1_VOLTAGE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t GPIO_ADC_AIN2_VOLTAGE = { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_AIN3_VOLTAGE = { GPIOB, 1, 0, 0 };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_AIN0_VOLTAGE, &GPIO_ADC_AIN1_VOLTAGE, &GPIO_ADC_AIN2_VOLTAGE, &GPIO_ADC_AIN3_VOLTAGE };
 #endif
 #ifdef MPMCM
 static const GPIO_pin_t GPIO_ACV_SAMPLING = { GPIOA, 0, 0, 0 };
@@ -123,11 +123,11 @@ static const GPIO_pin_t GPIO_ACI4_SAMPLING = { GPIOA, 0, 7, 0 };
 static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ACV_SAMPLING, &GPIO_ACI1_SAMPLING, &GPIO_ACI2_SAMPLING, &GPIO_ACI3_SAMPLING, &GPIO_ACI4_SAMPLING };
 #endif
 #ifdef BCM
-static const GPIO_pin_t GPIO_ADC_VSRC_MEASURE = { GPIOB, 1, 0, 0 };
-static const GPIO_pin_t GPIO_ADC_VSTR_MEASURE = { GPIOA, 0, 7, 0 };
-static const GPIO_pin_t GPIO_ADC_ISTR_MEASURE = { GPIOA, 0, 1, 0 };
-static const GPIO_pin_t GPIO_ADC_VBKP_MEASURE = { GPIOA, 0, 6, 0 };
-static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_VSRC_MEASURE, &GPIO_ADC_VSTR_MEASURE, &GPIO_ADC_ISTR_MEASURE, &GPIO_ADC_VBKP_MEASURE };
+static const GPIO_pin_t GPIO_ADC_SOURCE_VOLTAGE = { GPIOB, 1, 0, 0 };
+static const GPIO_pin_t GPIO_ADC_STORAGE_VOLTAGE = { GPIOA, 0, 7, 0 };
+static const GPIO_pin_t GPIO_ADC_CHARGE_CURRENT = { GPIOA, 0, 1, 0 };
+static const GPIO_pin_t GPIO_ADC_BACKUP_VOLTAGE = { GPIOA, 0, 6, 0 };
+static const GPIO_pin_t* const GPIO_ADC_PINS_LIST[ADC_CHANNEL_INDEX_LAST] = { &GPIO_ADC_SOURCE_VOLTAGE, &GPIO_ADC_STORAGE_VOLTAGE, &GPIO_ADC_CHARGE_CURRENT, &GPIO_ADC_BACKUP_VOLTAGE };
 #endif
 #ifdef DSM_RGB_LED
 // RGB LED.

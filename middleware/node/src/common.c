@@ -58,8 +58,8 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     ANALOG_status_t analog_status = ANALOG_SUCCESS;
-    int32_t vmcu_mv = 0;
-    int32_t tmcu_degrees = 0;
+    int32_t mcu_voltage_mv = 0;
+    int32_t mcu_temperature_degrees = 0;
     uint32_t* reg_analog_data_0_ptr = &(NODE_RAM_REGISTER[COMMON_REGISTER_ADDRESS_ANALOG_DATA_0]);
     uint32_t unused_mask = 0;
     // Reset data.
@@ -67,13 +67,13 @@ static NODE_status_t _COMMON_mtrg_callback(void) {
     // Turn analog front-end on.
     POWER_enable(POWER_REQUESTER_ID_COMMON, POWER_DOMAIN_ANALOG, LPTIM_DELAY_MODE_ACTIVE);
     // MCU voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VMCU_MV, &vmcu_mv);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_MCU_VOLTAGE_MV, &mcu_voltage_mv);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_mv(vmcu_mv), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_VOLTAGE);
+    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_mv(mcu_voltage_mv), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_VOLTAGE);
     // MCU temperature.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_TMCU_DEGREES, &tmcu_degrees);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_MCU_TEMPERATURE_DEGREES, &mcu_temperature_degrees);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
-    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_tenth_degrees(tmcu_degrees * 10), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_TEMPERATURE);
+    SWREG_write_field(reg_analog_data_0_ptr, &unused_mask, (uint32_t) UNA_convert_tenth_degrees(mcu_temperature_degrees * 10), COMMON_REGISTER_ANALOG_DATA_0_MASK_MCU_TEMPERATURE);
     // Specific analog data.
     status = NODE_MTRG_CALLBACK();
     if (status != NODE_SUCCESS) goto errors;

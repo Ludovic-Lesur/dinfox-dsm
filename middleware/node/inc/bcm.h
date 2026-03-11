@@ -95,7 +95,7 @@ NODE_status_t BCM_mtrg_callback(void);
  *******************************************************************/
 NODE_status_t BCM_low_voltage_detector_process(void);
 
-#ifndef BCM_CHEN_FORCED_HARDWARE
+#ifndef BCM_CHARGE_CONTROL_FORCED_HARDWARE
 /*!******************************************************************
  * \fn NODE_status_t BCM_charge_process(void)
  * \brief BCM automatic charge control process.

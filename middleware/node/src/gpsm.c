@@ -45,7 +45,7 @@
 #else
 #define GPSM_FLAG_AAF                           0b0
 #endif
-#ifdef GPSM_BKEN_FORCED_HARDWARE
+#ifdef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
 #define GPSM_FLAG_BKFH                          0b1
 #else
 #define GPSM_FLAG_BKFH                          0b0
@@ -288,7 +288,7 @@ void GPSM_refresh_register(uint8_t reg_addr) {
     // Check address.
     switch (reg_addr) {
     case GPSM_REGISTER_ADDRESS_STATUS_1:
-#ifdef GPSM_BKEN_FORCED_HARDWARE
+#ifdef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
         gpsm_ctx.backup_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
         gpsm_ctx.backup_control_state = (GPS_get_backup_voltage() == 0) ? UNA_BIT_0 : UNA_BIT_1;
@@ -356,7 +356,7 @@ NODE_status_t GPSM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
-#ifndef GPSM_BKEN_FORCED_HARDWARE
+#ifndef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
     GPS_status_t gps_status = GPS_SUCCESS;
     UNA_bit_representation_t bken = 0;
 #endif
@@ -457,7 +457,7 @@ NODE_status_t GPSM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
         // BKEN.
         if ((reg_mask & GPSM_REGISTER_CONTROL_1_MASK_BKEN) != 0) {
             // Check pin mode.
-#ifdef GPSM_BKEN_FORCED_HARDWARE
+#ifdef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
             status = NODE_ERROR_FORCED_HARDWARE;
             goto errors;
 #else
@@ -495,11 +495,11 @@ NODE_status_t GPSM_mtrg_callback(void) {
     status = _GPSM_power_request(1);
     if (status != NODE_SUCCESS) goto errors;
     // GPS voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VGPS_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_GPS_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_GPS_VOLTAGE);
     // Active antenna voltage.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_VANT_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_ANTENNA_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), GPSM_REGISTER_ANALOG_DATA_1_MASK_ANTENNA_VOLTAGE);
     // Turn GPS off is possible.

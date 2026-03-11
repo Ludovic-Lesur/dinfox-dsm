@@ -118,8 +118,8 @@ NODE_status_t SM_mtrg_callback(void) {
 #ifdef SM_DIGITAL_SENSORS_ENABLE
     SHT3X_status_t sht3x_status = SHT3X_SUCCESS;
     uint32_t* reg_analog_data_3_ptr = &(NODE_RAM_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_3]);
-    int32_t tamb_tenth_degrees = 0;
-    int32_t hamb_percent = 0;
+    int32_t temperature_tenth_degrees = 0;
+    int32_t humidity_percent = 0;
 #endif
 #if ((defined SM_AIN_ENABLE) || (defined SM_DIO_ENABLE) ||  (defined SM_DIGITAL_SENSORS_ENABLE))
     uint32_t unused_mask = 0;
@@ -129,19 +129,19 @@ NODE_status_t SM_mtrg_callback(void) {
     (*reg_analog_data_1_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_1].error_value;
     (*reg_analog_data_2_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_2].error_value;
     // AIN0.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN0_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN0_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_AIN0_VOLTAGE);
     // AIN0.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN1_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN1_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_1_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_1_MASK_AIN1_VOLTAGE);
     // AIN2.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN2_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN2_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_AIN2_VOLTAGE);
     // AIN3.
-    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN3_MV, &adc_data);
+    analog_status = ANALOG_convert_channel(ANALOG_CHANNEL_AIN3_VOLTAGE_MV, &adc_data);
     ANALOG_exit_error(NODE_ERROR_BASE_ANALOG);
     SWREG_write_field(reg_analog_data_2_ptr, &unused_mask, UNA_convert_mv(adc_data), SM_REGISTER_ANALOG_DATA_2_MASK_AIN3_VOLTAGE);
 #endif
@@ -172,11 +172,11 @@ NODE_status_t SM_mtrg_callback(void) {
     (*reg_analog_data_3_ptr) = NODE_REGISTER[SM_REGISTER_ADDRESS_ANALOG_DATA_3].error_value;
     // Turn sensors on.
     POWER_enable(POWER_REQUESTER_ID_SM, POWER_DOMAIN_SENSORS, LPTIM_DELAY_MODE_STOP);
-    // TAMB.
-    sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &tamb_tenth_degrees, &hamb_percent);
+    // Temperature and humidity.
+    sht3x_status = SHT3X_get_temperature_humidity(I2C_ADDRESS_SHT30, &temperature_tenth_degrees, &humidity_percent);
     SHT3X_exit_error(NODE_ERROR_BASE_SHT3X);
-    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, UNA_convert_tenth_degrees(tamb_tenth_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TEMPERATURE);
-    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, (uint32_t) hamb_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HUMIDITY);
+    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, UNA_convert_tenth_degrees(temperature_tenth_degrees), SM_REGISTER_ANALOG_DATA_3_MASK_TEMPERATURE);
+    SWREG_write_field(reg_analog_data_3_ptr, &unused_mask, (uint32_t) humidity_percent, SM_REGISTER_ANALOG_DATA_3_MASK_HUMIDITY);
 #endif
 errors:
 #ifdef SM_DIO_ENABLE

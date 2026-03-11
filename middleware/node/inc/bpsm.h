@@ -95,7 +95,7 @@ NODE_status_t BPSM_mtrg_callback(void);
  *******************************************************************/
 NODE_status_t BPSM_low_voltage_detector_process(void);
 
-#ifndef BPSM_CHEN_FORCED_HARDWARE
+#ifndef BPSM_CHARGE_CONTROL_FORCED_HARDWARE
 /*!******************************************************************
  * \fn NODE_status_t BPSM_charge_process(void)
  * \brief BPSM automatic charge control process.
