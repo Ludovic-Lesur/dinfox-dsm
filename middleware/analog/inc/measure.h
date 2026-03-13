@@ -12,6 +12,7 @@
 #include "data.h"
 #include "dma.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "led.h"
 #include "maths.h"
@@ -31,7 +32,7 @@
 
 /*** MEASURE global variables ***/
 
-extern const uint8_t MEASURE_SCT013_ATTEN[MEASURE_NUMBER_OF_ACI_CHANNELS];
+extern const uint8_t MEASURE_CURRENT_SENSOR_ATTENUATOR[MEASURE_NUMBER_OF_ACI_CHANNELS];
 
 /*** MEASURE structures ***/
 

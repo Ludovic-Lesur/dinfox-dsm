@@ -10,6 +10,7 @@
 
 #include "adc.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "gpio.h"
 #ifndef MPMCM
 #include "i2c.h"

@@ -12,6 +12,7 @@
 #include "analog.h"
 #include "digital.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "i2c_address.h"
 #include "load.h"

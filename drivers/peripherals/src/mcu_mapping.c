@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "gpio.h"
 #include "gpio_registers.h"
 #ifndef MPMCM

@@ -8,6 +8,9 @@
 #ifndef __STM32G4XX_DRIVERS_FLAGS_H__
 #define __STM32G4XX_DRIVERS_FLAGS_H__
 
+#include "dsm_flags.h"
+#include "dsm_flags_slave.h"
+
 /*** STM32G4xx drivers compilation flags ***/
 
 #ifndef MPMCM

@@ -17,6 +17,7 @@
 #include "dma.h"
 #include "dmamux.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "dsp/basic_math_functions.h"
 #include "dsp/statistics_functions.h"
 #include "error.h"
@@ -153,7 +154,12 @@ typedef struct {
 
 /*** MEASURE global variables ***/
 
-const uint8_t MEASURE_SCT013_ATTEN[MEASURE_NUMBER_OF_ACI_CHANNELS] = MPMCM_SCT013_ATTEN;
+const uint8_t MEASURE_CURRENT_SENSOR_ATTENUATOR[MEASURE_NUMBER_OF_ACI_CHANNELS] = {
+    MPMCM_CURRENT_SENSOR_ATTENUATOR_CH1_VV,
+    MPMCM_CURRENT_SENSOR_ATTENUATOR_CH2_VV,
+    MPMCM_CURRENT_SENSOR_ATTENUATOR_CH3_VV,
+    MPMCM_CURRENT_SENSOR_ATTENUATOR_CH4_VV
+};
 
 /*** MEASURE local global variables ***/
 
@@ -882,11 +888,11 @@ MEASURE_status_t MEASURE_set_gains(uint16_t transformer_gain, uint16_t current_s
         goto errors;
     }
     // ACV.
-    measure_data.acv_factor_num = ((float64_t) transformer_gain * (float64_t) MPMCM_TRANSFORMER_ATTEN * (float64_t) STM32G4XX_DRIVERS_ADC_VREF_MV);
+    measure_data.acv_factor_num = ((float64_t) transformer_gain * (float64_t) MPMCM_TRANSFORMER_ATTENUATOR_VV * (float64_t) STM32G4XX_DRIVERS_ADC_VREF_MV);
     measure_data.acv_factor_den = ((float64_t) MEASURE_TRANSFORMER_GAIN_FACTOR * (float64_t) ADC_FULL_SCALE);
     // ACI.
     for (chx_idx = 0; chx_idx < MEASURE_NUMBER_OF_ACI_CHANNELS; chx_idx++) {
-        measure_data.aci_factor_num[chx_idx] = ((float64_t) current_sensors_gain[chx_idx] * (float64_t) MEASURE_SCT013_ATTEN[chx_idx] * (float64_t) STM32G4XX_DRIVERS_ADC_VREF_MV);
+        measure_data.aci_factor_num[chx_idx] = ((float64_t) current_sensors_gain[chx_idx] * (float64_t) MEASURE_CURRENT_SENSOR_ATTENUATOR[chx_idx] * (float64_t) STM32G4XX_DRIVERS_ADC_VREF_MV);
     }
     measure_data.aci_factor_den = ((float64_t) MEASURE_CURRENT_SENSOR_GAIN_FACTOR * (float64_t) ADC_FULL_SCALE);
     // ACP.

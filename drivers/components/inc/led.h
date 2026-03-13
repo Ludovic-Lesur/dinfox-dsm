@@ -9,6 +9,7 @@
 #define __LED_H__
 
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "tim.h"
 #include "types.h"

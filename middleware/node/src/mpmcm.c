@@ -12,6 +12,7 @@
 #include "adc.h"
 #include "data.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "error_base.h"
 #include "measure.h"
@@ -92,7 +93,12 @@ void MPMCM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
     // Local variables.
     uint32_t unused_mask = 0;
 #ifdef DSM_NVM_FACTORY_RESET
-    uint16_t mpmcm_sct013_gain[MEASURE_NUMBER_OF_ACI_CHANNELS] = MPMCM_SCT013_GAIN;
+    uint16_t mpmcm_current_sensor_gain[MEASURE_NUMBER_OF_ACI_CHANNELS] = {
+        MPMCM_CURRENT_SENSOR_GAIN_CH1_DAV,
+        MPMCM_CURRENT_SENSOR_GAIN_CH2_DAV,
+        MPMCM_CURRENT_SENSOR_GAIN_CH3_DAV,
+        MPMCM_CURRENT_SENSOR_GAIN_CH4_DAV
+    };
 #endif
     // Check address.
     switch (reg_addr) {
@@ -100,25 +106,25 @@ void MPMCM_init_register(uint8_t reg_addr, uint32_t* reg_value) {
         SWREG_write_field(reg_value, &unused_mask, MPMCM_FLAG_AME, MPMCM_REGISTER_FLAGS_1_MASK_AME);
         SWREG_write_field(reg_value, &unused_mask, MPMCM_FLAG_LTE, MPMCM_REGISTER_FLAGS_1_MASK_LTE);
         SWREG_write_field(reg_value, &unused_mask, MPMCM_FLAG_LTM, MPMCM_REGISTER_FLAGS_1_MASK_LTM);
-        SWREG_write_field(reg_value, &unused_mask, MPMCM_TRANSFORMER_ATTEN, MPMCM_REGISTER_FLAGS_1_MASK_TRANSFORMER_ATTEN);
+        SWREG_write_field(reg_value, &unused_mask, MPMCM_TRANSFORMER_ATTENUATOR_VV, MPMCM_REGISTER_FLAGS_1_MASK_TRANSFORMER_ATTEN);
         break;
     case MPMCM_REGISTER_ADDRESS_FLAGS_2:
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_SCT013_ATTEN[0], MPMCM_REGISTER_FLAGS_2_MASK_CH1_CURRENT_SENSOR_ATTEN);
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_SCT013_ATTEN[1], MPMCM_REGISTER_FLAGS_2_MASK_CH2_CURRENT_SENSOR_ATTEN);
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_SCT013_ATTEN[2], MPMCM_REGISTER_FLAGS_2_MASK_CH3_CURRENT_SENSOR_ATTEN);
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_SCT013_ATTEN[3], MPMCM_REGISTER_FLAGS_2_MASK_CH4_CURRENT_SENSOR_ATTEN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_CURRENT_SENSOR_ATTENUATOR[0], MPMCM_REGISTER_FLAGS_2_MASK_CH1_CURRENT_SENSOR_ATTEN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_CURRENT_SENSOR_ATTENUATOR[1], MPMCM_REGISTER_FLAGS_2_MASK_CH2_CURRENT_SENSOR_ATTEN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_CURRENT_SENSOR_ATTENUATOR[2], MPMCM_REGISTER_FLAGS_2_MASK_CH3_CURRENT_SENSOR_ATTEN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) MEASURE_CURRENT_SENSOR_ATTENUATOR[3], MPMCM_REGISTER_FLAGS_2_MASK_CH4_CURRENT_SENSOR_ATTEN);
         break;
 #ifdef DSM_NVM_FACTORY_RESET
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_write_field(reg_value, &unused_mask, MPMCM_TRANSFORMER_GAIN, MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN);
+        SWREG_write_field(reg_value, &unused_mask, MPMCM_TRANSFORMER_GAIN_DVV, MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_1:
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_sct013_gain[0], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN);
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_sct013_gain[1], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_current_sensor_gain[0], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_current_sensor_gain[1], MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_2:
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_sct013_gain[2], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN);
-        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_sct013_gain[3], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_current_sensor_gain[2], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN);
+        SWREG_write_field(reg_value, &unused_mask, (uint32_t) mpmcm_current_sensor_gain[3], MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_3:
         SWREG_write_field(reg_value, &unused_mask, (uint32_t) UNA_convert_seconds(TIC_SAMPLING_PERIOD_SECONDS_DEFAULT), MPMCM_REGISTER_CONFIGURATION_3_MASK_TIC_SAMPLING_PERIOD);

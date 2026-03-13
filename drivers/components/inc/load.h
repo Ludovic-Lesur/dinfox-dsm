@@ -9,6 +9,7 @@
 #define __LOAD_H__
 
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "lptim.h"
 #include "types.h"

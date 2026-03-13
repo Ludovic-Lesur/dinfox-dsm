@@ -13,6 +13,7 @@
 #include "common_registers.h"
 #include "ddrm.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "gpsm.h"
 #include "lvrm.h"

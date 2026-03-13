@@ -28,6 +28,7 @@
 #include "power.h"
 // Applicative.
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error_base.h"
 
 /*** MAIN local structures ***/

@@ -11,6 +11,7 @@
 
 #include "adc.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "load.h"
 #include "ddrm_registers.h"

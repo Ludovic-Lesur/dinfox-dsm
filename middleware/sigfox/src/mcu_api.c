@@ -42,7 +42,9 @@
 #include "sigfox_types.h"
 #include "sigfox_error.h"
 
+#ifndef MPMCM
 #include "aes.h"
+#endif
 #include "analog.h"
 #include "error.h"
 #include "error_base.h"
@@ -53,6 +55,8 @@
 #include "power.h"
 #include "tim.h"
 #include "types.h"
+
+#ifdef UHFM
 
 /*** MCU API local structures ***/
 
@@ -396,3 +400,5 @@ void MCU_API_error(void) {
 #endif
 }
 #endif
+
+#endif /* UHFM */

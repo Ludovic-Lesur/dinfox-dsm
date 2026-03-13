@@ -9,6 +9,7 @@
 #define __STM32L0XX_DRIVERS_FLAGS_H__
 
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 
 /*** STM32L0xx drivers compilation flags ***/
 

@@ -8,6 +8,7 @@
 #include "load.h"
 
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "error.h"
 #include "gpio.h"
 #include "lptim.h"

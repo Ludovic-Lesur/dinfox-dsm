@@ -9,6 +9,7 @@
 #define __NVIC_PRIORITY_H__
 
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 
 /*!******************************************************************
  * \enum NVIC_priority_list_t

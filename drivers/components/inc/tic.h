@@ -11,6 +11,7 @@
 #include "data.h"
 #include "dma.h"
 #include "dsm_flags.h"
+#include "dsm_flags_slave.h"
 #include "led.h"
 #include "maths.h"
 #include "power.h"
