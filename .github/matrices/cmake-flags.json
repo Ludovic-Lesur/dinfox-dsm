@@ -1,0 +1,120 @@
+{
+    "hw_configuration_list": [
+        {
+            "hw_flags": {
+                "DSM_BOARD": "LVRM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "LVRM",
+                "DSM_HW_VERSION": "HW2_0"
+            },
+            "sw_configuration_list": [
+                {
+                    "sw_flags": {
+                        "LVRM_MODE_BMS": "OFF"
+                    }
+                },
+                {
+                    "name": "bms",
+                    "sw_flags": {
+                        "LVRM_MODE_BMS": "ON"
+                    }
+                }
+            ]
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "BPSM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "DDRM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "UHFM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "UHFM",
+                "DSM_HW_VERSION": "HW2_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "RRM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "SM",
+                "DSM_HW_VERSION": "HW1_0"
+            },
+            "sw_configuration_list": [
+                {
+                    "sw_flags": {
+                        "SM_AIN_ENABLE": "ON",
+                        "SM_DIO_ENABLE": "ON",
+                        "SM_DIGITAL_SENSORS_ENABLE": "ON"
+                    }
+                },
+                {
+                    "name": "digital-sensors-only",
+                    "sw_flags": {
+                        "SM_AIN_ENABLE": "OFF",
+                        "SM_DIO_ENABLE": "OFF",
+                        "SM_DIGITAL_SENSORS_ENABLE": "ON"
+                    }
+                }
+            ]
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "GPSM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "MPMCM",
+                "DSM_HW_VERSION": "HW1_0"
+            },
+            "sw_configuration_list": [
+                {
+                    "name": "analog-measure",
+                    "sw_flags": {
+                        "MPMCM_ANALOG_MEASURE_ENABLE": "ON",
+                        "MPMCM_LINKY_TIC_ENABLE": "OFF",
+                        "MPMCM_LINKY_TIC_MODE_HISTORIC": "ON",
+                        "MPMCM_LINKY_TIC_MODE_STANDARD": "OFF"
+                    }
+                },
+                {
+                    "name": "linky-tic-historic",
+                    "sw_flags": {
+                        "MPMCM_ANALOG_MEASURE_ENABLE": "OFF",
+                        "MPMCM_LINKY_TIC_ENABLE": "ON",
+                        "MPMCM_LINKY_TIC_MODE_HISTORIC": "ON",
+                        "MPMCM_LINKY_TIC_MODE_STANDARD": "OFF"
+                    }
+                }
+            ]
+        },
+        {
+            "hw_flags": {
+                "DSM_BOARD": "BCM",
+                "DSM_HW_VERSION": "HW1_0"
+            }
+        }
+    ]
+}
