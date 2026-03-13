@@ -18,19 +18,19 @@ This repository contains the embedded software of the **DinFox slaves modules**:
 
 The boards were designed on **Circuit Maker V2.0**. Below is the list of hardware revisions:
 
-| Hardware revision | Description | Status |
-|:---:|:---:|:---:|
-| [LVRM HW1.0](https://365.altium.com/files/10D8C121-B324-4AC0-90B1-A0BFFB7E4713) | Initial version with monostable relay. | :white_check_mark: |
-| [LVRM HW2.0](https://365.altium.com/files/5F3B7EA9-DD07-4C07-B750-9D2D3ABDA776) | Initial version with bistable relay. | :white_check_mark: |
-| [BPSM HW1.0](https://365.altium.com/files/BAC116F3-F512-4102-9D47-53DF0FB6E9C0) | Initial version. | :white_check_mark: |
-| [DDRM HW1.0](https://365.altium.com/files/1BA47FD8-3599-4BA0-8A3B-857EFF1E8E58) | Initial version. | :white_check_mark: |
-| [UHFM HW1.0](https://365.altium.com/files/C3D2D8A0-D05C-40FD-AE3A-D0FEBA8A509F) | Initial version. | :x: |
-| [UHFM HW2.0](https://365.altium.com/files/022E57D6-9B88-414B-A520-93281961BF8E) | New radio front-end with extended features. | :white_check_mark: |
-| [RRM HW1.0](https://365.altium.com/files/F33BFE95-AA3E-4890-B685-3A09A36AE775) | Initial version. | :white_check_mark: |
-| [SM HW1.0](https://365.altium.com/files/73597AC1-81FF-471F-A80B-41D71904A039) | Initial version. | :white_check_mark: |
-| [GPSM HW1.0](https://365.altium.com/files/86BC5960-7B01-45BE-B7A5-BD8ADBCE5E8D) | Initial version. | :white_check_mark: |
-| [MPMCM HW1.0](https://365.altium.com/files/DD635FDD-1D00-456C-9219-78701675DC01) | Initial version. | :white_check_mark: |
-| [BCM HW1.0](https://365.altium.com/files/05D7821F-F16C-4190-8AAC-8EBAEC7074C2) | Initial version. | :white_check_mark: |
+| Hardware revision | Description | `cmake_board` | `cmake_hw_version` | Status |
+|:---:|:---:|:---:|:---:|:---:|
+| [LVRM HW1.0](https://365.altium.com/files/10D8C121-B324-4AC0-90B1-A0BFFB7E4713) | Initial version with monostable relay. | `LVRM` | `HW1_0` | :white_check_mark: |
+| [LVRM HW2.0](https://365.altium.com/files/5F3B7EA9-DD07-4C07-B750-9D2D3ABDA776) | Initial version with bistable relay. | `LVRM` | `HW2_0` | :white_check_mark: |
+| [BPSM HW1.0](https://365.altium.com/files/BAC116F3-F512-4102-9D47-53DF0FB6E9C0) | Initial version. | `BPSM` | `HW1_0` | :white_check_mark: |
+| [DDRM HW1.0](https://365.altium.com/files/1BA47FD8-3599-4BA0-8A3B-857EFF1E8E58) | Initial version. | `DDRM` | `HW1_0` | :white_check_mark: |
+| [UHFM HW1.0](https://365.altium.com/files/C3D2D8A0-D05C-40FD-AE3A-D0FEBA8A509F) | Initial version. | `UHFM` | `HW1_0` | :x: |
+| [UHFM HW2.0](https://365.altium.com/files/022E57D6-9B88-414B-A520-93281961BF8E) | New radio front-end with extended features. | `UHFM` | `HW2_0` | :white_check_mark: |
+| [RRM HW1.0](https://365.altium.com/files/F33BFE95-AA3E-4890-B685-3A09A36AE775) | Initial version. | `RRM` | `HW1_0` | :white_check_mark: |
+| [SM HW1.0](https://365.altium.com/files/73597AC1-81FF-471F-A80B-41D71904A039) | Initial version. | `SM` | `HW1_0` | :white_check_mark: |
+| [GPSM HW1.0](https://365.altium.com/files/86BC5960-7B01-45BE-B7A5-BD8ADBCE5E8D) | Initial version. | `GPSM` | `HW1_0` | :white_check_mark: |
+| [MPMCM HW1.0](https://365.altium.com/files/DD635FDD-1D00-456C-9219-78701675DC01) | Initial version. | `MPMCM` | `HW1_0` | :white_check_mark: |
+| [BCM HW1.0](https://365.altium.com/files/05D7821F-F16C-4190-8AAC-8EBAEC7074C2) | Initial version. | `BCM` | `HW1_0` | :white_check_mark: |
 
 # Embedded software
 
@@ -75,3 +75,20 @@ The project is organized as follow:
 ## Sigfox library
 
 The **UHFM** board uses **Sigfox technology** to perform the system remote monitoring (and light remote control). The project is based on the [Sigfox end-point open source library](https://github.com/sigfox-tech-radio/sigfox-ep-lib) which is embedded as a **Git submodule**.
+
+## Build
+
+The project can be compiled by command line with `cmake`.
+
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE="script/cmake-arm-none-eabi/toolchain.cmake" \
+      -DTOOLCHAIN_PATH="<arm_none_eabi_gcc_path>" \
+      -DDSM_BOARD="<cmake_board>" \
+      -DDSM_HW_VERSION="<cmake_hw_version>" \
+      -DDSM_NVM_FACTORY_RESET=OFF \
+      -DDSM_NODE_ADDRESS=0x7F \
+      -G "Unix Makefiles" ..
+make all
+```
