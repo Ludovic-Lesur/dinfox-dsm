@@ -286,13 +286,17 @@ void GPSM_refresh_register(uint8_t reg_addr) {
     // Local variables.
     uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
     uint32_t unused_mask = 0;
+#ifndef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
+    uint8_t backup_voltage = 0;
+#endif
     // Check address.
     switch (reg_addr) {
     case GPSM_REGISTER_ADDRESS_STATUS_1:
 #ifdef GPSM_BACKUP_CONTROL_FORCED_HARDWARE
         gpsm_ctx.backup_control_state = UNA_BIT_FORCED_HARDWARE;
 #else
-        gpsm_ctx.backup_control_state = (GPS_get_backup_voltage() == 0) ? UNA_BIT_0 : UNA_BIT_1;
+        GPS_get_backup_voltage(&backup_voltage);
+        gpsm_ctx.backup_control_state = (backup_voltage == 0) ? UNA_BIT_0 : UNA_BIT_1;
 #endif
         SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.flags.tpen), GPSM_REGISTER_STATUS_1_MASK_TPST);
         SWREG_write_field(reg_ptr, &unused_mask, ((uint32_t) gpsm_ctx.flags.pwen), GPSM_REGISTER_STATUS_1_MASK_PWST);

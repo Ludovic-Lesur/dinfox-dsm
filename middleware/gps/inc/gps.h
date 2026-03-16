@@ -112,13 +112,13 @@ GPS_status_t GPS_get_position(GPS_position_t* gps_position, uint32_t timeout_sec
 GPS_status_t GPS_set_backup_voltage(uint8_t state);
 
 /*!******************************************************************
- * \fn uint8_t GPS_get_backup_voltage(void);
+ * \fn GPS_status_t GPS_get_backup_voltage(uint8_t* state)
  * \brief Get GPS backup voltage state.
  * \param[in]   none
- * \param[out]  none
- * \retval      VBCKP pin state.
+ * \param[out]  state: Pointer to the current VBCKP pin state.
+ * \retval      Function execution status.
  *******************************************************************/
-uint8_t GPS_get_backup_voltage(void);
+GPS_status_t GPS_get_backup_voltage(uint8_t* state);
 
 /*!******************************************************************
  * \fn GPS_status_t GPS_set_timepulse(GPS_timepulse_configuration_t* configuration)
