@@ -58,7 +58,6 @@
 #define STM32L0XX_DRIVERS_TIM_PRECISION                 0
 #endif
 
-
 //#define STM32L0XX_DRIVERS_USART_DISABLE_TX_0
 
 #endif /* __STM32L0XX_DRIVERS_FLAGS_H__ */
