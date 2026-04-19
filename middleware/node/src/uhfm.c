@@ -15,6 +15,7 @@
 #include "dsm_flags.h"
 #include "dsm_flags_slave.h"
 #include "error.h"
+#include "iwdg.h"
 #include "load.h"
 #include "manuf/mcu_api.h"
 #include "manuf/rf_api.h"
@@ -316,6 +317,8 @@ static NODE_status_t _UHFM_strg_callback(void) {
     // Check radio state.
     status = _UHFM_is_radio_free();
     if (status != NODE_SUCCESS) goto errors;
+    // Reload watchdog.
+    IWDG_reload();
     // Open library.
     lib_config.rc = &sigfox_rc_custom;
     sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);

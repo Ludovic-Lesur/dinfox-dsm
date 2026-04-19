@@ -68,7 +68,7 @@ typedef enum {
  * \brief Radio RSSI types.
  *******************************************************************/
 typedef enum {
-    RFE_RSSI_TYPE_RUN,
+    RFE_RSSI_TYPE_RUN = 0,
     RFE_RSSI_TYPE_SYNC_WORD,
     RFE_RSSI_TYPE_LAST
 } RFE_rssi_type_t;
