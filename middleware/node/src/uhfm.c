@@ -84,8 +84,6 @@
 #define UHFM_T_CONF_MS_MAX                      SIGFOX_T_CONF_MAX_MS
 #define UHFM_T_CONF_MS_DEFAULT                  2000
 #endif
-#define UHFM_SIGFOX_RC_EPSILON_SNW_HZ           1410
-#define UHFM_SIGFOX_RC_EPSILON_EP_HZ            4340
 
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ   860000000
 #define UHFM_ADC_RADIO_STABILIZATION_DELAY_MS   100
@@ -293,8 +291,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
 #if (!(defined SIGFOX_EP_T_IFU_MS) || !(defined SIGFOX_EP_T_CONF_MS))
     uint32_t reg_config_1 = NODE_RAM_REGISTER[UHFM_REGISTER_ADDRESS_CONFIGURATION_1];
 #endif
-    const SIGFOX_rc_t* sigfox_rc_pointer = UHFM_SIGFOX_RC[SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC)];
-    SIGFOX_rc_t sigfox_rc_custom;
     sfx_bool bidirectional_flag = 0;
     uint8_t ul_payload[SIGFOX_UL_PAYLOAD_MAX_SIZE_BYTES];
     uint8_t ul_payload_size = 0;
@@ -303,15 +299,6 @@ static NODE_status_t _UHFM_strg_callback(void) {
     uint8_t nvm_data[SIGFOX_NVM_DATA_SIZE_BYTES];
     uint32_t message_counter = 0;
     uint32_t unused_mask = 0;
-    // Build custom RC structure.
-    sigfox_rc_custom.f_ul_hz = (sigfox_rc_pointer->f_ul_hz);
-    sigfox_rc_custom.f_dl_hz = (sigfox_rc_pointer->f_dl_hz);
-    sigfox_rc_custom.epsilon_hz = (UHFM_SIGFOX_RC_EPSILON_SNW_HZ + UHFM_SIGFOX_RC_EPSILON_EP_HZ);
-    sigfox_rc_custom.spectrum_access = (sigfox_rc_pointer->spectrum_access);
-#ifdef SIGFOX_EP_PARAMETERS_CHECK
-    sigfox_rc_custom.uplink_bit_rate_capability = (sigfox_rc_pointer->uplink_bit_rate_capability);
-    sigfox_rc_custom.tx_power_dbm_eirp_max = (sigfox_rc_pointer->tx_power_dbm_eirp_max);
-#endif
     // Reset status.
     message_status.all = 0;
     // Check radio state.
@@ -320,7 +307,7 @@ static NODE_status_t _UHFM_strg_callback(void) {
     // Reload watchdog.
     IWDG_reload();
     // Open library.
-    lib_config.rc = &sigfox_rc_custom;
+    lib_config.rc = UHFM_SIGFOX_RC[SWREG_read_field(reg_config_0, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC)];
     sigfox_ep_api_status = SIGFOX_EP_API_open(&lib_config);
     SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
 #ifdef SIGFOX_EP_CONTROL_KEEP_ALIVE_MESSAGE
