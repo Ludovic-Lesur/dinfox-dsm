@@ -40,7 +40,21 @@ The firmware is developed under **Eclipse IDE** and **GNU MCU** plugin. The `scr
 
 ## Target
 
-The boards are based on the **STM32L011F4U6**, **STM32L011G4U6**, **STM32L031G6U6**, **STM32L041K6U6** and **STM32G441CBT6** microcontrollers of the STMicroelectronics L0/G4 families. Each hardware revision has a corresponding **build configuration** in the Eclipse project, which sets up the code for the selected board.
+The boards are based on various **STM32L0x1** and **STM32G4x1** microcontrollers of the STMicroelectronics L0/G4 families (see table below). Each hardware revision has a corresponding **build configuration** in the Eclipse project, which sets up the code for the selected board.
+
+| Hardware revision | MCU | Programming connector |
+|:---:|:---:|:---:|
+| [LVRM HW1.0](https://365.altium.com/files/10D8C121-B324-4AC0-90B1-A0BFFB7E4713) | STM32L011F4 | P6 |
+| [LVRM HW2.0](https://365.altium.com/files/5F3B7EA9-DD07-4C07-B750-9D2D3ABDA776) | STM32L031G6 | P4 |
+| [BPSM HW1.0](https://365.altium.com/files/BAC116F3-F512-4102-9D47-53DF0FB6E9C0) | STM32L011F4 | P6 |
+| [DDRM HW1.0](https://365.altium.com/files/1BA47FD8-3599-4BA0-8A3B-857EFF1E8E58) | STM32L011F4 | P6 |
+| [UHFM HW1.0](https://365.altium.com/files/C3D2D8A0-D05C-40FD-AE3A-D0FEBA8A509F) | STM32L041K6 | P4 |
+| [UHFM HW2.0](https://365.altium.com/files/022E57D6-9B88-414B-A520-93281961BF8E) | STM32L051C8 | P3 |
+| [RRM HW1.0](https://365.altium.com/files/F33BFE95-AA3E-4890-B685-3A09A36AE775) | STM32L011F4 | P5 |
+| [SM HW1.0](https://365.altium.com/files/73597AC1-81FF-471F-A80B-41D71904A039) | STM32L031G6 | P4 |
+| [GPSM HW1.0](https://365.altium.com/files/86BC5960-7B01-45BE-B7A5-BD8ADBCE5E8D) | STM32L031G6 | P6 |
+| [MPMCM HW1.0](https://365.altium.com/files/DD635FDD-1D00-456C-9219-78701675DC01) | STM32G441CB | P6 |
+| [BCM HW1.0](https://365.altium.com/files/05D7821F-F16C-4190-8AAC-8EBAEC7074C2) | STM32L011G4 | P4 |
 
 ## Architecture
 
@@ -95,7 +109,7 @@ make all
 ### Preparation
 
 * **Build** the desired version (with IDE or `cmake`) or **download** a specific [firmware release](https://github.com/Ludovic-Lesur/dinfox-dsm/releases) (expand the `Assets` menu, download the corresponding artifact and extract the binary files from the `zip`).
-* Connect the flashing tool to the **P3** (UHFM HW2.0), **P4** (LVRM HW2.0, UHFM HW1.0, SM, BCM), **P5** (RRM) or **P6** (LVRM HW1.0, BPSM, DDRM, GPSM, MPMCM) **connector** located in the corner of the PCB (standard SWD pinout).
+* Connect the flashing tool to the **programming connector** (see targets table) located in the corner of the PCB (standard SWD pinout).
 
 ### ST-Link on Nucleo board
 
@@ -117,7 +131,7 @@ make all
 
 * Download the [Segger J-Link](https://www.segger.com/downloads/jlink/) software.
 * Launch the `JFlashLite` tool.
-* Set target device to **STM32L081CB**, target interface to **SWD**, speed to **4000kHz** and click `OK`.
+* Select the **target device** (see targets table, use the MCU name without the last 2 digits), set target interface to **SWD**, speed to **4000kHz** and click `OK`.
 * Open the `hex` file to flash.
 * Click on the `Program Device` button.
 
