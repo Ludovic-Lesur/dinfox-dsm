@@ -351,6 +351,8 @@ static NODE_status_t _UHFM_strg_callback(void) {
         // Send message.
         sigfox_ep_api_status = SIGFOX_EP_API_send_application_message(&application_message);
         SIGFOX_EP_API_check_status(NODE_ERROR_SIGFOX_EP_API);
+        // Reload watchdog.
+        IWDG_reload();
         // Read message status.
         message_status = SIGFOX_EP_API_get_message_status();
         // Check bidirectional flag.
@@ -396,7 +398,7 @@ static void _UHFM_ttrg_downlink_completion_callback(sfx_u8 *dl_payload, sfx_u8 d
     AT_reply_add_byte_array(dl_payload, dl_payload_size, 0);
     AT_reply_add_string(":");
     AT_reply_add_integer((int32_t) rssi_dbm, STRING_FORMAT_DECIMAL, 0);
-    AT_send_reply();
+    AT_reply_send();
 }
 
 /*******************************************************************/

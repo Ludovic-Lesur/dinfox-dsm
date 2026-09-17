@@ -25,11 +25,6 @@
 #define EMBEDDED_UTILS_ERROR_STACK_SIGFOX
 #endif
 
-#ifdef MPMCM
-#define EMBEDDED_UTILS_MATH_PRECISION                   2
-#else
-#define EMBEDDED_UTILS_MATH_PRECISION                   0
-#endif
 //#define EMBEDDED_UTILS_MATH_COS_TABLE
 //#define EMBEDDED_UTILS_MATH_SIN_TABLE
 //#define EMBEDDED_UTILS_MATH_ATAN2

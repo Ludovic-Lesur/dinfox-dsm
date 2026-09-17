@@ -97,14 +97,15 @@ void COMMON_init_register(uint8_t reg_addr, uint32_t* reg_value) {
 #ifdef MPMCM
         NVM_write_word(NVM_ADDRESS_SELF_ADDRESS, (uint32_t) DSM_NODE_ADDRESS);
 #else
-        NVM_write_byte(NVM_ADDRESS_SELF_ADDRESS, DSM_NODE_ADDRESS);
+        self_address = DSM_NODE_ADDRESS;
+        NVM_write(NVM_ADDRESS_SELF_ADDRESS, &self_address, 1, NVM_DATA_TYPE_BYTE);
 #endif
 #endif
 #ifdef MPMCM
         NVM_read_word(NVM_ADDRESS_SELF_ADDRESS, &unused_mask);
         self_address = (UNA_node_address_t) unused_mask;
 #else
-        NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, &self_address);
+        NVM_read(NVM_ADDRESS_SELF_ADDRESS, &self_address, 1, NVM_DATA_TYPE_BYTE);
 #endif
         SWREG_write_field(reg_value, &unused_mask, (uint32_t) self_address, COMMON_REGISTER_NODE_ID_MASK_NODE_ADDR);
         SWREG_write_field(reg_value, &unused_mask, (uint32_t) NODE_BOARD_ID, COMMON_REGISTER_NODE_ID_MASK_BOARD_ID);

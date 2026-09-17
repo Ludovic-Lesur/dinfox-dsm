@@ -163,25 +163,13 @@ static NODE_status_t _NODE_load_register(uint8_t reg_addr, uint32_t* reg_value) 
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     NVM_status_t nvm_status = NVM_SUCCESS;
-#ifndef MPMCM
-    uint8_t nvm_byte = 0;
-    uint8_t idx = 0;
-#endif
+    // Read register.
 #ifdef MPMCM
     nvm_status = NVM_read_word((NVM_ADDRESS_UNA_REGISTERS + reg_addr), reg_value);
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
 #else
-    // Reset output.
-    (*reg_value) = 0;
-    // Byte loop.
-    for (idx = 0; idx < UNA_REGISTER_SIZE_BYTES; idx++) {
-        // Read NVM.
-        nvm_status = NVM_read_byte((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2) + idx), &nvm_byte);
-        NVM_exit_error(NODE_ERROR_BASE_NVM);
-        // Update output value.
-        (*reg_value) |= ((uint32_t) nvm_byte) << (idx << 3);
-    }
+    nvm_status = NVM_read((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2)), reg_value, 1, NVM_DATA_TYPE_LONG);
 #endif
+    NVM_exit_error(NODE_ERROR_BASE_NVM);
 errors:
     return status;
 }
@@ -192,21 +180,13 @@ static NODE_status_t _NODE_store_register(uint8_t reg_addr) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     NVM_status_t nvm_status = NVM_SUCCESS;
+    // Write register.
 #ifdef MPMCM
     nvm_status = NVM_write_word((NVM_ADDRESS_UNA_REGISTERS + reg_addr), NODE_RAM_REGISTER[reg_addr]);
-    NVM_exit_error(NODE_ERROR_BASE_NVM);
 #else
-    uint8_t nvm_byte = 0;
-    uint8_t idx = 0;
-    // Byte loop.
-    for (idx = 0; idx < UNA_REGISTER_SIZE_BYTES; idx++) {
-        // Compute byte.
-        nvm_byte = (uint8_t) (((NODE_RAM_REGISTER[reg_addr]) >> (idx << 3)) & 0x000000FF);
-        // Write NVM.
-        nvm_status = NVM_write_byte((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2) + idx), nvm_byte);
-        NVM_exit_error(NODE_ERROR_BASE_NVM);
-    }
+    nvm_status = NVM_write((NVM_ADDRESS_UNA_REGISTERS + (reg_addr << 2)), &(NODE_RAM_REGISTER[reg_addr]), 1, NVM_DATA_TYPE_LONG);
 #endif
+    NVM_exit_error(NODE_ERROR_BASE_NVM);
 errors:
     return status;
 }

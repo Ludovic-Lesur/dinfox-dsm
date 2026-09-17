@@ -32,15 +32,13 @@ LMAC_status_t LMAC_HW_init(uint32_t baud_rate, LMAC_rx_irq_cb_t rx_irq_callback,
     NVM_status_t nvm_status = NVM_SUCCESS;
     LPUART_status_t lpuart_status = LPUART_SUCCESS;
     LPUART_configuration_t lpuart_config;
-#ifdef MPMCM
-    uint32_t tmp_u32 = 0;
-#endif
     // Read self address.
 #ifdef MPMCM
+    uint32_t tmp_u32 = 0;
     nvm_status = NVM_read_word(NVM_ADDRESS_SELF_ADDRESS, &tmp_u32);
     (*self_address) = (UNA_node_address_t) tmp_u32;
 #else
-    nvm_status = NVM_read_byte(NVM_ADDRESS_SELF_ADDRESS, self_address);
+    nvm_status = NVM_read(NVM_ADDRESS_SELF_ADDRESS, self_address, 1, NVM_DATA_TYPE_BYTE);
 #endif
     NVM_exit_error(LMAC_ERROR_BASE_NVM);
     // Ensure address is in the allowed range.
