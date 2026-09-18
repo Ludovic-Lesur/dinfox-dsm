@@ -15,6 +15,7 @@
 #include "error.h"
 #include "gps.h"
 #include "gpsm_registers.h"
+#include "maths.h"
 #include "node_register.h"
 #include "node_status.h"
 #include "power.h"
@@ -26,20 +27,20 @@
 /*** GPSM local macros ***/
 
 #define GPSM_TIME_TIMEOUT_SECONDS_MIN           30
-#define GPSM_TIME_TIMEOUT_SECONDS_MAX           3600
-#define GPSM_TIME_TIMEOUT_SECONDS_DEFAULT       120
+#define GPSM_TIME_TIMEOUT_SECONDS_DEFAULT       (2 * MATH_SECONDS_PER_MINUTE)
+#define GPSM_TIME_TIMEOUT_SECONDS_MAX           (1 * MATH_SECONDS_PER_HOUR)
 
 #define GPSM_GEOLOC_TIMEOUT_SECONDS_MIN         30
-#define GPSM_GEOLOC_TIMEOUT_SECONDS_MAX         3600
-#define GPSM_GEOLOC_TIMEOUT_SECONDS_DEFAULT     180
+#define GPSM_GEOLOC_TIMEOUT_SECONDS_DEFAULT     (3 * MATH_SECONDS_PER_MINUTE)
+#define GPSM_GEOLOC_TIMEOUT_SECONDS_MAX         (1 * MATH_SECONDS_PER_HOUR)
 
 #define GPSM_TP_FREQUENCY_HZ_MIN                1
-#define GPSM_TP_FREQUENCY_HZ_MAX                10000000
 #define GPSM_TP_FREQUENCY_HZ_DEFAULT            1
+#define GPSM_TP_FREQUENCY_HZ_MAX                10000000
 
 #define GPSM_TP_DUTY_CYCLE_PERCENT_MIN          0
-#define GPSM_TP_DUTY_CYCLE_PERCENT_MAX          100
 #define GPSM_TP_DUTY_CYCLE_PERCENT_DEFAULT      50
+#define GPSM_TP_DUTY_CYCLE_PERCENT_MAX          100
 
 #ifdef GPSM_ACTIVE_ANTENNA
 #define GPSM_FLAG_AAF                           0b1

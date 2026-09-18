@@ -27,8 +27,8 @@
 // Note: output current measurement uses LT6106, OPA187 and optionally TMUX7219 chips whose minimum operating voltage is 4.5V.
 #define LVRM_OUTPUT_CURRENT_MEASUREMENT_POWER_TH_MV     4500
 
-#define LVRM_OUTPUT_CURRENT_OFFSET_UA_MAX               100000
 #define LVRM_OUTPUT_CURRENT_OFFSET_UA_DEFAULT           0
+#define LVRM_OUTPUT_CURRENT_OFFSET_UA_MAX               100000
 
 #ifdef LVRM_MODE_BMS
 #define LVRM_FLAG_BMSF                                  0b1

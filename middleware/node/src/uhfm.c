@@ -68,21 +68,21 @@
 #define UHFM_NFR_DEFAULT                        0b11
 #ifdef SIGFOX_EP_T_IFU_MS
 #define UHFM_T_IFU_MS_MIN                       SIGFOX_EP_T_IFU_MS
-#define UHFM_T_IFU_MS_MAX                       SIGFOX_EP_T_IFU_MS
 #define UHFM_T_IFU_MS_DEFAULT                   SIGFOX_EP_T_IFU_MS
+#define UHFM_T_IFU_MS_MAX                       SIGFOX_EP_T_IFU_MS
 #else
 #define UHFM_T_IFU_MS_MIN                       0
-#define UHFM_T_IFU_MS_MAX                       SIGFOX_T_IFU_MAX_MS
 #define UHFM_T_IFU_MS_DEFAULT                   1000
+#define UHFM_T_IFU_MS_MAX                       SIGFOX_T_IFU_MAX_MS
 #endif
 #ifdef SIGFOX_EP_T_CONF_MS
 #define UHFM_T_CONF_MS_MIN                      SIGFOX_EP_T_CONF_MS
-#define UHFM_T_CONF_MS_MAX                      SIGFOX_EP_T_CONF_MS
 #define UHFM_T_CONF_MS_DEFAULT                  SIGFOX_EP_T_CONF_MS
+#define UHFM_T_CONF_MS_MAX                      SIGFOX_EP_T_CONF_MS
 #else
 #define UHFM_T_CONF_MS_MIN                      SIGFOX_T_CONF_MIN_MS
-#define UHFM_T_CONF_MS_MAX                      SIGFOX_T_CONF_MAX_MS
 #define UHFM_T_CONF_MS_DEFAULT                  2000
+#define UHFM_T_CONF_MS_MAX                      SIGFOX_T_CONF_MAX_MS
 #endif
 
 #define UHFM_ADC_MEASUREMENTS_RF_FREQUENCY_HZ   860000000

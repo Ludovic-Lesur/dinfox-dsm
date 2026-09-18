@@ -26,8 +26,8 @@
 // Note: output current measurement uses LT6106 and OPA187 chips whose minimum operating voltage is 4.5V.
 #define RRM_OUTPUT_CURRENT_MEASUREMENT_POWER_TH_MV  4500
 
-#define RRM_OUTPUT_CURRENT_OFFSET_UA_MAX            100000
 #define RRM_OUTPUT_CURRENT_OFFSET_UA_DEFAULT        0
+#define RRM_OUTPUT_CURRENT_OFFSET_UA_MAX            100000
 
 #ifdef RRM_REGULATOR_CONTROL_FORCED_HARDWARE
 #define RRM_FLAG_RCFH                               0b1

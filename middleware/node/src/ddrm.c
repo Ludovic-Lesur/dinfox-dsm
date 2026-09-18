@@ -26,8 +26,8 @@
 // Note: OUTPUT_CURRENT measurement uses LT6106 and OPA187 chips whose minimum operating voltage is 4.5V.
 #define DDRM_OUTPUT_CURRENT_MEASUREMENT_POWER_TH_MV     4500
 
-#define DDRM_OUTPUT_CURRENT_OFFSET_UA_MAX               100000
 #define DDRM_OUTPUT_CURRENT_OFFSET_UA_DEFAULT           0
+#define DDRM_OUTPUT_CURRENT_OFFSET_UA_MAX               100000
 
 #ifdef DDRM_REGULATOR_CONTROL_FORCED_HARDWARE
 #define DDRM_FLAG_RCFH                                  0b1

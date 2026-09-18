@@ -15,6 +15,7 @@
 #include "dsm_flags_slave.h"
 #include "error.h"
 #include "load.h"
+#include "maths.h"
 #include "node_register.h"
 #include "node_status.h"
 #include "swreg.h"
@@ -27,9 +28,9 @@
 #define BPSM_CHARGE_SOURCE_VOLTAGE_TH_MV_MAX        60000
 #define BPSM_CHARGE_SOURCE_VOLTAGE_TH_MV_DEFAULT    16000
 
-#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_MIN       60
-#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_MAX       86400
-#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_DEFAULT   3600
+#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_MIN       (1 * MATH_SECONDS_PER_MINUTE)
+#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_DEFAULT   (1 * MATH_SECONDS_PER_HOUR)
+#define BPSM_CHARGE_TOGGLE_PERIOD_SECONDS_MAX       (1 * MATH_SECONDS_PER_DAY)
 #define BPSM_CHARGE_TOGGLE_DURATION_SECONDS         1
 
 #define BPSM_XVF_STORAGE_VOLTAGE_TH_MV_MAX          60000
