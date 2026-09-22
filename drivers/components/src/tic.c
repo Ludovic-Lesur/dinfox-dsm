@@ -330,6 +330,9 @@ TIC_status_t TIC_init(void) {
     dma_status = DMA_init(DMA_INSTANCE_TIC, DMA_CHANNEL_TIC, &dma_config);
     DMA_exit_error(TIC_ERROR_BASE_DMA);
 errors:
+#else
+    GPIO_configure(USART_GPIO_TIC.tx, GPIO_MODE_ANALOG, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_DOWN);
+    GPIO_configure(USART_GPIO_TIC.rx, GPIO_MODE_ANALOG, GPIO_TYPE_PUSH_PULL, GPIO_SPEED_LOW, GPIO_PULL_DOWN);
 #endif
     return status;
 }

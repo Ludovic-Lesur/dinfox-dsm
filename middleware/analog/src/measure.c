@@ -71,7 +71,7 @@
 
 #define MEASURE_ANALOG_POWER_DELAY_SECONDS              1
 
-#define MEASURE_MAINS_DETECT_PERIOD_SECONDS             30
+#define MEASURE_MAINS_DETECT_PERIOD_SECONDS             120
 #define MEASURE_MAINS_DETECT_TIMEOUT_SECONDS            2
 
 /*** MEASURE static functions declaration ***/
