@@ -33,7 +33,7 @@
 #ifdef LVRM_MODE_BMS
 #define LVRM_FLAG_BMSF                                  0b1
 #define LVRM_BMS_INPUT_VOLTAGE_THX_MV_MAX               60000
-#define LVRM_BMS_PROCESS_PERIOD_SECONDS                 60
+#define LVRM_BMS_PROCESS_PERIOD_SECONDS                 (2 * MATH_SECONDS_PER_MINUTE)
 #else
 #define LVRM_FLAG_BMSF                                  0b0
 #endif
