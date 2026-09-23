@@ -34,7 +34,7 @@
 #define BCM_CHARGE_TOGGLE_DURATION_SECONDS          1
 
 #define BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX           60000
-#define BCM_XVF_UPDATE_PERIOD_SECONDS               5
+#define BCM_XVF_UPDATE_PERIOD_SECONDS               (2 * MATH_SECONDS_PER_MINUTE)
 
 #ifdef BCM_CHARGE_CONTROL_FORCED_HARDWARE
 #define BCM_FLAG_CCFH                               0b1
