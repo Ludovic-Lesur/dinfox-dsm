@@ -422,8 +422,9 @@ NODE_status_t NODE_write_register(uint8_t reg_addr, uint32_t reg_value, uint32_t
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     NODE_status_t node_status = NODE_SUCCESS;
+    uint32_t* reg_pointer = NULL;
     uint32_t safe_reg_mask = reg_mask;
-    uint32_t safe_reg_value = reg_value;
+    uint32_t safe_reg_value = 0;
     // Check address.
     if (reg_addr >= NODE_REGISTER_ADDRESS_LAST) {
         status = NODE_ERROR_REGISTER_ADDRESS;
@@ -434,13 +435,19 @@ NODE_status_t NODE_write_register(uint8_t reg_addr, uint32_t reg_value, uint32_t
         status = NODE_ERROR_REGISTER_READ_ONLY;
         goto errors;
     }
-    // Check input value.
-    node_status = _NODE_secure_register(reg_addr, reg_value, &safe_reg_mask, &safe_reg_value);
+    // Update register pointer.
+    reg_pointer = (uint32_t*) &(NODE_RAM_REGISTER[reg_addr]);
+    // Init safe value with current register content.
+    safe_reg_value = (*reg_pointer);
+    // Apply modification.
+    SWREG_modify_register(&safe_reg_value, reg_value, reg_mask);
+    // Check modification.
+    node_status = _NODE_secure_register(reg_addr, safe_reg_value, &safe_reg_mask, &safe_reg_value);
     NODE_stack_error(ERROR_BASE_NODE);
     // Write RAM register.
-    SWREG_modify_register((uint32_t*) &(NODE_RAM_REGISTER[reg_addr]), reg_value, safe_reg_mask);
+    SWREG_modify_register(reg_pointer, reg_value, safe_reg_mask);
     // Secure register.
-    node_status = _NODE_secure_register(reg_addr, NODE_RAM_REGISTER[reg_addr], &safe_reg_mask, &(NODE_RAM_REGISTER[reg_addr]));
+    node_status = _NODE_secure_register(reg_addr, (*reg_pointer), &safe_reg_mask, reg_pointer);
     NODE_stack_error(ERROR_BASE_NODE);
     // Store value in NVM if needed.
     if (NODE_REGISTER[reg_addr].reset_value == UNA_REGISTER_RESET_VALUE_NVM) {
