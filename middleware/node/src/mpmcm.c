@@ -172,31 +172,30 @@ void MPMCM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t MPMCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t MPMCM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_0:
-        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN,,, == 0, == 0, 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_0_MASK_TRANSFORMER_GAIN,,, (field_value == 0), 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_1:
-        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN,,, == 0, == 0, 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
-        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN,,, == 0, == 0, 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_1_MASK_CH1_CURRENT_SENSOR_GAIN,,, (field_value == 0), 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_1_MASK_CH2_CURRENT_SENSOR_GAIN,,, (field_value == 0), 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_2:
-        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN,,, == 0, == 0, 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
-        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN,,, == 0, == 0, 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_2_MASK_CH3_CURRENT_SENSOR_GAIN,,, (field_value == 0), 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(MPMCM_REGISTER_CONFIGURATION_2_MASK_CH4_CURRENT_SENSOR_GAIN,,, (field_value == 0), 10, status = NODE_ERROR_REGISTER_FIELD_VALUE);
         break;
     case MPMCM_REGISTER_ADDRESS_CONFIGURATION_3:
         SWREG_secure_field(
             MPMCM_REGISTER_CONFIGURATION_3_MASK_TIC_SAMPLING_PERIOD,
             UNA_get_seconds,
             UNA_convert_seconds,
-            < TIC_SAMPLING_PERIOD_SECONDS_MIN,
-            > TIC_SAMPLING_PERIOD_SECONDS_MAX,
+            (field_value < TIC_SAMPLING_PERIOD_SECONDS_MIN) || (field_value > TIC_SAMPLING_PERIOD_SECONDS_MAX),
             TIC_SAMPLING_PERIOD_SECONDS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

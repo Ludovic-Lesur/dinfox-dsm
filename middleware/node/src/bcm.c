@@ -199,13 +199,13 @@ void BCM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
     int32_t low_threshold_mv = 0;
     int32_t high_threshold_mv = 0;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case BCM_REGISTER_ADDRESS_CONFIGURATION_0:
@@ -213,8 +213,7 @@ NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint
             BCM_REGISTER_CONFIGURATION_0_MASK_CHARGE_SOURCE_VOLTAGE_TH,
             UNA_get_mv,
             UNA_convert_mv,
-            > BCM_CHARGE_SOURCE_VOLTAGE_TH_MV_MAX,
-            > BCM_CHARGE_SOURCE_VOLTAGE_TH_MV_MAX,
+            (field_value > BCM_CHARGE_SOURCE_VOLTAGE_TH_MV_MAX),
             BCM_CHARGE_SOURCE_VOLTAGE_TH_MV_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -222,21 +221,19 @@ NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint
             BCM_REGISTER_CONFIGURATION_0_MASK_CHARGE_TOGGLE_PERIOD,
             UNA_get_seconds,
             UNA_convert_seconds,
-            < BCM_CHARGE_TOGGLE_PERIOD_SECONDS_MIN,
-            > BCM_CHARGE_TOGGLE_PERIOD_SECONDS_MAX,
+            (field_value < BCM_CHARGE_TOGGLE_PERIOD_SECONDS_MIN) || (field_value > BCM_CHARGE_TOGGLE_PERIOD_SECONDS_MAX),
             BCM_CHARGE_TOGGLE_PERIOD_SECONDS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         break;
     case BCM_REGISTER_ADDRESS_CONFIGURATION_1:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH));
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH));
         SWREG_secure_field(
             BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
-            > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX,
-            > high_threshold_mv,
+            (field_value > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX) || (field_value > high_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -244,21 +241,19 @@ NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint
             BCM_REGISTER_CONFIGURATION_1_MASK_LVF_STORAGE_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
-            > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX,
-            < low_threshold_mv,
+            (field_value > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX) || (field_value < low_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         break;
     case BCM_REGISTER_ADDRESS_CONFIGURATION_2:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH));
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH));
         SWREG_secure_field(
             BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
-            > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX,
-            > high_threshold_mv,
+            (field_value > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX) || (field_value > high_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -266,8 +261,7 @@ NODE_status_t BCM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint
             BCM_REGISTER_CONFIGURATION_2_MASK_CVF_STORAGE_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
-            > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX,
-            < low_threshold_mv,
+            (field_value > BCM_XVF_STORAGE_VOLTAGE_TH_MV_MAX) || (field_value < low_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

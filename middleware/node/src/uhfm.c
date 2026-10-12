@@ -505,11 +505,12 @@ NODE_status_t UHFM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
+    uint32_t rc_index = 0;
     uint8_t rc_valid = 1;
     // Check address.
     switch (reg_addr) {
@@ -519,46 +520,43 @@ NODE_status_t UHFM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_TX_POWER,
             UNA_get_dbm,
             UNA_convert_dbm,
-            < RFE_RF_OUTPUT_POWER_DBM_MIN,
-            > RFE_RF_OUTPUT_POWER_DBM_MAX,
+            (field_value < RFE_RF_OUTPUT_POWER_DBM_MIN) || (field_value > RFE_RF_OUTPUT_POWER_DBM_MAX),
             UHFM_RF_OUTPUT_POWER_DBM_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
 #ifdef HW1_0
         // LNA and filter cannot be bypassed.
-        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_RLBY,,, != 0b0, != 0b0, 0b0, status = NODE_ERROR_REGISTER_FIELD_VALUE);
-        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_RFBY,,, != 0b0, != 0b0, 0b0, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_RLBY,,, (field_value != 0b0), 0b0, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_RFBY,,, (field_value != 0b0), 0b0, status = NODE_ERROR_REGISTER_FIELD_VALUE);
 #endif
         // Check RC index.
-        generic_u32 = SWREG_read_field(new_reg_value, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
-        if (generic_u32 >= UHFM_SIGFOX_RC_LAST) {
+        rc_index = SWREG_read_field((*reg_value), UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
+        if (rc_index >= UHFM_SIGFOX_RC_LAST) {
             rc_valid = 0;
         }
-        else if (UHFM_SIGFOX_RC[generic_u32] == NULL) {
+        else if (UHFM_SIGFOX_RC[rc_index] == NULL) {
             rc_valid = 0;
         }
         if (rc_valid == 0) {
             // Force default.
             (*reg_mask) &= (~UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
-            SWREG_write_field(reg_value, &generic_u32, UHFM_SIGFOX_RC_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
+            SWREG_write_field(reg_value, &unused_mask, UHFM_SIGFOX_RC_DEFAULT, UHFM_REGISTER_CONFIGURATION_0_MASK_SIGFOX_RC);
             status = NODE_ERROR_REGISTER_FIELD_VALUE;
         }
         // Check number of frame(s).
-        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR,,, == 0b00, > 0b11, UHFM_NFR_DEFAULT, status = NODE_ERROR_REGISTER_FIELD_VALUE);
+        SWREG_secure_field(UHFM_REGISTER_CONFIGURATION_0_MASK_SNFR,,, (field_value == 0b00) || (field_value > 0b11), UHFM_NFR_DEFAULT, status = NODE_ERROR_REGISTER_FIELD_VALUE);
         break;
     case UHFM_REGISTER_ADDRESS_CONFIGURATION_1:
         // Check T_IFU.
         SWREG_secure_field(
             UHFM_REGISTER_CONFIGURATION_1_MASK_SIGFOX_T_IFU,,,
-            < UHFM_T_IFU_MS_MIN,
-            > UHFM_T_IFU_MS_MAX,
+            (field_value < UHFM_T_IFU_MS_MIN) || (field_value > UHFM_T_IFU_MS_MAX),
             UHFM_T_IFU_MS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
             UHFM_REGISTER_CONFIGURATION_1_MASK_SIGFOX_T_CONF,,,
-            < UHFM_T_CONF_MS_MIN,
-            > UHFM_T_CONF_MS_MAX,
+            (field_value < UHFM_T_CONF_MS_MIN) || (field_value > UHFM_T_CONF_MS_MAX),
             UHFM_T_CONF_MS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

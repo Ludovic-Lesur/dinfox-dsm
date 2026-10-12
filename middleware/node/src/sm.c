@@ -83,11 +83,10 @@ void SM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t SM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t SM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     UNUSED(reg_addr);
-    UNUSED(new_reg_value);
-    UNUSED(reg_mask);
     UNUSED(reg_value);
+    UNUSED(reg_mask);
     return NODE_SUCCESS;
 }
 

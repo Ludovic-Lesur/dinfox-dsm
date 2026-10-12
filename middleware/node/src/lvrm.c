@@ -132,11 +132,11 @@ void LVRM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
 #ifdef LVRM_MODE_BMS
     int32_t low_threshold_mv = 0;
     int32_t high_threshold_mv = 0;
@@ -145,14 +145,13 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
     switch (reg_addr) {
 #ifdef LVRM_MODE_BMS
     case LVRM_REGISTER_ADDRESS_CONFIGURATION_0:
-        low_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL));
-        high_threshold_mv = UNA_convert_mv(SWREG_read_field(new_reg_value, LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH));
+        low_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL));
+        high_threshold_mv = UNA_convert_mv(SWREG_read_field((*reg_value), LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH));
         SWREG_secure_field(
             LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THL,
             UNA_get_mv,
             UNA_convert_mv,
-            > LVRM_BMS_INPUT_VOLTAGE_THX_MV_MAX,
-            > high_threshold_mv,
+            (field_value > LVRM_BMS_INPUT_VOLTAGE_THX_MV_MAX) || (field_value > high_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -160,8 +159,7 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             LVRM_REGISTER_CONFIGURATION_0_MASK_BMS_INPUT_VOLTAGE_THH,
             UNA_get_mv,
             UNA_convert_mv,
-            > LVRM_BMS_INPUT_VOLTAGE_THX_MV_MAX,
-            < low_threshold_mv,
+            (field_value > LVRM_BMS_INPUT_VOLTAGE_THX_MV_MAX) || (field_value < low_threshold_mv),
             0,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -172,8 +170,7 @@ NODE_status_t LVRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             LVRM_REGISTER_CONFIGURATION_1_MASK_OUTPUT_CURRENT_OFFSET,
             UNA_get_ua,
             UNA_convert_ua,
-            > LVRM_OUTPUT_CURRENT_OFFSET_UA_MAX,
-            > LVRM_OUTPUT_CURRENT_OFFSET_UA_MAX,
+            (field_value > LVRM_OUTPUT_CURRENT_OFFSET_UA_MAX),
             LVRM_OUTPUT_CURRENT_OFFSET_UA_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

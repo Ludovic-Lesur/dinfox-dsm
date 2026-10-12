@@ -310,25 +310,23 @@ void GPSM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t GPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t GPSM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case GPSM_REGISTER_ADDRESS_CONFIGURATION_0:
         SWREG_secure_field(
             GPSM_REGISTER_CONFIGURATION_0_MASK_TIME_TIMEOUT,,,
-            < GPSM_TIME_TIMEOUT_SECONDS_MIN,
-            > GPSM_TIME_TIMEOUT_SECONDS_MAX,
+            (field_value < GPSM_TIME_TIMEOUT_SECONDS_MIN) || (field_value > GPSM_TIME_TIMEOUT_SECONDS_MAX),
             GPSM_TIME_TIMEOUT_SECONDS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
             GPSM_REGISTER_CONFIGURATION_0_MASK_GEOLOC_TIMEOUT,,,
-            < GPSM_GEOLOC_TIMEOUT_SECONDS_MIN,
-            > GPSM_GEOLOC_TIMEOUT_SECONDS_MAX,
+            (field_value < GPSM_GEOLOC_TIMEOUT_SECONDS_MIN) || (field_value > GPSM_GEOLOC_TIMEOUT_SECONDS_MAX),
             GPSM_GEOLOC_TIMEOUT_SECONDS_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -336,8 +334,7 @@ NODE_status_t GPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
     case GPSM_REGISTER_ADDRESS_CONFIGURATION_1:
         SWREG_secure_field(
             GPSM_REGISTER_CONFIGURATION_1_MASK_TP_FREQUENCY,,,
-            < GPSM_TP_FREQUENCY_HZ_MIN,
-            > GPSM_TP_FREQUENCY_HZ_MAX,
+            (field_value < GPSM_TP_FREQUENCY_HZ_MIN) || (field_value > GPSM_TP_FREQUENCY_HZ_MAX),
             GPSM_TP_FREQUENCY_HZ_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
@@ -345,8 +342,7 @@ NODE_status_t GPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
     case GPSM_REGISTER_ADDRESS_CONFIGURATION_2:
         SWREG_secure_field(
             GPSM_REGISTER_CONFIGURATION_2_MASK_TP_DUTY_CYCLE,,,
-            > GPSM_TP_DUTY_CYCLE_PERCENT_MAX,
-            > GPSM_TP_DUTY_CYCLE_PERCENT_MAX,
+            (field_value > GPSM_TP_DUTY_CYCLE_PERCENT_MAX),
             GPSM_TP_DUTY_CYCLE_PERCENT_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

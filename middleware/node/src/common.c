@@ -158,25 +158,23 @@ void COMMON_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t COMMON_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t COMMON_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case COMMON_REGISTER_ADDRESS_NODE_ID:
         SWREG_secure_field(
             COMMON_REGISTER_NODE_ID_MASK_NODE_ADDR,,,
-            <= UNA_NODE_ADDRESS_RS485_BRIDGE,
-            >= UNA_NODE_ADDRESS_R4S8CR_START,
+            (field_value <= UNA_NODE_ADDRESS_RS485_BRIDGE) || (field_value >= UNA_NODE_ADDRESS_R4S8CR_START),
             UNA_NODE_ADDRESS_ERROR,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );
         SWREG_secure_field(
             COMMON_REGISTER_NODE_ID_MASK_BOARD_ID,,,
-            >= UNA_BOARD_ID_LAST,
-            >= UNA_BOARD_ID_LAST,
+            (field_value >= UNA_BOARD_ID_LAST),
             UNA_BOARD_ID_ERROR,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

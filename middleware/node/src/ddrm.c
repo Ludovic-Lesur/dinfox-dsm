@@ -110,11 +110,11 @@ void DDRM_refresh_register(uint8_t reg_addr) {
 }
 
 /*******************************************************************/
-NODE_status_t DDRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value) {
+NODE_status_t DDRM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    int32_t generic_s32 = 0;
-    uint32_t generic_u32 = 0;
+    int32_t field_value = 0;
+    uint32_t unused_mask = 0;
     // Check address.
     switch (reg_addr) {
     case DDRM_REGISTER_ADDRESS_CONFIGURATION_0:
@@ -122,8 +122,7 @@ NODE_status_t DDRM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uin
             DDRM_REGISTER_CONFIGURATION_0_MASK_OUTPUT_CURRENT_OFFSET,
             UNA_get_ua,
             UNA_convert_ua,
-            > DDRM_OUTPUT_CURRENT_OFFSET_UA_MAX,
-            > DDRM_OUTPUT_CURRENT_OFFSET_UA_MAX,
+            (field_value > DDRM_OUTPUT_CURRENT_OFFSET_UA_MAX),
             DDRM_OUTPUT_CURRENT_OFFSET_UA_DEFAULT,
             status = NODE_ERROR_REGISTER_FIELD_VALUE
         );

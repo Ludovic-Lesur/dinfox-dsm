@@ -57,15 +57,14 @@ void BPSM_init_register(uint8_t reg_addr, uint32_t* reg_value);
 void BPSM_refresh_register(uint8_t reg_addr);
 
 /*!******************************************************************
- * \fn NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value)
+ * \fn NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask)
  * \brief Secure BPSM register.
  * \param[in]   reg_addr: Address of the register to secure.
- * \param[in]   new_reg_value: Register value supposed to be written.
- * \PARAM[out]  reg_mask: Pointer to the mask to secure.
- * \param[out]  reg_value: Pointer to the secured register value.
+ * \param[in]   reg_value: Pointer to the value to secure.
+ * \param[in]   reg_mask: Pointer to the mask to secure.
  * \retval      Function execution status.
  *******************************************************************/
-NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t new_reg_value, uint32_t* reg_mask, uint32_t* reg_value);
+NODE_status_t BPSM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32_t* reg_mask);
 
 /*!******************************************************************
  * \fn NODE_status_t BPSM_process_register(uint8_t reg_addr, uint32_t reg_mask)
