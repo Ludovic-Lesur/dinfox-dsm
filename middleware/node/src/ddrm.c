@@ -137,10 +137,10 @@ NODE_status_t DDRM_secure_register(uint8_t reg_addr, uint32_t* reg_value, uint32
 NODE_status_t DDRM_process_register(uint8_t reg_addr, uint32_t reg_mask) {
     // Local variables.
     NODE_status_t status = NODE_SUCCESS;
-    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
 #ifndef DDRM_REGULATOR_CONTROL_FORCED_HARDWARE
     LOAD_status_t load_status = LOAD_SUCCESS;
     UNA_bit_representation_t dden = UNA_BIT_ERROR;
+    uint32_t* reg_ptr = &(NODE_RAM_REGISTER[reg_addr]);
 #endif
     // Check address.
     switch (reg_addr) {
